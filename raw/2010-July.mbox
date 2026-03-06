@@ -1,0 +1,2654 @@
+From shabnambioinfo at gmail.com  Tue Jul  6 15:57:32 2010
+From: shabnambioinfo at gmail.com (shabnam k)
+Date: Tue, 6 Jul 2010 19:27:32 +0530
+Subject: [Bioc-devel] could not find createData function
+Message-ID: <AANLkTilhBHthaEGcS9TeDH9v4A0rz5EI29FPD7UMgGog@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100706/7aa6b532/attachment.pl>
+
+From auke at tulcod.com  Thu Jul  8 11:37:41 2010
+From: auke at tulcod.com (Auke Booij)
+Date: Thu, 8 Jul 2010 11:37:41 +0200
+Subject: [Bioc-devel] Installation process for affymetrix databases (*.db
+	packages)
+Message-ID: <AANLkTimufS0GpLmEIGQ72--0BuiMN_DOlJDTincRKnyY@mail.gmail.com>
+
+Hello, I'm a Google Summer of Code student working for Gentoo to
+integrate installation of R packages into the package manager. Up
+until now, progress has been steady and I've run into little true
+issues. I'm using the R tools to build and install packages wherever
+applicable. Most CRAN packages install fine right now, so I'm now
+working on bioconductor, making sure your packages can be installed
+using a package manager as well.
+
+Now, it seems the *.db packages are giving me some headaches. They
+open up an existing sqlite database file on the disk and try to write
+to it, or so it seems. Writing directly to installed files is not
+really supported by the package managers of gentoo, and it can usually
+be argued against indeed. Packages can, in principle, only read from
+disk and create new files to be added to the system. However, I'm not
+really into Bioconductor and its software, and I'd like to hear your
+idea behind this process. What do the sqlite databases contain, how
+are they used (from a user perspective), what data is added to them by
+the *.db packages? Perhaps most importantly, can't this additional
+data be in a separate database file?
+
+Thanks for your thoughts,
+Auke Booij / tulcod.
+
+
+From mcarlson at fhcrc.org  Thu Jul  8 22:21:19 2010
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Thu, 08 Jul 2010 13:21:19 -0700
+Subject: [Bioc-devel] Installation process for affymetrix databases
+ (*.db packages)
+In-Reply-To: <AANLkTimufS0GpLmEIGQ72--0BuiMN_DOlJDTincRKnyY@mail.gmail.com>
+References: <AANLkTimufS0GpLmEIGQ72--0BuiMN_DOlJDTincRKnyY@mail.gmail.com>
+Message-ID: <4C36333F.2090704@fhcrc.org>
+
+Hi Auke,
+
+Why is it that you think these packages are writing to these SQLite
+databases?  They should not be doing so.  Their purpose is only to be
+annotation packages and they make use of a relational database simply to
+represent biological data.
+
+
+  Marc
+
+
+
+On 07/08/2010 02:37 AM, Auke Booij wrote:
+> Hello, I'm a Google Summer of Code student working for Gentoo to
+> integrate installation of R packages into the package manager. Up
+> until now, progress has been steady and I've run into little true
+> issues. I'm using the R tools to build and install packages wherever
+> applicable. Most CRAN packages install fine right now, so I'm now
+> working on bioconductor, making sure your packages can be installed
+> using a package manager as well.
+>
+> Now, it seems the *.db packages are giving me some headaches. They
+> open up an existing sqlite database file on the disk and try to write
+> to it, or so it seems. Writing directly to installed files is not
+> really supported by the package managers of gentoo, and it can usually
+> be argued against indeed. Packages can, in principle, only read from
+> disk and create new files to be added to the system. However, I'm not
+> really into Bioconductor and its software, and I'd like to hear your
+> idea behind this process. What do the sqlite databases contain, how
+> are they used (from a user perspective), what data is added to them by
+> the *.db packages? Perhaps most importantly, can't this additional
+> data be in a separate database file?
+>
+> Thanks for your thoughts,
+> Auke Booij / tulcod.
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+From auke at tulcod.com  Thu Jul  8 23:37:28 2010
+From: auke at tulcod.com (Auke Booij)
+Date: Thu, 8 Jul 2010 23:37:28 +0200
+Subject: [Bioc-devel] Installation process for affymetrix databases
+	(*.db packages)
+In-Reply-To: <4C36333F.2090704@fhcrc.org>
+References: <AANLkTimufS0GpLmEIGQ72--0BuiMN_DOlJDTincRKnyY@mail.gmail.com>
+	<4C36333F.2090704@fhcrc.org>
+Message-ID: <AANLkTikf8QsTkXlrXy3GlLyRwVo_VCaBqyWCCLra31v9@mail.gmail.com>
+
+On Thu, Jul 8, 2010 at 10:21 PM, Marc Carlson <mcarlson at fhcrc.org> wrote:
+> Why is it that you think these packages are writing to these SQLite
+> databases? ?They should not be doing so. ?Their purpose is only to be
+> annotation packages and they make use of a relational database simply to
+> represent biological data.
+
+Hm, perhaps it's not really writing, but requesting write permissions
+nonetheless? I'm searching through the code to figure out what's
+happening, but it seems at some point the R CMD INSTALL I'm starting
+as part of the sandboxed install process tries to load some libraries
+which try to write to sqlite libraries... partial output below. Does
+any of this ring a bell?
+
+
+R CMD INSTALL --build /usr/portage/distfiles/zebrafish.db_2.4.1.tar.gz
+-l /var/tmp/paludis/dev-R-zebrafishdb-2.4.1/work/tmp_install
+* installing *source* package 'zebrafish.db' ...
+** R
+** inst
+** preparing package for lazy loading
+Loading required package: Biobase
+
+Welcome to Bioconductor
+
+  Vignettes contain introductory material. To view, type
+  'openVignette()'. To cite Bioconductor, see
+  'citation("Biobase")' and for packages 'citation(pkgname)'.
+
+Loading required package: DBI
+ACCESS DENIED  open_wr:
+/usr/lib64/R/library/org.Dr.eg.db/extdata/org.Dr.eg.sqlite
+ISE:write_logfile unable to append logfile
+ISE open_wr(/usr/lib64/R/library/org.Dr.eg.db/extdata/org.Dr.eg.sqlite):
+Permission denied
+	abs_path: /usr/lib64/R/library/org.Dr.eg.db/extdata/org.Dr.eg.sqlite
+	res_path: /usr/lib64/R/library/org.Dr.eg.db/extdata/org.Dr.eg.sqlite
+/usr/lib/libsandbox.so(+0x3709)[0x7ffdc4cf5709]
+/usr/lib/libsandbox.so(+0x379b)[0x7ffdc4cf579b]
+/usr/lib/libsandbox.so(+0x4bd1)[0x7ffdc4cf6bd1]
+/usr/lib/libsandbox.so(open64+0xc7)[0x7ffdc4cfa687]
+/usr/lib64/R/library/RSQLite/libs/RSQLite.so(+0x427e6)[0x7ffdbf8797e6]
+/usr/lib64/R/library/RSQLite/libs/RSQLite.so(+0x43850)[0x7ffdbf87a850]
+/usr/lib64/R/library/RSQLite/libs/RSQLite.so(+0x44257)[0x7ffdbf87b257]
+/usr/lib64/R/library/RSQLite/libs/RSQLite.so(RS_SQLite_newConnection+0x109)[0x7ffdbf8482a5]
+/usr/lib64/R/lib/libR.so(+0x95763)[0x7ffdc488f763]
+/usr/lib64/R/lib/libR.so(Rf_eval+0x76e)[0x7ffdc48b6585]
+/proc/12572/cmdline: /usr/lib64/R/bin/exec/R --no-restore --slave
+--args nextArg--buildnextArg/usr/portage/distfiles/zebrafish.db_2.4.1.tar.gznextArg-lnextArg/var/tmp/paludis/dev-R-zebrafishdb-2.4.1/work/tmp_install
+
+
+From mcarlson at fhcrc.org  Fri Jul  9 00:37:54 2010
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Thu, 08 Jul 2010 15:37:54 -0700
+Subject: [Bioc-devel] Installation process for affymetrix databases
+ (*.db packages)
+In-Reply-To: <AANLkTikf8QsTkXlrXy3GlLyRwVo_VCaBqyWCCLra31v9@mail.gmail.com>
+References: <AANLkTimufS0GpLmEIGQ72--0BuiMN_DOlJDTincRKnyY@mail.gmail.com>	<4C36333F.2090704@fhcrc.org>
+	<AANLkTikf8QsTkXlrXy3GlLyRwVo_VCaBqyWCCLra31v9@mail.gmail.com>
+Message-ID: <4C365342.5030500@fhcrc.org>
+
+Hi Auke,
+
+The installer should place the contents of "inst/extdata" into "extdata"
+of your installed library, but that is about it.  There *IS* a
+dependency however that is logged in the DESCRIPTION file.  Each chip
+package requires that an "org" package be installed in order for it to
+work.  So for example, this package "zebrafish.db_2.4.1.tar.gz "
+requires the "org.Dr.eg.db".  And the message below seems to be
+complaining that the database in "org.Dr.eg.db" is not available.  It
+does not need to write to this DB, but it does need to be able to read
+it.  Did you install the org packages and other dependencies 1st?
+
+Also is there a specific reason why is biocLite() is not your preferred
+way to install bioconductor packages?  It handles all of these issues
+for you and installs requested packages (and resolves dependencies).
+
+http://www.bioconductor.org/docs/install/
+
+
+  Marc
+
+
+
+On 07/08/2010 02:37 PM, Auke Booij wrote:
+> On Thu, Jul 8, 2010 at 10:21 PM, Marc Carlson <mcarlson at fhcrc.org> wrote:
+>   
+>> Why is it that you think these packages are writing to these SQLite
+>> databases?  They should not be doing so.  Their purpose is only to be
+>> annotation packages and they make use of a relational database simply to
+>> represent biological data.
+>>     
+> Hm, perhaps it's not really writing, but requesting write permissions
+> nonetheless? I'm searching through the code to figure out what's
+> happening, but it seems at some point the R CMD INSTALL I'm starting
+> as part of the sandboxed install process tries to load some libraries
+> which try to write to sqlite libraries... partial output below. Does
+> any of this ring a bell?
+>
+>
+> R CMD INSTALL --build /usr/portage/distfiles/zebrafish.db_2.4.1.tar.gz
+> -l /var/tmp/paludis/dev-R-zebrafishdb-2.4.1/work/tmp_install
+> * installing *source* package 'zebrafish.db' ...
+> ** R
+> ** inst
+> ** preparing package for lazy loading
+> Loading required package: Biobase
+>
+> Welcome to Bioconductor
+>
+>   Vignettes contain introductory material. To view, type
+>   'openVignette()'. To cite Bioconductor, see
+>   'citation("Biobase")' and for packages 'citation(pkgname)'.
+>
+> Loading required package: DBI
+> ACCESS DENIED  open_wr:
+> /usr/lib64/R/library/org.Dr.eg.db/extdata/org.Dr.eg.sqlite
+> ISE:write_logfile unable to append logfile
+> ISE open_wr(/usr/lib64/R/library/org.Dr.eg.db/extdata/org.Dr.eg.sqlite):
+> Permission denied
+> 	abs_path: /usr/lib64/R/library/org.Dr.eg.db/extdata/org.Dr.eg.sqlite
+> 	res_path: /usr/lib64/R/library/org.Dr.eg.db/extdata/org.Dr.eg.sqlite
+> /usr/lib/libsandbox.so(+0x3709)[0x7ffdc4cf5709]
+> /usr/lib/libsandbox.so(+0x379b)[0x7ffdc4cf579b]
+> /usr/lib/libsandbox.so(+0x4bd1)[0x7ffdc4cf6bd1]
+> /usr/lib/libsandbox.so(open64+0xc7)[0x7ffdc4cfa687]
+> /usr/lib64/R/library/RSQLite/libs/RSQLite.so(+0x427e6)[0x7ffdbf8797e6]
+> /usr/lib64/R/library/RSQLite/libs/RSQLite.so(+0x43850)[0x7ffdbf87a850]
+> /usr/lib64/R/library/RSQLite/libs/RSQLite.so(+0x44257)[0x7ffdbf87b257]
+> /usr/lib64/R/library/RSQLite/libs/RSQLite.so(RS_SQLite_newConnection+0x109)[0x7ffdbf8482a5]
+> /usr/lib64/R/lib/libR.so(+0x95763)[0x7ffdc488f763]
+> /usr/lib64/R/lib/libR.so(Rf_eval+0x76e)[0x7ffdc48b6585]
+> /proc/12572/cmdline: /usr/lib64/R/bin/exec/R --no-restore --slave
+> --args nextArg--buildnextArg/usr/portage/distfiles/zebrafish.db_2.4.1.tar.gznextArg-lnextArg/var/tmp/paludis/dev-R-zebrafishdb-2.4.1/work/tmp_install
+>
+>
+
+
+From auke at tulcod.com  Fri Jul  9 09:53:58 2010
+From: auke at tulcod.com (Auke Booij)
+Date: Fri, 9 Jul 2010 09:53:58 +0200
+Subject: [Bioc-devel] Installation process for affymetrix databases
+	(*.db packages)
+In-Reply-To: <4C365342.5030500@fhcrc.org>
+References: <AANLkTimufS0GpLmEIGQ72--0BuiMN_DOlJDTincRKnyY@mail.gmail.com>
+	<4C36333F.2090704@fhcrc.org>
+	<AANLkTikf8QsTkXlrXy3GlLyRwVo_VCaBqyWCCLra31v9@mail.gmail.com>
+	<4C365342.5030500@fhcrc.org>
+Message-ID: <AANLkTilLS4bnvEzLkXudB5kJQ1QpwQcd230jX_zowePx@mail.gmail.com>
+
+On Fri, Jul 9, 2010 at 12:37 AM, Marc Carlson <mcarlson at fhcrc.org> wrote:
+> Hi Auke,
+
+Hi Marc,
+
+> The installer should place the contents of "inst/extdata" into "extdata"
+> of your installed library, but that is about it. ?There *IS* a
+> dependency however that is logged in the DESCRIPTION file. ?Each chip
+> package requires that an "org" package be installed in order for it to
+> work. ?So for example, this package "zebrafish.db_2.4.1.tar.gz "
+> requires the "org.Dr.eg.db". ?And the message below seems to be
+> complaining that the database in "org.Dr.eg.db" is not available. ?It
+> does not need to write to this DB, but it does need to be able to read
+> it. ?Did you install the org packages and other dependencies 1st?
+I most definitely have that package installed. The package manager
+resolves all dependencies. As far as I'm concerned, the error is
+pretty clear: something's trying to open a file with write
+permissions, and that's prohibited. Could it be that the org.Dr.eg.db
+is opened with write permissions, even though nothing is really
+written? If so, could that be fixed or will I need a workaround?
+
+> Also is there a specific reason why is biocLite() is not your preferred
+> way to install bioconductor packages? ?It handles all of these issues
+> for you and installs requested packages (and resolves dependencies).
+No, there is no specific reason for me not to use biocLite, but then
+again, I personally don't seek anything in Bioconductor at all. I'm
+working on enabling virtually all users of Gentoo Linux to install
+CRAN and Bioconductor packages using their regular package manager,
+which I think offers some obvious conceptual advantages. Perhaps one
+of the bigger issues with biocLite() some Gentoo purists may have is
+that it installs files without the package manager knowing anything
+about those files, and some users consider that evil. Another serious
+advantage would be dependency resolution for external packages, like
+for CRAN's gsl package, but I have yet to find a package with external
+dependencies in Bioconductor.
+
+> http://www.bioconductor.org/docs/install/
+Yes, I've seen that, and I've actually scavenged the (two) repository
+locations by reading biocLite() and friends :-)
+
+So, to sum it up, could it be that the database is opened with write
+permissions, but nothing is actually written, and is it possible at
+all to fix this, or is this inherent in the way R reads sqlite
+databases?
+
+Thanks again,
+Auke Booij / tulcod.
+
+
+From mcarlson at fhcrc.org  Fri Jul  9 18:23:33 2010
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Fri, 09 Jul 2010 09:23:33 -0700
+Subject: [Bioc-devel] Installation process for affymetrix databases
+ (*.db packages)
+In-Reply-To: <AANLkTilLS4bnvEzLkXudB5kJQ1QpwQcd230jX_zowePx@mail.gmail.com>
+References: <AANLkTimufS0GpLmEIGQ72--0BuiMN_DOlJDTincRKnyY@mail.gmail.com>	<4C36333F.2090704@fhcrc.org>	<AANLkTikf8QsTkXlrXy3GlLyRwVo_VCaBqyWCCLra31v9@mail.gmail.com>	<4C365342.5030500@fhcrc.org>
+	<AANLkTilLS4bnvEzLkXudB5kJQ1QpwQcd230jX_zowePx@mail.gmail.com>
+Message-ID: <4C374D05.6050409@fhcrc.org>
+
+Hi Auke,
+
+Thanks to Martins generous hint, I think I have this fixed.  There were
+some default behaviors in a package we depend on that were opening these
+databases so that they could be written to (even though nothing was
+being written there).  If you grab the very latest version of
+AnnotationDbi, you can try to see if its working any better for you. 
+The latest version is already available in the svn repository, but you
+should be able to get the latest tarball from our website/build system
+within the next 24 hours or so.
+
+  Marc
+
+
+
+On 07/09/2010 12:53 AM, Auke Booij wrote:
+> On Fri, Jul 9, 2010 at 12:37 AM, Marc Carlson <mcarlson at fhcrc.org> wrote:
+>   
+>> Hi Auke,
+>>     
+> Hi Marc,
+>
+>   
+>> The installer should place the contents of "inst/extdata" into "extdata"
+>> of your installed library, but that is about it.  There *IS* a
+>> dependency however that is logged in the DESCRIPTION file.  Each chip
+>> package requires that an "org" package be installed in order for it to
+>> work.  So for example, this package "zebrafish.db_2.4.1.tar.gz "
+>> requires the "org.Dr.eg.db".  And the message below seems to be
+>> complaining that the database in "org.Dr.eg.db" is not available.  It
+>> does not need to write to this DB, but it does need to be able to read
+>> it.  Did you install the org packages and other dependencies 1st?
+>>     
+> I most definitely have that package installed. The package manager
+> resolves all dependencies. As far as I'm concerned, the error is
+> pretty clear: something's trying to open a file with write
+> permissions, and that's prohibited. Could it be that the org.Dr.eg.db
+> is opened with write permissions, even though nothing is really
+> written? If so, could that be fixed or will I need a workaround?
+>
+>   
+>> Also is there a specific reason why is biocLite() is not your preferred
+>> way to install bioconductor packages?  It handles all of these issues
+>> for you and installs requested packages (and resolves dependencies).
+>>     
+> No, there is no specific reason for me not to use biocLite, but then
+> again, I personally don't seek anything in Bioconductor at all. I'm
+> working on enabling virtually all users of Gentoo Linux to install
+> CRAN and Bioconductor packages using their regular package manager,
+> which I think offers some obvious conceptual advantages. Perhaps one
+> of the bigger issues with biocLite() some Gentoo purists may have is
+> that it installs files without the package manager knowing anything
+> about those files, and some users consider that evil. Another serious
+> advantage would be dependency resolution for external packages, like
+> for CRAN's gsl package, but I have yet to find a package with external
+> dependencies in Bioconductor.
+>
+>   
+>> http://www.bioconductor.org/docs/install/
+>>     
+> Yes, I've seen that, and I've actually scavenged the (two) repository
+> locations by reading biocLite() and friends :-)
+>
+> So, to sum it up, could it be that the database is opened with write
+> permissions, but nothing is actually written, and is it possible at
+> all to fix this, or is this inherent in the way R reads sqlite
+> databases?
+>
+> Thanks again,
+> Auke Booij / tulcod.
+>
+>
+
+
+From auke at tulcod.com  Sat Jul 10 22:01:16 2010
+From: auke at tulcod.com (Auke Booij)
+Date: Sat, 10 Jul 2010 22:01:16 +0200
+Subject: [Bioc-devel] Installation process for affymetrix databases
+	(*.db packages)
+In-Reply-To: <4C374D05.6050409@fhcrc.org>
+References: <AANLkTimufS0GpLmEIGQ72--0BuiMN_DOlJDTincRKnyY@mail.gmail.com>
+	<4C36333F.2090704@fhcrc.org>
+	<AANLkTikf8QsTkXlrXy3GlLyRwVo_VCaBqyWCCLra31v9@mail.gmail.com>
+	<4C365342.5030500@fhcrc.org>
+	<AANLkTilLS4bnvEzLkXudB5kJQ1QpwQcd230jX_zowePx@mail.gmail.com>
+	<4C374D05.6050409@fhcrc.org>
+Message-ID: <AANLkTinlSZsOA8tndbsUn5zmPNAZ21ohS_8NOpCxK2nM@mail.gmail.com>
+
+On Fri, Jul 9, 2010 at 6:23 PM, Marc Carlson <mcarlson at fhcrc.org> wrote:
+> Hi Auke,
+>
+> Thanks to Martins generous hint, I think I have this fixed. ?There were
+> some default behaviors in a package we depend on that were opening these
+> databases so that they could be written to (even though nothing was
+> being written there). ?If you grab the very latest version of
+> AnnotationDbi, you can try to see if its working any better for you.
+> The latest version is already available in the svn repository, but you
+> should be able to get the latest tarball from our website/build system
+> within the next 24 hours or so.
+>
+> ?Marc
+
+Hey Marc, Martin and others,
+
+It works great now. Thanks a lot for the quick fix!
+
+
+From Peter.Bazeley at rockets.utoledo.edu  Thu Jul 15 08:50:43 2010
+From: Peter.Bazeley at rockets.utoledo.edu (Bazeley, Peter)
+Date: Thu, 15 Jul 2010 06:50:43 +0000
+Subject: [Bioc-devel] permission for data in packages
+Message-ID: <5C621FDF7E426B4AAE3B2364B7EF07371F64E4AD@BL2PRD0103MB058.prod.exchangelabs.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100715/173c0d63/attachment.pl>
+
+From sdavis2 at mail.nih.gov  Thu Jul 15 14:04:31 2010
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Thu, 15 Jul 2010 08:04:31 -0400
+Subject: [Bioc-devel] permission for data in packages
+In-Reply-To: <5C621FDF7E426B4AAE3B2364B7EF07371F64E4AD@BL2PRD0103MB058.prod.exchangelabs.com>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E4AD@BL2PRD0103MB058.prod.exchangelabs.com>
+Message-ID: <AANLkTinxeW3xv0cRp9LLHMW36mrfcXzRBWtjaXeaqByC@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100715/e915535d/attachment.pl>
+
+From Peter.Bazeley at rockets.utoledo.edu  Sat Jul 17 08:23:36 2010
+From: Peter.Bazeley at rockets.utoledo.edu (Bazeley, Peter)
+Date: Sat, 17 Jul 2010 06:23:36 +0000
+Subject: [Bioc-devel] suppressing warn from Biobase
+Message-ID: <5C621FDF7E426B4AAE3B2364B7EF07371F64E692@BL2PRD0103MB058.prod.exchangelabs.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100717/65b5f7a7/attachment.pl>
+
+From paboyoun at fhcrc.org  Sat Jul 17 20:50:19 2010
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Sat, 17 Jul 2010 11:50:19 -0700
+Subject: [Bioc-devel] suppressing warn from Biobase
+In-Reply-To: <5C621FDF7E426B4AAE3B2364B7EF07371F64E692@BL2PRD0103MB058.prod.exchangelabs.com>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E692@BL2PRD0103MB058.prod.exchangelabs.com>
+Message-ID: <4C41FB6B.9030203@fhcrc.org>
+
+?suppressWarnings
+
+Patrick
+
+
+On 7/16/10 11:23 PM, Bazeley, Peter wrote:
+> Dear List,
+>
+> I am creating a package, where one function's name is "combine.quantile.freqs". There is a "combine" method in package Biobase. My package Depends on Biobase, so it is installed. I get the following warning message the first time I use combine.quantile.freqs in a session:
+>
+> Warning message:
+> In findGeneric(f,parent.frame()) :
+>    'combine' is a formal generic function; S3 methods will not likely be found
+>
+> My naming scheme of "combine" followed by a period is causing R to think this is class method (or something along those lines). Is there someway I can suppress this warning message? I could just use a different naming scheme, but I like the way it is.
+>
+>
+> Thank you,
+> Peter Bazeley
+>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From paboyoun at fhcrc.org  Sat Jul 17 21:02:42 2010
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Sat, 17 Jul 2010 12:02:42 -0700
+Subject: [Bioc-devel] suppressing warn from Biobase
+In-Reply-To: <4C41FB6B.9030203@fhcrc.org>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E692@BL2PRD0103MB058.prod.exchangelabs.com>
+	<4C41FB6B.9030203@fhcrc.org>
+Message-ID: <4C41FE52.8040406@fhcrc.org>
+
+Oops. I didn't read you message closely enough. Rather placing Biobase 
+in the Depends field, I recommend you place it in the "Imports" field, 
+and then in the NAMESPACE file, import only the symbols that you need.
+
+That being said, using "."'s in function names is generally a bad idea 
+for this very reason and should be avoided. Consider using a camel case 
+naming convention, e.g. combineQuantileFreqs, for all your function names.
+
+
+Cheers,
+Patrick
+
+
+On 7/17/10 11:50 AM, Patrick Aboyoun wrote:
+> ?suppressWarnings
+>
+> Patrick
+>
+>
+> On 7/16/10 11:23 PM, Bazeley, Peter wrote:
+>> Dear List,
+>>
+>> I am creating a package, where one function's name is 
+>> "combine.quantile.freqs". There is a "combine" method in package 
+>> Biobase. My package Depends on Biobase, so it is installed. I get the 
+>> following warning message the first time I use combine.quantile.freqs 
+>> in a session:
+>>
+>> Warning message:
+>> In findGeneric(f,parent.frame()) :
+>>    'combine' is a formal generic function; S3 methods will not likely 
+>> be found
+>>
+>> My naming scheme of "combine" followed by a period is causing R to 
+>> think this is class method (or something along those lines). Is there 
+>> someway I can suppress this warning message? I could just use a 
+>> different naming scheme, but I like the way it is.
+>>
+>>
+>> Thank you,
+>> Peter Bazeley
+>>
+>>     [[alternative HTML version deleted]]
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From Peter.Bazeley at rockets.utoledo.edu  Mon Jul 19 02:24:49 2010
+From: Peter.Bazeley at rockets.utoledo.edu (Bazeley, Peter)
+Date: Mon, 19 Jul 2010 00:24:49 +0000
+Subject: [Bioc-devel] suppressing warn from Biobase
+In-Reply-To: <4C41FE52.8040406@fhcrc.org>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E692@BL2PRD0103MB058.prod.exchangelabs.com>
+	<4C41FB6B.9030203@fhcrc.org>,<4C41FE52.8040406@fhcrc.org>
+Message-ID: <5C621FDF7E426B4AAE3B2364B7EF07371F64E6DB@BL2PRD0103MB058.prod.exchangelabs.com>
+
+Thank you, Patrick. I went with the latter option. It seems like a safer move in the long run.
+________________________________________
+From: Patrick Aboyoun [paboyoun at fhcrc.org]
+Sent: Saturday, July 17, 2010 2:02 PM
+To: Bazeley, Peter
+Cc: bioc-devel at stat.math.ethz.ch
+Subject: Re: [Bioc-devel] suppressing warn from Biobase
+
+Oops. I didn't read you message closely enough. Rather placing Biobase
+in the Depends field, I recommend you place it in the "Imports" field,
+and then in the NAMESPACE file, import only the symbols that you need.
+
+That being said, using "."'s in function names is generally a bad idea
+for this very reason and should be avoided. Consider using a camel case
+naming convention, e.g. combineQuantileFreqs, for all your function names.
+
+
+Cheers,
+Patrick
+
+
+On 7/17/10 11:50 AM, Patrick Aboyoun wrote:
+> ?suppressWarnings
+>
+> Patrick
+>
+>
+> On 7/16/10 11:23 PM, Bazeley, Peter wrote:
+>> Dear List,
+>>
+>> I am creating a package, where one function's name is
+>> "combine.quantile.freqs". There is a "combine" method in package
+>> Biobase. My package Depends on Biobase, so it is installed. I get the
+>> following warning message the first time I use combine.quantile.freqs
+>> in a session:
+>>
+>> Warning message:
+>> In findGeneric(f,parent.frame()) :
+>>    'combine' is a formal generic function; S3 methods will not likely
+>> be found
+>>
+>> My naming scheme of "combine" followed by a period is causing R to
+>> think this is class method (or something along those lines). Is there
+>> someway I can suppress this warning message? I could just use a
+>> different naming scheme, but I like the way it is.
+>>
+>>
+>> Thank you,
+>> Peter Bazeley
+>>
+>>     [[alternative HTML version deleted]]
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+
+From Peter.Bazeley at rockets.utoledo.edu  Mon Jul 19 02:33:42 2010
+From: Peter.Bazeley at rockets.utoledo.edu (Bazeley, Peter)
+Date: Mon, 19 Jul 2010 00:33:42 +0000
+Subject: [Bioc-devel] package numbering
+Message-ID: <5C621FDF7E426B4AAE3B2364B7EF07371F64E6E7@BL2PRD0103MB058.prod.exchangelabs.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100719/06bf2a7b/attachment.pl>
+
+From Joern.Toedling at curie.fr  Mon Jul 19 10:59:32 2010
+From: Joern.Toedling at curie.fr (Joern Toedling)
+Date: Mon, 19 Jul 2010 10:59:32 +0200
+Subject: [Bioc-devel] package numbering
+In-Reply-To: <5C621FDF7E426B4AAE3B2364B7EF07371F64E6E7@BL2PRD0103MB058.prod.exchangelabs.com>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E6E7@BL2PRD0103MB058.prod.exchangelabs.com>
+Message-ID: <20100719085812.M46763@curie.fr>
+
+Hi Peter,
+
+please read:
+http://wiki.fhcrc.org/bioc/Version_Numbering_Standards
+
+Thus, you should go with 0.99.0 since you submit a development version which,
+if accepted, becomes 1.0.0 in the next release.
+
+Regards,
+Joern
+
+On Mon, 19 Jul 2010 00:33:42 +0000, Bazeley, Peter wrote
+> Dear List,
+> 
+> I'm not sure if I understand the package numbering system. If I am 
+> submitting a new package, do I want to use 0.99.0 or 1.0.0 in the 
+> version I submit to Bioconductor?
+> 
+> Thank you,
+> Peter Bazeley
+>
+
+
+From Peter.Bazeley at rockets.utoledo.edu  Mon Jul 19 11:51:20 2010
+From: Peter.Bazeley at rockets.utoledo.edu (Bazeley, Peter)
+Date: Mon, 19 Jul 2010 09:51:20 +0000
+Subject: [Bioc-devel] package numbering
+In-Reply-To: <20100719085812.M46763@curie.fr>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E6E7@BL2PRD0103MB058.prod.exchangelabs.com>,
+	<20100719085812.M46763@curie.fr>
+Message-ID: <5C621FDF7E426B4AAE3B2364B7EF07371F64E724@BL2PRD0103MB058.prod.exchangelabs.com>
+
+Thank you, Joern. That clears things up. 
+________________________________________
+From: Joern Toedling [Joern.Toedling at curie.fr]
+Sent: Monday, July 19, 2010 3:59 AM
+To: Bazeley, Peter; bioc-devel at stat.math.ethz.ch
+Subject: Re: [Bioc-devel] package numbering
+
+Hi Peter,
+
+please read:
+http://wiki.fhcrc.org/bioc/Version_Numbering_Standards
+
+Thus, you should go with 0.99.0 since you submit a development version which,
+if accepted, becomes 1.0.0 in the next release.
+
+Regards,
+Joern
+
+On Mon, 19 Jul 2010 00:33:42 +0000, Bazeley, Peter wrote
+> Dear List,
+>
+> I'm not sure if I understand the package numbering system. If I am
+> submitting a new package, do I want to use 0.99.0 or 1.0.0 in the
+> version I submit to Bioconductor?
+>
+> Thank you,
+> Peter Bazeley
+>
+
+
+From whuber at embl.de  Tue Jul 20 00:26:20 2010
+From: whuber at embl.de (Wolfgang Huber)
+Date: Tue, 20 Jul 2010 00:26:20 +0200
+Subject: [Bioc-devel] BioC 2.7: Multiple platform build/check report
+Message-ID: <4C44D10C.2000405@embl.de>
+
+Hi,
+
+1. The report on http://bioconductor.org/checkResults/devel/bioc-LATEST/
+indicates that the build is run on versions of R from 2 to 4 weeks ago - 
+is that intentional?
+
+2. Maybe (or maybe not) related to that, vsn fails to build with
+
+     ! LaTeX Error: File `Sweave.sty' not found.
+            (details see URL below)
+
+I don't get that error when I do 'R CMD build' (or 'check') on my 
+computer, and I can also not see any Sweave-specific issues with vsn's 
+vignettes (nor have they changed recently). Has anyone an idea what's 
+wrong or how to fix it?
+
+http://bioconductor.org/checkResults/devel/bioc-LATEST/vsn/lamb2-buildsrc.html
+
+Thanks,
+
+Wolfgang Huber
+EMBL
+http://www.embl.de/research/units/genome_biology/huber
+
+
+From mtmorgan at fhcrc.org  Tue Jul 20 03:46:01 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 19 Jul 2010 18:46:01 -0700
+Subject: [Bioc-devel] BioC 2.7: Multiple platform build/check report
+In-Reply-To: <4C44D10C.2000405@embl.de>
+References: <4C44D10C.2000405@embl.de>
+Message-ID: <4C44FFD9.208@fhcrc.org>
+
+On 07/19/2010 03:26 PM, Wolfgang Huber wrote:
+> Hi,
+> 
+> 1. The report on http://bioconductor.org/checkResults/devel/bioc-LATEST/
+> indicates that the build is run on versions of R from 2 to 4 weeks ago -
+> is that intentional?
+> 
+> 2. Maybe (or maybe not) related to that, vsn fails to build with
+> 
+>     ! LaTeX Error: File `Sweave.sty' not found.
+>            (details see URL below)
+> 
+> I don't get that error when I do 'R CMD build' (or 'check') on my
+> computer, and I can also not see any Sweave-specific issues with vsn's
+> vignettes (nor have they changed recently). Has anyone an idea what's
+> wrong or how to fix it?
+> 
+> http://bioconductor.org/checkResults/devel/bioc-LATEST/vsn/lamb2-buildsrc.html
+
+
+Yes, the devel version does tend to lag a few weeks behind (updating all
+operating systems does take time, and some effort is being spent on
+64bit Windows and other build issues). We'll make updating the R's a
+task for the near term.
+
+And yes, the missing Sweave.sty file likely sounds like a version issue
+(corrected in r52478, introduced in r52255).
+
+Martin
+
+> 
+> 
+> Thanks,
+> 
+> Wolfgang Huber
+> EMBL
+> http://www.embl.de/research/units/genome_biology/huber
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From Peter.Bazeley at rockets.utoledo.edu  Tue Jul 20 06:10:51 2010
+From: Peter.Bazeley at rockets.utoledo.edu (Bazeley, Peter)
+Date: Tue, 20 Jul 2010 04:10:51 +0000
+Subject: [Bioc-devel] package size
+Message-ID: <5C621FDF7E426B4AAE3B2364B7EF07371F64E7CD@BL2PRD0103MB058.prod.exchangelabs.com>
+
+Dear List,
+
+I am creating a package, the purpose of which is to combine data from different microarray platforms. I have found a NCBI GEO data series with 3 different platforms (1 Affymetrix and 2 Illumina) that works well for illustrating my package functions. It would be nice to keep this data series as a data object for use in the function examples (currently, 4 of 5 functions use this data object in their example code) in the documentation, but the xz compressed .rda file (consisting of 3 data frames, one for each data set) is about 5MB (total package size is 6MB). Is this too big?
+
+There are 2 alternatives:
+
+1) The package includes a function to download datasets using the GEOquery package, which could be used to easily re-create the data frames included in my .rda file. The only downside is that it takes several minutes to download all the data, so it may be inconvenient, since this data object is used in example code for the 4 functions.
+
+1a) I could have each function example contain code to either a) download the data and save it in an .RData image file, or b) load the image file saved in a). This way the investigator would only have to endure the download once, unless they chose not to save the data.
+
+2) I could take, say, the first 1000 genes from each platform. I did this, and the combined data only has 19 probes/probesets (they are mapped by Accession/UniGene IDs, and the common transcripts are extracted) . It would be nice to have a larger example, although not necessary. Alternatively, I could find a better set of 1000 (or however many), so that more than 19 are present.
+
+
+Thank you for any assistance,
+Peter Bazeley
+
+From mtmorgan at fhcrc.org  Tue Jul 20 06:31:57 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 19 Jul 2010 21:31:57 -0700
+Subject: [Bioc-devel] package size
+In-Reply-To: <5C621FDF7E426B4AAE3B2364B7EF07371F64E7CD@BL2PRD0103MB058.prod.exchangelabs.com>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E7CD@BL2PRD0103MB058.prod.exchangelabs.com>
+Message-ID: <4C4526BD.5070704@fhcrc.org>
+
+Hi Peter,
+
+On 07/19/2010 09:10 PM, Bazeley, Peter wrote:
+> Dear List,
+> 
+> I am creating a package, the purpose of which is to combine data from
+> different microarray platforms. I have found a NCBI GEO data series
+> with 3 different platforms (1 Affymetrix and 2 Illumina) that works
+> well for illustrating my package functions. It would be nice to keep
+> this data series as a data object for use in the function examples
+> (currently, 4 of 5 functions use this data object in their example
+> code) in the documentation, but the xz compressed .rda file
+> (consisting of 3 data frames, one for each data set) is about 5MB
+
+Hmm, but if they are expression data, then an ExpressionSet would more
+fully represent the data? See library(GEOquery); ?getGEO with the
+GSEMatrix option set to TRUE, and
+
+  http://bioconductor.org/packages/2.6/bioc/html/Biobase.html
+
+and the 'An Introduction to Biobase and ExpressionSets' vignette.
+
+> (total package size is 6MB). Is this too big?
+> 
+> There are 2 alternatives:
+> 
+> 1) The package includes a function to download datasets using the
+> GEOquery package, which could be used to easily re-create the data
+> frames included in my .rda file. The only downside is that it takes
+> several minutes to download all the data, so it may be inconvenient,
+> since this data object is used in example code for the 4 functions.
+> 
+> 1a) I could have each function example contain code to either a)
+> download the data and save it in an .RData image file, or b) load the
+> image file saved in a). This way the investigator would only have to
+> endure the download once, unless they chose not to save the data.
+> 
+> 2) I could take, say, the first 1000 genes from each platform. I did
+> this, and the combined data only has 19 probes/probesets (they are
+> mapped by Accession/UniGene IDs, and the common transcripts are
+> extracted) . It would be nice to have a larger example, although not
+> necessary. Alternatively, I could find a better set of 1000 (or
+> however many), so that more than 19 are present.
+
+A third is to create an experiment data package like those at
+
+  http://bioconductor.org/packages/release/ExperimentData.html
+
+that contains the entire data. This way you get a rich and reproducible
+example to illustrate your tools. These are really just packages with
+data objects in the inst/extdata/ (for CEL and other non-R formats) or
+data/ (for R data objects) directories, and man pages describing the data.
+
+Perhaps there is already an experiment data package that meets your needs?
+
+Martin
+
+> 
+> 
+> Thank you for any assistance, Peter Bazeley 
+> _______________________________________________ 
+> Bioc-devel at stat.math.ethz.ch mailing list 
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From hb at stat.berkeley.edu  Tue Jul 20 09:02:24 2010
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Tue, 20 Jul 2010 09:02:24 +0200
+Subject: [Bioc-devel] package size
+In-Reply-To: <4C4526BD.5070704@fhcrc.org>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E7CD@BL2PRD0103MB058.prod.exchangelabs.com>
+	<4C4526BD.5070704@fhcrc.org>
+Message-ID: <AANLkTinkeKcgkXpvAXVnsKnlRK37dDU0Lt8nim8q32kh@mail.gmail.com>
+
+Consider also package updates; even if you just do a tiny bug fix,
+then one have do download all that data again.
+
+Martin's suggestion to keep a separate experimental data package is a
+good option.  It will also makes the data available to others to use
+in their examples (without having to install your main package
+dependencies), e.g. "competing" methods.
+
+/Henrik
+
+On Tue, Jul 20, 2010 at 6:31 AM, Martin Morgan <mtmorgan at fhcrc.org> wrote:
+> Hi Peter,
+>
+> On 07/19/2010 09:10 PM, Bazeley, Peter wrote:
+>> Dear List,
+>>
+>> I am creating a package, the purpose of which is to combine data from
+>> different microarray platforms. I have found a NCBI GEO data series
+>> with 3 different platforms (1 Affymetrix and 2 Illumina) that works
+>> well for illustrating my package functions. It would be nice to keep
+>> this data series as a data object for use in the function examples
+>> (currently, 4 of 5 functions use this data object in their example
+>> code) in the documentation, but the xz compressed .rda file
+>> (consisting of 3 data frames, one for each data set) is about 5MB
+>
+> Hmm, but if they are expression data, then an ExpressionSet would more
+> fully represent the data? See library(GEOquery); ?getGEO with the
+> GSEMatrix option set to TRUE, and
+>
+> ?http://bioconductor.org/packages/2.6/bioc/html/Biobase.html
+>
+> and the 'An Introduction to Biobase and ExpressionSets' vignette.
+>
+>> (total package size is 6MB). Is this too big?
+>>
+>> There are 2 alternatives:
+>>
+>> 1) The package includes a function to download datasets using the
+>> GEOquery package, which could be used to easily re-create the data
+>> frames included in my .rda file. The only downside is that it takes
+>> several minutes to download all the data, so it may be inconvenient,
+>> since this data object is used in example code for the 4 functions.
+>>
+>> 1a) I could have each function example contain code to either a)
+>> download the data and save it in an .RData image file, or b) load the
+>> image file saved in a). This way the investigator would only have to
+>> endure the download once, unless they chose not to save the data.
+>>
+>> 2) I could take, say, the first 1000 genes from each platform. I did
+>> this, and the combined data only has 19 probes/probesets (they are
+>> mapped by Accession/UniGene IDs, and the common transcripts are
+>> extracted) . It would be nice to have a larger example, although not
+>> necessary. Alternatively, I could find a better set of 1000 (or
+>> however many), so that more than 19 are present.
+>
+> A third is to create an experiment data package like those at
+>
+> ?http://bioconductor.org/packages/release/ExperimentData.html
+>
+> that contains the entire data. This way you get a rich and reproducible
+> example to illustrate your tools. These are really just packages with
+> data objects in the inst/extdata/ (for CEL and other non-R formats) or
+> data/ (for R data objects) directories, and man pages describing the data.
+>
+> Perhaps there is already an experiment data package that meets your needs?
+>
+> Martin
+>
+>>
+>>
+>> Thank you for any assistance, Peter Bazeley
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+> --
+> Martin Morgan
+> Computational Biology / Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N.
+> PO Box 19024 Seattle, WA 98109
+>
+> Location: Arnold Building M1 B861
+> Phone: (206) 667-2793
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From Peter.Bazeley at rockets.utoledo.edu  Wed Jul 21 06:50:55 2010
+From: Peter.Bazeley at rockets.utoledo.edu (Bazeley, Peter)
+Date: Wed, 21 Jul 2010 04:50:55 +0000
+Subject: [Bioc-devel] mapping probes/probesets between platforms
+Message-ID: <5C621FDF7E426B4AAE3B2364B7EF07371F64E89F@BL2PRD0103MB058.prod.exchangelabs.com>
+
+Dear List,
+
+What packages/approaches are recommended for mapping probes/probesets between 2 microarray platforms? Currently, I am using GenBank Accession IDs and UniGene IDs if these are not present.
+
+
+Thank you in advance,
+Peter Bazeley
+
+From Peter.Bazeley at rockets.utoledo.edu  Wed Jul 21 07:57:43 2010
+From: Peter.Bazeley at rockets.utoledo.edu (Bazeley, Peter)
+Date: Wed, 21 Jul 2010 05:57:43 +0000
+Subject: [Bioc-devel] package size
+In-Reply-To: <AANLkTinkeKcgkXpvAXVnsKnlRK37dDU0Lt8nim8q32kh@mail.gmail.com>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E7CD@BL2PRD0103MB058.prod.exchangelabs.com>
+	<4C4526BD.5070704@fhcrc.org>,
+	<AANLkTinkeKcgkXpvAXVnsKnlRK37dDU0Lt8nim8q32kh@mail.gmail.com>
+Message-ID: <5C621FDF7E426B4AAE3B2364B7EF07371F64E8CE@BL2PRD0103MB058.prod.exchangelabs.com>
+
+Going with Martin's first suggestion, is 37 seconds to download the data too long/inconvenient for an example in the function documentation? This is for the package's main function, and the second of 2 examples, with the first using a smaller/faster to load dataset. The remaining code in this 2nd example takes under 8 seconds, including the code to access the data in the GEOquery object.
+
+Of course, the times will vary. My computer has an Intel Core 2 Duo 2.8 GHz, 4GB of RAM, Windows 7.
+
+> sessionInfo()
+R version 2.11.1 (2010-05-31) 
+i386-pc-mingw32 
+
+locale:
+[1] LC_COLLATE=English_United States.1252  LC_CTYPE=English_United States.1252   
+[3] LC_MONETARY=English_United States.1252 LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.1252    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] hgu95av2cdf_2.6.0   affydata_1.11.10    affy_1.26.1         QuantCombine_0.99.0 GEOquery_2.12.0    
+[6] RCurl_1.4-2         bitops_1.0-4.1      Biobase_2.8.0      
+
+loaded via a namespace (and not attached):
+[1] affyio_1.16.0         preprocessCore_1.10.0 tools_2.11.1         
+> 
+
+
+
+________________________________________
+From: henrik.bengtsson at gmail.com [henrik.bengtsson at gmail.com] on behalf of Henrik Bengtsson [hb at stat.berkeley.edu]
+Sent: Tuesday, July 20, 2010 2:02 AM
+To: Martin Morgan
+Cc: Bazeley, Peter; bioc-devel at stat.math.ethz.ch
+Subject: Re: [Bioc-devel] package size
+
+Consider also package updates; even if you just do a tiny bug fix,
+then one have do download all that data again.
+
+Martin's suggestion to keep a separate experimental data package is a
+good option.  It will also makes the data available to others to use
+in their examples (without having to install your main package
+dependencies), e.g. "competing" methods.
+
+/Henrik
+
+On Tue, Jul 20, 2010 at 6:31 AM, Martin Morgan <mtmorgan at fhcrc.org> wrote:
+> Hi Peter,
+>
+> On 07/19/2010 09:10 PM, Bazeley, Peter wrote:
+>> Dear List,
+>>
+>> I am creating a package, the purpose of which is to combine data from
+>> different microarray platforms. I have found a NCBI GEO data series
+>> with 3 different platforms (1 Affymetrix and 2 Illumina) that works
+>> well for illustrating my package functions. It would be nice to keep
+>> this data series as a data object for use in the function examples
+>> (currently, 4 of 5 functions use this data object in their example
+>> code) in the documentation, but the xz compressed .rda file
+>> (consisting of 3 data frames, one for each data set) is about 5MB
+>
+> Hmm, but if they are expression data, then an ExpressionSet would more
+> fully represent the data? See library(GEOquery); ?getGEO with the
+> GSEMatrix option set to TRUE, and
+>
+>  http://bioconductor.org/packages/2.6/bioc/html/Biobase.html
+>
+> and the 'An Introduction to Biobase and ExpressionSets' vignette.
+>
+>> (total package size is 6MB). Is this too big?
+>>
+>> There are 2 alternatives:
+>>
+>> 1) The package includes a function to download datasets using the
+>> GEOquery package, which could be used to easily re-create the data
+>> frames included in my .rda file. The only downside is that it takes
+>> several minutes to download all the data, so it may be inconvenient,
+>> since this data object is used in example code for the 4 functions.
+>>
+>> 1a) I could have each function example contain code to either a)
+>> download the data and save it in an .RData image file, or b) load the
+>> image file saved in a). This way the investigator would only have to
+>> endure the download once, unless they chose not to save the data.
+>>
+>> 2) I could take, say, the first 1000 genes from each platform. I did
+>> this, and the combined data only has 19 probes/probesets (they are
+>> mapped by Accession/UniGene IDs, and the common transcripts are
+>> extracted) . It would be nice to have a larger example, although not
+>> necessary. Alternatively, I could find a better set of 1000 (or
+>> however many), so that more than 19 are present.
+>
+> A third is to create an experiment data package like those at
+>
+>  http://bioconductor.org/packages/release/ExperimentData.html
+>
+> that contains the entire data. This way you get a rich and reproducible
+> example to illustrate your tools. These are really just packages with
+> data objects in the inst/extdata/ (for CEL and other non-R formats) or
+> data/ (for R data objects) directories, and man pages describing the data.
+>
+> Perhaps there is already an experiment data package that meets your needs?
+>
+> Martin
+>
+>>
+>>
+>> Thank you for any assistance, Peter Bazeley
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+> --
+> Martin Morgan
+> Computational Biology / Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N.
+> PO Box 19024 Seattle, WA 98109
+>
+> Location: Arnold Building M1 B861
+> Phone: (206) 667-2793
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From sdavis2 at mail.nih.gov  Wed Jul 21 14:27:28 2010
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Wed, 21 Jul 2010 06:27:28 -0600
+Subject: [Bioc-devel] mapping probes/probesets between platforms
+In-Reply-To: <5C621FDF7E426B4AAE3B2364B7EF07371F64E89F@BL2PRD0103MB058.prod.exchangelabs.com>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E89F@BL2PRD0103MB058.prod.exchangelabs.com>
+Message-ID: <AANLkTilRIrodXzj39uvt7TEBuuzPLgca6NRLvvPZEj18@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100721/e5a6a750/attachment.pl>
+
+From hpages at fhcrc.org  Wed Jul 21 20:16:26 2010
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Wed, 21 Jul 2010 11:16:26 -0700
+Subject: [Bioc-devel] package size
+In-Reply-To: <5C621FDF7E426B4AAE3B2364B7EF07371F64E8CE@BL2PRD0103MB058.prod.exchangelabs.com>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E7CD@BL2PRD0103MB058.prod.exchangelabs.com>	<4C4526BD.5070704@fhcrc.org>,
+	<AANLkTinkeKcgkXpvAXVnsKnlRK37dDU0Lt8nim8q32kh@mail.gmail.com>
+	<5C621FDF7E426B4AAE3B2364B7EF07371F64E8CE@BL2PRD0103MB058.prod.exchangelabs.com>
+Message-ID: <4C47397A.4090004@fhcrc.org>
+
+Hi Peter,
+
+On 07/20/2010 10:57 PM, Bazeley, Peter wrote:
+> Going with Martin's first suggestion, is 37 seconds to download the data too long/inconvenient for an example in the function documentation? This is for the package's main function, and the second of 2 examples, with the first using a smaller/faster to load dataset. The remaining code in this 2nd example takes under 8 seconds, including the code to access the data in the GEOquery object.
+>
+> Of course, the times will vary. My computer has an Intel Core 2 Duo 2.8 GHz, 4GB of RAM, Windows 7.
+
+Download times depend more on the quality of your network connection
+than anything else. So for people with a slow internet access, those
+times could be multiplied by 5, or 10, or more...
+
+Cheers,
+H.
+
+>
+>> sessionInfo()
+> R version 2.11.1 (2010-05-31)
+> i386-pc-mingw32
+>
+> locale:
+> [1] LC_COLLATE=English_United States.1252  LC_CTYPE=English_United States.1252
+> [3] LC_MONETARY=English_United States.1252 LC_NUMERIC=C
+> [5] LC_TIME=English_United States.1252
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> other attached packages:
+> [1] hgu95av2cdf_2.6.0   affydata_1.11.10    affy_1.26.1         QuantCombine_0.99.0 GEOquery_2.12.0
+> [6] RCurl_1.4-2         bitops_1.0-4.1      Biobase_2.8.0
+>
+> loaded via a namespace (and not attached):
+> [1] affyio_1.16.0         preprocessCore_1.10.0 tools_2.11.1
+>>
+>
+>
+>
+> ________________________________________
+> From: henrik.bengtsson at gmail.com [henrik.bengtsson at gmail.com] on behalf of Henrik Bengtsson [hb at stat.berkeley.edu]
+> Sent: Tuesday, July 20, 2010 2:02 AM
+> To: Martin Morgan
+> Cc: Bazeley, Peter; bioc-devel at stat.math.ethz.ch
+> Subject: Re: [Bioc-devel] package size
+>
+> Consider also package updates; even if you just do a tiny bug fix,
+> then one have do download all that data again.
+>
+> Martin's suggestion to keep a separate experimental data package is a
+> good option.  It will also makes the data available to others to use
+> in their examples (without having to install your main package
+> dependencies), e.g. "competing" methods.
+>
+> /Henrik
+>
+> On Tue, Jul 20, 2010 at 6:31 AM, Martin Morgan<mtmorgan at fhcrc.org>  wrote:
+>> Hi Peter,
+>>
+>> On 07/19/2010 09:10 PM, Bazeley, Peter wrote:
+>>> Dear List,
+>>>
+>>> I am creating a package, the purpose of which is to combine data from
+>>> different microarray platforms. I have found a NCBI GEO data series
+>>> with 3 different platforms (1 Affymetrix and 2 Illumina) that works
+>>> well for illustrating my package functions. It would be nice to keep
+>>> this data series as a data object for use in the function examples
+>>> (currently, 4 of 5 functions use this data object in their example
+>>> code) in the documentation, but the xz compressed .rda file
+>>> (consisting of 3 data frames, one for each data set) is about 5MB
+>>
+>> Hmm, but if they are expression data, then an ExpressionSet would more
+>> fully represent the data? See library(GEOquery); ?getGEO with the
+>> GSEMatrix option set to TRUE, and
+>>
+>>   http://bioconductor.org/packages/2.6/bioc/html/Biobase.html
+>>
+>> and the 'An Introduction to Biobase and ExpressionSets' vignette.
+>>
+>>> (total package size is 6MB). Is this too big?
+>>>
+>>> There are 2 alternatives:
+>>>
+>>> 1) The package includes a function to download datasets using the
+>>> GEOquery package, which could be used to easily re-create the data
+>>> frames included in my .rda file. The only downside is that it takes
+>>> several minutes to download all the data, so it may be inconvenient,
+>>> since this data object is used in example code for the 4 functions.
+>>>
+>>> 1a) I could have each function example contain code to either a)
+>>> download the data and save it in an .RData image file, or b) load the
+>>> image file saved in a). This way the investigator would only have to
+>>> endure the download once, unless they chose not to save the data.
+>>>
+>>> 2) I could take, say, the first 1000 genes from each platform. I did
+>>> this, and the combined data only has 19 probes/probesets (they are
+>>> mapped by Accession/UniGene IDs, and the common transcripts are
+>>> extracted) . It would be nice to have a larger example, although not
+>>> necessary. Alternatively, I could find a better set of 1000 (or
+>>> however many), so that more than 19 are present.
+>>
+>> A third is to create an experiment data package like those at
+>>
+>>   http://bioconductor.org/packages/release/ExperimentData.html
+>>
+>> that contains the entire data. This way you get a rich and reproducible
+>> example to illustrate your tools. These are really just packages with
+>> data objects in the inst/extdata/ (for CEL and other non-R formats) or
+>> data/ (for R data objects) directories, and man pages describing the data.
+>>
+>> Perhaps there is already an experiment data package that meets your needs?
+>>
+>> Martin
+>>
+>>>
+>>>
+>>> Thank you for any assistance, Peter Bazeley
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>
+>> --
+>> Martin Morgan
+>> Computational Biology / Fred Hutchinson Cancer Research Center
+>> 1100 Fairview Ave. N.
+>> PO Box 19024 Seattle, WA 98109
+>>
+>> Location: Arnold Building M1 B861
+>> Phone: (206) 667-2793
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From Peter.Bazeley at rockets.utoledo.edu  Wed Jul 21 22:42:57 2010
+From: Peter.Bazeley at rockets.utoledo.edu (Bazeley, Peter)
+Date: Wed, 21 Jul 2010 20:42:57 +0000
+Subject: [Bioc-devel] mapping probes/probesets between platforms
+In-Reply-To: <AANLkTilRIrodXzj39uvt7TEBuuzPLgca6NRLvvPZEj18@mail.gmail.com>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E89F@BL2PRD0103MB058.prod.exchangelabs.com>,
+	<AANLkTilRIrodXzj39uvt7TEBuuzPLgca6NRLvvPZEj18@mail.gmail.com>
+Message-ID: <5C621FDF7E426B4AAE3B2364B7EF07371F64E948@BL2PRD0103MB058.prod.exchangelabs.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100721/10ef4977/attachment.pl>
+
+From sdavis2 at mail.nih.gov  Thu Jul 22 00:24:56 2010
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Wed, 21 Jul 2010 16:24:56 -0600
+Subject: [Bioc-devel] mapping probes/probesets between platforms
+In-Reply-To: <AANLkTil40PfrBncva6zfaTzlQETsa2I3lWQZmG3tuLe1@mail.gmail.com>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E89F@BL2PRD0103MB058.prod.exchangelabs.com>
+	<AANLkTilRIrodXzj39uvt7TEBuuzPLgca6NRLvvPZEj18@mail.gmail.com>
+	<5C621FDF7E426B4AAE3B2364B7EF07371F64E948@BL2PRD0103MB058.prod.exchangelabs.com>
+	<AANLkTil40PfrBncva6zfaTzlQETsa2I3lWQZmG3tuLe1@mail.gmail.com>
+Message-ID: <AANLkTinsAmXYrVILy7-_BiToFMq1LnRaYQScajE_rndR@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100721/3834a107/attachment.pl>
+
+From mtmorgan at fhcrc.org  Thu Jul 22 04:20:27 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 21 Jul 2010 19:20:27 -0700
+Subject: [Bioc-devel] package size
+In-Reply-To: <4C47397A.4090004@fhcrc.org>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E7CD@BL2PRD0103MB058.prod.exchangelabs.com>	<4C4526BD.5070704@fhcrc.org>,
+	<AANLkTinkeKcgkXpvAXVnsKnlRK37dDU0Lt8nim8q32kh@mail.gmail.com>
+	<5C621FDF7E426B4AAE3B2364B7EF07371F64E8CE@BL2PRD0103MB058.prod.exchangelabs.com>
+	<4C47397A.4090004@fhcrc.org>
+Message-ID: <4C47AAEB.9000303@fhcrc.org>
+
+On 07/21/2010 11:16 AM, Herv? Pag?s wrote:
+> Hi Peter,
+> 
+> On 07/20/2010 10:57 PM, Bazeley, Peter wrote:
+>> Going with Martin's first suggestion, is 37 seconds to download the
+
+My first suggestion was more along the lines of 'use ExpressionSet
+rather than a data.frame or matrix'; sorry to have clouded the water.
+
+>> data too long/inconvenient for an example in the function
+>> documentation? This is for the package's main function, and the second
+>> of 2 examples, with the first using a smaller/faster to load dataset.
+>> The remaining code in this 2nd example takes under 8 seconds,
+>> including the code to access the data in the GEOquery object.
+>>
+>> Of course, the times will vary. My computer has an Intel Core 2 Duo
+>> 2.8 GHz, 4GB of RAM, Windows 7.
+> 
+> Download times depend more on the quality of your network connection
+> than anything else. So for people with a slow internet access, those
+> times could be multiplied by 5, or 10, or more...
+
+I agree; there are lots of issues that show up on the mailing list that
+trace to inability to reliably connect to sites, due to errors on the
+server end, poor connectivity, local firewalls, ... And in our build
+system reports packages regularly show transient internet-related
+failures. This makes it difficult for the maintainer (and us!) to know
+whether there's a 'real' problem or not.
+
+An experiment data package is additional work, but in exchange you get
+reproducible, reliable, and documented research.
+
+Martin
+
+> 
+> Cheers,
+> H.
+> 
+>>
+>>> sessionInfo()
+>> R version 2.11.1 (2010-05-31)
+>> i386-pc-mingw32
+>>
+>> locale:
+>> [1] LC_COLLATE=English_United States.1252  LC_CTYPE=English_United
+>> States.1252
+>> [3] LC_MONETARY=English_United States.1252 LC_NUMERIC=C
+>> [5] LC_TIME=English_United States.1252
+>>
+>> attached base packages:
+>> [1] stats     graphics  grDevices utils     datasets  methods   base
+>>
+>> other attached packages:
+>> [1] hgu95av2cdf_2.6.0   affydata_1.11.10    affy_1.26.1        
+>> QuantCombine_0.99.0 GEOquery_2.12.0
+>> [6] RCurl_1.4-2         bitops_1.0-4.1      Biobase_2.8.0
+>>
+>> loaded via a namespace (and not attached):
+>> [1] affyio_1.16.0         preprocessCore_1.10.0 tools_2.11.1
+>>>
+>>
+>>
+>>
+>> ________________________________________
+>> From: henrik.bengtsson at gmail.com [henrik.bengtsson at gmail.com] on
+>> behalf of Henrik Bengtsson [hb at stat.berkeley.edu]
+>> Sent: Tuesday, July 20, 2010 2:02 AM
+>> To: Martin Morgan
+>> Cc: Bazeley, Peter; bioc-devel at stat.math.ethz.ch
+>> Subject: Re: [Bioc-devel] package size
+>>
+>> Consider also package updates; even if you just do a tiny bug fix,
+>> then one have do download all that data again.
+>>
+>> Martin's suggestion to keep a separate experimental data package is a
+>> good option.  It will also makes the data available to others to use
+>> in their examples (without having to install your main package
+>> dependencies), e.g. "competing" methods.
+>>
+>> /Henrik
+>>
+>> On Tue, Jul 20, 2010 at 6:31 AM, Martin Morgan<mtmorgan at fhcrc.org> 
+>> wrote:
+>>> Hi Peter,
+>>>
+>>> On 07/19/2010 09:10 PM, Bazeley, Peter wrote:
+>>>> Dear List,
+>>>>
+>>>> I am creating a package, the purpose of which is to combine data from
+>>>> different microarray platforms. I have found a NCBI GEO data series
+>>>> with 3 different platforms (1 Affymetrix and 2 Illumina) that works
+>>>> well for illustrating my package functions. It would be nice to keep
+>>>> this data series as a data object for use in the function examples
+>>>> (currently, 4 of 5 functions use this data object in their example
+>>>> code) in the documentation, but the xz compressed .rda file
+>>>> (consisting of 3 data frames, one for each data set) is about 5MB
+>>>
+>>> Hmm, but if they are expression data, then an ExpressionSet would more
+>>> fully represent the data? See library(GEOquery); ?getGEO with the
+>>> GSEMatrix option set to TRUE, and
+>>>
+>>>   http://bioconductor.org/packages/2.6/bioc/html/Biobase.html
+>>>
+>>> and the 'An Introduction to Biobase and ExpressionSets' vignette.
+>>>
+>>>> (total package size is 6MB). Is this too big?
+>>>>
+>>>> There are 2 alternatives:
+>>>>
+>>>> 1) The package includes a function to download datasets using the
+>>>> GEOquery package, which could be used to easily re-create the data
+>>>> frames included in my .rda file. The only downside is that it takes
+>>>> several minutes to download all the data, so it may be inconvenient,
+>>>> since this data object is used in example code for the 4 functions.
+>>>>
+>>>> 1a) I could have each function example contain code to either a)
+>>>> download the data and save it in an .RData image file, or b) load the
+>>>> image file saved in a). This way the investigator would only have to
+>>>> endure the download once, unless they chose not to save the data.
+>>>>
+>>>> 2) I could take, say, the first 1000 genes from each platform. I did
+>>>> this, and the combined data only has 19 probes/probesets (they are
+>>>> mapped by Accession/UniGene IDs, and the common transcripts are
+>>>> extracted) . It would be nice to have a larger example, although not
+>>>> necessary. Alternatively, I could find a better set of 1000 (or
+>>>> however many), so that more than 19 are present.
+>>>
+>>> A third is to create an experiment data package like those at
+>>>
+>>>   http://bioconductor.org/packages/release/ExperimentData.html
+>>>
+>>> that contains the entire data. This way you get a rich and reproducible
+>>> example to illustrate your tools. These are really just packages with
+>>> data objects in the inst/extdata/ (for CEL and other non-R formats) or
+>>> data/ (for R data objects) directories, and man pages describing the
+>>> data.
+>>>
+>>> Perhaps there is already an experiment data package that meets your
+>>> needs?
+>>>
+>>> Martin
+>>>
+>>>>
+>>>>
+>>>> Thank you for any assistance, Peter Bazeley
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>>
+>>> -- 
+>>> Martin Morgan
+>>> Computational Biology / Fred Hutchinson Cancer Research Center
+>>> 1100 Fairview Ave. N.
+>>> PO Box 19024 Seattle, WA 98109
+>>>
+>>> Location: Arnold Building M1 B861
+>>> Phone: (206) 667-2793
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> 
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From robert.castelo at upf.edu  Thu Jul 22 08:57:56 2010
+From: robert.castelo at upf.edu (Robert Castelo)
+Date: Thu, 22 Jul 2010 08:57:56 +0200
+Subject: [Bioc-devel] experiment package submission
+In-Reply-To: <4C47AAEB.9000303@fhcrc.org>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E7CD@BL2PRD0103MB058.prod.exchangelabs.com>
+	<4C4526BD.5070704@fhcrc.org>
+	, <AANLkTinkeKcgkXpvAXVnsKnlRK37dDU0Lt8nim8q32kh@mail.gmail.com>
+	<5C621FDF7E426B4AAE3B2364B7EF07371F64E8CE@BL2PRD0103MB058.prod.exchangelabs.com>
+	<4C47397A.4090004@fhcrc.org>  <4C47AAEB.9000303@fhcrc.org>
+Message-ID: <1279781876.31592.4.camel@llull.imim.es>
+
+Martin, a question regarding this issue just when through my mind,
+
+On Wed, 2010-07-21 at 19:20 -0700, Martin Morgan wrote:
+[...]
+> An experiment data package is additional work, but in exchange you get
+> reproducible, reliable, and documented research.
+
+i haven't found any especific reference to experiment data package
+submission in
+
+http://wiki.fhcrc.org/bioc/HowTo/Package_Contribution
+
+and links thereafter.
+
+
+should an experiment data package be submitted following the same
+procedure as a software package? does it go also through a peer-review
+process? are there requirements or guidelines specific for experiment
+data packages?
+
+thanks!
+robert.
+
+
+From mtmorgan at fhcrc.org  Thu Jul 22 14:16:58 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 22 Jul 2010 05:16:58 -0700
+Subject: [Bioc-devel] experiment package submission
+In-Reply-To: <1279781876.31592.4.camel@llull.imim.es>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E7CD@BL2PRD0103MB058.prod.exchangelabs.com>	
+	<4C4526BD.5070704@fhcrc.org>	 ,
+	<AANLkTinkeKcgkXpvAXVnsKnlRK37dDU0Lt8nim8q32kh@mail.gmail.com>	
+	<5C621FDF7E426B4AAE3B2364B7EF07371F64E8CE@BL2PRD0103MB058.prod.exchangelabs.com>	
+	<4C47397A.4090004@fhcrc.org> <4C47AAEB.9000303@fhcrc.org>
+	<1279781876.31592.4.camel@llull.imim.es>
+Message-ID: <4C4836BA.40609@fhcrc.org>
+
+Hi Robert --
+
+On 07/21/2010 11:57 PM, Robert Castelo wrote:
+> Martin, a question regarding this issue just when through my mind,
+> 
+> On Wed, 2010-07-21 at 19:20 -0700, Martin Morgan wrote:
+> [...]
+>> An experiment data package is additional work, but in exchange you get
+>> reproducible, reliable, and documented research.
+> 
+> i haven't found any especific reference to experiment data package
+> submission in
+> 
+> http://wiki.fhcrc.org/bioc/HowTo/Package_Contribution
+> 
+> and links thereafter.
+> 
+> 
+> should an experiment data package be submitted following the same
+> procedure as a software package? does it go also through a peer-review
+> process? are there requirements or guidelines specific for experiment
+> data packages?
+
+Often experiment data packages are produced much like in Peter's case --
+to support analysis in a particular package or group of packages. They
+(the analysis and data packages) are then subject jointly to the preview
+process.
+
+Sometimes experiment data packages emerge after the fact, when it
+becomes apparent that work flows or packages would benefit from a common
+data set. These generally get introduced ad hoc, without formal preview,
+but of course the packages are being built and passing R CMD check.
+
+We don't usually start with a 'pure' experiment data package as a
+submission -- Bioconductor is not a data repository in that sense -- but
+if one were to come in we'd treat it as a new package and submit it to
+the same formal acceptance procedure.
+
+Hope that helps,
+
+Martin
+
+> 
+> thanks!
+> robert.
+> 
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From Peter.Bazeley at rockets.utoledo.edu  Thu Jul 22 16:23:15 2010
+From: Peter.Bazeley at rockets.utoledo.edu (Bazeley, Peter)
+Date: Thu, 22 Jul 2010 14:23:15 +0000
+Subject: [Bioc-devel] package size
+In-Reply-To: <4C47AAEB.9000303@fhcrc.org>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E7CD@BL2PRD0103MB058.prod.exchangelabs.com>
+	<4C4526BD.5070704@fhcrc.org>,
+	<AANLkTinkeKcgkXpvAXVnsKnlRK37dDU0Lt8nim8q32kh@mail.gmail.com>
+	<5C621FDF7E426B4AAE3B2364B7EF07371F64E8CE@BL2PRD0103MB058.prod.exchangelabs.com>
+	<4C47397A.4090004@fhcrc.org>,<4C47AAEB.9000303@fhcrc.org>
+Message-ID: <5C621FDF7E426B4AAE3B2364B7EF07371F651C60@BL2PRD0103MB050.prod.exchangelabs.com>
+
+Sorry, I should have mentioned that that download time corresponded to a rewritten version of the function's example that used GEOquery to download the 3 GSE SuperSeries and extract the expression data from this. I think what I'm going to do is include this example in a vignette, and in the function's documentation examples, use the Dilution data instead. This is what I should have done in the first place to better integrate with existing packages.
+
+Thanks for all your input,
+Pete
+________________________________________
+From: Martin Morgan [mtmorgan at fhcrc.org]
+Sent: Wednesday, July 21, 2010 9:20 PM
+To: Herv? Pag?s
+Cc: Bazeley, Peter; Henrik Bengtsson; bioc-devel at stat.math.ethz.ch
+Subject: Re: [Bioc-devel] package size
+
+On 07/21/2010 11:16 AM, Herv? Pag?s wrote:
+> Hi Peter,
+>
+> On 07/20/2010 10:57 PM, Bazeley, Peter wrote:
+>> Going with Martin's first suggestion, is 37 seconds to download the
+
+My first suggestion was more along the lines of 'use ExpressionSet
+rather than a data.frame or matrix'; sorry to have clouded the water.
+
+>> data too long/inconvenient for an example in the function
+>> documentation? This is for the package's main function, and the second
+>> of 2 examples, with the first using a smaller/faster to load dataset.
+>> The remaining code in this 2nd example takes under 8 seconds,
+>> including the code to access the data in the GEOquery object.
+>>
+>> Of course, the times will vary. My computer has an Intel Core 2 Duo
+>> 2.8 GHz, 4GB of RAM, Windows 7.
+>
+> Download times depend more on the quality of your network connection
+> than anything else. So for people with a slow internet access, those
+> times could be multiplied by 5, or 10, or more...
+
+I agree; there are lots of issues that show up on the mailing list that
+trace to inability to reliably connect to sites, due to errors on the
+server end, poor connectivity, local firewalls, ... And in our build
+system reports packages regularly show transient internet-related
+failures. This makes it difficult for the maintainer (and us!) to know
+whether there's a 'real' problem or not.
+
+An experiment data package is additional work, but in exchange you get
+reproducible, reliable, and documented research.
+
+Martin
+
+>
+> Cheers,
+> H.
+>
+>>
+>>> sessionInfo()
+>> R version 2.11.1 (2010-05-31)
+>> i386-pc-mingw32
+>>
+>> locale:
+>> [1] LC_COLLATE=English_United States.1252  LC_CTYPE=English_United
+>> States.1252
+>> [3] LC_MONETARY=English_United States.1252 LC_NUMERIC=C
+>> [5] LC_TIME=English_United States.1252
+>>
+>> attached base packages:
+>> [1] stats     graphics  grDevices utils     datasets  methods   base
+>>
+>> other attached packages:
+>> [1] hgu95av2cdf_2.6.0   affydata_1.11.10    affy_1.26.1
+>> QuantCombine_0.99.0 GEOquery_2.12.0
+>> [6] RCurl_1.4-2         bitops_1.0-4.1      Biobase_2.8.0
+>>
+>> loaded via a namespace (and not attached):
+>> [1] affyio_1.16.0         preprocessCore_1.10.0 tools_2.11.1
+>>>
+>>
+>>
+>>
+>> ________________________________________
+>> From: henrik.bengtsson at gmail.com [henrik.bengtsson at gmail.com] on
+>> behalf of Henrik Bengtsson [hb at stat.berkeley.edu]
+>> Sent: Tuesday, July 20, 2010 2:02 AM
+>> To: Martin Morgan
+>> Cc: Bazeley, Peter; bioc-devel at stat.math.ethz.ch
+>> Subject: Re: [Bioc-devel] package size
+>>
+>> Consider also package updates; even if you just do a tiny bug fix,
+>> then one have do download all that data again.
+>>
+>> Martin's suggestion to keep a separate experimental data package is a
+>> good option.  It will also makes the data available to others to use
+>> in their examples (without having to install your main package
+>> dependencies), e.g. "competing" methods.
+>>
+>> /Henrik
+>>
+>> On Tue, Jul 20, 2010 at 6:31 AM, Martin Morgan<mtmorgan at fhcrc.org>
+>> wrote:
+>>> Hi Peter,
+>>>
+>>> On 07/19/2010 09:10 PM, Bazeley, Peter wrote:
+>>>> Dear List,
+>>>>
+>>>> I am creating a package, the purpose of which is to combine data from
+>>>> different microarray platforms. I have found a NCBI GEO data series
+>>>> with 3 different platforms (1 Affymetrix and 2 Illumina) that works
+>>>> well for illustrating my package functions. It would be nice to keep
+>>>> this data series as a data object for use in the function examples
+>>>> (currently, 4 of 5 functions use this data object in their example
+>>>> code) in the documentation, but the xz compressed .rda file
+>>>> (consisting of 3 data frames, one for each data set) is about 5MB
+>>>
+>>> Hmm, but if they are expression data, then an ExpressionSet would more
+>>> fully represent the data? See library(GEOquery); ?getGEO with the
+>>> GSEMatrix option set to TRUE, and
+>>>
+>>>   http://bioconductor.org/packages/2.6/bioc/html/Biobase.html
+>>>
+>>> and the 'An Introduction to Biobase and ExpressionSets' vignette.
+>>>
+>>>> (total package size is 6MB). Is this too big?
+>>>>
+>>>> There are 2 alternatives:
+>>>>
+>>>> 1) The package includes a function to download datasets using the
+>>>> GEOquery package, which could be used to easily re-create the data
+>>>> frames included in my .rda file. The only downside is that it takes
+>>>> several minutes to download all the data, so it may be inconvenient,
+>>>> since this data object is used in example code for the 4 functions.
+>>>>
+>>>> 1a) I could have each function example contain code to either a)
+>>>> download the data and save it in an .RData image file, or b) load the
+>>>> image file saved in a). This way the investigator would only have to
+>>>> endure the download once, unless they chose not to save the data.
+>>>>
+>>>> 2) I could take, say, the first 1000 genes from each platform. I did
+>>>> this, and the combined data only has 19 probes/probesets (they are
+>>>> mapped by Accession/UniGene IDs, and the common transcripts are
+>>>> extracted) . It would be nice to have a larger example, although not
+>>>> necessary. Alternatively, I could find a better set of 1000 (or
+>>>> however many), so that more than 19 are present.
+>>>
+>>> A third is to create an experiment data package like those at
+>>>
+>>>   http://bioconductor.org/packages/release/ExperimentData.html
+>>>
+>>> that contains the entire data. This way you get a rich and reproducible
+>>> example to illustrate your tools. These are really just packages with
+>>> data objects in the inst/extdata/ (for CEL and other non-R formats) or
+>>> data/ (for R data objects) directories, and man pages describing the
+>>> data.
+>>>
+>>> Perhaps there is already an experiment data package that meets your
+>>> needs?
+>>>
+>>> Martin
+>>>
+>>>>
+>>>>
+>>>> Thank you for any assistance, Peter Bazeley
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>>
+>>> --
+>>> Martin Morgan
+>>> Computational Biology / Fred Hutchinson Cancer Research Center
+>>> 1100 Fairview Ave. N.
+>>> PO Box 19024 Seattle, WA 98109
+>>>
+>>> Location: Arnold Building M1 B861
+>>> Phone: (206) 667-2793
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+--
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From hpages at fhcrc.org  Thu Jul 22 19:39:12 2010
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Thu, 22 Jul 2010 10:39:12 -0700
+Subject: [Bioc-devel] mapping probes/probesets between platforms
+In-Reply-To: <AANLkTinsAmXYrVILy7-_BiToFMq1LnRaYQScajE_rndR@mail.gmail.com>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E89F@BL2PRD0103MB058.prod.exchangelabs.com>	<AANLkTilRIrodXzj39uvt7TEBuuzPLgca6NRLvvPZEj18@mail.gmail.com>	<5C621FDF7E426B4AAE3B2364B7EF07371F64E948@BL2PRD0103MB058.prod.exchangelabs.com>	<AANLkTil40PfrBncva6zfaTzlQETsa2I3lWQZmG3tuLe1@mail.gmail.com>
+	<AANLkTinsAmXYrVILy7-_BiToFMq1LnRaYQScajE_rndR@mail.gmail.com>
+Message-ID: <4C488240.9060307@fhcrc.org>
+
+Hi Peter,
+
+On 07/21/2010 03:24 PM, Sean Davis wrote:
+> There are many alternatives for alignment including blast, blat, gmap,
+> ssaha, etc.  This could also be done with biostrings.
+>
+> Sean
+>
+> On Jul 21, 2010 2:43 PM, "Bazeley, Peter"<Peter.Bazeley at rockets.utoledo.edu>
+> wrote:
+>
+> Hi Sean,
+>
+> For the second option, is there a specific package that you had in mind?
+> Perhaps the GenomicFeatures package, which can download UCSC tables.
+
+Depends which "second option" we are talking about.
+
+In Sean's original suggestion:
+
+   the second is to map between common gene ids (unigene, ensg, entrez
+   gene id, hgnc gene symbol, etc.)
+
+I think you could use our regular .db annotations which are
+gene-centric. They contain all kinds of mappings between probeset ids
+and other ids like Entrez Gene ids. If there is no .db package for
+your platform, look at the SQLforge vignette in the AnnotationDbi
+package for how to make your own.
+
+Here is an example of how you could map hgu95av2 probesets to hgu133b
+probesets based on their corresponding Entrez Gene ids:
+
+   library(hgu95av2.db)
+   library(hgu133b.db)
+
+   ## See the mappings available for hgu95av2:
+   ls('package:hgu95av2.db')
+   ## and for hgu133b:
+   ls('package:hgu133b.db')
+
+   ## Make sure the ENTREZID mappings are what you are looking for:
+   ?hgu95av2ENTREZID
+   ?hgu133bENTREZID
+
+   x <- toTable(hgu95av2ENTREZID)
+   x[1:10, ]
+   y <- toTable(hgu133bENTREZID)
+   y[1:10, ]
+
+   ## Combine 'x' and 'y' data frames i.e. "join" the 2 data frames based
+   ## on the values in their gene_id columns:
+   common_ids <- intersect(x$gene_id, y$gene_id)
+   xy <- x[x$gene_id %in% common_ids, ]
+   y_id2probe <- y$probe_id
+   names(y_id2probe) <- y$gene_id
+   y_id2probe <- y_id2probe[names(y_id2probe) %in% common_ids]
+   tmp <- split(y_id2probe, names(y_id2probe))
+   tmp <- tmp[xy$gene_id]
+   xy <- xy[rep.int(seq_len(nrow(xy)), elementLengths(tmp)), ]
+   row.names(xy) <- NULL
+   xy$probe_id2 <- unname(unlist(tmp))
+   xy[1:10, ]  # the mapping is not one-to-one
+
+
+But maybe by "second option" you meant Sean's entirely different 
+proposed approach to realign the probe sequences to a transcript
+library. This is more complicated but still doable with our tools.
+The main steps could be:
+
+   - use the GenomicFeatures package together with the BSgenome
+     data package that contains the reference genome for your platforms
+     to extract the transcriptome sequences;
+
+   - use vwhichPDict() (from the Biostrings package) twice: first to
+     map the probe sequences in hgu95av2probe to the transcriptome
+     and a second time to map the probe sequences in hgu133bprobe to
+     the transcriptome;
+
+   - combine the 2 mappings in a fashion similar to how 'x' and 'y'
+     above were combined.
+
+Note that this time the result will be a mapping between the probes
+(not the probesets) of the 2 platforms. Some extra work would then
+be needed to convert this into a mapping between probeset ids.
+
+Hope that helps.
+
+Cheers,
+H.
+
+>
+>
+> Thanks,
+> Pete
+> ________________________________
+> From: seandavi at gmail.com [seandavi at gmail.com] on behalf of Sean Davis [
+> sdavis2 at mail.nih.gov]
+> Sent: Wednesday, July 21, 2010 7:27 AM
+> To: Bazeley, Peter
+> Cc: bioc-devel at stat.math.ethz.ch
+> Subject: Re: [Bioc-devel] mapping probes/probesets between platforms
+>
+>
+>
+>
+> On Tue, Jul 20, 2010 at 10:50 PM, Bazeley, Peter<
+> Peter.Bazeley at rockets.utoledo.edu<mailto:Peter....
+>         [[alternative HTML version deleted]]
+>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://s...
+>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From hpages at fhcrc.org  Thu Jul 22 20:41:43 2010
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Thu, 22 Jul 2010 11:41:43 -0700
+Subject: [Bioc-devel] mapping probes/probesets between platforms
+In-Reply-To: <4C488240.9060307@fhcrc.org>
+References: <5C621FDF7E426B4AAE3B2364B7EF07371F64E89F@BL2PRD0103MB058.prod.exchangelabs.com>	<AANLkTilRIrodXzj39uvt7TEBuuzPLgca6NRLvvPZEj18@mail.gmail.com>	<5C621FDF7E426B4AAE3B2364B7EF07371F64E948@BL2PRD0103MB058.prod.exchangelabs.com>	<AANLkTil40PfrBncva6zfaTzlQETsa2I3lWQZmG3tuLe1@mail.gmail.com>	<AANLkTinsAmXYrVILy7-_BiToFMq1LnRaYQScajE_rndR@mail.gmail.com>
+	<4C488240.9060307@fhcrc.org>
+Message-ID: <4C4890E7.6000605@fhcrc.org>
+
+On 07/22/2010 10:39 AM, Herv? Pag?s wrote:
+> Hi Peter,
+>
+> On 07/21/2010 03:24 PM, Sean Davis wrote:
+>> There are many alternatives for alignment including blast, blat, gmap,
+>> ssaha, etc. This could also be done with biostrings.
+>>
+>> Sean
+>>
+>> On Jul 21, 2010 2:43 PM, "Bazeley,
+>> Peter"<Peter.Bazeley at rockets.utoledo.edu>
+>> wrote:
+>>
+>> Hi Sean,
+>>
+>> For the second option, is there a specific package that you had in mind?
+>> Perhaps the GenomicFeatures package, which can download UCSC tables.
+>
+> Depends which "second option" we are talking about.
+>
+> In Sean's original suggestion:
+>
+> the second is to map between common gene ids (unigene, ensg, entrez
+> gene id, hgnc gene symbol, etc.)
+>
+> I think you could use our regular .db annotations which are
+> gene-centric. They contain all kinds of mappings between probeset ids
+> and other ids like Entrez Gene ids. If there is no .db package for
+> your platform, look at the SQLforge vignette in the AnnotationDbi
+> package for how to make your own.
+>
+> Here is an example of how you could map hgu95av2 probesets to hgu133b
+> probesets based on their corresponding Entrez Gene ids:
+>
+> library(hgu95av2.db)
+> library(hgu133b.db)
+>
+> ## See the mappings available for hgu95av2:
+> ls('package:hgu95av2.db')
+> ## and for hgu133b:
+> ls('package:hgu133b.db')
+>
+> ## Make sure the ENTREZID mappings are what you are looking for:
+> ?hgu95av2ENTREZID
+> ?hgu133bENTREZID
+>
+> x <- toTable(hgu95av2ENTREZID)
+> x[1:10, ]
+> y <- toTable(hgu133bENTREZID)
+> y[1:10, ]
+>
+> ## Combine 'x' and 'y' data frames i.e. "join" the 2 data frames based
+> ## on the values in their gene_id columns:
+> common_ids <- intersect(x$gene_id, y$gene_id)
+> xy <- x[x$gene_id %in% common_ids, ]
+> y_id2probe <- y$probe_id
+> names(y_id2probe) <- y$gene_id
+> y_id2probe <- y_id2probe[names(y_id2probe) %in% common_ids]
+> tmp <- split(y_id2probe, names(y_id2probe))
+> tmp <- tmp[xy$gene_id]
+> xy <- xy[rep.int(seq_len(nrow(xy)), elementLengths(tmp)), ]
+> row.names(xy) <- NULL
+> xy$probe_id2 <- unname(unlist(tmp))
+> xy[1:10, ] # the mapping is not one-to-one
+
+One important correction to this. A feature that was added 2 or so 
+releases ago in AnnotationDbi is to not include probes that hit
+multiple genes into the maps. To add those "multiple probes" now
+you need to do:
+
+   all_hgu95av2ENTREZID <- toggleProbes(hgu95av2ENTREZID, "all")
+   all_hgu133bENTREZID <- toggleProbes(hgu133bENTREZID, "all")
+   x <- toTable(all_hgu95av2ENTREZID)
+   y <- toTable(all_hgu133bENTREZID)
+
+Then proceed as before.
+
+I also forgot to mention that elementLengths() is defined in IRanges
+so you need to make sure this package is loaded.
+
+Finally, as an alternative, this "join" operation can be done directly
+at the SQL level:
+
+   sql <- paste("ATTACH DATABASE '",
+                hgu133b_dbfile(),
+                "' AS hg133b", sep="")
+   dbGetQuery(hgu95av2_dbconn(), sql)
+   sql <- "SELECT hgu95av2probes.probe_id AS probe_id,
+                  hgu95av2probes.gene_id AS gene_id,
+                  hg133bprobes.probe_id AS probe_id2
+           FROM probes AS hgu95av2probes
+             INNER JOIN hg133b.probes AS hg133bprobes
+               ON (hgu95av2probes.gene_id=hg133bprobes.gene_id)"
+   xy <- dbGetQuery(hgu95av2_dbconn(), sql)
+
+This is of course much faster but requires that you have some
+notions of SQL and know the underlying db schemas. See the
+AnnotationDbi vignette for more information.
+
+Cheers,
+H.
+
+
+>
+>
+> But maybe by "second option" you meant Sean's entirely different
+> proposed approach to realign the probe sequences to a transcript
+> library. This is more complicated but still doable with our tools.
+> The main steps could be:
+>
+> - use the GenomicFeatures package together with the BSgenome
+> data package that contains the reference genome for your platforms
+> to extract the transcriptome sequences;
+>
+> - use vwhichPDict() (from the Biostrings package) twice: first to
+> map the probe sequences in hgu95av2probe to the transcriptome
+> and a second time to map the probe sequences in hgu133bprobe to
+> the transcriptome;
+>
+> - combine the 2 mappings in a fashion similar to how 'x' and 'y'
+> above were combined.
+>
+> Note that this time the result will be a mapping between the probes
+> (not the probesets) of the 2 platforms. Some extra work would then
+> be needed to convert this into a mapping between probeset ids.
+>
+> Hope that helps.
+>
+> Cheers,
+> H.
+>
+>>
+>>
+>> Thanks,
+>> Pete
+>> ________________________________
+>> From: seandavi at gmail.com [seandavi at gmail.com] on behalf of Sean Davis [
+>> sdavis2 at mail.nih.gov]
+>> Sent: Wednesday, July 21, 2010 7:27 AM
+>> To: Bazeley, Peter
+>> Cc: bioc-devel at stat.math.ethz.ch
+>> Subject: Re: [Bioc-devel] mapping probes/probesets between platforms
+>>
+>>
+>>
+>>
+>> On Tue, Jul 20, 2010 at 10:50 PM, Bazeley, Peter<
+>> Peter.Bazeley at rockets.utoledo.edu<mailto:Peter....
+>> [[alternative HTML version deleted]]
+>>
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://s...
+>>
+>> [[alternative HTML version deleted]]
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From izmirlig at mail.nih.gov  Thu Jul 22 22:12:11 2010
+From: izmirlig at mail.nih.gov (Grant Izmirlian)
+Date: Thu, 22 Jul 2010 16:12:11 -0400
+Subject: [Bioc-devel] experiment package submission
+Message-ID: <201007221612.11616.izmirlig@mail.nih.gov>
+
+Hi:
+It occurred to me that you could submit your data to NCBI.
+The National Center for Biotechnology Information is the home 
+ the GEO database and many, many other resources.
+
+I went to their homepage and tried to determine how one
+goes about submitting data there.  I wasn't able to figure 
+that out quickly. I called their helpline and the librarian
+asked me
+
+   what type of data is it?
+
+The answer to that question determines the route
+to submitting the data, as there are different tools
+for submitting different types of data.  I asked 
+
+   is there a review process?
+
+She told me that 
+
+   the submitter remains the sole owner of the dataset and is 
+  solely responsible for its content and quality.
+
+For example, if you're wishing to send in a nucleotide sequence, 
+you would 
+
+1.  go to the NCBI homepage
+     http://www.ncbi.nlm.nih.gov/
+
+2. click "All Resources (A to Z)" in the green pane on the upper left
+   side of the screen
+
+3. next click "Bankit"  under "B"
+
+4. on that page there are detailed instructions for submitting your
+  nucleotide sequence.
+
+Of course if the data is of another type, you would go about submitting
+it in a different way.  Some examples of datasets now being
+accepted for publication at NCBI are
+  
+   Nucleotide Sequences
+  Expression Analyses
+  Variation Data --SNP studies
+  Epigenomics
+  GWAS
+
+For help, either dial the help line, 
+1-888-346-3656
+
+or get support through their email address:
+info at ncbi.nlm.nih.gov
+
+Best Regards,
+Grant Izmirlian
+Division of Cancer Prevention
+National Cancer Institute
+DHHS
+
+
+> Date: Thu, 22 Jul 2010 05:16:58 -0700
+> From: Martin Morgan <mtmorgan at fhcrc.org>
+> To: Robert Castelo <robert.castelo at upf.edu>
+> Cc: "bioc-devel at stat.math.ethz.ch" <bioc-devel at stat.math.ethz.ch>
+> Subject: Re: [Bioc-devel] experiment package submission
+> Message-ID: <4C4836BA.40609 at fhcrc.org>
+> Content-Type: text/plain; charset=ISO-8859-1
+> 
+> Hi Robert --
+> 
+> On 07/21/2010 11:57 PM, Robert Castelo wrote:
+>> Martin, a question regarding this issue just when through my mind,
+>>
+>> On Wed, 2010-07-21 at 19:20 -0700, Martin Morgan wrote:
+>> [...]
+>>> An experiment data package is additional work, but in exchange you get
+>>> reproducible, reliable, and documented research.
+>>
+>> i haven't found any especific reference to experiment data package
+>> submission in
+>>
+>> http://wiki.fhcrc.org/bioc/HowTo/Package_Contribution
+>>
+>> and links thereafter.
+>>
+>>
+>> should an experiment data package be submitted following the same
+>> procedure as a software package? does it go also through a peer-review
+>> process? are there requirements or guidelines specific for experiment
+>> data packages?
+>
+> Often experiment data packages are produced much like in Peter's case --
+> to support analysis in a particular package or group of packages. They
+> (the analysis and data packages) are then subject jointly to the preview
+> process.
+>
+> Sometimes experiment data packages emerge after the fact, when it
+> becomes apparent that work flows or packages would benefit from a common
+> data set. These generally get introduced ad hoc, without formal preview,
+> but of course the packages are being built and passing R CMD check.
+>
+> We don't usually start with a 'pure' experiment data package as a
+> submission -- Bioconductor is not a data repository in that sense -- but
+> if one were to come in we'd treat it as a new package and submit it to
+> the same formal acceptance procedure.
+>
+> Hope that helps,
+> 
+> Martin
+>
+>>
+>> thanks!
+>> robert.
+>>
+>
+>
+>--
+>Martin Morgan
+>Computational Biology / Fred Hutchinson Cancer Research Center
+>1100 Fairview Ave. N.
+>PO Box 19024 Seattle, WA 98109
+>
+>Location: Arnold Building M1 B861
+>Phone: (206) 667-2793
+
+
+From rogersw at mail.med.upenn.edu  Fri Jul 23 21:14:51 2010
+From: rogersw at mail.med.upenn.edu (Wade Rogers)
+Date: Fri, 23 Jul 2010 15:14:51 -0400
+Subject: [Bioc-devel] flowCore: FCS3.0 delimiter character in keyword value
+Message-ID: <5B1F8FE9-DB32-47F3-8C8F-30EE211D7247@mail.med.upenn.edu>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100723/487d31b9/attachment.pl>
+
+From mattia.pelizzola at gmail.com  Tue Jul 27 22:46:47 2010
+From: mattia.pelizzola at gmail.com (mattia pelizzola)
+Date: Tue, 27 Jul 2010 13:46:47 -0700
+Subject: [Bioc-devel] calling the function from the wrong package: union
+	from IRanges and graph
+Message-ID: <AANLkTi=cWsdPoETTcxr-fT6vbmoU03kv1kocDg-EmPpE@mail.gmail.com>
+
+Hi,
+
+I am building a package and I have a strange issue that is even
+difficult to provide an example for.
+
+I have a method 'Join' in this package that I am working on that uses
+the union function from the IRanges library.
+Now, on a clean R startup, if I load my library and I use this method
+Join I get an error. I think that the union function from the library
+graph is called in place of the one from IRanges ..
+
+> Join(gel1, gel2, method='union')
+Error in as.vector(x) : no method for coercing this S4 class to a vector
+>
+> traceback()
+5: as.vector(x)
+4: unique(c(as.vector(x), as.vector(y)))
+3: union(IR1, IR2)
+2: Join(gel1, gel2, method = "union")
+1: Join(gel1, gel2, method = "union")
+
+At the same time, if I execute on the console:
+> union(IRanges(), IRanges())
+IRanges of length 0
+
+it works perfectly.
+
+Finally, if I manually source the code containing my Join method, even
+the union function within this method now is working ..
+> source('./R/BSmetClasses_GElist.R')
+> a=Join(gel1, gel2, method='union')
+
+This is the same code of the library that is installed and running ..
+I know that now the method is on my GlobalEnv but I can't understand
+how this would change the result.
+
+
+> union
+standardGeneric for "union" defined from package "base"
+
+function (x, y)
+standardGeneric("union")
+<environment: 0x3a99228>
+Methods may be defined for arguments: x, y
+Use  showMethods("union")  for currently available ones.
+
+> showMethods('union')
+Function: union (package base)
+x="ANY", y="ANY"
+x="ANY", y="GeneSetCollection"
+x="CollectionIdType", y="CollectionIdType"
+x="CollectionType", y="CollectionType"
+x="GeneColorSet", y="GeneColorSet"
+x="GeneSetCollection", y="ANY"
+x="GeneSet", y="GeneSet"
+x="GRanges", y="GRanges"
+x="graphBAM", y="graphBAM"
+x="graph", y="graph"
+x="IRanges", y="IRanges"
+x="RangesList", y="RangesList"
+x="XStringSet", y="XStringSet"
+
+
+
+I am quite confused and sorry that I can't provide any more meaningful example,
+
+mattia
+
+
+> sessionInfo()
+R version 2.11.0 (2010-04-22)
+x86_64-unknown-linux-gnu
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+ [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods
+[8] base
+
+other attached packages:
+ [1] methylPipe_1.0.0     RMySQL_0.7-4         BSgenome_1.16.1
+ [4] Biostrings_2.16.0    GenomicRanges_1.0.1  IRanges_1.6.1
+ [7] GOstats_2.14.0       RSQLite_0.9-0        DBI_0.2-5
+[10] graph_1.26.0         Category_2.14.0      AnnotationDbi_1.10.1
+[13] Biobase_2.8.0        rtracklayer_1.8.1    RCurl_1.4-2
+[16] nlme_3.1-96          snow_0.3-3           marray_1.26.0
+[19] limma_3.4.0          gplots_2.7.4         caTools_1.10
+[22] bitops_1.0-4.1       gdata_2.8.0          gtools_2.6.2
+
+loaded via a namespace (and not attached):
+ [1] annotate_1.26.0   genefilter_1.30.0 GO.db_2.4.1       GSEABase_1.10.0
+ [5] lattice_0.18-5    RBGL_1.24.0       splines_2.11.0    survival_2.35-8
+ [9] tools_2.11.0      XML_3.1-0         xtable_1.5-6
+>
+
+
+From sdavis2 at mail.nih.gov  Tue Jul 27 22:54:34 2010
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Tue, 27 Jul 2010 16:54:34 -0400
+Subject: [Bioc-devel] calling the function from the wrong package: union
+	from IRanges and graph
+In-Reply-To: <AANLkTi=cWsdPoETTcxr-fT6vbmoU03kv1kocDg-EmPpE@mail.gmail.com>
+References: <AANLkTi=cWsdPoETTcxr-fT6vbmoU03kv1kocDg-EmPpE@mail.gmail.com>
+Message-ID: <AANLkTinjmd8gXQW_7kWc=UaFV=H1qXmswhBboXVPhHSY@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100727/a4ae393d/attachment.pl>
+
+From mwkimpel at gmail.com  Wed Jul 28 19:17:56 2010
+From: mwkimpel at gmail.com (Mark Kimpel)
+Date: Wed, 28 Jul 2010 13:17:56 -0400
+Subject: [Bioc-devel] biocLite source not found
+Message-ID: <AANLkTikjCxd9kepNOk8jbjR22LJzR0LESVR-aPCpFV2w@mail.gmail.com>
+
+I have just tried several times to execute the following commands
+
+ source("http://bioconductor.org/biocLite.R")
+ source("http://www.bioconductor.org/biocLite.R")
+
+and keep getting the error
+
+Error in file(file, "r", encoding = encoding) :
+  cannot open the connection
+In addition: Warning message:
+In file(file, "r", encoding = encoding) :
+  cannot open: HTTP status was '404 Not Found'
+
+When I paste the addresses into my browser I get the Object Not Found
+error message.
+
+BioC website itself it up.
+
+Mark
+
+Mark W. Kimpel MD? ** Neuroinformatics ** Dept. of Psychiatry
+Indiana University School of Medicine
+
+15032 Hunter Court, Westfield, IN? 46074
+
+(317) 490-5129 Work, & Mobile & VoiceMail
+(317) 399-1219 Skype No Voicemail please
+
+
+From paboyoun at fhcrc.org  Wed Jul 28 19:46:28 2010
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Wed, 28 Jul 2010 10:46:28 -0700
+Subject: [Bioc-devel] biocLite source not found
+In-Reply-To: <AANLkTikjCxd9kepNOk8jbjR22LJzR0LESVR-aPCpFV2w@mail.gmail.com>
+References: <AANLkTikjCxd9kepNOk8jbjR22LJzR0LESVR-aPCpFV2w@mail.gmail.com>
+Message-ID: <4C506CF4.2010002@fhcrc.org>
+
+Mark,
+We have a new bioconductor.org website and we temporarily dropped 
+biocLite.R via oversight. The script is back online now. For a look at 
+the new website go to
+
+http://www.bioconductor.org
+
+
+
+Patrick
+
+
+On 7/28/10 10:17 AM, Mark Kimpel wrote:
+> I have just tried several times to execute the following commands
+>
+>   source("http://bioconductor.org/biocLite.R")
+>   source("http://www.bioconductor.org/biocLite.R")
+>
+> and keep getting the error
+>
+> Error in file(file, "r", encoding = encoding) :
+>    cannot open the connection
+> In addition: Warning message:
+> In file(file, "r", encoding = encoding) :
+>    cannot open: HTTP status was '404 Not Found'
+>
+> When I paste the addresses into my browser I get the Object Not Found
+> error message.
+>
+> BioC website itself it up.
+>
+> Mark
+>
+> Mark W. Kimpel MD  ** Neuroinformatics ** Dept. of Psychiatry
+> Indiana University School of Medicine
+>
+> 15032 Hunter Court, Westfield, IN  46074
+>
+> (317) 490-5129 Work,&  Mobile&  VoiceMail
+> (317) 399-1219 Skype No Voicemail please
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From mwkimpel at gmail.com  Wed Jul 28 20:08:44 2010
+From: mwkimpel at gmail.com (Mark Kimpel)
+Date: Wed, 28 Jul 2010 14:08:44 -0400
+Subject: [Bioc-devel] biocLite source not found
+In-Reply-To: <4C506CF4.2010002@fhcrc.org>
+References: <AANLkTikjCxd9kepNOk8jbjR22LJzR0LESVR-aPCpFV2w@mail.gmail.com>
+	<4C506CF4.2010002@fhcrc.org>
+Message-ID: <AANLkTim8h7iRMOdNfL1MKn=7MjjTKFXGO_U56vq7tLOM@mail.gmail.com>
+
+Thanks, works now.
+
+Mark W. Kimpel MD? ** Neuroinformatics ** Dept. of Psychiatry
+Indiana University School of Medicine
+
+15032 Hunter Court, Westfield, IN? 46074
+
+(317) 490-5129 Work, & Mobile & VoiceMail
+(317) 399-1219 Skype No Voicemail please
+
+
+
+On Wed, Jul 28, 2010 at 1:46 PM, Patrick Aboyoun <paboyoun at fhcrc.org> wrote:
+> Mark,
+> We have a new bioconductor.org website and we temporarily dropped biocLite.R
+> via oversight. The script is back online now. For a look at the new website
+> go to
+>
+> http://www.bioconductor.org
+>
+>
+>
+> Patrick
+>
+>
+> On 7/28/10 10:17 AM, Mark Kimpel wrote:
+>>
+>> I have just tried several times to execute the following commands
+>>
+>> ?source("http://bioconductor.org/biocLite.R")
+>> ?source("http://www.bioconductor.org/biocLite.R")
+>>
+>> and keep getting the error
+>>
+>> Error in file(file, "r", encoding = encoding) :
+>> ? cannot open the connection
+>> In addition: Warning message:
+>> In file(file, "r", encoding = encoding) :
+>> ? cannot open: HTTP status was '404 Not Found'
+>>
+>> When I paste the addresses into my browser I get the Object Not Found
+>> error message.
+>>
+>> BioC website itself it up.
+>>
+>> Mark
+>>
+>> Mark W. Kimpel MD ?** Neuroinformatics ** Dept. of Psychiatry
+>> Indiana University School of Medicine
+>>
+>> 15032 Hunter Court, Westfield, IN ?46074
+>>
+>> (317) 490-5129 Work,& ?Mobile& ?VoiceMail
+>> (317) 399-1219 Skype No Voicemail please
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+>
+
+
+From mailinglist.honeypot at gmail.com  Wed Jul 28 20:25:58 2010
+From: mailinglist.honeypot at gmail.com (Steve Lianoglou)
+Date: Wed, 28 Jul 2010 14:25:58 -0400
+Subject: [Bioc-devel] biocLite source not found
+In-Reply-To: <4C506CF4.2010002@fhcrc.org>
+References: <AANLkTikjCxd9kepNOk8jbjR22LJzR0LESVR-aPCpFV2w@mail.gmail.com>
+	<4C506CF4.2010002@fhcrc.org>
+Message-ID: <AANLkTinJALqXjVcJvP=JbmZsDA4pZmHgYCHvO+athSBU@mail.gmail.com>
+
+On Wed, Jul 28, 2010 at 1:46 PM, Patrick Aboyoun <paboyoun at fhcrc.org> wrote:
+> Mark,
+> We have a new bioconductor.org website and we temporarily dropped biocLite.R
+> via oversight. The script is back online now. For a look at the new website
+> go to
+>
+> http://www.bioconductor.org
+
+Congratulations on the new site, looks good. Though, to be honest, I'm
+a bit sad to see the old logo disappear ... something about it made me
+happy. :-)
+
+-- 
+Steve Lianoglou
+Graduate Student: Computational Systems Biology
+?| Memorial Sloan-Kettering Cancer Center
+?| Weill Medical College of Cornell University
+Contact Info: http://cbio.mskcc.org/~lianos/contact
+
+
+From auke at tulcod.com  Sat Jul 31 20:33:24 2010
+From: auke at tulcod.com (Auke Booij)
+Date: Sat, 31 Jul 2010 20:33:24 +0200
+Subject: [Bioc-devel] Full package listing
+Message-ID: <AANLkTi=c83J6fW-V=Af39KGi6FrP-=i7hisOx3mMzqba@mail.gmail.com>
+
+Is there a version of the PACKAGES file with all fields present? CRAN
+has /web/packages/packages.rds, does Bioconductor have something?
+
+Thanks,
+Auke Booij / tulcod.
+
+

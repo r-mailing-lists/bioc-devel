@@ -1,0 +1,1036 @@
+{
+  "list": "bioc-devel",
+  "description": "",
+  "month": "2008-05",
+  "messages": [
+    {
+      "id": "msg-2997655e41de",
+      "message_id": "<Pine.WNT.4.64.0805011019060.1816@PC602.alpha.wehi.edu.au>",
+      "from_name": "Gordon K Smyth",
+      "from_email_hash": "a978abba6e869c142fda92319a9ab9659112ab762e437af84e6581fe4481f132",
+      "date": "2008-05-01T10:26:01+10:00",
+      "subject": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "subject_clean": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "in_reply_to": "<47F6C61F.4040904@fhcrc.org>",
+      "references": [
+        "<Pine.WNT.4.64.0804041235460.5200@PC602.alpha.wehi.edu.au>",
+        "<27d1e6020804032230xf577838ubddf6e81f5e57d53@mail.gmail.com>",
+        "<47F6C61F.4040904@fhcrc.org>"
+      ],
+      "body_plain": "Hi Martin,\n\nI have only just noticed that the methods package now has generic \nfunctions rbind2() and cbind2(), which it didn't when the combine() \nfunction was first created for Biobase.\n\nI think it would be clearer and more elegant to implement rbind2() and \ncbind2() methods for ExpressionSet, and to retire combine() sometime down \nthe track (not obviously for the imminent Bioconductor release).  The term \n\"combine\" is a somewhat overused, e.g., it conflicts with the c() function \nin base.\n\nWhat do you think?\n\nCheers\nGordon\n\nOn Fri, 4 Apr 2008, Martin Morgan wrote:\n\n> Thanks for the suggestion and examples.\n>\n> I implemented this in Biobase 1.99.5. It is slightly different from the \n> version in the beadarraySNP package, in that the content of overlapping \n> regions of the exprs arrays have to be identical (beadarraySNP allows NAs in \n> the second matrix).\n>\n> The functionality I implemented is consistent with the following tests \n> (hopefully self-explanatory).\n>\n>    data(sample.ExpressionSet)\n>    obj <- sample.ExpressionSet\n>\n>    checkEquals(obj, combine(obj[1:250,], obj[251:500,]))\n>    checkEquals(obj, combine(obj[,1:13], obj[,14:26]))\n>    ## overlapping\n>    checkEquals(obj, combine(obj[1:300,], obj[250:500,]))\n>    checkEquals(obj, combine(obj[,1:20], obj[,15:26]))\n>\n>\n> The implementation introduces a combine method for matricies, which is \n> consistent with these tests:\n>\n>    ## dimnames\n>    m <- matrix(1:20, nrow=5, dimnames=list(LETTERS[1:5], letters[1:4]))\n>    checkEquals(m, combine(m, m))\n>    checkEquals(m, combine(m[1:3,], m[4:5,]))\n>    checkEquals(m, combine(m[,1:3], m[,4, drop=FALSE]))\n>    ## overlap\n>    checkEquals(m, combine(m[1:3,], m[3:5,]))\n>    checkEquals(m, combine(m[,1:3], m[,3:4]))\n>    checkEquals(matrix(c(1:3, NA, NA, 6:8, NA, NA,\n>                         11:15, NA, NA, 18, NA, NA),\n>                       nrow=5,\n>                       dimnames=list(LETTERS[1:5], letters[1:4])),\n>                combine(m[1:3,1:3], m[3:5, 3:4]))\n>    ## row reordering\n>    checkEquals(m[c(1,3,5,2,4),], combine(m[c(1,3,5),], m[c(2,4),]))\n>    ## Exceptions\n>    checkException(combine(m, matrix(0, nrow=5, ncol=4)),\n>                   silent=TRUE)         # types differ\n>    checkException(combine(m, matrix(0L, nrow=5, ncol=4)),\n>                   silent=TRUE)         # attributes differ\n>    m1 <- matrix(1:20, nrow=5)\n>    checkException(combine(m, m1), silent=TRUE) # dimnames required\n>\n> Please let me know if you had something else in mind, or if there are \n> problems with this.\n>\n> Martin\n>\n> Laurent Gautier wrote:\n>> That would be useful.\n>> \n>> I have been in a situation where it would have been useful, and spent some \n>> time\n>> with combine as well before writing my own ad-hoc solution.\n>> \n>> \n>> \n>> Laurent\n>> \n>> \n>> 2008/4/4, Gordon K Smyth <smyth at wehi.edu.au>:\n>>> An rbind() method or an rbind-like function for ExpressionSet objects\n>>>  would be useful.  Any plans for such a function?\n>>>\n>>>  At the moment, an ExpressionSet object can be subsetted by rows or\n>>>  columns.  Column subsets can be put back together using combine(), but\n>>>  there's no way I think to put row subsets back together.\n>>>\n>>>  BTW, the help page for the generic function combine() includes the idea \n>>> of\n>>>  combining by rows, but this concept is not honoured by the combine method\n>>>  for the eSet class.\n>>>\n>>>  Cheers\n>>>  Gordon\n>>>\n>>>  _______________________________________________\n>>>  Bioc-devel at stat.math.ethz.ch mailing list\n>>>  https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>> \n>> \n>> \n>\n>\n> -- \n> Martin Morgan\n> Computational Biology / Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N.\n> PO Box 19024 Seattle, WA 98109\n>\n> Location: Arnold Building M2 B169\n> Phone: (206) 667-2793\n>",
+      "body_snippet": "Hi Martin,\n\nI have only just noticed that the methods package now has generic \nfunctions rbind2() and cbind2(), which it didn't when the combine() \nfunction was first created for Biobase.\n\nI think it ",
+      "thread_id": "thread-2997655e41de",
+      "thread_depth": 0,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-57f339258603",
+      "message_id": "<6ph4p9hr678.fsf@gopher4.fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2008-05-01T15:48:59-07:00",
+      "subject": "[Bioc-devel] BioC 2.2 now available",
+      "subject_clean": "[Bioc-devel] BioC 2.2 now available",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Bioconductors:\n\nWe are pleased to announce the release of Bioconductor 2.2. This\nrelease includes 35 new packages, and many improvements to existing\npackages.  There are now 260 package in Bioconductor 2.2. These\npackages are compatible with R 2.7.0.\n\nIMPORTANT: MAC OS USERS: the 'binary' builds currently available with\nbiocLite are not suitable for Tiger (OS X 10.4). We expect to have\nTiger-compatible builds within the next week. If you are using Tiger,\nplease refrain from migrating to R-2.7.0 until these binaries become\navailable, or use the 'type=\"source\"' option to biocLite.\n\nAs a member of the Bioconductor community, you have contributed\ngreatly to this release. Perhaps you are a perplexed newcomer asking\nfor help on the Bioc mailing list. Perhaps you are an experienced user\nseeking reproducible and advanced functionality. Or perhaps you are a\npackage developer helping others to make sound sense of their\ndata. Whatever your role, you've made Bioconductor the resource it is\ntoday. We are especially grateful to package developers, to members of\nthe Bioconductor team in Seattle, and to those participants on the\nBioc mailing list who knowledgeably and patiently answer questions\nlarge and small.\n\nHigh-throughput genomic research is a dynamic and exciting field. It\nis hard to predict what surprising packages are in store for future\nBioconductor releases. We anticipate continued integration with\ndiverse data sources, use of R's advanced graphics abilities, and\nimplementation of cutting edge research algorithms for the benefit of\nall Bioconductor users. Short-read DNA resequencing technologies are\none area where growth seems almost certain.\n\nWe look forward to a vibrant release cycle!\n\nContents\n========\n\n* Getting Started With Bioconductor 2.2\n\n* New and Re-introduced Packages\n\n* Significant Changes to Annotation Packages\n\n\n\n\nGetting Started With Bioconductor 2.2\n=====================================\n\nIMPORTANT: MAC USERS: see the important note above.\n\nTo install Bioconductor 2.2\n\n1. Install R 2.7.0.  Bioconductor 2.2 has been designed expressly for\n   this version of R.\n\n2. Follow the instructions here:\n\n   http://bioconductor.org/download\n\nPlease visit http://bioconductor.org for details and downloads.\n\n\nNew and Re-introduced Packages\n==============================\n\nThe following packages are new in this release of Bioconductor; visit\n\n  http://bioconductor.org/packages/release/Software.html\n\nfor links to all package descriptions.\n\n\nAffyCompatible\n  Affymetrix GeneChip software compatibility\n\nBAC\n  Bayesian Analysis of Chip-chip experiment\n\nBCRANK\n  Predicting binding site consensus from ranked DNA sequences\n\nBGmix\n  Bayesian models for differential gene expression\n\nBiocCaseStudies\n  Support for the Bioconductor Case Studies Monograph\n\nGEOmetadb\n  A compilation of metadata from NCBI GEO\n\nGGBase\n  Infrastructure for genetics of gene expression (c) 2008 VJ Carey\n\nGSEAlm\n  Linear Model Toolset for Gene Set Enrichment Analysis\n\nGeneRfold\n  R for genes and sequences, using viennaRNA package (fold)\n\nGeneSelector\n  GeneSelector\n\nGenomeGraphs\n  Plotting genomic information from Ensembl\n\nGraphAlignment\n  GraphAlignment\n\nPCpheno\n  Phenotypes and cellular organizational units\n\nRBioinf\n  Support for R for Bioinformatics Monograph\n\nRdisop\n  Decomposition of Isotopic Patterns\n\nRtreemix\n  Mutagenetic trees mixture models.\n\nSLGI\n  Synthetic Lethal Genetic Interaction\n\nXDE\n  A Bayesian hierarchical model for cross-study analysis of\n  differential gene expression\n\naffyPara\n  Parallelized preprocessing methods for Affymetrix Oligonucleotide\n  Arrays\n\nflowClust\n  Clustering for Flow Cytometry\n\nflowQ\n  Qualitiy control for flow cytometry\n\nflowUtils\n  Utilities for flow cytometry\n\ngaga\n  GaGa hierarchical model for microarray data analysis\n\ngoProfiles\n  An R package for the statistical analysis of functional profiles\n\nmdqc\n  Mahalanobis Distance Quality Control for microarrays\n\noccugene\n  Functions for Multinomial Occupancy Distribution\n\nplw\n  Probe level Locally moderated Weighted t-tests.\n\nrtracklayer\n  R interface to genome browsers and their annotation tracks\n\nsnpMatrix\n  The snp.matrix and X.snp.matrix classes\n\nxps\n  Methods for Processing and Analysis of Affymetrix Oligonucleotide\n  Arrays\n\nyaqcaffy\n  Affymetrix expression data quality control and reproducibility analysis\n\n\nAdditional packages have been re-introduced to the release branch:\n\nGeneticsPed\n  Pedigree and genetic relationship functions\n\nRredland\n  Interface to redland RDF utilities\n\nexternalVector\n  Vector objects for R with external storage\n\nstam\n  Structured Analysis of Microarray Data\n\n\nPackages still present in the 'development' branch, but no longer in\nthe release, include BeadExplorer, GeneRfold, MCRestimate, and\nSAGElyzer. Packages retired from Bioconductor include arrayMagic,\nChromoViz, GeneTS, iSNetwork, iSPlot, and RMAPPER.\n\n\nSignificant Changes to Annotation Packages\n==========================================\n\nBioconductor 2.2 includes a large number of annotation\npackages. Descriptions are available here:\n\n  http://bioconductor.org/packages/release/AnnotationData.html\n\nNew 'db' annotation packages replace their predecessors, e.g.,\nhgu95av2.db replaces hgu95av2 . Both 'db' and original packages are\navailable in this release, but we anticipate that future releases will\nonly contain 'db' packages.  Most db packages now contain Ensembl\naccessions,\n\nNew 'organism' packages are available for several model organisms: human,\norg.Hs.eg.db; mouse, org.Mm.eg.db; rat, org.Rn.eg.db; yeast,\norg.Sc.sgd.db; fly, org.Dm.eg.db; malaria, org.Pf.plasmo.db.  Many of\nthese packages contain additional organism-specific annotations, e.g.,\nflybase (Drosophila) or Jackson Laboratories (mouse) IDs.\n\nNew 'homology' packages summarize InParanoid homology data. Use these\nand the organism packages to map between InParanoid and other IDS\nIDs. Available homology packages include: human, hom.Hs.inp.db; mouse,\nhom.Mm.inp.db; rat, hom.Rn.inp.db; yeast, hom.Sc.inp.db; fly,\nhom.Dm.inp.db.\n\nThe PFAM package is available as PFAM.db\n\nCustom CDF packages provided by Manhong Dai are not currently\navailable, but should be shortly.\n\n\nMartin\n-- \nMartin Morgan\nComputational Biology / Fred Hutchinson Cancer Research Center\n1100 Fairview Ave. N.\nPO Box 19024 Seattle, WA 98109\n\nLocation: Arnold Building M2 B169\nPhone: (206) 667-2793",
+      "body_snippet": "Bioconductors:\n\nWe are pleased to announce the release of Bioconductor 2.2. This\nrelease includes 35 new packages, and many improvements to existing\npackages.  There are now 260 package in Bioconducto",
+      "thread_id": "thread-57f339258603",
+      "thread_depth": 0,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-10aa47d4c90e",
+      "message_id": "<481A538E.5030402@systemsbiology.org>",
+      "from_name": "Dan Tenenbaum",
+      "from_email_hash": "8c6242a614b52a0ee6bdada93eb0db72c8e7ca6093749c45a30a309d0a937040",
+      "date": "2008-05-01T16:34:38-07:00",
+      "subject": "[Bioc-devel] graph package dependency on libiconv or libintl",
+      "subject_clean": "[Bioc-devel] graph package dependency on libiconv or libintl",
+      "in_reply_to": "<6ph4p9hr678.fsf@gopher4.fhcrc.org>",
+      "references": [
+        "<6ph4p9hr678.fsf@gopher4.fhcrc.org>"
+      ],
+      "body_plain": "Hello,\n\nI have seen this topic mentioned before, but I have a bit to add--\n\nI installed the gaggle package from the new bioconductor (using R 2.7). \nIt depends on (among other things) the graph package.\n\nWhen I tried:\nlibrary(gaggle)\n\n...after installing the gaggle package, I got an error about how my \nlibiconv library was out of date. This was on a mac, so I just \ndownloaded the latest libiconv using macports, make a symbolic link to \nwhere R was looking for it, and all was well.\n\nHowever, on another mac, it complained not about libiconv but libintl. I \ncan't seem to find a place to download the libintl library.\n\nI installed the package on Windows and it was just fine--no complaints \nabout missing libraries.\n\nSo what I'd like to know is:\n1) Where can I find this libintl package\n2) Are these packages really necessary? It would be so much easier to \ntell my users to just \"biocLite();biocLite('gaggle')\" than have them go \nthrough all the steps necessary to build these libraries. Especially \nwhen it does not seem necessary on windows.\n3) Could this have to do with the email that just was sent out about how \nbinary packages are not yet available for Tiger (both of the Macs I \ntried to install on are running Tiger)? Might I have better luck if I \nwait for the tiger binaries?\n\n\nThanks\nDan - maintainer of gaggle package",
+      "body_snippet": "Hello,\n\nI have seen this topic mentioned before, but I have a bit to add--\n\nI installed the gaggle package from the new bioconductor (using R 2.7). \nIt depends on (among other things) the graph packag",
+      "thread_id": "thread-57f339258603",
+      "thread_depth": 1,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-395ea9ab04d8",
+      "message_id": "<264855a00805011651v45a363f4r67417764500ce155@mail.gmail.com>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "5a8e0e6abee8db2f7eeaea6df4cbae4d8713a79b51ddc5ef74e7c509c4b05f87",
+      "date": "2008-05-01T19:51:27-04:00",
+      "subject": "[Bioc-devel] graph package dependency on libiconv or libintl",
+      "subject_clean": "[Bioc-devel] graph package dependency on libiconv or libintl",
+      "in_reply_to": "<481A538E.5030402@systemsbiology.org>",
+      "references": [
+        "<6ph4p9hr678.fsf@gopher4.fhcrc.org>",
+        "<481A538E.5030402@systemsbiology.org>"
+      ],
+      "body_plain": "On Thu, May 1, 2008 at 7:34 PM, Dan Tenenbaum\n<dtenenbaum at systemsbiology.org> wrote:\n> Hello,\n>\n>  I have seen this topic mentioned before, but I have a bit to add--\n>\n>  I installed the gaggle package from the new bioconductor (using R 2.7). It\n> depends on (among other things) the graph package.\n>\n>  When I tried:\n>  library(gaggle)\n>\n>  ...after installing the gaggle package, I got an error about how my\n> libiconv library was out of date. This was on a mac, so I just downloaded\n> the latest libiconv using macports, make a symbolic link to where R was\n> looking for it, and all was well.\n>\n>  However, on another mac, it complained not about libiconv but libintl. I\n> can't seem to find a place to download the libintl library.\n>\n>  I installed the package on Windows and it was just fine--no complaints\n> about missing libraries.\n>\n>  So what I'd like to know is:\n>  1) Where can I find this libintl package\n>  2) Are these packages really necessary? It would be so much easier to tell\n> my users to just \"biocLite();biocLite('gaggle')\" than have them go through\n> all the steps necessary to build these libraries. Especially when it does\n> not seem necessary on windows.\n>  3) Could this have to do with the email that just was sent out about how\n> binary packages are not yet available for Tiger (both of the Macs I tried to\n> install on are running Tiger)? Might I have better luck if I wait for the\n> tiger binaries?\n\nHi, Dan.  This does have to do with the email that was sent out\nearlier.  You have at least two choices.  Install using\nbiocLite(.....,type='source') or wait for the Tiger binaries.\n\nHope that clarifies.\n\nSean",
+      "body_snippet": "On Thu, May 1, 2008 at 7:34 PM, Dan Tenenbaum\n<dtenenbaum at systemsbiology.org> wrote:\n> Hello,\n>\n>  I have seen this topic mentioned before, but I have a bit to add--\n>\n>  I installed the gaggle pac",
+      "thread_id": "thread-57f339258603",
+      "thread_depth": 2,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-cf26bd2de95d",
+      "message_id": "<481A587E.4080302@fhcrc.org>",
+      "from_name": "Robert Gentleman",
+      "from_email_hash": "7de55c0000c437ab05b37d16b5a00e42a9bba6254ce27d76eb635498d1e3dda7",
+      "date": "2008-05-01T16:55:42-07:00",
+      "subject": "[Bioc-devel] graph package dependency on libiconv or libintl",
+      "subject_clean": "[Bioc-devel] graph package dependency on libiconv or libintl",
+      "in_reply_to": "<481A538E.5030402@systemsbiology.org>",
+      "references": [
+        "<6ph4p9hr678.fsf@gopher4.fhcrc.org>",
+        "<481A538E.5030402@systemsbiology.org>"
+      ],
+      "body_plain": "Hi Dan,\n\nDan Tenenbaum wrote:\n> Hello,\n> \n> I have seen this topic mentioned before, but I have a bit to add--\n> \n> I installed the gaggle package from the new bioconductor (using R 2.7). \n> It depends on (among other things) the graph package.\n> \n> When I tried:\n> library(gaggle)\n> \n> ...after installing the gaggle package, I got an error about how my \n> libiconv library was out of date. This was on a mac, so I just \n> downloaded the latest libiconv using macports, make a symbolic link to \n> where R was looking for it, and all was well.\n> \n> However, on another mac, it complained not about libiconv but libintl. I \n> can't seem to find a place to download the libintl library.\n> \n> I installed the package on Windows and it was just fine--no complaints \n> about missing libraries.\n> \n> So what I'd like to know is:\n> 1) Where can I find this libintl package\n> 2) Are these packages really necessary? It would be so much easier to \n> tell my users to just \"biocLite();biocLite('gaggle')\" than have them go \n> through all the steps necessary to build these libraries. Especially \n> when it does not seem necessary on windows.\n\n   It seems to be specific to the Mac and to the way that binaries are \nbuilt on the Mac (and nothing to do with graph or other packages which \nseem to be caught up in this).  I am not quite sure why none of this was \nnoticed earlier, but I suspect that many users simply did not try the \navailable binaries.\n\n> 3) Could this have to do with the email that just was sent out about how \n> binary packages are not yet available for Tiger (both of the Macs I \n> tried to install on are running Tiger)? Might I have better luck if I \n> wait for the tiger binaries?\n> \n\n   Yes, you should see everything working in that case.  So waiting a \nfew days seems like the best idea.  There should be an announcement when \nthese are ready and then if things still don't work we would appreciate \nyet another email of this sort,\n\n  thanks\n   Robert\n\n\n> \n> Thanks\n> Dan - maintainer of gaggle package\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n\n-- \nRobert Gentleman, PhD\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M2-B876\nPO Box 19024\nSeattle, Washington 98109-1024\n206-667-7700\nrgentlem at fhcrc.org",
+      "body_snippet": "Hi Dan,\n\nDan Tenenbaum wrote:\n> Hello,\n> \n> I have seen this topic mentioned before, but I have a bit to add--\n> \n> I installed the gaggle package from the new bioconductor (using R 2.7). \n> It depend",
+      "thread_id": "thread-57f339258603",
+      "thread_depth": 2,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-8070a741f94c",
+      "message_id": "<481A5959.5080407@fhcrc.org>",
+      "from_name": "Patrick Aboyoun",
+      "from_email_hash": "dc50c3c245d3952d5b85da1e198abf49dacd056ac9649061263764cf7191a8de",
+      "date": "2008-05-01T16:59:21-07:00",
+      "subject": "[Bioc-devel] graph package dependency on libiconv or libintl",
+      "subject_clean": "[Bioc-devel] graph package dependency on libiconv or libintl",
+      "in_reply_to": "<481A538E.5030402@systemsbiology.org>",
+      "references": [
+        "<6ph4p9hr678.fsf@gopher4.fhcrc.org>",
+        "<481A538E.5030402@systemsbiology.org>"
+      ],
+      "body_plain": "Dan,\nI am working on the BioC 2.2 Mac OS X Tiger binary packages builds right \nnow, and I anticipate they will be ready by tomorrow (or sooner if the \nfirst round of builds go well). When these binary packages are ready, I \nwill replace the Mac OS X Leopard binary packages with the Tiger ones on \nhttp://bioconductor.org/packages/2.2/bioc. You may want to hold off \nspending more time on this issue until the new builds come out.\n\nThis does bring up a question about the BioC 2.3 development builds. \nShould they be on Tiger or Leopard? I have a feeling we will be \nrevisiting this situation 6 months from now. I'll make sure we build on \nboth Tiger and Leopard and then we can choose, based on user feedback, \nwhich binary packages to put in the BioC 2.3 release. One benefit of \nLeopard is that we can get 64-bit versions of the Mac OS X packages out \nthere and, given the data sizes users commonly encounter, having a \nlarger memory address space can greatly increase analysis capacity.\n\n\nCheers,\nPatrick\n\n\n\nDan Tenenbaum wrote:\n> Hello,\n>\n> I have seen this topic mentioned before, but I have a bit to add--\n>\n> I installed the gaggle package from the new bioconductor (using R \n> 2.7). It depends on (among other things) the graph package.\n>\n> When I tried:\n> library(gaggle)\n>\n> ...after installing the gaggle package, I got an error about how my \n> libiconv library was out of date. This was on a mac, so I just \n> downloaded the latest libiconv using macports, make a symbolic link to \n> where R was looking for it, and all was well.\n>\n> However, on another mac, it complained not about libiconv but libintl. \n> I can't seem to find a place to download the libintl library.\n>\n> I installed the package on Windows and it was just fine--no complaints \n> about missing libraries.\n>\n> So what I'd like to know is:\n> 1) Where can I find this libintl package\n> 2) Are these packages really necessary? It would be so much easier to \n> tell my users to just \"biocLite();biocLite('gaggle')\" than have them \n> go through all the steps necessary to build these libraries. \n> Especially when it does not seem necessary on windows.\n> 3) Could this have to do with the email that just was sent out about \n> how binary packages are not yet available for Tiger (both of the Macs \n> I tried to install on are running Tiger)? Might I have better luck if \n> I wait for the tiger binaries?\n>\n>\n> Thanks\n> Dan - maintainer of gaggle package\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "Dan,\nI am working on the BioC 2.2 Mac OS X Tiger binary packages builds right \nnow, and I anticipate they will be ready by tomorrow (or sooner if the \nfirst round of builds go well). When these binary",
+      "thread_id": "thread-57f339258603",
+      "thread_depth": 2,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-7f7c253385d0",
+      "message_id": "<481A616E.50502@fhcrc.org>",
+      "from_name": "Herve Pages",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2008-05-01T17:33:50-07:00",
+      "subject": "[Bioc-devel] graph package dependency on libiconv or libintl",
+      "subject_clean": "[Bioc-devel] graph package dependency on libiconv or libintl",
+      "in_reply_to": "<481A5959.5080407@fhcrc.org>",
+      "references": [
+        "<6ph4p9hr678.fsf@gopher4.fhcrc.org>",
+        "<481A538E.5030402@systemsbiology.org>",
+        "<481A5959.5080407@fhcrc.org>"
+      ],
+      "body_plain": "Patrick Aboyoun wrote:\n> Dan,\n> I am working on the BioC 2.2 Mac OS X Tiger binary packages builds right \n> now, and I anticipate they will be ready by tomorrow (or sooner if the \n> first round of builds go well). When these binary packages are ready, I \n> will replace the Mac OS X Leopard binary packages with the Tiger ones on \n> http://bioconductor.org/packages/2.2/bioc. You may want to hold off \n> spending more time on this issue until the new builds come out.\n> \n> This does bring up a question about the BioC 2.3 development builds. \n> Should they be on Tiger or Leopard?\n\nI would vote for doing what CRAN does. IMO building Mac OS binaries for\narchitectures that are not supported by CRAN has no real added value.\n\nH.\n\n\n> I have a feeling we will be \n> revisiting this situation 6 months from now. I'll make sure we build on \n> both Tiger and Leopard and then we can choose, based on user feedback, \n> which binary packages to put in the BioC 2.3 release. One benefit of \n> Leopard is that we can get 64-bit versions of the Mac OS X packages out \n> there and, given the data sizes users commonly encounter, having a \n> larger memory address space can greatly increase analysis capacity.\n> \n> \n> Cheers,\n> Patrick\n> \n> \n> \n> Dan Tenenbaum wrote:\n>> Hello,\n>>\n>> I have seen this topic mentioned before, but I have a bit to add--\n>>\n>> I installed the gaggle package from the new bioconductor (using R \n>> 2.7). It depends on (among other things) the graph package.\n>>\n>> When I tried:\n>> library(gaggle)\n>>\n>> ...after installing the gaggle package, I got an error about how my \n>> libiconv library was out of date. This was on a mac, so I just \n>> downloaded the latest libiconv using macports, make a symbolic link to \n>> where R was looking for it, and all was well.\n>>\n>> However, on another mac, it complained not about libiconv but libintl. \n>> I can't seem to find a place to download the libintl library.\n>>\n>> I installed the package on Windows and it was just fine--no complaints \n>> about missing libraries.\n>>\n>> So what I'd like to know is:\n>> 1) Where can I find this libintl package\n>> 2) Are these packages really necessary? It would be so much easier to \n>> tell my users to just \"biocLite();biocLite('gaggle')\" than have them \n>> go through all the steps necessary to build these libraries. \n>> Especially when it does not seem necessary on windows.\n>> 3) Could this have to do with the email that just was sent out about \n>> how binary packages are not yet available for Tiger (both of the Macs \n>> I tried to install on are running Tiger)? Might I have better luck if \n>> I wait for the tiger binaries?\n>>\n>>\n>> Thanks\n>> Dan - maintainer of gaggle package\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "Patrick Aboyoun wrote:\n> Dan,\n> I am working on the BioC 2.2 Mac OS X Tiger binary packages builds right \n> now, and I anticipate they will be ready by tomorrow (or sooner if the \n> first round of bui",
+      "thread_id": "thread-57f339258603",
+      "thread_depth": 3,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-8e79f3740339",
+      "message_id": "<481B2C31.30200@fhcrc.org>",
+      "from_name": "Patrick Aboyoun",
+      "from_email_hash": "dc50c3c245d3952d5b85da1e198abf49dacd056ac9649061263764cf7191a8de",
+      "date": "2008-05-02T07:58:57-07:00",
+      "subject": "[Bioc-devel] Mac OS X Tiger builds now available (was Re: BioC 2.2 now available)",
+      "subject_clean": "[Bioc-devel] Mac OS X Tiger builds now available (was Re: BioC 2.2 now available)",
+      "in_reply_to": "<6ph4p9hr678.fsf@gopher4.fhcrc.org>",
+      "references": [
+        "<6ph4p9hr678.fsf@gopher4.fhcrc.org>"
+      ],
+      "body_plain": "Last night we replaced the Mac OS X binary packages from Leopard (OS X 10.5) to Tiger (OS X 10.4) at the BioC 2.2 repository. Mac users on Tiger can now migrate to BioC 2.2 using biocLite with the default settings (i.e. type = \"mac.binary\").\n\nFor those users on Mac OS X Leopard, we are still building the Leopard binary packages but are not making them available since the standard CRAN-style repository does not support two types of Mac OS X universal binary packages. If there is a sufficient demand from the Bioconductor user-base, we can create a parallel repository for the Leopard binary packages that will be made available to Leopard users through biocLite.\n\n\n\nPatrick\n\n\n\n\nMartin Morgan wrote:\n> Bioconductors:\n>\n> We are pleased to announce the release of Bioconductor 2.2. This\n> release includes 35 new packages, and many improvements to existing\n> packages.  There are now 260 package in Bioconductor 2.2. These\n> packages are compatible with R 2.7.0.\n>\n> IMPORTANT: MAC OS USERS: the 'binary' builds currently available with\n> biocLite are not suitable for Tiger (OS X 10.4). We expect to have\n> Tiger-compatible builds within the next week. If you are using Tiger,\n> please refrain from migrating to R-2.7.0 until these binaries become\n> available, or use the 'type=\"source\"' option to biocLite.\n>\n> As a member of the Bioconductor community, you have contributed\n> greatly to this release. Perhaps you are a perplexed newcomer asking\n> for help on the Bioc mailing list. Perhaps you are an experienced user\n> seeking reproducible and advanced functionality. Or perhaps you are a\n> package developer helping others to make sound sense of their\n> data. Whatever your role, you've made Bioconductor the resource it is\n> today. We are especially grateful to package developers, to members of\n> the Bioconductor team in Seattle, and to those participants on the\n> Bioc mailing list who knowledgeably and patiently answer questions\n> large and small.\n>\n> High-throughput genomic research is a dynamic and exciting field. It\n> is hard to predict what surprising packages are in store for future\n> Bioconductor releases. We anticipate continued integration with\n> diverse data sources, use of R's advanced graphics abilities, and\n> implementation of cutting edge research algorithms for the benefit of\n> all Bioconductor users. Short-read DNA resequencing technologies are\n> one area where growth seems almost certain.\n>\n> We look forward to a vibrant release cycle!\n>\n> Contents\n> ========\n>\n> * Getting Started With Bioconductor 2.2\n>\n> * New and Re-introduced Packages\n>\n> * Significant Changes to Annotation Packages\n>\n>\n>\n>\n> Getting Started With Bioconductor 2.2\n> =====================================\n>\n> IMPORTANT: MAC USERS: see the important note above.\n>\n> To install Bioconductor 2.2\n>\n> 1. Install R 2.7.0.  Bioconductor 2.2 has been designed expressly for\n>    this version of R.\n>\n> 2. Follow the instructions here:\n>\n>    http://bioconductor.org/download\n>\n> Please visit http://bioconductor.org for details and downloads.\n>\n>\n> New and Re-introduced Packages\n> ==============================\n>\n> The following packages are new in this release of Bioconductor; visit\n>\n>   http://bioconductor.org/packages/release/Software.html\n>\n> for links to all package descriptions.\n>\n>\n> AffyCompatible\n>   Affymetrix GeneChip software compatibility\n>\n> BAC\n>   Bayesian Analysis of Chip-chip experiment\n>\n> BCRANK\n>   Predicting binding site consensus from ranked DNA sequences\n>\n> BGmix\n>   Bayesian models for differential gene expression\n>\n> BiocCaseStudies\n>   Support for the Bioconductor Case Studies Monograph\n>\n> GEOmetadb\n>   A compilation of metadata from NCBI GEO\n>\n> GGBase\n>   Infrastructure for genetics of gene expression (c) 2008 VJ Carey\n>\n> GSEAlm\n>   Linear Model Toolset for Gene Set Enrichment Analysis\n>\n> GeneRfold\n>   R for genes and sequences, using viennaRNA package (fold)\n>\n> GeneSelector\n>   GeneSelector\n>\n> GenomeGraphs\n>   Plotting genomic information from Ensembl\n>\n> GraphAlignment\n>   GraphAlignment\n>\n> PCpheno\n>   Phenotypes and cellular organizational units\n>\n> RBioinf\n>   Support for R for Bioinformatics Monograph\n>\n> Rdisop\n>   Decomposition of Isotopic Patterns\n>\n> Rtreemix\n>   Mutagenetic trees mixture models.\n>\n> SLGI\n>   Synthetic Lethal Genetic Interaction\n>\n> XDE\n>   A Bayesian hierarchical model for cross-study analysis of\n>   differential gene expression\n>\n> affyPara\n>   Parallelized preprocessing methods for Affymetrix Oligonucleotide\n>   Arrays\n>\n> flowClust\n>   Clustering for Flow Cytometry\n>\n> flowQ\n>   Qualitiy control for flow cytometry\n>\n> flowUtils\n>   Utilities for flow cytometry\n>\n> gaga\n>   GaGa hierarchical model for microarray data analysis\n>\n> goProfiles\n>   An R package for the statistical analysis of functional profiles\n>\n> mdqc\n>   Mahalanobis Distance Quality Control for microarrays\n>\n> occugene\n>   Functions for Multinomial Occupancy Distribution\n>\n> plw\n>   Probe level Locally moderated Weighted t-tests.\n>\n> rtracklayer\n>   R interface to genome browsers and their annotation tracks\n>\n> snpMatrix\n>   The snp.matrix and X.snp.matrix classes\n>\n> xps\n>   Methods for Processing and Analysis of Affymetrix Oligonucleotide\n>   Arrays\n>\n> yaqcaffy\n>   Affymetrix expression data quality control and reproducibility analysis\n>\n>\n> Additional packages have been re-introduced to the release branch:\n>\n> GeneticsPed\n>   Pedigree and genetic relationship functions\n>\n> Rredland\n>   Interface to redland RDF utilities\n>\n> externalVector\n>   Vector objects for R with external storage\n>\n> stam\n>   Structured Analysis of Microarray Data\n>\n>\n> Packages still present in the 'development' branch, but no longer in\n> the release, include BeadExplorer, GeneRfold, MCRestimate, and\n> SAGElyzer. Packages retired from Bioconductor include arrayMagic,\n> ChromoViz, GeneTS, iSNetwork, iSPlot, and RMAPPER.\n>\n>\n> Significant Changes to Annotation Packages\n> ==========================================\n>\n> Bioconductor 2.2 includes a large number of annotation\n> packages. Descriptions are available here:\n>\n>   http://bioconductor.org/packages/release/AnnotationData.html\n>\n> New 'db' annotation packages replace their predecessors, e.g.,\n> hgu95av2.db replaces hgu95av2 . Both 'db' and original packages are\n> available in this release, but we anticipate that future releases will\n> only contain 'db' packages.  Most db packages now contain Ensembl\n> accessions,\n>\n> New 'organism' packages are available for several model organisms: human,\n> org.Hs.eg.db; mouse, org.Mm.eg.db; rat, org.Rn.eg.db; yeast,\n> org.Sc.sgd.db; fly, org.Dm.eg.db; malaria, org.Pf.plasmo.db.  Many of\n> these packages contain additional organism-specific annotations, e.g.,\n> flybase (Drosophila) or Jackson Laboratories (mouse) IDs.\n>\n> New 'homology' packages summarize InParanoid homology data. Use these\n> and the organism packages to map between InParanoid and other IDS\n> IDs. Available homology packages include: human, hom.Hs.inp.db; mouse,\n> hom.Mm.inp.db; rat, hom.Rn.inp.db; yeast, hom.Sc.inp.db; fly,\n> hom.Dm.inp.db.\n>\n> The PFAM package is available as PFAM.db\n>\n> Custom CDF packages provided by Manhong Dai are not currently\n> available, but should be shortly.\n>\n>\n> Martin\n>",
+      "body_snippet": "Last night we replaced the Mac OS X binary packages from Leopard (OS X 10.5) to Tiger (OS X 10.4) at the BioC 2.2 repository. Mac users on Tiger can now migrate to BioC 2.2 using biocLite with the def",
+      "thread_id": "thread-57f339258603",
+      "thread_depth": 1,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-c5a5c5c50071",
+      "message_id": "<481D0470.8080407@ebi.ac.uk>",
+      "from_name": "Oleg Sklyar",
+      "from_email_hash": "cbe68d3f50967d8247a71d9d59695a0068054b30ff9287210abc49b35f0fad20",
+      "date": "2008-05-04T01:33:52+01:00",
+      "subject": "[Bioc-devel] texi2dvi instead of pdflatex in R2.7.0? and related bioc 2.2 builds",
+      "subject_clean": "[Bioc-devel] texi2dvi instead of pdflatex in R2.7.0? and related bioc 2.2 builds",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Dear lists:\n\nI am somewhat puzzled by the use of texi2dvi/pdflatex in R2.7.0. When \nbuilding EBImage (bioconductor) with 2.7.0 I get the same error both in \nWindows and Linux, which reads the following:\n\n** building package indices ...\n* DONE (EBImage)\n* creating vignettes ... ERROR\n/usr/bin/texi2dvi: pdflatex exited with bad status, quitting.\nError in texi2dvi(file = bft, pdf = TRUE, clean = FALSE, quiet = quiet) :\n   running 'texi2dvi' on 'AnalysisWithEBImage.tex' failed\nCalls: buildVignettes -> texi2dvi\nExecution halted\n\n\nThe tex file includes links to png graphics and this might be the \nreason. Running pdflatex on the generated tex file directly produces a \nnice pdf in both Linux and Windows. And this seems have been the default \nin previous version of R.\n\nNow the puzzles are:\n\n1) the bioc build system also uses 2.7.0 and builds vignettes just fine \non both Windows and Linux:\n\n* DONE (EBImage)\n* creating vignettes ... OK\n* removing junk files\n* checking for LF line-endings in source and make files\n* checking for empty or unneeded directories\n* building 'EBImage_2.4.0.tar.gz'\n\n2) have the tex settings been changed from 2.6.0 into 2.7.0 as changes \nto vignette have not been significant and the compilation goes through \nfine with 2.6.0.\n\nOr I am missing something and doing something wrong?\n\nBest,\nOleg\n\n-- \nDr Oleg Sklyar * EBI-EMBL, Cambridge CB10 1SD, UK * +44-1223-494466",
+      "body_snippet": "Dear lists:\n\nI am somewhat puzzled by the use of texi2dvi/pdflatex in R2.7.0. When \nbuilding EBImage (bioconductor) with 2.7.0 I get the same error both in \nWindows and Linux, which reads the followin",
+      "thread_id": "thread-c5a5c5c50071",
+      "thread_depth": 0,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-f682c10d7918",
+      "message_id": "<18463.7801.291099.557707@stat.math.ethz.ch>",
+      "from_name": "Martin Maechler",
+      "from_email_hash": "c2c86f22f78a4ecfe6d0e6b4e2be505a3f5beb0470ea88c903688ac536018a98",
+      "date": "2008-05-05T16:49:29+02:00",
+      "subject": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "subject_clean": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "in_reply_to": "<Pine.WNT.4.64.0805011019060.1816@PC602.alpha.wehi.edu.au>",
+      "references": [
+        "<Pine.WNT.4.64.0804041235460.5200@PC602.alpha.wehi.edu.au>",
+        "<27d1e6020804032230xf577838ubddf6e81f5e57d53@mail.gmail.com>",
+        "<47F6C61F.4040904@fhcrc.org>",
+        "<Pine.WNT.4.64.0805011019060.1816@PC602.alpha.wehi.edu.au>"
+      ],
+      "body_plain": ">>>>> \"GS\" == Gordon K Smyth <smyth at wehi.edu.au>\n>>>>>     on Thu, 1 May 2008 10:26:01 +1000 (E. Australia Standard Time) writes:\n\n    GS> Hi Martin,\n    GS> I have only just noticed that the methods package now has generic \n    GS> functions rbind2() and cbind2(), which it didn't when the combine() \n    GS> function was first created for Biobase.\n\n    GS> I think it would be clearer and more elegant to implement rbind2() and \n    GS> cbind2() methods for ExpressionSet, and to retire combine() sometime down \n    GS> the track (not obviously for the imminent Bioconductor release).  The term \n    GS> \"combine\" is a somewhat overused, e.g., it conflicts with the c() function \n    GS> in base.\n\n    GS> What do you think?\n\n(I'm another 'Martin' but nevertheless .. : )\n\nI'm strongly in favor of providing  rbind2() and cbind2()\nmethods, base combine() on these for now, and deprecate\ncombine().\n\nrbind2() and cbind2() had been introduced exactly for the\npurpose of providing rbind() / cbind() - like methods for S4\nobjects.\n\nMartin Maechler, ETH Zurich\n\n\n    GS> Cheers\n    GS> Gordon\n\n    GS> On Fri, 4 Apr 2008, Martin Morgan wrote:\n\n    >> Thanks for the suggestion and examples.\n    >> \n    >> I implemented this in Biobase 1.99.5. It is slightly different from the \n    >> version in the beadarraySNP package, in that the content of overlapping \n    >> regions of the exprs arrays have to be identical (beadarraySNP allows NAs in \n    >> the second matrix).\n    >> \n    >> The functionality I implemented is consistent with the following tests \n    >> (hopefully self-explanatory).\n    >> \n    >> data(sample.ExpressionSet)\n    >> obj <- sample.ExpressionSet\n    >> \n    >> checkEquals(obj, combine(obj[1:250,], obj[251:500,]))\n    >> checkEquals(obj, combine(obj[,1:13], obj[,14:26]))\n    >> ## overlapping\n    >> checkEquals(obj, combine(obj[1:300,], obj[250:500,]))\n    >> checkEquals(obj, combine(obj[,1:20], obj[,15:26]))\n    >> \n    >> \n    >> The implementation introduces a combine method for matricies, which is \n    >> consistent with these tests:\n    >> \n    >> ## dimnames\n    >> m <- matrix(1:20, nrow=5, dimnames=list(LETTERS[1:5], letters[1:4]))\n    >> checkEquals(m, combine(m, m))\n    >> checkEquals(m, combine(m[1:3,], m[4:5,]))\n    >> checkEquals(m, combine(m[,1:3], m[,4, drop=FALSE]))\n    >> ## overlap\n    >> checkEquals(m, combine(m[1:3,], m[3:5,]))\n    >> checkEquals(m, combine(m[,1:3], m[,3:4]))\n    >> checkEquals(matrix(c(1:3, NA, NA, 6:8, NA, NA,\n    >> 11:15, NA, NA, 18, NA, NA),\n    >> nrow=5,\n    >> dimnames=list(LETTERS[1:5], letters[1:4])),\n    >> combine(m[1:3,1:3], m[3:5, 3:4]))\n    >> ## row reordering\n    >> checkEquals(m[c(1,3,5,2,4),], combine(m[c(1,3,5),], m[c(2,4),]))\n    >> ## Exceptions\n    >> checkException(combine(m, matrix(0, nrow=5, ncol=4)),\n    >> silent=TRUE)         # types differ\n    >> checkException(combine(m, matrix(0L, nrow=5, ncol=4)),\n    >> silent=TRUE)         # attributes differ\n    >> m1 <- matrix(1:20, nrow=5)\n    >> checkException(combine(m, m1), silent=TRUE) # dimnames required\n    >> \n    >> Please let me know if you had something else in mind, or if there are \n    >> problems with this.\n    >> \n    >> Martin\n    >> \n    >> Laurent Gautier wrote:\n    >>> That would be useful.\n    >>> \n    >>> I have been in a situation where it would have been useful, and spent some \n    >>> time\n    >>> with combine as well before writing my own ad-hoc solution.\n    >>> \n    >>> \n    >>> \n    >>> Laurent\n    >>> \n    >>> \n    >>> 2008/4/4, Gordon K Smyth <smyth at wehi.edu.au>:\n    >>>> An rbind() method or an rbind-like function for ExpressionSet objects\n    >>>> would be useful.  Any plans for such a function?\n    >>>> \n    >>>> At the moment, an ExpressionSet object can be subsetted by rows or\n    >>>> columns.  Column subsets can be put back together using combine(), but\n    >>>> there's no way I think to put row subsets back together.\n    >>>> \n    >>>> BTW, the help page for the generic function combine() includes the idea \n    >>>> of\n    >>>> combining by rows, but this concept is not honoured by the combine method\n    >>>> for the eSet class.\n    >>>> \n    >>>> Cheers\n    >>>> Gordon\n    >>>> \n    >>>> _______________________________________________\n    >>>> Bioc-devel at stat.math.ethz.ch mailing list\n    >>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n    >>>> \n    >>> \n    >>> \n    >> \n    >> \n    >> -- \n    >> Martin Morgan\n    >> Computational Biology / Fred Hutchinson Cancer Research Center\n    >> 1100 Fairview Ave. N.\n    >> PO Box 19024 Seattle, WA 98109\n    >> \n    >> Location: Arnold Building M2 B169\n    >> Phone: (206) 667-2793\n    >> \n\n    GS> _______________________________________________\n    GS> Bioc-devel at stat.math.ethz.ch mailing list\n    GS> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": ">>>>> \"GS\" == Gordon K Smyth <smyth at wehi.edu.au>\n>>>>>     on Thu, 1 May 2008 10:26:01 +1000 (E. Australia Standard Time) writes:\n\n    GS> Hi Martin,\n    GS> I have only just noticed that the metho",
+      "thread_id": "thread-2997655e41de",
+      "thread_depth": 1,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-76bf0e111a37",
+      "message_id": "<6ph4p9cda1k.fsf@gopher4.fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2008-05-05T08:51:03-07:00",
+      "subject": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "subject_clean": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "in_reply_to": "<18463.7801.291099.557707@stat.math.ethz.ch> (Martin Maechler's message of \"Mon, 5 May 2008 16:49:29 +0200\")",
+      "references": [
+        "<Pine.WNT.4.64.0804041235460.5200@PC602.alpha.wehi.edu.au>",
+        "<27d1e6020804032230xf577838ubddf6e81f5e57d53@mail.gmail.com>",
+        "<47F6C61F.4040904@fhcrc.org>",
+        "<Pine.WNT.4.64.0805011019060.1816@PC602.alpha.wehi.edu.au>",
+        "<18463.7801.291099.557707@stat.math.ethz.ch>"
+      ],
+      "body_plain": "Martin Maechler <maechler at stat.math.ethz.ch> writes:\n\n>>>>>> \"GS\" == Gordon K Smyth <smyth at wehi.edu.au>\n>>>>>>     on Thu, 1 May 2008 10:26:01 +1000 (E. Australia Standard Time) writes:\n>\n>     GS> Hi Martin,\n>     GS> I have only just noticed that the methods package now has generic \n>     GS> functions rbind2() and cbind2(), which it didn't when the combine() \n>     GS> function was first created for Biobase.\n>\n>     GS> I think it would be clearer and more elegant to implement rbind2() and \n>     GS> cbind2() methods for ExpressionSet, and to retire combine() sometime down \n>     GS> the track (not obviously for the imminent Bioconductor release).  The term \n>     GS> \"combine\" is a somewhat overused, e.g., it conflicts with the c() function \n>     GS> in base.\n>\n>     GS> What do you think?\n>\n> (I'm another 'Martin' but nevertheless .. : )\n>\n> I'm strongly in favor of providing  rbind2() and cbind2()\n> methods, base combine() on these for now, and deprecate\n> combine().\n\n(sorry Gordon for not getting back to you on this, I've actually been\nmulling it over a bit...)\n\ncombine does more (or is supposed to, anyway) than rbind or cbind,\nappending non-overlapping rows and columns simultaneously (and\nintroducing NAs in the implied missing values where features present\nin only one eSet have to be aligned with samples present only in the\nother, and vice versa).\n\nIn mulling this over I realized a bug in the current combine (fixed in\ndevel), and the more-or-less overly restrictive description of\ncombine,eSet,eSet-method.\n\nI'm kind of wondering whether Gordon's original question was prompted\nby a malfunctioning / misleading combine, or by a desire to have a\nmore consistent interface to rbind / cbind?\n\n> rbind2() and cbind2() had been introduced exactly for the\n> purpose of providing rbind() / cbind() - like methods for S4\n> objects.\n\nI know 'why', but it's a little too bad that, for this design goal,\nrbind2 is not named, well, rbind.\n\nI have implemented rbind2 / cbind2 in my local copy of Biobase, and\nwill likely commit over the next day or so. The code is basically\n\nsetMethod(\"cbind2\",\n          signature=signature(x=\"eSet\", y=\"eSet\"),\n          function(x, y) {\n            ## check that featureNames the same, sampleNames differ,\n            ## and then...\n            combine(x, y)\n          })\n\nGordon, is this the effect you're looking for?\n\nMartin Morgan\n\n> Martin Maechler, ETH Zurich\n>\n>\n>     GS> Cheers\n>     GS> Gordon\n>\n>     GS> On Fri, 4 Apr 2008, Martin Morgan wrote:\n>\n>     >> Thanks for the suggestion and examples.\n>     >> \n>     >> I implemented this in Biobase 1.99.5. It is slightly different from the \n>     >> version in the beadarraySNP package, in that the content of overlapping \n>     >> regions of the exprs arrays have to be identical (beadarraySNP allows NAs in \n>     >> the second matrix).\n>     >> \n>     >> The functionality I implemented is consistent with the following tests \n>     >> (hopefully self-explanatory).\n>     >> \n>     >> data(sample.ExpressionSet)\n>     >> obj <- sample.ExpressionSet\n>     >> \n>     >> checkEquals(obj, combine(obj[1:250,], obj[251:500,]))\n>     >> checkEquals(obj, combine(obj[,1:13], obj[,14:26]))\n>     >> ## overlapping\n>     >> checkEquals(obj, combine(obj[1:300,], obj[250:500,]))\n>     >> checkEquals(obj, combine(obj[,1:20], obj[,15:26]))\n>     >> \n>     >> \n>     >> The implementation introduces a combine method for matricies, which is \n>     >> consistent with these tests:\n>     >> \n>     >> ## dimnames\n>     >> m <- matrix(1:20, nrow=5, dimnames=list(LETTERS[1:5], letters[1:4]))\n>     >> checkEquals(m, combine(m, m))\n>     >> checkEquals(m, combine(m[1:3,], m[4:5,]))\n>     >> checkEquals(m, combine(m[,1:3], m[,4, drop=FALSE]))\n>     >> ## overlap\n>     >> checkEquals(m, combine(m[1:3,], m[3:5,]))\n>     >> checkEquals(m, combine(m[,1:3], m[,3:4]))\n>     >> checkEquals(matrix(c(1:3, NA, NA, 6:8, NA, NA,\n>     >> 11:15, NA, NA, 18, NA, NA),\n>     >> nrow=5,\n>     >> dimnames=list(LETTERS[1:5], letters[1:4])),\n>     >> combine(m[1:3,1:3], m[3:5, 3:4]))\n>     >> ## row reordering\n>     >> checkEquals(m[c(1,3,5,2,4),], combine(m[c(1,3,5),], m[c(2,4),]))\n>     >> ## Exceptions\n>     >> checkException(combine(m, matrix(0, nrow=5, ncol=4)),\n>     >> silent=TRUE)         # types differ\n>     >> checkException(combine(m, matrix(0L, nrow=5, ncol=4)),\n>     >> silent=TRUE)         # attributes differ\n>     >> m1 <- matrix(1:20, nrow=5)\n>     >> checkException(combine(m, m1), silent=TRUE) # dimnames required\n>     >> \n>     >> Please let me know if you had something else in mind, or if there are \n>     >> problems with this.\n>     >> \n>     >> Martin\n>     >> \n>     >> Laurent Gautier wrote:\n>     >>> That would be useful.\n>     >>> \n>     >>> I have been in a situation where it would have been useful, and spent some \n>     >>> time\n>     >>> with combine as well before writing my own ad-hoc solution.\n>     >>> \n>     >>> \n>     >>> \n>     >>> Laurent\n>     >>> \n>     >>> \n>     >>> 2008/4/4, Gordon K Smyth <smyth at wehi.edu.au>:\n>     >>>> An rbind() method or an rbind-like function for ExpressionSet objects\n>     >>>> would be useful.  Any plans for such a function?\n>     >>>> \n>     >>>> At the moment, an ExpressionSet object can be subsetted by rows or\n>     >>>> columns.  Column subsets can be put back together using combine(), but\n>     >>>> there's no way I think to put row subsets back together.\n>     >>>> \n>     >>>> BTW, the help page for the generic function combine() includes the idea \n>     >>>> of\n>     >>>> combining by rows, but this concept is not honoured by the combine method\n>     >>>> for the eSet class.\n>     >>>> \n>     >>>> Cheers\n>     >>>> Gordon\n>     >>>> \n>     >>>> _______________________________________________\n>     >>>> Bioc-devel at stat.math.ethz.ch mailing list\n>     >>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>     >>>> \n>     >>> \n>     >>> \n>     >> \n>     >> \n>     >> -- \n>     >> Martin Morgan\n>     >> Computational Biology / Fred Hutchinson Cancer Research Center\n>     >> 1100 Fairview Ave. N.\n>     >> PO Box 19024 Seattle, WA 98109\n>     >> \n>     >> Location: Arnold Building M2 B169\n>     >> Phone: (206) 667-2793\n>     >> \n>\n>     GS> _______________________________________________\n>     GS> Bioc-devel at stat.math.ethz.ch mailing list\n>     GS> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n-- \nMartin Morgan\nComputational Biology / Fred Hutchinson Cancer Research Center\n1100 Fairview Ave. N.\nPO Box 19024 Seattle, WA 98109\n\nLocation: Arnold Building M2 B169\nPhone: (206) 667-2793",
+      "body_snippet": "Martin Maechler <maechler at stat.math.ethz.ch> writes:\n\n>>>>>> \"GS\" == Gordon K Smyth <smyth at wehi.edu.au>\n>>>>>>     on Thu, 1 May 2008 10:26:01 +1000 (E. Australia Standard Time) writes:\n>\n>     ",
+      "thread_id": "thread-2997655e41de",
+      "thread_depth": 2,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-b1f4f6c90ba2",
+      "message_id": "<6ph7ie8lo99.fsf@gopher4.fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2008-05-05T09:16:50-07:00",
+      "subject": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "subject_clean": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "in_reply_to": "<18463.7801.291099.557707@stat.math.ethz.ch> (Martin Maechler's message of \"Mon, 5 May 2008 16:49:29 +0200\")",
+      "references": [
+        "<Pine.WNT.4.64.0804041235460.5200@PC602.alpha.wehi.edu.au>",
+        "<27d1e6020804032230xf577838ubddf6e81f5e57d53@mail.gmail.com>",
+        "<47F6C61F.4040904@fhcrc.org>",
+        "<Pine.WNT.4.64.0805011019060.1816@PC602.alpha.wehi.edu.au>",
+        "<18463.7801.291099.557707@stat.math.ethz.ch>"
+      ],
+      "body_plain": "I guess another difference between rbind / cbind / combine and rbind2\n/ cbind2 is that the latter only allow for two arguments (perhaps that\nis what the '2' is for?) whereas the former will do their work on any\nnumber of arguments. Martin\n\nMartin Maechler <maechler at stat.math.ethz.ch> writes:\n\n>>>>>> \"GS\" == Gordon K Smyth <smyth at wehi.edu.au>\n>>>>>>     on Thu, 1 May 2008 10:26:01 +1000 (E. Australia Standard Time) writes:\n>\n>     GS> Hi Martin,\n>     GS> I have only just noticed that the methods package now has generic \n>     GS> functions rbind2() and cbind2(), which it didn't when the combine() \n>     GS> function was first created for Biobase.\n>\n>     GS> I think it would be clearer and more elegant to implement rbind2() and \n>     GS> cbind2() methods for ExpressionSet, and to retire combine() sometime down \n>     GS> the track (not obviously for the imminent Bioconductor release).  The term \n>     GS> \"combine\" is a somewhat overused, e.g., it conflicts with the c() function \n>     GS> in base.\n>\n>     GS> What do you think?\n>\n> (I'm another 'Martin' but nevertheless .. : )\n>\n> I'm strongly in favor of providing  rbind2() and cbind2()\n> methods, base combine() on these for now, and deprecate\n> combine().\n>\n> rbind2() and cbind2() had been introduced exactly for the\n> purpose of providing rbind() / cbind() - like methods for S4\n> objects.\n>\n> Martin Maechler, ETH Zurich\n>\n>\n>     GS> Cheers\n>     GS> Gordon\n>\n>     GS> On Fri, 4 Apr 2008, Martin Morgan wrote:\n>\n>     >> Thanks for the suggestion and examples.\n>     >> \n>     >> I implemented this in Biobase 1.99.5. It is slightly different from the \n>     >> version in the beadarraySNP package, in that the content of overlapping \n>     >> regions of the exprs arrays have to be identical (beadarraySNP allows NAs in \n>     >> the second matrix).\n>     >> \n>     >> The functionality I implemented is consistent with the following tests \n>     >> (hopefully self-explanatory).\n>     >> \n>     >> data(sample.ExpressionSet)\n>     >> obj <- sample.ExpressionSet\n>     >> \n>     >> checkEquals(obj, combine(obj[1:250,], obj[251:500,]))\n>     >> checkEquals(obj, combine(obj[,1:13], obj[,14:26]))\n>     >> ## overlapping\n>     >> checkEquals(obj, combine(obj[1:300,], obj[250:500,]))\n>     >> checkEquals(obj, combine(obj[,1:20], obj[,15:26]))\n>     >> \n>     >> \n>     >> The implementation introduces a combine method for matricies, which is \n>     >> consistent with these tests:\n>     >> \n>     >> ## dimnames\n>     >> m <- matrix(1:20, nrow=5, dimnames=list(LETTERS[1:5], letters[1:4]))\n>     >> checkEquals(m, combine(m, m))\n>     >> checkEquals(m, combine(m[1:3,], m[4:5,]))\n>     >> checkEquals(m, combine(m[,1:3], m[,4, drop=FALSE]))\n>     >> ## overlap\n>     >> checkEquals(m, combine(m[1:3,], m[3:5,]))\n>     >> checkEquals(m, combine(m[,1:3], m[,3:4]))\n>     >> checkEquals(matrix(c(1:3, NA, NA, 6:8, NA, NA,\n>     >> 11:15, NA, NA, 18, NA, NA),\n>     >> nrow=5,\n>     >> dimnames=list(LETTERS[1:5], letters[1:4])),\n>     >> combine(m[1:3,1:3], m[3:5, 3:4]))\n>     >> ## row reordering\n>     >> checkEquals(m[c(1,3,5,2,4),], combine(m[c(1,3,5),], m[c(2,4),]))\n>     >> ## Exceptions\n>     >> checkException(combine(m, matrix(0, nrow=5, ncol=4)),\n>     >> silent=TRUE)         # types differ\n>     >> checkException(combine(m, matrix(0L, nrow=5, ncol=4)),\n>     >> silent=TRUE)         # attributes differ\n>     >> m1 <- matrix(1:20, nrow=5)\n>     >> checkException(combine(m, m1), silent=TRUE) # dimnames required\n>     >> \n>     >> Please let me know if you had something else in mind, or if there are \n>     >> problems with this.\n>     >> \n>     >> Martin\n>     >> \n>     >> Laurent Gautier wrote:\n>     >>> That would be useful.\n>     >>> \n>     >>> I have been in a situation where it would have been useful, and spent some \n>     >>> time\n>     >>> with combine as well before writing my own ad-hoc solution.\n>     >>> \n>     >>> \n>     >>> \n>     >>> Laurent\n>     >>> \n>     >>> \n>     >>> 2008/4/4, Gordon K Smyth <smyth at wehi.edu.au>:\n>     >>>> An rbind() method or an rbind-like function for ExpressionSet objects\n>     >>>> would be useful.  Any plans for such a function?\n>     >>>> \n>     >>>> At the moment, an ExpressionSet object can be subsetted by rows or\n>     >>>> columns.  Column subsets can be put back together using combine(), but\n>     >>>> there's no way I think to put row subsets back together.\n>     >>>> \n>     >>>> BTW, the help page for the generic function combine() includes the idea \n>     >>>> of\n>     >>>> combining by rows, but this concept is not honoured by the combine method\n>     >>>> for the eSet class.\n>     >>>> \n>     >>>> Cheers\n>     >>>> Gordon\n>     >>>> \n>     >>>> _______________________________________________\n>     >>>> Bioc-devel at stat.math.ethz.ch mailing list\n>     >>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>     >>>> \n>     >>> \n>     >>> \n>     >> \n>     >> \n>     >> -- \n>     >> Martin Morgan\n>     >> Computational Biology / Fred Hutchinson Cancer Research Center\n>     >> 1100 Fairview Ave. N.\n>     >> PO Box 19024 Seattle, WA 98109\n>     >> \n>     >> Location: Arnold Building M2 B169\n>     >> Phone: (206) 667-2793\n>     >> \n>\n>     GS> _______________________________________________\n>     GS> Bioc-devel at stat.math.ethz.ch mailing list\n>     GS> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n-- \nMartin Morgan\nComputational Biology / Fred Hutchinson Cancer Research Center\n1100 Fairview Ave. N.\nPO Box 19024 Seattle, WA 98109\n\nLocation: Arnold Building M2 B169\nPhone: (206) 667-2793",
+      "body_snippet": "I guess another difference between rbind / cbind / combine and rbind2\n/ cbind2 is that the latter only allow for two arguments (perhaps that\nis what the '2' is for?) whereas the former will do their w",
+      "thread_id": "thread-2997655e41de",
+      "thread_depth": 2,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-341bb73747ac",
+      "message_id": "<481F36B7.5050804@fhcrc.org>",
+      "from_name": "Robert Gentleman",
+      "from_email_hash": "7de55c0000c437ab05b37d16b5a00e42a9bba6254ce27d76eb635498d1e3dda7",
+      "date": "2008-05-05T09:32:55-07:00",
+      "subject": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "subject_clean": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "in_reply_to": "<6ph7ie8lo99.fsf@gopher4.fhcrc.org>",
+      "references": [
+        "<Pine.WNT.4.64.0804041235460.5200@PC602.alpha.wehi.edu.au>",
+        "<27d1e6020804032230xf577838ubddf6e81f5e57d53@mail.gmail.com>",
+        "<47F6C61F.4040904@fhcrc.org>",
+        "<Pine.WNT.4.64.0805011019060.1816@PC602.alpha.wehi.edu.au>",
+        "<18463.7801.291099.557707@stat.math.ethz.ch>",
+        "<6ph7ie8lo99.fsf@gopher4.fhcrc.org>"
+      ],
+      "body_plain": "The idea is for rbind2 and cbind2 to be able to deal with multiple \narguments by combining them pairwise, where there is some chance of \ndealing with the ambiguity.  There are some notes in the man page, and \nuse of these in a non-trivial way requires buying into a number of other \nthings that one may or may not want to do (and some care may be needed \nto turn this on and off in appropriate situations).\n\nETH-Martin, while I understand your desire to make rbind2 etc some sort \nof standard for S4, as FHCRC-Martin said, that is not the operation that \nis being performed (at least not very often).  We typically have much \nmore complex arrangments (and in a sense this would be more like merge \nand friends, but still different enough that I think we need to keep our \nnotion of combine.\n\n\n\nMartin Morgan wrote:\n> I guess another difference between rbind / cbind / combine and rbind2\n> / cbind2 is that the latter only allow for two arguments (perhaps that\n> is what the '2' is for?) whereas the former will do their work on any\n> number of arguments. Martin\n> \n> Martin Maechler <maechler at stat.math.ethz.ch> writes:\n> \n>>>>>>> \"GS\" == Gordon K Smyth <smyth at wehi.edu.au>\n>>>>>>>     on Thu, 1 May 2008 10:26:01 +1000 (E. Australia Standard Time) writes:\n>>     GS> Hi Martin,\n>>     GS> I have only just noticed that the methods package now has generic \n>>     GS> functions rbind2() and cbind2(), which it didn't when the combine() \n>>     GS> function was first created for Biobase.\n>>\n>>     GS> I think it would be clearer and more elegant to implement rbind2() and \n>>     GS> cbind2() methods for ExpressionSet, and to retire combine() sometime down \n>>     GS> the track (not obviously for the imminent Bioconductor release).  The term \n>>     GS> \"combine\" is a somewhat overused, e.g., it conflicts with the c() function \n>>     GS> in base.\n>>\n>>     GS> What do you think?\n>>\n>> (I'm another 'Martin' but nevertheless .. : )\n>>\n>> I'm strongly in favor of providing  rbind2() and cbind2()\n>> methods, base combine() on these for now, and deprecate\n>> combine().\n>>\n>> rbind2() and cbind2() had been introduced exactly for the\n>> purpose of providing rbind() / cbind() - like methods for S4\n>> objects.\n>>\n>> Martin Maechler, ETH Zurich\n>>\n>>\n>>     GS> Cheers\n>>     GS> Gordon\n>>\n>>     GS> On Fri, 4 Apr 2008, Martin Morgan wrote:\n>>\n>>     >> Thanks for the suggestion and examples.\n>>     >> \n>>     >> I implemented this in Biobase 1.99.5. It is slightly different from the \n>>     >> version in the beadarraySNP package, in that the content of overlapping \n>>     >> regions of the exprs arrays have to be identical (beadarraySNP allows NAs in \n>>     >> the second matrix).\n>>     >> \n>>     >> The functionality I implemented is consistent with the following tests \n>>     >> (hopefully self-explanatory).\n>>     >> \n>>     >> data(sample.ExpressionSet)\n>>     >> obj <- sample.ExpressionSet\n>>     >> \n>>     >> checkEquals(obj, combine(obj[1:250,], obj[251:500,]))\n>>     >> checkEquals(obj, combine(obj[,1:13], obj[,14:26]))\n>>     >> ## overlapping\n>>     >> checkEquals(obj, combine(obj[1:300,], obj[250:500,]))\n>>     >> checkEquals(obj, combine(obj[,1:20], obj[,15:26]))\n>>     >> \n>>     >> \n>>     >> The implementation introduces a combine method for matricies, which is \n>>     >> consistent with these tests:\n>>     >> \n>>     >> ## dimnames\n>>     >> m <- matrix(1:20, nrow=5, dimnames=list(LETTERS[1:5], letters[1:4]))\n>>     >> checkEquals(m, combine(m, m))\n>>     >> checkEquals(m, combine(m[1:3,], m[4:5,]))\n>>     >> checkEquals(m, combine(m[,1:3], m[,4, drop=FALSE]))\n>>     >> ## overlap\n>>     >> checkEquals(m, combine(m[1:3,], m[3:5,]))\n>>     >> checkEquals(m, combine(m[,1:3], m[,3:4]))\n>>     >> checkEquals(matrix(c(1:3, NA, NA, 6:8, NA, NA,\n>>     >> 11:15, NA, NA, 18, NA, NA),\n>>     >> nrow=5,\n>>     >> dimnames=list(LETTERS[1:5], letters[1:4])),\n>>     >> combine(m[1:3,1:3], m[3:5, 3:4]))\n>>     >> ## row reordering\n>>     >> checkEquals(m[c(1,3,5,2,4),], combine(m[c(1,3,5),], m[c(2,4),]))\n>>     >> ## Exceptions\n>>     >> checkException(combine(m, matrix(0, nrow=5, ncol=4)),\n>>     >> silent=TRUE)         # types differ\n>>     >> checkException(combine(m, matrix(0L, nrow=5, ncol=4)),\n>>     >> silent=TRUE)         # attributes differ\n>>     >> m1 <- matrix(1:20, nrow=5)\n>>     >> checkException(combine(m, m1), silent=TRUE) # dimnames required\n>>     >> \n>>     >> Please let me know if you had something else in mind, or if there are \n>>     >> problems with this.\n>>     >> \n>>     >> Martin\n>>     >> \n>>     >> Laurent Gautier wrote:\n>>     >>> That would be useful.\n>>     >>> \n>>     >>> I have been in a situation where it would have been useful, and spent some \n>>     >>> time\n>>     >>> with combine as well before writing my own ad-hoc solution.\n>>     >>> \n>>     >>> \n>>     >>> \n>>     >>> Laurent\n>>     >>> \n>>     >>> \n>>     >>> 2008/4/4, Gordon K Smyth <smyth at wehi.edu.au>:\n>>     >>>> An rbind() method or an rbind-like function for ExpressionSet objects\n>>     >>>> would be useful.  Any plans for such a function?\n>>     >>>> \n>>     >>>> At the moment, an ExpressionSet object can be subsetted by rows or\n>>     >>>> columns.  Column subsets can be put back together using combine(), but\n>>     >>>> there's no way I think to put row subsets back together.\n>>     >>>> \n>>     >>>> BTW, the help page for the generic function combine() includes the idea \n>>     >>>> of\n>>     >>>> combining by rows, but this concept is not honoured by the combine method\n>>     >>>> for the eSet class.\n>>     >>>> \n>>     >>>> Cheers\n>>     >>>> Gordon\n>>     >>>> \n>>     >>>> _______________________________________________\n>>     >>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>     >>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>     >>>> \n>>     >>> \n>>     >>> \n>>     >> \n>>     >> \n>>     >> -- \n>>     >> Martin Morgan\n>>     >> Computational Biology / Fred Hutchinson Cancer Research Center\n>>     >> 1100 Fairview Ave. N.\n>>     >> PO Box 19024 Seattle, WA 98109\n>>     >> \n>>     >> Location: Arnold Building M2 B169\n>>     >> Phone: (206) 667-2793\n>>     >> \n>>\n>>     GS> _______________________________________________\n>>     GS> Bioc-devel at stat.math.ethz.ch mailing list\n>>     GS> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n\n-- \nRobert Gentleman, PhD\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M2-B876\nPO Box 19024\nSeattle, Washington 98109-1024\n206-667-7700\nrgentlem at fhcrc.org",
+      "body_snippet": "The idea is for rbind2 and cbind2 to be able to deal with multiple \narguments by combining them pairwise, where there is some chance of \ndealing with the ambiguity.  There are some notes in the man pa",
+      "thread_id": "thread-2997655e41de",
+      "thread_depth": 3,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-5c0416c8e8b7",
+      "message_id": "<Pine.WNT.4.64.0805062139470.5444@PC602.alpha.wehi.edu.au>",
+      "from_name": "Gordon K Smyth",
+      "from_email_hash": "a978abba6e869c142fda92319a9ab9659112ab762e437af84e6581fe4481f132",
+      "date": "2008-05-06T22:31:03+10:00",
+      "subject": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "subject_clean": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "in_reply_to": "<6ph4p9cda1k.fsf@gopher4.fhcrc.org>",
+      "references": [
+        "<Pine.WNT.4.64.0804041235460.5200@PC602.alpha.wehi.edu.au>",
+        "<27d1e6020804032230xf577838ubddf6e81f5e57d53@mail.gmail.com>",
+        "<47F6C61F.4040904@fhcrc.org>",
+        "<Pine.WNT.4.64.0805011019060.1816@PC602.alpha.wehi.edu.au>",
+        "<18463.7801.291099.557707@stat.math.ethz.ch>",
+        "<6ph4p9cda1k.fsf@gopher4.fhcrc.org>"
+      ],
+      "body_plain": "Thanks to both Martin's for replies.\n\nI hadn't realised before that combine() is actually a merge-like function, \nalthough admitedly more careful reading of the help page would have warned \nme.  The name did confuse me: combine() is unlike c() in the base package \nbut instead very similar to merge().\n\nI really did want genuine rbind() and cbind() functions.  I now see that \ncombine() does more than I want, and the possibility of unwanted effects \ngives me less trust in it for my work.\n\nThere is some difference in philosophy here I think.  I think of \nmicroarray data objects as analogous to matrices, whereas combine() is \nviewing them as analogous to data.frames.  It makes sense to \"merge\" \ndata.frames, but not matrices, because row and column names might not be \nunique.  I am quite happy to entertain microarray objects with repeated \nrow or column names.  Even if I wasn't, I would find it hard to ensure \nthat sample names are unique across different experimental runs, \nexpecially considering that the names may be set by data files and \nsoftware which are not under my control.\n\nAll the best\nGordon\n\nOn Mon, 5 May 2008, Martin Morgan wrote:\n\n> Martin Maechler <maechler at stat.math.ethz.ch> writes:\n>\n>>>>>>> \"GS\" == Gordon K Smyth <smyth at wehi.edu.au>\n>>>>>>>     on Thu, 1 May 2008 10:26:01 +1000 (E. Australia Standard Time) writes:\n>>\n>>     GS> Hi Martin,\n>>     GS> I have only just noticed that the methods package now has generic\n>>     GS> functions rbind2() and cbind2(), which it didn't when the combine()\n>>     GS> function was first created for Biobase.\n>>\n>>     GS> I think it would be clearer and more elegant to implement rbind2() and\n>>     GS> cbind2() methods for ExpressionSet, and to retire combine() sometime down\n>>     GS> the track (not obviously for the imminent Bioconductor release).  The term\n>>     GS> \"combine\" is a somewhat overused, e.g., it conflicts with the c() function\n>>     GS> in base.\n>>\n>>     GS> What do you think?\n>>\n>> (I'm another 'Martin' but nevertheless .. : )\n>>\n>> I'm strongly in favor of providing  rbind2() and cbind2()\n>> methods, base combine() on these for now, and deprecate\n>> combine().\n>\n> (sorry Gordon for not getting back to you on this, I've actually been\n> mulling it over a bit...)\n>\n> combine does more (or is supposed to, anyway) than rbind or cbind,\n> appending non-overlapping rows and columns simultaneously (and\n> introducing NAs in the implied missing values where features present\n> in only one eSet have to be aligned with samples present only in the\n> other, and vice versa).\n>\n> In mulling this over I realized a bug in the current combine (fixed in\n> devel), and the more-or-less overly restrictive description of\n> combine,eSet,eSet-method.\n>\n> I'm kind of wondering whether Gordon's original question was prompted\n> by a malfunctioning / misleading combine, or by a desire to have a\n> more consistent interface to rbind / cbind?\n>\n>> rbind2() and cbind2() had been introduced exactly for the\n>> purpose of providing rbind() / cbind() - like methods for S4\n>> objects.\n>\n> I know 'why', but it's a little too bad that, for this design goal,\n> rbind2 is not named, well, rbind.\n>\n> I have implemented rbind2 / cbind2 in my local copy of Biobase, and\n> will likely commit over the next day or so. The code is basically\n>\n> setMethod(\"cbind2\",\n>          signature=signature(x=\"eSet\", y=\"eSet\"),\n>          function(x, y) {\n>            ## check that featureNames the same, sampleNames differ,\n>            ## and then...\n>            combine(x, y)\n>          })\n>\n> Gordon, is this the effect you're looking for?\n>\n> Martin Morgan\n>\n>> Martin Maechler, ETH Zurich\n>>\n>>\n>>     GS> Cheers\n>>     GS> Gordon\n>>\n>>     GS> On Fri, 4 Apr 2008, Martin Morgan wrote:\n>>\n>>    >> Thanks for the suggestion and examples.\n>>    >>\n>>    >> I implemented this in Biobase 1.99.5. It is slightly different from the\n>>    >> version in the beadarraySNP package, in that the content of overlapping\n>>    >> regions of the exprs arrays have to be identical (beadarraySNP allows NAs in\n>>    >> the second matrix).\n>>    >>\n>>    >> The functionality I implemented is consistent with the following tests\n>>    >> (hopefully self-explanatory).\n>>    >>\n>>    >> data(sample.ExpressionSet)\n>>    >> obj <- sample.ExpressionSet\n>>    >>\n>>    >> checkEquals(obj, combine(obj[1:250,], obj[251:500,]))\n>>    >> checkEquals(obj, combine(obj[,1:13], obj[,14:26]))\n>>    >> ## overlapping\n>>    >> checkEquals(obj, combine(obj[1:300,], obj[250:500,]))\n>>    >> checkEquals(obj, combine(obj[,1:20], obj[,15:26]))\n>>    >>\n>>    >>\n>>    >> The implementation introduces a combine method for matricies, which is\n>>    >> consistent with these tests:\n>>    >>\n>>    >> ## dimnames\n>>    >> m <- matrix(1:20, nrow=5, dimnames=list(LETTERS[1:5], letters[1:4]))\n>>    >> checkEquals(m, combine(m, m))\n>>    >> checkEquals(m, combine(m[1:3,], m[4:5,]))\n>>    >> checkEquals(m, combine(m[,1:3], m[,4, drop=FALSE]))\n>>    >> ## overlap\n>>    >> checkEquals(m, combine(m[1:3,], m[3:5,]))\n>>    >> checkEquals(m, combine(m[,1:3], m[,3:4]))\n>>    >> checkEquals(matrix(c(1:3, NA, NA, 6:8, NA, NA,\n>>    >> 11:15, NA, NA, 18, NA, NA),\n>>    >> nrow=5,\n>>    >> dimnames=list(LETTERS[1:5], letters[1:4])),\n>>    >> combine(m[1:3,1:3], m[3:5, 3:4]))\n>>    >> ## row reordering\n>>    >> checkEquals(m[c(1,3,5,2,4),], combine(m[c(1,3,5),], m[c(2,4),]))\n>>    >> ## Exceptions\n>>    >> checkException(combine(m, matrix(0, nrow=5, ncol=4)),\n>>    >> silent=TRUE)         # types differ\n>>    >> checkException(combine(m, matrix(0L, nrow=5, ncol=4)),\n>>    >> silent=TRUE)         # attributes differ\n>>    >> m1 <- matrix(1:20, nrow=5)\n>>    >> checkException(combine(m, m1), silent=TRUE) # dimnames required\n>>    >>\n>>    >> Please let me know if you had something else in mind, or if there are\n>>    >> problems with this.\n>>    >>\n>>    >> Martin\n>>    >>\n>>    >> Laurent Gautier wrote:\n>>    >>> That would be useful.\n>>    >>>\n>>    >>> I have been in a situation where it would have been useful, and spent some\n>>    >>> time\n>>    >>> with combine as well before writing my own ad-hoc solution.\n>>    >>>\n>>    >>>\n>>    >>>\n>>    >>> Laurent\n>>    >>>\n>>    >>>\n>>    >>> 2008/4/4, Gordon K Smyth <smyth at wehi.edu.au>:\n>>    >>>> An rbind() method or an rbind-like function for ExpressionSet objects\n>>    >>>> would be useful.  Any plans for such a function?\n>>    >>>>\n>>    >>>> At the moment, an ExpressionSet object can be subsetted by rows or\n>>    >>>> columns.  Column subsets can be put back together using combine(), but\n>>    >>>> there's no way I think to put row subsets back together.\n>>    >>>>\n>>    >>>> BTW, the help page for the generic function combine() includes the idea\n>>    >>>> of\n>>    >>>> combining by rows, but this concept is not honoured by the combine method\n>>    >>>> for the eSet class.\n>>    >>>>\n>>    >>>> Cheers\n>>    >>>> Gordon\n>>    >>>>\n>>    >>>> _______________________________________________\n>>    >>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>    >>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>    >>>>\n>>    >>>\n>>    >>>\n>>    >>\n>>    >>\n>>    >> --\n>>    >> Martin Morgan\n>>    >> Computational Biology / Fred Hutchinson Cancer Research Center\n>>    >> 1100 Fairview Ave. N.\n>>    >> PO Box 19024 Seattle, WA 98109\n>>    >>\n>>    >> Location: Arnold Building M2 B169\n>>    >> Phone: (206) 667-2793\n>>    >>\n>>\n>>     GS> _______________________________________________\n>>     GS> Bioc-devel at stat.math.ethz.ch mailing list\n>>     GS> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n> -- \n> Martin Morgan\n> Computational Biology / Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N.\n> PO Box 19024 Seattle, WA 98109\n>\n> Location: Arnold Building M2 B169\n> Phone: (206) 667-2793",
+      "body_snippet": "Thanks to both Martin's for replies.\n\nI hadn't realised before that combine() is actually a merge-like function, \nalthough admitedly more careful reading of the help page would have warned \nme.  The n",
+      "thread_id": "thread-2997655e41de",
+      "thread_depth": 3,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-4823a1b40f3d",
+      "message_id": "<27d1e6020805060626x4a3113c4g6aaaf9765c61e791@mail.gmail.com>",
+      "from_name": "Laurent Gautier",
+      "from_email_hash": "bf804a19bca99afd3e8648a6bb32a7956ed8fcfdac81cf240f84fad273a2991e",
+      "date": "2008-05-06T21:26:17+08:00",
+      "subject": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "subject_clean": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "in_reply_to": "<Pine.WNT.4.64.0805062139470.5444@PC602.alpha.wehi.edu.au>",
+      "references": [
+        "<Pine.WNT.4.64.0804041235460.5200@PC602.alpha.wehi.edu.au>",
+        "<27d1e6020804032230xf577838ubddf6e81f5e57d53@mail.gmail.com>",
+        "<47F6C61F.4040904@fhcrc.org>",
+        "<Pine.WNT.4.64.0805011019060.1816@PC602.alpha.wehi.edu.au>",
+        "<18463.7801.291099.557707@stat.math.ethz.ch>",
+        "<6ph4p9cda1k.fsf@gopher4.fhcrc.org>",
+        "<Pine.WNT.4.64.0805062139470.5444@PC602.alpha.wehi.edu.au>"
+      ],
+      "body_plain": "2008/5/6 Gordon K Smyth <smyth at wehi.edu.au>:\n> Thanks to both Martin's for replies.\n>\n>  I hadn't realised before that combine() is actually a merge-like function,\n> although admitedly more careful reading of the help page would have warned\n> me.  The name did confuse me: combine() is unlike c() in the base package\n> but instead very similar to merge().\n>\n>  I really did want genuine rbind() and cbind() functions.  I now see that\n> combine() does more than I want, and the possibility of unwanted effects\n> gives me less trust in it for my work.\n>\n>  There is some difference in philosophy here I think.  I think of microarray\n> data objects as analogous to matrices, whereas combine() is viewing them as\n> analogous to data.frames.  It makes sense to \"merge\" data.frames, but not\n> matrices, because row and column names might not be unique.  I am quite\n> happy to entertain microarray objects with repeated row or column names.\n> Even if I wasn't, I would find it hard to ensure that sample names are\n> unique across different experimental runs, expecially considering that the\n> names may be set by data files and software which are not under my control.\n\nThere are always several to skin a cat, but the data structure\nproposed for microarray\ndata start being rather handy and save one the trouble of reinventing the wheel\n(and I can tell you that I am of the picky kind).\nIt can probably do a lot of what you need, and take care of the\nbookkeeping for you.\nFor example, the slot featureData can accommodate repeated names in\none of its columns\nif you have any need to that.\nAbout not having unique sample names, I can tell you that *are*\nimplicitly having them:\nthe position of each column in a matrix is a way to identify your\ndata. Making whatever\nyou have unique is only a matter of using a sequence of integers for example.\n\nHoping this helps,\n\n\nL.\n\n\n>  All the best\n>  Gordon\n>\n>\n>\n>  On Mon, 5 May 2008, Martin Morgan wrote:\n>\n>\n> > Martin Maechler <maechler at stat.math.ethz.ch> writes:\n> >\n> >\n> > >\n> > > >\n> > > > >\n> > > > > >\n> > > > > > >\n> > > > > > > > \"GS\" == Gordon K Smyth <smyth at wehi.edu.au>\n> > > > > > > >    on Thu, 1 May 2008 10:26:01 +1000 (E. Australia Standard\n> Time) writes:\n> > > > > > > >\n> > > > > > >\n> > > > > >\n> > > > >\n> > > >\n> > >\n> > >    GS> Hi Martin,\n> > >    GS> I have only just noticed that the methods package now has generic\n> > >    GS> functions rbind2() and cbind2(), which it didn't when the\n> combine()\n> > >    GS> function was first created for Biobase.\n> > >\n> > >    GS> I think it would be clearer and more elegant to implement\n> rbind2() and\n> > >    GS> cbind2() methods for ExpressionSet, and to retire combine()\n> sometime down\n> > >    GS> the track (not obviously for the imminent Bioconductor release).\n> The term\n> > >    GS> \"combine\" is a somewhat overused, e.g., it conflicts with the c()\n> function\n> > >    GS> in base.\n> > >\n> > >    GS> What do you think?\n> > >\n> > > (I'm another 'Martin' but nevertheless .. : )\n> > >\n> > > I'm strongly in favor of providing  rbind2() and cbind2()\n> > > methods, base combine() on these for now, and deprecate\n> > > combine().\n> > >\n> >\n> > (sorry Gordon for not getting back to you on this, I've actually been\n> > mulling it over a bit...)\n> >\n> > combine does more (or is supposed to, anyway) than rbind or cbind,\n> > appending non-overlapping rows and columns simultaneously (and\n> > introducing NAs in the implied missing values where features present\n> > in only one eSet have to be aligned with samples present only in the\n> > other, and vice versa).\n> >\n> > In mulling this over I realized a bug in the current combine (fixed in\n> > devel), and the more-or-less overly restrictive description of\n> > combine,eSet,eSet-method.\n> >\n> > I'm kind of wondering whether Gordon's original question was prompted\n> > by a malfunctioning / misleading combine, or by a desire to have a\n> > more consistent interface to rbind / cbind?\n> >\n> >\n> > > rbind2() and cbind2() had been introduced exactly for the\n> > > purpose of providing rbind() / cbind() - like methods for S4\n> > > objects.\n> > >\n> >\n> > I know 'why', but it's a little too bad that, for this design goal,\n> > rbind2 is not named, well, rbind.\n> >\n> > I have implemented rbind2 / cbind2 in my local copy of Biobase, and\n> > will likely commit over the next day or so. The code is basically\n> >\n> > setMethod(\"cbind2\",\n> >         signature=signature(x=\"eSet\", y=\"eSet\"),\n> >         function(x, y) {\n> >           ## check that featureNames the same, sampleNames differ,\n> >           ## and then...\n> >           combine(x, y)\n> >         })\n> >\n> > Gordon, is this the effect you're looking for?\n> >\n> > Martin Morgan\n> >\n> >\n> > > Martin Maechler, ETH Zurich\n> > >\n> > >\n> > >    GS> Cheers\n> > >    GS> Gordon\n> > >\n> > >    GS> On Fri, 4 Apr 2008, Martin Morgan wrote:\n> > >\n> > >   >> Thanks for the suggestion and examples.\n> > >   >>\n> > >   >> I implemented this in Biobase 1.99.5. It is slightly different from\n> the\n> > >   >> version in the beadarraySNP package, in that the content of\n> overlapping\n> > >   >> regions of the exprs arrays have to be identical (beadarraySNP\n> allows NAs in\n> > >   >> the second matrix).\n> > >   >>\n> > >   >> The functionality I implemented is consistent with the following\n> tests\n> > >   >> (hopefully self-explanatory).\n> > >   >>\n> > >   >> data(sample.ExpressionSet)\n> > >   >> obj <- sample.ExpressionSet\n> > >   >>\n> > >   >> checkEquals(obj, combine(obj[1:250,], obj[251:500,]))\n> > >   >> checkEquals(obj, combine(obj[,1:13], obj[,14:26]))\n> > >   >> ## overlapping\n> > >   >> checkEquals(obj, combine(obj[1:300,], obj[250:500,]))\n> > >   >> checkEquals(obj, combine(obj[,1:20], obj[,15:26]))\n> > >   >>\n> > >   >>\n> > >   >> The implementation introduces a combine method for matricies, which\n> is\n> > >   >> consistent with these tests:\n> > >   >>\n> > >   >> ## dimnames\n> > >   >> m <- matrix(1:20, nrow=5, dimnames=list(LETTERS[1:5],\n> letters[1:4]))\n> > >   >> checkEquals(m, combine(m, m))\n> > >   >> checkEquals(m, combine(m[1:3,], m[4:5,]))\n> > >   >> checkEquals(m, combine(m[,1:3], m[,4, drop=FALSE]))\n> > >   >> ## overlap\n> > >   >> checkEquals(m, combine(m[1:3,], m[3:5,]))\n> > >   >> checkEquals(m, combine(m[,1:3], m[,3:4]))\n> > >   >> checkEquals(matrix(c(1:3, NA, NA, 6:8, NA, NA,\n> > >   >> 11:15, NA, NA, 18, NA, NA),\n> > >   >> nrow=5,\n> > >   >> dimnames=list(LETTERS[1:5], letters[1:4])),\n> > >   >> combine(m[1:3,1:3], m[3:5, 3:4]))\n> > >   >> ## row reordering\n> > >   >> checkEquals(m[c(1,3,5,2,4),], combine(m[c(1,3,5),], m[c(2,4),]))\n> > >   >> ## Exceptions\n> > >   >> checkException(combine(m, matrix(0, nrow=5, ncol=4)),\n> > >   >> silent=TRUE)         # types differ\n> > >   >> checkException(combine(m, matrix(0L, nrow=5, ncol=4)),\n> > >   >> silent=TRUE)         # attributes differ\n> > >   >> m1 <- matrix(1:20, nrow=5)\n> > >   >> checkException(combine(m, m1), silent=TRUE) # dimnames required\n> > >   >>\n> > >   >> Please let me know if you had something else in mind, or if there\n> are\n> > >   >> problems with this.\n> > >   >>\n> > >   >> Martin\n> > >   >>\n> > >   >> Laurent Gautier wrote:\n> > >   >>> That would be useful.\n> > >   >>>\n> > >   >>> I have been in a situation where it would have been useful, and\n> spent some\n> > >   >>> time\n> > >   >>> with combine as well before writing my own ad-hoc solution.\n> > >   >>>\n> > >   >>>\n> > >   >>>\n> > >   >>> Laurent\n> > >   >>>\n> > >   >>>\n> > >   >>> 2008/4/4, Gordon K Smyth <smyth at wehi.edu.au>:\n> > >   >>>> An rbind() method or an rbind-like function for ExpressionSet\n> objects\n> > >   >>>> would be useful.  Any plans for such a function?\n> > >   >>>>\n> > >   >>>> At the moment, an ExpressionSet object can be subsetted by rows\n> or\n> > >   >>>> columns.  Column subsets can be put back together using\n> combine(), but\n> > >   >>>> there's no way I think to put row subsets back together.\n> > >   >>>>\n> > >   >>>> BTW, the help page for the generic function combine() includes\n> the idea\n> > >   >>>> of\n> > >   >>>> combining by rows, but this concept is not honoured by the\n> combine method\n> > >   >>>> for the eSet class.\n> > >   >>>>\n> > >   >>>> Cheers\n> > >   >>>> Gordon\n> > >   >>>>\n> > >   >>>> _______________________________________________\n> > >   >>>> Bioc-devel at stat.math.ethz.ch mailing list\n> > >   >>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> > >   >>>>\n> > >   >>>\n> > >   >>>\n> > >   >>\n> > >   >>\n> > >   >> --\n> > >   >> Martin Morgan\n> > >   >> Computational Biology / Fred Hutchinson Cancer Research Center\n> > >   >> 1100 Fairview Ave. N.\n> > >   >> PO Box 19024 Seattle, WA 98109\n> > >   >>\n> > >   >> Location: Arnold Building M2 B169\n> > >   >> Phone: (206) 667-2793\n> > >   >>\n> > >\n> > >    GS> _______________________________________________\n> > >    GS> Bioc-devel at stat.math.ethz.ch mailing list\n> > >    GS> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> > >\n> >\n> > --\n> > Martin Morgan\n> > Computational Biology / Fred Hutchinson Cancer Research Center\n> > 1100 Fairview Ave. N.\n> > PO Box 19024 Seattle, WA 98109\n> >\n> > Location: Arnold Building M2 B169\n> > Phone: (206) 667-2793\n> >\n>\n>  _______________________________________________\n>  Bioc-devel at stat.math.ethz.ch mailing list\n>  https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "2008/5/6 Gordon K Smyth <smyth at wehi.edu.au>:\n> Thanks to both Martin's for replies.\n>\n>  I hadn't realised before that combine() is actually a merge-like function,\n> although admitedly more careful",
+      "thread_id": "thread-2997655e41de",
+      "thread_depth": 4,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-f70c7fd2cf42",
+      "message_id": "<Pine.WNT.4.64.0805071422420.5512@PC602.alpha.wehi.edu.au>",
+      "from_name": "Gordon K Smyth",
+      "from_email_hash": "a978abba6e869c142fda92319a9ab9659112ab762e437af84e6581fe4481f132",
+      "date": "2008-05-07T15:15:38+10:00",
+      "subject": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "subject_clean": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "in_reply_to": "<27d1e6020805060626x4a3113c4g6aaaf9765c61e791@mail.gmail.com>",
+      "references": [
+        "<Pine.WNT.4.64.0804041235460.5200@PC602.alpha.wehi.edu.au>",
+        "<27d1e6020804032230xf577838ubddf6e81f5e57d53@mail.gmail.com>",
+        "<47F6C61F.4040904@fhcrc.org>",
+        "<Pine.WNT.4.64.0805011019060.1816@PC602.alpha.wehi.edu.au>",
+        "<18463.7801.291099.557707@stat.math.ethz.ch>",
+        "<6ph4p9cda1k.fsf@gopher4.fhcrc.org>",
+        "<Pine.WNT.4.64.0805062139470.5444@PC602.alpha.wehi.edu.au>",
+        "<27d1e6020805060626x4a3113c4g6aaaf9765c61e791@mail.gmail.com>"
+      ],
+      "body_plain": "On Tue, 6 May 2008, Laurent Gautier wrote:\n\n> 2008/5/6 Gordon K Smyth <smyth at wehi.edu.au>:\n>> Thanks to both Martin's for replies.\n>>\n>>  I hadn't realised before that combine() is actually a merge-like function,\n>> although admitedly more careful reading of the help page would have warned\n>> me.  The name did confuse me: combine() is unlike c() in the base package\n>> but instead very similar to merge().\n>>\n>>  I really did want genuine rbind() and cbind() functions.  I now see that\n>> combine() does more than I want, and the possibility of unwanted effects\n>> gives me less trust in it for my work.\n>>\n>> There is some difference in philosophy here I think.  I think of microarray\n>> data objects as analogous to matrices, whereas combine() is viewing them as\n>> analogous to data.frames.  It makes sense to \"merge\" data.frames, but not\n>> matrices, because row and column names might not be unique.  I am quite\n>> happy to entertain microarray objects with repeated row or column names.\n>> Even if I wasn't, I would find it hard to ensure that sample names are\n>> unique across different experimental runs, expecially considering that the\n>> names may be set by data files and software which are not under my control.\n>\n> There are always several to skin a cat, but the data structure\n> proposed for microarray\n> data start being rather handy and save one the trouble of reinventing the wheel\n> (and I can tell you that I am of the picky kind).\n> It can probably do a lot of what you need, and take care of the\n> bookkeeping for you.\n> For example, the slot featureData can accommodate repeated names in\n> one of its columns\n> if you have any need to that.\n> About not having unique sample names, I can tell you that *are*\n> implicitly having them:\n> the position of each column in a matrix is a way to identify your\n> data. Making whatever\n> you have unique is only a matter of using a sequence of integers for example.\n>\n> Hoping this helps,\n> L.\n\nDear Laurent,\n\nYou've interpretted my post to say almost the opposite of what I intended, \nno doubt my fault for making such an obscure comment late at night.\n\nI can only agree with you that data objects can be useful, that \nfeatureData columns can contain anything, and that matrices have column \nnumbers, and be sobered by the fact that you believe these things to be \nnew to me.\n\nIf you play with merge() or combine(), you'll find that column number has \nno significance in these functions, and instead column names take \nprecedence in determining sample identity.  This can have spectacular \nconsequences.  This is not to say that they are bad functions, not at all, \njust that they make a rather strong set assumptions, which are different \nthan those made by cbind() and rbind().  For work done at the FHCRC, the \ncombine() assumptions are useful and productive (eg, row names might be \nAffy probe IDs and col names might be patient IDs, both of which should be \nunambiguous through an entire study), whereas they're not quite so useful \nfor the type of data I see most often.  In making this observation, I am \nnot backing away from the whole concept of a data class, just the use of \ncombine() over rbind() or cbind().  Hope this is little clearer.\n\nBest wishes\nGordon",
+      "body_snippet": "On Tue, 6 May 2008, Laurent Gautier wrote:\n\n> 2008/5/6 Gordon K Smyth <smyth at wehi.edu.au>:\n>> Thanks to both Martin's for replies.\n>>\n>>  I hadn't realised before that combine() is actually a merge",
+      "thread_id": "thread-2997655e41de",
+      "thread_depth": 5,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-72efa9e9fa8d",
+      "message_id": "<48214DE5.4030907@wehi.edu.au>",
+      "from_name": "Keith Satterley",
+      "from_email_hash": "76db1ee900961338dabfa6110de856031861d416050f04f1577a77475dee6838",
+      "date": "2008-05-07T16:36:21+10:00",
+      "subject": "[Bioc-devel] lumiHumanV1 missing",
+      "subject_clean": "[Bioc-devel] lumiHumanV1 missing",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "The package lumiHumanV1 was available on May 5th, 6:15pm (+10 GMT), but is no \nlonger available. It's no longer at:\n\nhttp://bioconductor.org/packages/release/AnnotationData.html\n\nlumi Suggests it. When I install lumi with biocLite and dependencies=TRUE I get \nan error. Should lumi's DESCRIPTION file be modified or is lumiHumanV1 coming back?\n\ncheers,\n\nKeith\n\n========================\nKeith Satterley\nBioinformatics Division\nThe Walter and Eliza Hall Institute of Medical Research\nParkville, Melbourne,\nVictoria, Australia",
+      "body_snippet": "The package lumiHumanV1 was available on May 5th, 6:15pm (+10 GMT), but is no \nlonger available. It's no longer at:\n\nhttp://bioconductor.org/packages/release/AnnotationData.html\n\nlumi Suggests it. Whe",
+      "thread_id": "thread-72efa9e9fa8d",
+      "thread_depth": 0,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-e4100d416229",
+      "message_id": "<Pine.GSO.4.58.0805070639570.26709@capecod.bwh.harvard.edu>",
+      "from_name": "Vincent Carey 525-2265",
+      "from_email_hash": "a2452f5b8291c3819d7bf5f8363b8501a99d965cccb34679af430953cca3c633",
+      "date": "2008-05-07T06:47:37-04:00",
+      "subject": "[Bioc-devel] lumiHumanV1 missing",
+      "subject_clean": "[Bioc-devel] lumiHumanV1 missing",
+      "in_reply_to": "<48214DE5.4030907@wehi.edu.au>",
+      "references": [
+        "<48214DE5.4030907@wehi.edu.au>"
+      ],
+      "body_plain": "Hi -- it seems that the V1-V3 maps are assembled in lumiHumanAll.\n>From a management perspective I can understand the impetus to\nconsolidate.  If there is a severe impact of removal of V1, let's\ndiscuss.  I haven't tried it but I would expect the query resolution\nto be similar, after substitution of \"All\" for \"V1\" in the package/db name\nreferences.\n\n\n---\nVince Carey, PhD\nAssoc. Prof Med (Biostatistics)\nHarvard Medical School\nChanning Laboratory - ph 6175252265 fa 6177311541\n181 Longwood Ave Boston MA 02115 USA\nstvjc at channing.harvard.edu\n\nOn Wed, 7 May 2008, Keith Satterley wrote:\n\n> The package lumiHumanV1 was available on May 5th, 6:15pm (+10 GMT), but is no\n> longer available. It's no longer at:\n>\n> http://bioconductor.org/packages/release/AnnotationData.html\n>\n> lumi Suggests it. When I install lumi with biocLite and dependencies=TRUE I get\n> an error. Should lumi's DESCRIPTION file be modified or is lumiHumanV1 coming back?\n>\n> cheers,\n>\n> Keith\n>\n> ========================\n> Keith Satterley\n> Bioinformatics Division\n> The Walter and Eliza Hall Institute of Medical Research\n> Parkville, Melbourne,\n> Victoria, Australia\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\nThe information transmitted in this electronic communica...{{dropped:10}}",
+      "body_snippet": "Hi -- it seems that the V1-V3 maps are assembled in lumiHumanAll.\n>From a management perspective I can understand the impetus to\nconsolidate.  If there is a severe impact of removal of V1, let's\ndiscu",
+      "thread_id": "thread-72efa9e9fa8d",
+      "thread_depth": 1,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-75e92c239a97",
+      "message_id": "<C4472A96.6653%dupan@northwestern.edu>",
+      "from_name": "Pan Du",
+      "from_email_hash": "bced2e67b23566f269b31d7aea17a37aacdcfd0fd056b6f242112456ba650908",
+      "date": "2008-05-07T09:44:54-05:00",
+      "subject": "[Bioc-devel] lumiHumanV1 missing",
+      "subject_clean": "[Bioc-devel] lumiHumanV1 missing",
+      "in_reply_to": "<mailman.3981.1210142207.29471.bioc-devel@stat.math.ethz.ch>",
+      "references": [],
+      "body_plain": "Thanks! Keith\nI have updated the description file and vignette of lumi to replace\nlumiHumanV1 as lumiHumanAll.db.\n\n\nPan\n\n\nOn 5/7/08 1:36 AM, \"bioc-devel-request at stat.math.ethz.ch\"\n<bioc-devel-request at stat.math.ethz.ch> wrote:\n\n> Message: 4\n> Date: Wed, 07 May 2008 16:36:21 +1000\n> From: Keith Satterley <keith at wehi.EDU.AU>\n> Subject: [Bioc-devel] lumiHumanV1 missing\n> To: bioc-devel at stat.math.ethz.ch\n> Message-ID: <48214DE5.4030907 at wehi.edu.au>\n> Content-Type: text/plain; charset=ISO-8859-1; format=flowed\n> \n> The package lumiHumanV1 was available on May 5th, 6:15pm (+10 GMT), but is no\n> longer available. It's no longer at:\n> \n> http://bioconductor.org/packages/release/AnnotationData.html\n> \n> lumi Suggests it. When I install lumi with biocLite and dependencies=TRUE I\n> get \n> an error. Should lumi's DESCRIPTION file be modified or is lumiHumanV1 coming\n> back?\n> \n> cheers,\n> \n> Keith\n> \n> ========================\n> Keith Satterley\n> Bioinformatics Division\n> The Walter and Eliza Hall Institute of Medical Research\n> Parkville, Melbourne,\n> Victoria, Australia\n> \n\n\n------------------------------------------------------\nPan Du, PhD\nResearch Assistant Professor\nNorthwestern University Biomedical Informatics Center\n750 N. Lake Shore Drive, 11-176\nChicago, IL  60611\nOffice (312) 503-2360\ndupan at northwestern.edu",
+      "body_snippet": "Thanks! Keith\nI have updated the description file and vignette of lumi to replace\nlumiHumanV1 as lumiHumanAll.db.\n\n\nPan\n\n\nOn 5/7/08 1:36 AM, \"bioc-devel-request at stat.math.ethz.ch\"\n<bioc-devel-reque",
+      "thread_id": "thread-75e92c239a97",
+      "thread_depth": 0,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-8e7edc1bb583",
+      "message_id": "<C4472BF0.6654%dupan@northwestern.edu>",
+      "from_name": "Pan Du",
+      "from_email_hash": "bced2e67b23566f269b31d7aea17a37aacdcfd0fd056b6f242112456ba650908",
+      "date": "2008-05-07T09:50:40-05:00",
+      "subject": "[Bioc-devel] Anyway of automatically inform the check errors/warnings of Bioc developing version?",
+      "subject_clean": "[Bioc-devel] Anyway of automatically inform the check errors/warnings of Bioc developing version?",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\n\nIs there anyway of automatically inform the package maintainer the check\nerrors/warnings of Bioc developing version? I think it is important for\ntimely fixing up the errors and warnings. Thanks!\n\n\nPan\n\n\n------------------------------------------------------\nPan Du, PhD\nResearch Assistant Professor\nNorthwestern University Biomedical Informatics Center\n750 N. Lake Shore Drive, 11-176\nChicago, IL  60611\nOffice (312) 503-2360\ndupan at northwestern.edu",
+      "body_snippet": "Hi,\n\nIs there anyway of automatically inform the package maintainer the check\nerrors/warnings of Bioc developing version? I think it is important for\ntimely fixing up the errors and warnings. Thanks!\n",
+      "thread_id": "thread-8e7edc1bb583",
+      "thread_depth": 0,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-60310037a85e",
+      "message_id": "<4821D57B.1020603@fhcrc.org>",
+      "from_name": "Marc Carlson",
+      "from_email_hash": "63182bae9b15df223407341203cb8ed095d4cf2c8e9f0f84a8b7320bd591907d",
+      "date": "2008-05-07T09:14:51-07:00",
+      "subject": "[Bioc-devel] Anyway of automatically inform the check errors/warnings of Bioc developing version?",
+      "subject_clean": "[Bioc-devel] Anyway of automatically inform the check errors/warnings of Bioc developing version?",
+      "in_reply_to": "<C4472BF0.6654%dupan@northwestern.edu>",
+      "references": [
+        "<C4472BF0.6654%dupan@northwestern.edu>"
+      ],
+      "body_plain": "Hmmm,\n\n\nWe have a pretty nice build system website that you can visit. \n\nhttp://bioconductor.org/checkResults/2.3/bioc-LATEST/\n\nWhich should show you the latest build and check information (updated \ndaily) for all the packages currently in devel.\n\n\n     Marc\n\n\nPan Du wrote:\n> Hi,\n>\n> Is there anyway of automatically inform the package maintainer the check\n> errors/warnings of Bioc developing version? I think it is important for\n> timely fixing up the errors and warnings. Thanks!\n>\n>\n> Pan\n>\n>\n> ------------------------------------------------------\n> Pan Du, PhD\n> Research Assistant Professor\n> Northwestern University Biomedical Informatics Center\n> 750 N. Lake Shore Drive, 11-176\n> Chicago, IL  60611\n> Office (312) 503-2360\n> dupan at northwestern.edu\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n>",
+      "body_snippet": "Hmmm,\n\n\nWe have a pretty nice build system website that you can visit. \n\nhttp://bioconductor.org/checkResults/2.3/bioc-LATEST/\n\nWhich should show you the latest build and check information (updated \nd",
+      "thread_id": "thread-8e7edc1bb583",
+      "thread_depth": 1,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-2edc5e8d8adb",
+      "message_id": "<C447425B.665A%dupan@northwestern.edu>",
+      "from_name": "Pan Du",
+      "from_email_hash": "bced2e67b23566f269b31d7aea17a37aacdcfd0fd056b6f242112456ba650908",
+      "date": "2008-05-07T11:26:19-05:00",
+      "subject": "[Bioc-devel] Anyway of automatically inform the check errors/warnings of Bioc developing version?",
+      "subject_clean": "[Bioc-devel] Anyway of automatically inform the check errors/warnings of Bioc developing version?",
+      "in_reply_to": "<4821D57B.1020603@fhcrc.org>",
+      "references": [],
+      "body_plain": "Hi Marc,\n\nThis website is useful. However, it is impossible for the developer to visit\nthe website everyday. Sometimes, the warnings or errors might be caused by\nsome dependent packages and the package maintainer will not know them. So it\nis better to inform the package maintainers automatically by email whenever\nthere are check errors or warnings.\nThanks!\n \n\nPan\n\n\nOn 5/7/08 11:14 AM, \"Marc Carlson\" <mcarlson at fhcrc.org> wrote:\n\n> Hmmm,\n> \n> \n> We have a pretty nice build system website that you can visit.\n> \n> http://bioconductor.org/checkResults/2.3/bioc-LATEST/\n> \n> Which should show you the latest build and check information (updated\n> daily) for all the packages currently in devel.\n> \n> \n>      Marc\n> \n> \n> Pan Du wrote:\n>> Hi,\n>> \n>> Is there anyway of automatically inform the package maintainer the check\n>> errors/warnings of Bioc developing version? I think it is important for\n>> timely fixing up the errors and warnings. Thanks!\n>> \n>> \n>> Pan\n>> \n>> \n>> ------------------------------------------------------\n>> Pan Du, PhD\n>> Research Assistant Professor\n>> Northwestern University Biomedical Informatics Center\n>> 750 N. Lake Shore Drive, 11-176\n>> Chicago, IL  60611\n>> Office (312) 503-2360\n>> dupan at northwestern.edu\n>> \n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>> \n>>   \n>",
+      "body_snippet": "Hi Marc,\n\nThis website is useful. However, it is impossible for the developer to visit\nthe website everyday. Sometimes, the warnings or errors might be caused by\nsome dependent packages and the packag",
+      "thread_id": "thread-8e7edc1bb583",
+      "thread_depth": 2,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-8424b9aa0832",
+      "message_id": "<4821DBAE.50306@fhcrc.org>",
+      "from_name": "Herve Pages",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2008-05-07T09:41:18-07:00",
+      "subject": "[Bioc-devel] Anyway of automatically inform the check errors/warnings of Bioc developing version?",
+      "subject_clean": "[Bioc-devel] Anyway of automatically inform the check errors/warnings of Bioc developing version?",
+      "in_reply_to": "<C4472BF0.6654%dupan@northwestern.edu>",
+      "references": [
+        "<C4472BF0.6654%dupan@northwestern.edu>"
+      ],
+      "body_plain": "Hi Pan,\n\nPan Du wrote:\n> Hi,\n> \n> Is there anyway of automatically inform the package maintainer the check\n> errors/warnings of Bioc developing version? I think it is important for\n> timely fixing up the errors and warnings. Thanks!\n\nYes this is possible but not currently enabled. We used to have automatic\nbuild failure notifications for the BioC 2.1 builds and we will enable them\nagain for the current release builds (BioC 2.2) very soon. We might also\nconsider enabling this for the devel builds at some point.\n\nCheers,\nH.\n\n> \n> \n> Pan\n> \n> \n> ------------------------------------------------------\n> Pan Du, PhD\n> Research Assistant Professor\n> Northwestern University Biomedical Informatics Center\n> 750 N. Lake Shore Drive, 11-176\n> Chicago, IL  60611\n> Office (312) 503-2360\n> dupan at northwestern.edu\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "Hi Pan,\n\nPan Du wrote:\n> Hi,\n> \n> Is there anyway of automatically inform the package maintainer the check\n> errors/warnings of Bioc developing version? I think it is important for\n> timely fixing up ",
+      "thread_id": "thread-8e7edc1bb583",
+      "thread_depth": 1,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-5d6db27c7f5a",
+      "message_id": "<82594366-4045-4418-AEFC-A368B98D648C@stat.berkeley.edu>",
+      "from_name": "Kasper Daniel Hansen",
+      "from_email_hash": "64daa056fd8bc97c1a667a56c348131f4bfb7651adb6032fb836238a930de545",
+      "date": "2008-05-07T10:07:31-07:00",
+      "subject": "[Bioc-devel] annotate missing from devel",
+      "subject_clean": "[Bioc-devel] annotate missing from devel",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "The checks seems fine but I cannot obtain it with biocLite under 2.8.0\n\nKasper",
+      "body_snippet": "The checks seems fine but I cannot obtain it with biocLite under 2.8.0\n\nKasper",
+      "thread_id": "thread-5d6db27c7f5a",
+      "thread_depth": 0,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-5cd3e70ce898",
+      "message_id": "<482201AE.6060203@fhcrc.org>",
+      "from_name": "Herve Pages",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2008-05-07T12:23:26-07:00",
+      "subject": "[Bioc-devel] annotate missing from devel",
+      "subject_clean": "[Bioc-devel] annotate missing from devel",
+      "in_reply_to": "<82594366-4045-4418-AEFC-A368B98D648C@stat.berkeley.edu>",
+      "references": [
+        "<82594366-4045-4418-AEFC-A368B98D648C@stat.berkeley.edu>"
+      ],
+      "body_plain": "Hi Kasper,\n\nKasper Daniel Hansen wrote:\n> The checks seems fine but I cannot obtain it with biocLite under 2.8.0\n\nThe \"orange\" builds (i.e. the builds for R-2.7/BioC-2.2) look fine for annotate:\n\n   http://bioconductor.org/checkResults/2.2/bioc-LATEST/annotate/lamb1-buildsrc.html\n\nbut not the \"aquarium\" builds (i.e. the builds for R-2.8/BioC-2.3):\n\n   http://bioconductor.org/checkResults/2.3/bioc-LATEST/annotate/wilson1-buildsrc.html\n\nTherefore annotate will not be pushed to the BioC 2.3 public repo until someone\nfixes its vignette.\n\nCheers,\nH.\n\nPS: The general page for all our builds is:\n\n   http://bioconductor.org/checkResults/\n\n\n> \n> Kasper\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "Hi Kasper,\n\nKasper Daniel Hansen wrote:\n> The checks seems fine but I cannot obtain it with biocLite under 2.8.0\n\nThe \"orange\" builds (i.e. the builds for R-2.7/BioC-2.2) look fine for annotate:\n\n   h",
+      "thread_id": "thread-5d6db27c7f5a",
+      "thread_depth": 1,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-9d0869b59157",
+      "message_id": "<48220925.2090001@med.umich.edu>",
+      "from_name": "James W. MacDonald",
+      "from_email_hash": "51e0486782bd6ed6ad0d8d179dbc9204aca523620b6842837909c743527fce1d",
+      "date": "2008-05-07T15:55:17-04:00",
+      "subject": "[Bioc-devel] annotate missing from devel",
+      "subject_clean": "[Bioc-devel] annotate missing from devel",
+      "in_reply_to": "<482201AE.6060203@fhcrc.org>",
+      "references": [
+        "<82594366-4045-4418-AEFC-A368B98D648C@stat.berkeley.edu>",
+        "<482201AE.6060203@fhcrc.org>"
+      ],
+      "body_plain": "Hi Herve,\n\nHerve Pages wrote:\n> Hi Kasper,\n> \n> Kasper Daniel Hansen wrote:\n>> The checks seems fine but I cannot obtain it with biocLite under 2.8.0\n> \n> The \"orange\" builds (i.e. the builds for R-2.7/BioC-2.2) look fine for \n> annotate:\n> \n>   \n> http://bioconductor.org/checkResults/2.2/bioc-LATEST/annotate/lamb1-buildsrc.html \n> \n> \n> but not the \"aquarium\" builds (i.e. the builds for R-2.8/BioC-2.3):\n> \n>   \n> http://bioconductor.org/checkResults/2.3/bioc-LATEST/annotate/wilson1-buildsrc.html \n> \n> \n> Therefore annotate will not be pushed to the BioC 2.3 public repo until \n> someone\n> fixes its vignette.\n\nUnfortunately that vignette is unfixable - it is based on the old \nHomologene/env packages, so will need to be almost completely rewritten \nto use the new InParanoid/SQLite packages.\n\nI should be able to replace it with something reasonable either this \nweek or the next. In the meantime I will just rename it so it won't \ninterfere with the build.\n\nBest,\n\nJim\n\n\n> \n> Cheers,\n> H.\n> \n> PS: The general page for all our builds is:\n> \n>   http://bioconductor.org/checkResults/\n> \n> \n>>\n>> Kasper\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n-- \nJames W. MacDonald, M.S.\nBiostatistician\nAffymetrix and cDNA Microarray Core\nUniversity of Michigan Cancer Center\n1500 E. Medical Center Drive\n7410 CCGC\nAnn Arbor MI 48109\n734-647-5623",
+      "body_snippet": "Hi Herve,\n\nHerve Pages wrote:\n> Hi Kasper,\n> \n> Kasper Daniel Hansen wrote:\n>> The checks seems fine but I cannot obtain it with biocLite under 2.8.0\n> \n> The \"orange\" builds (i.e. the builds for R-2.",
+      "thread_id": "thread-5d6db27c7f5a",
+      "thread_depth": 2,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-8a8328d2c3fd",
+      "message_id": "<48220D6C.4020101@med.umich.edu>",
+      "from_name": "James W. MacDonald",
+      "from_email_hash": "51e0486782bd6ed6ad0d8d179dbc9204aca523620b6842837909c743527fce1d",
+      "date": "2008-05-07T16:13:32-04:00",
+      "subject": "[Bioc-devel] annotate missing from devel",
+      "subject_clean": "[Bioc-devel] annotate missing from devel",
+      "in_reply_to": "<48220925.2090001@med.umich.edu>",
+      "references": [
+        "<82594366-4045-4418-AEFC-A368B98D648C@stat.berkeley.edu>",
+        "<482201AE.6060203@fhcrc.org>",
+        "<48220925.2090001@med.umich.edu>"
+      ],
+      "body_plain": "On further examination, the vignette on using the annotation packages is \nstill based on the env packages as well. It builds right now because it \ndepends on the .db packages, and thus works, but the text is all wrong. \nI'll try to get that updated as well.\n\nBest,\n\nJim\n\n\n\nJames W. MacDonald wrote:\n> Hi Herve,\n> \n> Herve Pages wrote:\n>> Hi Kasper,\n>>\n>> Kasper Daniel Hansen wrote:\n>>> The checks seems fine but I cannot obtain it with biocLite under 2.8.0\n>>\n>> The \"orange\" builds (i.e. the builds for R-2.7/BioC-2.2) look fine for \n>> annotate:\n>>\n>>   \n>> http://bioconductor.org/checkResults/2.2/bioc-LATEST/annotate/lamb1-buildsrc.html \n>>\n>>\n>> but not the \"aquarium\" builds (i.e. the builds for R-2.8/BioC-2.3):\n>>\n>>   \n>> http://bioconductor.org/checkResults/2.3/bioc-LATEST/annotate/wilson1-buildsrc.html \n>>\n>>\n>> Therefore annotate will not be pushed to the BioC 2.3 public repo \n>> until someone\n>> fixes its vignette.\n> \n> Unfortunately that vignette is unfixable - it is based on the old \n> Homologene/env packages, so will need to be almost completely rewritten \n> to use the new InParanoid/SQLite packages.\n> \n> I should be able to replace it with something reasonable either this \n> week or the next. In the meantime I will just rename it so it won't \n> interfere with the build.\n> \n> Best,\n> \n> Jim\n> \n> \n>>\n>> Cheers,\n>> H.\n>>\n>> PS: The general page for all our builds is:\n>>\n>>   http://bioconductor.org/checkResults/\n>>\n>>\n>>>\n>>> Kasper\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n\n-- \nJames W. MacDonald, M.S.\nBiostatistician\nAffymetrix and cDNA Microarray Core\nUniversity of Michigan Cancer Center\n1500 E. Medical Center Drive\n7410 CCGC\nAnn Arbor MI 48109\n734-647-5623",
+      "body_snippet": "On further examination, the vignette on using the annotation packages is \nstill based on the env packages as well. It builds right now because it \ndepends on the .db packages, and thus works, but the ",
+      "thread_id": "thread-5d6db27c7f5a",
+      "thread_depth": 3,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-77e456a3bfee",
+      "message_id": "<482225A1.9010107@fhcrc.org>",
+      "from_name": "Marc Carlson",
+      "from_email_hash": "63182bae9b15df223407341203cb8ed095d4cf2c8e9f0f84a8b7320bd591907d",
+      "date": "2008-05-07T14:56:49-07:00",
+      "subject": "[Bioc-devel] annotate missing from devel",
+      "subject_clean": "[Bioc-devel] annotate missing from devel",
+      "in_reply_to": "<48220925.2090001@med.umich.edu>",
+      "references": [
+        "<82594366-4045-4418-AEFC-A368B98D648C@stat.berkeley.edu>",
+        "<482201AE.6060203@fhcrc.org>",
+        "<48220925.2090001@med.umich.edu>"
+      ],
+      "body_plain": "Hi Jim,\n\nI was planning to write a short vignette to replace the broken \nhsahomology one (since we have previously deprecated that).  I was going \nto replace it with one that demonstrates how you can use the newer \ninparanoid packages.  I just have not had time to do it yet.  Please let \nme know if you have this tackled already, but if not it is already on my \n\"to do \" list.  In the meantime, dropping the broken vignette that \ndescribes a defunct package seems like a step in the right direction.\n\n\n    Marc\n\n\n\n\nJames W. MacDonald wrote:\n> Hi Herve,\n>\n> Herve Pages wrote:\n>> Hi Kasper,\n>>\n>> Kasper Daniel Hansen wrote:\n>>> The checks seems fine but I cannot obtain it with biocLite under 2.8.0\n>>\n>> The \"orange\" builds (i.e. the builds for R-2.7/BioC-2.2) look fine \n>> for annotate:\n>>\n>>   \n>> http://bioconductor.org/checkResults/2.2/bioc-LATEST/annotate/lamb1-buildsrc.html \n>>\n>>\n>> but not the \"aquarium\" builds (i.e. the builds for R-2.8/BioC-2.3):\n>>\n>>   \n>> http://bioconductor.org/checkResults/2.3/bioc-LATEST/annotate/wilson1-buildsrc.html \n>>\n>>\n>> Therefore annotate will not be pushed to the BioC 2.3 public repo \n>> until someone\n>> fixes its vignette.\n>\n> Unfortunately that vignette is unfixable - it is based on the old \n> Homologene/env packages, so will need to be almost completely \n> rewritten to use the new InParanoid/SQLite packages.\n>\n> I should be able to replace it with something reasonable either this \n> week or the next. In the meantime I will just rename it so it won't \n> interfere with the build.\n>\n> Best,\n>\n> Jim\n>\n>\n>>\n>> Cheers,\n>> H.\n>>\n>> PS: The general page for all our builds is:\n>>\n>>   http://bioconductor.org/checkResults/\n>>\n>>\n>>>\n>>> Kasper\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "Hi Jim,\n\nI was planning to write a short vignette to replace the broken \nhsahomology one (since we have previously deprecated that).  I was going \nto replace it with one that demonstrates how you can ",
+      "thread_id": "thread-5d6db27c7f5a",
+      "thread_depth": 3,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-55cdaf8da08e",
+      "message_id": "<F0C8D573D795BD42B7F213502C2F07AF014E2A6F@icex6.ic.ac.uk>",
+      "from_name": "Lewin, Alexandra M",
+      "from_email_hash": "86f78bd35df69ab7ca4efb4c599211ba0d51c0716bb703c3a65540b0f618250f",
+      "date": "2008-05-13T15:55:08+01:00",
+      "subject": "[Bioc-devel] BGmix package announcement",
+      "subject_clean": "[Bioc-devel] BGmix package announcement",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Dear all,\n\nThis is to let you know that a new package BGmix has been added to\nBioconductor 2.2. This package implements fully Bayesian mixture models\nfor classification of differentially expressed genes, together with\nmodel checking procedures.\n\nThe models were published in the December issue of Statistical\nApplications in Genetics and Molecular Biology:\nhttp://www.bepress.com/sagmb/vol6/iss1/art36/\n\nWe welcome any comments,\n\nAlex Lewin\n\n\n-----------------------------------------------------------\nAlex Lewin\nRCUK Research Fellow\nDept. of Epidemiology & Public Health\nImperial College, St Mary's Campus\nNorfolk Place\nLondon W2 1PG\nTel. +44 (0)20 7594 3347\nFax. +44 (0)20 7402 2150\nhttp://www.bgx.org.uk/alex/\nhttp://www.icbiostatistics.org.uk/\n-----------------------------------------------------------",
+      "body_snippet": "Dear all,\n\nThis is to let you know that a new package BGmix has been added to\nBioconductor 2.2. This package implements fully Bayesian mixture models\nfor classification of differentially expressed gen",
+      "thread_id": "thread-55cdaf8da08e",
+      "thread_depth": 0,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-797850b08fb3",
+      "message_id": "<4829C7D4.6020106@unito.it>",
+      "from_name": "rcaloger",
+      "from_email_hash": "50fb8afd9683f42bcc98012315fcbad4ecc7c3c1dc1631b60a45ae41ce0b2c7f",
+      "date": "2008-05-13T18:54:44+02:00",
+      "subject": "[Bioc-devel] Rgraphviz error in Bioconductor 2.2 build for windows",
+      "subject_clean": "[Bioc-devel] Rgraphviz error in Bioconductor 2.2 build for windows",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\nsince my package oneChannelGUI suggests Rgraphviz I realized that, in \nBioconductor 2.2 release, the windows version for Rgraphviz\n is not available due to an error in compilation example compilation.\n\n checking examples ... ERROR\nRunning examples in 'Rgraphviz-Ex.R' failed.\nThe error most likely occurred in:\n\n> ### * agwrite\n> \n> flush(stderr()); flush(stdout())\n> \n> ### Name: agwrite\n> ### Title: A function to write a Ragraph object to a file\n> ### Aliases: agwrite agread\n> ### Keywords: graphs\n> \n> ### ** Examples\n> \n> V <- letters[1:10]\n> M <- 1:4\n> g1 <- randomGraph(V, M, .2)\n> z <- agopen(g1,\"foo\",layout=FALSE)\n> \n\n\nActually I got around using the Rgraphviz from bioconductor 2.1, but I \nwould like to know if it will be possible to fix the error.\nCheers\nRaffaele\n\n-- \n\n----------------------------------------\nProf. Raffaele A. Calogero\nBioinformatics and Genomics Unit\nDipartimento di Scienze Cliniche e Biologiche\nc/o Az. Ospedaliera S. Luigi\nRegione Gonzole 10, Orbassano\n10043 Torino\ntel.   ++39 0116705417\nLab.   ++39 0116705408\nFax    ++39 0119038639\nMobile ++39 3333827080\nemail: raffaele.calogero at unito.it\n       raffaele[dot]calogero[at]gmail[dot]com\nwww:   www.bioinformatica.unito.it",
+      "body_snippet": "Hi,\nsince my package oneChannelGUI suggests Rgraphviz I realized that, in \nBioconductor 2.2 release, the windows version for Rgraphviz\n is not available due to an error in compilation example compilat",
+      "thread_id": "thread-797850b08fb3",
+      "thread_depth": 0,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-87630aa4b798",
+      "message_id": "<4829CE81.3090900@fhcrc.org>",
+      "from_name": "Robert Gentleman",
+      "from_email_hash": "7de55c0000c437ab05b37d16b5a00e42a9bba6254ce27d76eb635498d1e3dda7",
+      "date": "2008-05-13T10:23:13-07:00",
+      "subject": "[Bioc-devel] Rgraphviz error in Bioconductor 2.2 build for windows",
+      "subject_clean": "[Bioc-devel] Rgraphviz error in Bioconductor 2.2 build for windows",
+      "in_reply_to": "<4829C7D4.6020106@unito.it>",
+      "references": [
+        "<4829C7D4.6020106@unito.it>"
+      ],
+      "body_plain": "Hi Raffaele,\n   Yes, we are trying to sort out the last set of problems with specific \nbuilds (Windows in this case seems to be causing a handful of minor \nannoyances).  Look for most of it to be cleaned up this week.\n\n  best wishes\n    Robert\n\n\nrcaloger wrote:\n> Hi,\n> since my package oneChannelGUI suggests Rgraphviz I realized that, in \n> Bioconductor 2.2 release, the windows version for Rgraphviz\n> is not available due to an error in compilation example compilation.\n> \n> checking examples ... ERROR\n> Running examples in 'Rgraphviz-Ex.R' failed.\n> The error most likely occurred in:\n> \n>> ### * agwrite\n>>\n>> flush(stderr()); flush(stdout())\n>>\n>> ### Name: agwrite\n>> ### Title: A function to write a Ragraph object to a file\n>> ### Aliases: agwrite agread\n>> ### Keywords: graphs\n>>\n>> ### ** Examples\n>>\n>> V <- letters[1:10]\n>> M <- 1:4\n>> g1 <- randomGraph(V, M, .2)\n>> z <- agopen(g1,\"foo\",layout=FALSE)\n>>\n> \n> \n> Actually I got around using the Rgraphviz from bioconductor 2.1, but I \n> would like to know if it will be possible to fix the error.\n> Cheers\n> Raffaele\n> \n\n-- \nRobert Gentleman, PhD\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M2-B876\nPO Box 19024\nSeattle, Washington 98109-1024\n206-667-7700\nrgentlem at fhcrc.org",
+      "body_snippet": "Hi Raffaele,\n   Yes, we are trying to sort out the last set of problems with specific \nbuilds (Windows in this case seems to be causing a handful of minor \nannoyances).  Look for most of it to be clea",
+      "thread_id": "thread-797850b08fb3",
+      "thread_depth": 1,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-dde4add1bb48",
+      "message_id": "<4829D08E.3090608@fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2008-05-13T10:31:58-07:00",
+      "subject": "[Bioc-devel] Rgraphviz error in Bioconductor 2.2 build for windows",
+      "subject_clean": "[Bioc-devel] Rgraphviz error in Bioconductor 2.2 build for windows",
+      "in_reply_to": "<4829C7D4.6020106@unito.it>",
+      "references": [
+        "<4829C7D4.6020106@unito.it>"
+      ],
+      "body_plain": "This is usually a symptom of a version mismatch between the version of \ngraphviz used to build Rgraphviz, and the version of graphviz found when \nRgraphviz is loaded.\n\nMy guess is that you have graphviz 2.18 installed, but need 2.16.1 to \nmatch the version used to build windows Rgraphviz available through \nbiocLite.\n\nHere's the link to the correct graphviz\n\nhttp://www.graphviz.org/pub/graphviz/ARCHIVE/graphviz-win-2.16.bin.tar.gz\n\nMartin\n\nrcaloger wrote:\n> Hi,\n> since my package oneChannelGUI suggests Rgraphviz I realized that, in \n> Bioconductor 2.2 release, the windows version for Rgraphviz\n> is not available due to an error in compilation example compilation.\n> \n> checking examples ... ERROR\n> Running examples in 'Rgraphviz-Ex.R' failed.\n> The error most likely occurred in:\n> \n>> ### * agwrite\n>>\n>> flush(stderr()); flush(stdout())\n>>\n>> ### Name: agwrite\n>> ### Title: A function to write a Ragraph object to a file\n>> ### Aliases: agwrite agread\n>> ### Keywords: graphs\n>>\n>> ### ** Examples\n>>\n>> V <- letters[1:10]\n>> M <- 1:4\n>> g1 <- randomGraph(V, M, .2)\n>> z <- agopen(g1,\"foo\",layout=FALSE)\n>>\n> \n> \n> Actually I got around using the Rgraphviz from bioconductor 2.1, but I \n> would like to know if it will be possible to fix the error.\n> Cheers\n> Raffaele\n> \n\n\n-- \nMartin Morgan\nComputational Biology / Fred Hutchinson Cancer Research Center\n1100 Fairview Ave. N.\nPO Box 19024 Seattle, WA 98109\n\nLocation: Arnold Building M2 B169\nPhone: (206) 667-2793",
+      "body_snippet": "This is usually a symptom of a version mismatch between the version of \ngraphviz used to build Rgraphviz, and the version of graphviz found when \nRgraphviz is loaded.\n\nMy guess is that you have graphv",
+      "thread_id": "thread-797850b08fb3",
+      "thread_depth": 1,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-6b20e8b6678f",
+      "message_id": "<4829D465.9050509@fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2008-05-13T10:48:21-07:00",
+      "subject": "[Bioc-devel] Rgraphviz error in Bioconductor 2.2 build for\twindows",
+      "subject_clean": "[Bioc-devel] Rgraphviz error in Bioconductor 2.2 build for\twindows",
+      "in_reply_to": "<4829D08E.3090608@fhcrc.org>",
+      "references": [
+        "<4829C7D4.6020106@unito.it>",
+        "<4829D08E.3090608@fhcrc.org>"
+      ],
+      "body_plain": "aargh please ignore my last message; the symptom is usually due to a \nversion mismatch, but I don't know why the bioc build machine is having \nproblems. The purported version used to build Rgraphviz on the build \nmachine was 2.16 (not 2.16.1 as in the text but not link below). Martin\n\nMartin Morgan wrote:\n> This is usually a symptom of a version mismatch between the version of \n> graphviz used to build Rgraphviz, and the version of graphviz found when \n> Rgraphviz is loaded.\n> \n> My guess is that you have graphviz 2.18 installed, but need 2.16.1 to \n> match the version used to build windows Rgraphviz available through \n> biocLite.\n> \n> Here's the link to the correct graphviz\n> \n> http://www.graphviz.org/pub/graphviz/ARCHIVE/graphviz-win-2.16.bin.tar.gz\n> \n> Martin\n> \n> rcaloger wrote:\n>> Hi,\n>> since my package oneChannelGUI suggests Rgraphviz I realized that, in \n>> Bioconductor 2.2 release, the windows version for Rgraphviz\n>> is not available due to an error in compilation example compilation.\n>>\n>> checking examples ... ERROR\n>> Running examples in 'Rgraphviz-Ex.R' failed.\n>> The error most likely occurred in:\n>>\n>>> ### * agwrite\n>>>\n>>> flush(stderr()); flush(stdout())\n>>>\n>>> ### Name: agwrite\n>>> ### Title: A function to write a Ragraph object to a file\n>>> ### Aliases: agwrite agread\n>>> ### Keywords: graphs\n>>>\n>>> ### ** Examples\n>>>\n>>> V <- letters[1:10]\n>>> M <- 1:4\n>>> g1 <- randomGraph(V, M, .2)\n>>> z <- agopen(g1,\"foo\",layout=FALSE)\n>>>\n>>\n>>\n>> Actually I got around using the Rgraphviz from bioconductor 2.1, but I \n>> would like to know if it will be possible to fix the error.\n>> Cheers\n>> Raffaele\n>>\n> \n> \n\n\n-- \nMartin Morgan\nComputational Biology / Fred Hutchinson Cancer Research Center\n1100 Fairview Ave. N.\nPO Box 19024 Seattle, WA 98109\n\nLocation: Arnold Building M2 B169\nPhone: (206) 667-2793",
+      "body_snippet": "aargh please ignore my last message; the symptom is usually due to a \nversion mismatch, but I don't know why the bioc build machine is having \nproblems. The purported version used to build Rgraphviz o",
+      "thread_id": "thread-797850b08fb3",
+      "thread_depth": 2,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-e3979534d4eb",
+      "message_id": "<52f663c40805140500s7da680e8j376601b0c366e2ba@mail.gmail.com>",
+      "from_name": "Tony Chiang",
+      "from_email_hash": "9ebd881620c095055c1af52b74c4847ccfe07f5853999ccdedf800c66fa6d7bd",
+      "date": "2008-05-14T13:00:30+01:00",
+      "subject": "[Bioc-devel] annotate missing from devel",
+      "subject_clean": "[Bioc-devel] annotate missing from devel",
+      "in_reply_to": "<482225A1.9010107@fhcrc.org>",
+      "references": [
+        "<82594366-4045-4418-AEFC-A368B98D648C@stat.berkeley.edu>",
+        "<482201AE.6060203@fhcrc.org>",
+        "<48220925.2090001@med.umich.edu>",
+        "<482225A1.9010107@fhcrc.org>"
+      ],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080514/0cee223e/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080514/0cee223e/attachment.pl>",
+      "thread_id": "thread-5d6db27c7f5a",
+      "thread_depth": 4,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-8dfa330c5a57",
+      "message_id": "<264855a00805140539l661c02c7v9631f7f1bad2a91a@mail.gmail.com>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "5a8e0e6abee8db2f7eeaea6df4cbae4d8713a79b51ddc5ef74e7c509c4b05f87",
+      "date": "2008-05-14T08:39:44-04:00",
+      "subject": "[Bioc-devel] annotate missing from devel",
+      "subject_clean": "[Bioc-devel] annotate missing from devel",
+      "in_reply_to": "<52f663c40805140500s7da680e8j376601b0c366e2ba@mail.gmail.com>",
+      "references": [
+        "<82594366-4045-4418-AEFC-A368B98D648C@stat.berkeley.edu>",
+        "<482201AE.6060203@fhcrc.org>",
+        "<48220925.2090001@med.umich.edu>",
+        "<482225A1.9010107@fhcrc.org>",
+        "<52f663c40805140500s7da680e8j376601b0c366e2ba@mail.gmail.com>"
+      ],
+      "body_plain": "On Wed, May 14, 2008 at 8:00 AM, Tony Chiang <tchiang at fhcrc.org> wrote:\n> Hi all,\n>\n> Will there be an ETA on a fix for this problem? There seems to be many\n> packages that I cannot load because they depend on annotate.\n\nTony,\n\nThe package appears to install just fine for me doing (from the\ncommand line--your mileage may vary):\n\nsvn export https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/annotate\nR CMD INSTALL annotate\n\nThis is on a unix-like system (Mac) and of course requires an svn\nclient and build tools for your system but, once installed, it will\nallow installation of those other packages.\n\nHope that helps in the short term.\n\nSean\n\n> On Wed, May 7, 2008 at 10:56 PM, Marc Carlson <mcarlson at fhcrc.org> wrote:\n>\n>> Hi Jim,\n>>\n>> I was planning to write a short vignette to replace the broken hsahomology\n>> one (since we have previously deprecated that).  I was going to replace it\n>> with one that demonstrates how you can use the newer inparanoid packages.  I\n>> just have not had time to do it yet.  Please let me know if you have this\n>> tackled already, but if not it is already on my \"to do \" list.  In the\n>> meantime, dropping the broken vignette that describes a defunct package\n>> seems like a step in the right direction.\n>>\n>>\n>>   Marc\n>>\n>>\n>>\n>>\n>>\n>> James W. MacDonald wrote:\n>>\n>> > Hi Herve,\n>> >\n>> > Herve Pages wrote:\n>> >\n>> > > Hi Kasper,\n>> > >\n>> > > Kasper Daniel Hansen wrote:\n>> > >\n>> > > > The checks seems fine but I cannot obtain it with biocLite under\n>> > > > 2.8.0\n>> > > >\n>> > >\n>> > > The \"orange\" builds (i.e. the builds for R-2.7/BioC-2.2) look fine for\n>> > > annotate:\n>> > >\n>> > >\n>> > > http://bioconductor.org/checkResults/2.2/bioc-LATEST/annotate/lamb1-buildsrc.html\n>> > >\n>> > > but not the \"aquarium\" builds (i.e. the builds for R-2.8/BioC-2.3):\n>> > >\n>> > >\n>> > > http://bioconductor.org/checkResults/2.3/bioc-LATEST/annotate/wilson1-buildsrc.html\n>> > >\n>> > > Therefore annotate will not be pushed to the BioC 2.3 public repo\n>> > > until someone\n>> > > fixes its vignette.\n>> > >\n>> >\n>> > Unfortunately that vignette is unfixable - it is based on the old\n>> > Homologene/env packages, so will need to be almost completely rewritten to\n>> > use the new InParanoid/SQLite packages.\n>> >\n>> > I should be able to replace it with something reasonable either this\n>> > week or the next. In the meantime I will just rename it so it won't\n>> > interfere with the build.\n>> >\n>> > Best,\n>> >\n>> > Jim\n>> >\n>> >\n>> >\n>> > > Cheers,\n>> > > H.\n>> > >\n>> > > PS: The general page for all our builds is:\n>> > >\n>> > >  http://bioconductor.org/checkResults/\n>> > >\n>> > >\n>> > >\n>> > > > Kasper\n>> > > >\n>> > > > _______________________________________________\n>> > > > Bioc-devel at stat.math.ethz.ch mailing list\n>> > > > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>> > > >\n>> > >\n>> > > _______________________________________________\n>> > > Bioc-devel at stat.math.ethz.ch mailing list\n>> > > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>> > >\n>> >\n>> >\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>\n>        [[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "On Wed, May 14, 2008 at 8:00 AM, Tony Chiang <tchiang at fhcrc.org> wrote:\n> Hi all,\n>\n> Will there be an ETA on a fix for this problem? There seems to be many\n> packages that I cannot load because th",
+      "thread_id": "thread-5d6db27c7f5a",
+      "thread_depth": 5,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-9c8704d8b1cf",
+      "message_id": "<52f663c40805140605h5b1fc2bai86f6b43f4d5b885b@mail.gmail.com>",
+      "from_name": "Tony Chiang",
+      "from_email_hash": "9ebd881620c095055c1af52b74c4847ccfe07f5853999ccdedf800c66fa6d7bd",
+      "date": "2008-05-14T14:05:41+01:00",
+      "subject": "[Bioc-devel] annotate missing from devel",
+      "subject_clean": "[Bioc-devel] annotate missing from devel",
+      "in_reply_to": "<264855a00805140539l661c02c7v9631f7f1bad2a91a@mail.gmail.com>",
+      "references": [
+        "<82594366-4045-4418-AEFC-A368B98D648C@stat.berkeley.edu>",
+        "<482201AE.6060203@fhcrc.org>",
+        "<48220925.2090001@med.umich.edu>",
+        "<482225A1.9010107@fhcrc.org>",
+        "<52f663c40805140500s7da680e8j376601b0c366e2ba@mail.gmail.com>",
+        "<264855a00805140539l661c02c7v9631f7f1bad2a91a@mail.gmail.com>"
+      ],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080514/424a6061/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080514/424a6061/attachment.pl>",
+      "thread_id": "thread-5d6db27c7f5a",
+      "thread_depth": 6,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-87478db5b605",
+      "message_id": "<264855a00805140616i338ebc76j2984733040247b8c@mail.gmail.com>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "5a8e0e6abee8db2f7eeaea6df4cbae4d8713a79b51ddc5ef74e7c509c4b05f87",
+      "date": "2008-05-14T09:16:11-04:00",
+      "subject": "[Bioc-devel] annotate missing from devel",
+      "subject_clean": "[Bioc-devel] annotate missing from devel",
+      "in_reply_to": "<52f663c40805140605h5b1fc2bai86f6b43f4d5b885b@mail.gmail.com>",
+      "references": [
+        "<82594366-4045-4418-AEFC-A368B98D648C@stat.berkeley.edu>",
+        "<482201AE.6060203@fhcrc.org>",
+        "<48220925.2090001@med.umich.edu>",
+        "<482225A1.9010107@fhcrc.org>",
+        "<52f663c40805140500s7da680e8j376601b0c366e2ba@mail.gmail.com>",
+        "<264855a00805140539l661c02c7v9631f7f1bad2a91a@mail.gmail.com>",
+        "<52f663c40805140605h5b1fc2bai86f6b43f4d5b885b@mail.gmail.com>"
+      ],
+      "body_plain": "On Wed, May 14, 2008 at 9:05 AM, Tony Chiang <tchiang at fhcrc.org> wrote:\n> Hi Sean,\n>\n> I know...I have all bioconductor source files checked out. There are some\n> folks here who want to use some of my packages that depend on packages which\n> depend on annotate. For the short term, it is fine to install manually with\n> the vignette being somewhat broken. I just wanted to make my life a little\n> easier and tell them to grab it via biocLite rather than having them install\n> svn, etc. It has been about a week since others brought it up, and I just\n> wanted to know about an ETA so I can tell them.\n\nIf the only issue is the vignette, then the best bet might be to\nremove that particular vignette for now and replace it when it is\ncomplete?\n\nSean\n\n> On Wed, May 14, 2008 at 1:39 PM, Sean Davis <sdavis2 at mail.nih.gov> wrote:\n>\n>> On Wed, May 14, 2008 at 8:00 AM, Tony Chiang <tchiang at fhcrc.org> wrote:\n>> > Hi all,\n>> >\n>> > Will there be an ETA on a fix for this problem? There seems to be many\n>> > packages that I cannot load because they depend on annotate.\n>>\n>> Tony,\n>>\n>> The package appears to install just fine for me doing (from the\n>> command line--your mileage may vary):\n>>\n>> svn export\n>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/annotate\n>> R CMD INSTALL annotate\n>>\n>> This is on a unix-like system (Mac) and of course requires an svn\n>> client and build tools for your system but, once installed, it will\n>> allow installation of those other packages.\n>>\n>> Hope that helps in the short term.\n>>\n>> Sean\n>>\n>> > On Wed, May 7, 2008 at 10:56 PM, Marc Carlson <mcarlson at fhcrc.org>\n>> wrote:\n>> >\n>> >> Hi Jim,\n>> >>\n>> >> I was planning to write a short vignette to replace the broken\n>> hsahomology\n>> >> one (since we have previously deprecated that).  I was going to replace\n>> it\n>> >> with one that demonstrates how you can use the newer inparanoid\n>> packages.  I\n>> >> just have not had time to do it yet.  Please let me know if you have\n>> this\n>> >> tackled already, but if not it is already on my \"to do \" list.  In the\n>> >> meantime, dropping the broken vignette that describes a defunct package\n>> >> seems like a step in the right direction.\n>> >>\n>> >>\n>> >>   Marc\n>> >>\n>> >>\n>> >>\n>> >>\n>> >>\n>> >> James W. MacDonald wrote:\n>> >>\n>> >> > Hi Herve,\n>> >> >\n>> >> > Herve Pages wrote:\n>> >> >\n>> >> > > Hi Kasper,\n>> >> > >\n>> >> > > Kasper Daniel Hansen wrote:\n>> >> > >\n>> >> > > > The checks seems fine but I cannot obtain it with biocLite under\n>> >> > > > 2.8.0\n>> >> > > >\n>> >> > >\n>> >> > > The \"orange\" builds (i.e. the builds for R-2.7/BioC-2.2) look fine\n>> for\n>> >> > > annotate:\n>> >> > >\n>> >> > >\n>> >> > >\n>> http://bioconductor.org/checkResults/2.2/bioc-LATEST/annotate/lamb1-buildsrc.html\n>> >> > >\n>> >> > > but not the \"aquarium\" builds (i.e. the builds for R-2.8/BioC-2.3):\n>> >> > >\n>> >> > >\n>> >> > >\n>> http://bioconductor.org/checkResults/2.3/bioc-LATEST/annotate/wilson1-buildsrc.html\n>> >> > >\n>> >> > > Therefore annotate will not be pushed to the BioC 2.3 public repo\n>> >> > > until someone\n>> >> > > fixes its vignette.\n>> >> > >\n>> >> >\n>> >> > Unfortunately that vignette is unfixable - it is based on the old\n>> >> > Homologene/env packages, so will need to be almost completely\n>> rewritten to\n>> >> > use the new InParanoid/SQLite packages.\n>> >> >\n>> >> > I should be able to replace it with something reasonable either this\n>> >> > week or the next. In the meantime I will just rename it so it won't\n>> >> > interfere with the build.\n>> >> >\n>> >> > Best,\n>> >> >\n>> >> > Jim\n>> >> >\n>> >> >\n>> >> >\n>> >> > > Cheers,\n>> >> > > H.\n>> >> > >\n>> >> > > PS: The general page for all our builds is:\n>> >> > >\n>> >> > >  http://bioconductor.org/checkResults/\n>> >> > >\n>> >> > >\n>> >> > >\n>> >> > > > Kasper\n>> >> > > >\n>> >> > > > _______________________________________________\n>> >> > > > Bioc-devel at stat.math.ethz.ch mailing list\n>> >> > > > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>> >> > > >\n>> >> > >\n>> >> > > _______________________________________________\n>> >> > > Bioc-devel at stat.math.ethz.ch mailing list\n>> >> > > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>> >> > >\n>> >> >\n>> >> >\n>> >> _______________________________________________\n>> >> Bioc-devel at stat.math.ethz.ch mailing list\n>> >> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>> >>\n>> >\n>> >        [[alternative HTML version deleted]]\n>> >\n>> > _______________________________________________\n>> > Bioc-devel at stat.math.ethz.ch mailing list\n>> > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>> >\n>>\n>\n>        [[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "On Wed, May 14, 2008 at 9:05 AM, Tony Chiang <tchiang at fhcrc.org> wrote:\n> Hi Sean,\n>\n> I know...I have all bioconductor source files checked out. There are some\n> folks here who want to use some of",
+      "thread_id": "thread-5d6db27c7f5a",
+      "thread_depth": 7,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-165cb72751ac",
+      "message_id": "<52f663c40805140630x722e84eepcf96112cd8e4e079@mail.gmail.com>",
+      "from_name": "Tony Chiang",
+      "from_email_hash": "9ebd881620c095055c1af52b74c4847ccfe07f5853999ccdedf800c66fa6d7bd",
+      "date": "2008-05-14T14:30:50+01:00",
+      "subject": "[Bioc-devel] annotate missing from devel",
+      "subject_clean": "[Bioc-devel] annotate missing from devel",
+      "in_reply_to": "<264855a00805140616i338ebc76j2984733040247b8c@mail.gmail.com>",
+      "references": [
+        "<82594366-4045-4418-AEFC-A368B98D648C@stat.berkeley.edu>",
+        "<482201AE.6060203@fhcrc.org>",
+        "<48220925.2090001@med.umich.edu>",
+        "<482225A1.9010107@fhcrc.org>",
+        "<52f663c40805140500s7da680e8j376601b0c366e2ba@mail.gmail.com>",
+        "<264855a00805140539l661c02c7v9631f7f1bad2a91a@mail.gmail.com>",
+        "<52f663c40805140605h5b1fc2bai86f6b43f4d5b885b@mail.gmail.com>",
+        "<264855a00805140616i338ebc76j2984733040247b8c@mail.gmail.com>"
+      ],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080514/d86eaec2/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080514/d86eaec2/attachment.pl>",
+      "thread_id": "thread-5d6db27c7f5a",
+      "thread_depth": 8,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-3b0c2838aef3",
+      "message_id": "<482AEF61.4070500@med.umich.edu>",
+      "from_name": "James W. MacDonald",
+      "from_email_hash": "51e0486782bd6ed6ad0d8d179dbc9204aca523620b6842837909c743527fce1d",
+      "date": "2008-05-14T09:55:45-04:00",
+      "subject": "[Bioc-devel] annotate missing from devel",
+      "subject_clean": "[Bioc-devel] annotate missing from devel",
+      "in_reply_to": "<52f663c40805140630x722e84eepcf96112cd8e4e079@mail.gmail.com>",
+      "references": [
+        "<82594366-4045-4418-AEFC-A368B98D648C@stat.berkeley.edu>",
+        "<482201AE.6060203@fhcrc.org>",
+        "<48220925.2090001@med.umich.edu>",
+        "<482225A1.9010107@fhcrc.org>",
+        "<52f663c40805140500s7da680e8j376601b0c366e2ba@mail.gmail.com>",
+        "<264855a00805140539l661c02c7v9631f7f1bad2a91a@mail.gmail.com>",
+        "<52f663c40805140605h5b1fc2bai86f6b43f4d5b885b@mail.gmail.com>",
+        "<264855a00805140616i338ebc76j2984733040247b8c@mail.gmail.com>",
+        "<52f663c40805140630x722e84eepcf96112cd8e4e079@mail.gmail.com>"
+      ],
+      "body_plain": "My bad. Marc is going to fix the vignette, and in the meantime I stuck \nan extension on the old vignette so it would be ignored in the build \nprocess. However, I didn't change the depends field to remove \nhsahomology and xlahomology.\n\nFixed now.\n\nBest,\n\nJim\n\n\n\nTony Chiang wrote:\n> I definitely agree with you; but as it is not my package I don't think the\n> maintainers would appreciate me fiddling with it. Herve told us that the\n> Vignette was broken, and both Jim and Marc said they would update it within\n> a week or so. I guess my e-mail was just a gentle reminder (I know Jim and\n> Marc are both busy). Until the vignette is fixed and the changes committed\n> to svn, biocLite won't work.\n> \n> Tony\n> \n> On Wed, May 14, 2008 at 2:16 PM, Sean Davis <sdavis2 at mail.nih.gov> wrote:\n> \n>> On Wed, May 14, 2008 at 9:05 AM, Tony Chiang <tchiang at fhcrc.org> wrote:\n>>> Hi Sean,\n>>>\n>>> I know...I have all bioconductor source files checked out. There are some\n>>> folks here who want to use some of my packages that depend on packages\n>> which\n>>> depend on annotate. For the short term, it is fine to install manually\n>> with\n>>> the vignette being somewhat broken. I just wanted to make my life a\n>> little\n>>> easier and tell them to grab it via biocLite rather than having them\n>> install\n>>> svn, etc. It has been about a week since others brought it up, and I just\n>>> wanted to know about an ETA so I can tell them.\n>> If the only issue is the vignette, then the best bet might be to\n>> remove that particular vignette for now and replace it when it is\n>> complete?\n>>\n>> Sean\n>>\n>>> On Wed, May 14, 2008 at 1:39 PM, Sean Davis <sdavis2 at mail.nih.gov>\n>> wrote:\n>>>> On Wed, May 14, 2008 at 8:00 AM, Tony Chiang <tchiang at fhcrc.org> wrote:\n>>>>> Hi all,\n>>>>>\n>>>>> Will there be an ETA on a fix for this problem? There seems to be many\n>>>>> packages that I cannot load because they depend on annotate.\n>>>> Tony,\n>>>>\n>>>> The package appears to install just fine for me doing (from the\n>>>> command line--your mileage may vary):\n>>>>\n>>>> svn export\n>>>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/annotate\n>>>> R CMD INSTALL annotate\n>>>>\n>>>> This is on a unix-like system (Mac) and of course requires an svn\n>>>> client and build tools for your system but, once installed, it will\n>>>> allow installation of those other packages.\n>>>>\n>>>> Hope that helps in the short term.\n>>>>\n>>>> Sean\n>>>>\n>>>>> On Wed, May 7, 2008 at 10:56 PM, Marc Carlson <mcarlson at fhcrc.org>\n>>>> wrote:\n>>>>>> Hi Jim,\n>>>>>>\n>>>>>> I was planning to write a short vignette to replace the broken\n>>>> hsahomology\n>>>>>> one (since we have previously deprecated that).  I was going to\n>> replace\n>>>> it\n>>>>>> with one that demonstrates how you can use the newer inparanoid\n>>>> packages.  I\n>>>>>> just have not had time to do it yet.  Please let me know if you have\n>>>> this\n>>>>>> tackled already, but if not it is already on my \"to do \" list.  In\n>> the\n>>>>>> meantime, dropping the broken vignette that describes a defunct\n>> package\n>>>>>> seems like a step in the right direction.\n>>>>>>\n>>>>>>\n>>>>>>   Marc\n>>>>>>\n>>>>>>\n>>>>>>\n>>>>>>\n>>>>>>\n>>>>>> James W. MacDonald wrote:\n>>>>>>\n>>>>>>> Hi Herve,\n>>>>>>>\n>>>>>>> Herve Pages wrote:\n>>>>>>>\n>>>>>>>> Hi Kasper,\n>>>>>>>>\n>>>>>>>> Kasper Daniel Hansen wrote:\n>>>>>>>>\n>>>>>>>>> The checks seems fine but I cannot obtain it with biocLite\n>> under\n>>>>>>>>> 2.8.0\n>>>>>>>>>\n>>>>>>>> The \"orange\" builds (i.e. the builds for R-2.7/BioC-2.2) look\n>> fine\n>>>> for\n>>>>>>>> annotate:\n>>>>>>>>\n>>>>>>>>\n>>>>>>>>\n>> http://bioconductor.org/checkResults/2.2/bioc-LATEST/annotate/lamb1-buildsrc.html\n>>>>>>>> but not the \"aquarium\" builds (i.e. the builds for\n>> R-2.8/BioC-2.3):\n>>>>>>>>\n>>>>>>>>\n>> http://bioconductor.org/checkResults/2.3/bioc-LATEST/annotate/wilson1-buildsrc.html\n>>>>>>>> Therefore annotate will not be pushed to the BioC 2.3 public repo\n>>>>>>>> until someone\n>>>>>>>> fixes its vignette.\n>>>>>>>>\n>>>>>>> Unfortunately that vignette is unfixable - it is based on the old\n>>>>>>> Homologene/env packages, so will need to be almost completely\n>>>> rewritten to\n>>>>>>> use the new InParanoid/SQLite packages.\n>>>>>>>\n>>>>>>> I should be able to replace it with something reasonable either\n>> this\n>>>>>>> week or the next. In the meantime I will just rename it so it won't\n>>>>>>> interfere with the build.\n>>>>>>>\n>>>>>>> Best,\n>>>>>>>\n>>>>>>> Jim\n>>>>>>>\n>>>>>>>\n>>>>>>>\n>>>>>>>> Cheers,\n>>>>>>>> H.\n>>>>>>>>\n>>>>>>>> PS: The general page for all our builds is:\n>>>>>>>>\n>>>>>>>>  http://bioconductor.org/checkResults/\n>>>>>>>>\n>>>>>>>>\n>>>>>>>>\n>>>>>>>>> Kasper\n>>>>>>>>>\n>>>>>>>>> _______________________________________________\n>>>>>>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>>>>>>\n>>>>>>>> _______________________________________________\n>>>>>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>>>>>\n>>>>>>>\n>>>>>> _______________________________________________\n>>>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>>>\n>>>>>        [[alternative HTML version deleted]]\n>>>>>\n>>>>> _______________________________________________\n>>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>>\n>>>        [[alternative HTML version deleted]]\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>\n> \n> \t[[alternative HTML version deleted]]\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n-- \nJames W. MacDonald, M.S.\nBiostatistician\nAffymetrix and cDNA Microarray Core\nUniversity of Michigan Cancer Center\n1500 E. Medical Center Drive\n7410 CCGC\nAnn Arbor MI 48109\n734-647-5623",
+      "body_snippet": "My bad. Marc is going to fix the vignette, and in the meantime I stuck \nan extension on the old vignette so it would be ignored in the build \nprocess. However, I didn't change the depends field to rem",
+      "thread_id": "thread-5d6db27c7f5a",
+      "thread_depth": 9,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-a2fb9b6926b2",
+      "message_id": "<482B5847.7040204@fhcrc.org>",
+      "from_name": "Marc Carlson",
+      "from_email_hash": "63182bae9b15df223407341203cb8ed095d4cf2c8e9f0f84a8b7320bd591907d",
+      "date": "2008-05-14T14:23:19-07:00",
+      "subject": "[Bioc-devel] annotate missing from devel",
+      "subject_clean": "[Bioc-devel] annotate missing from devel",
+      "in_reply_to": "<482AEF61.4070500@med.umich.edu>",
+      "references": [
+        "<82594366-4045-4418-AEFC-A368B98D648C@stat.berkeley.edu>",
+        "<482201AE.6060203@fhcrc.org>",
+        "<48220925.2090001@med.umich.edu>",
+        "<482225A1.9010107@fhcrc.org>",
+        "<52f663c40805140500s7da680e8j376601b0c366e2ba@mail.gmail.com>",
+        "<264855a00805140539l661c02c7v9631f7f1bad2a91a@mail.gmail.com>",
+        "<52f663c40805140605h5b1fc2bai86f6b43f4d5b885b@mail.gmail.com>",
+        "<264855a00805140616i338ebc76j2984733040247b8c@mail.gmail.com>",
+        "<52f663c40805140630x722e84eepcf96112cd8e4e079@mail.gmail.com>",
+        "<482AEF61.4070500@med.umich.edu>"
+      ],
+      "body_plain": "I have replaced the useHomology vignette with a newer one that describes \nthe newer inparanoid based packages.\n\n    Marc\n\n\nJames W. MacDonald wrote:\n> My bad. Marc is going to fix the vignette, and in the meantime I stuck \n> an extension on the old vignette so it would be ignored in the build \n> process. However, I didn't change the depends field to remove \n> hsahomology and xlahomology.\n>\n> Fixed now.\n>\n> Best,\n>\n> Jim\n>\n>\n>\n> Tony Chiang wrote:\n>> I definitely agree with you; but as it is not my package I don't \n>> think the\n>> maintainers would appreciate me fiddling with it. Herve told us that the\n>> Vignette was broken, and both Jim and Marc said they would update it \n>> within\n>> a week or so. I guess my e-mail was just a gentle reminder (I know \n>> Jim and\n>> Marc are both busy). Until the vignette is fixed and the changes \n>> committed\n>> to svn, biocLite won't work.\n>>\n>> Tony\n>>\n>> On Wed, May 14, 2008 at 2:16 PM, Sean Davis <sdavis2 at mail.nih.gov> \n>> wrote:\n>>\n>>> On Wed, May 14, 2008 at 9:05 AM, Tony Chiang <tchiang at fhcrc.org> wrote:\n>>>> Hi Sean,\n>>>>\n>>>> I know...I have all bioconductor source files checked out. There \n>>>> are some\n>>>> folks here who want to use some of my packages that depend on packages\n>>> which\n>>>> depend on annotate. For the short term, it is fine to install manually\n>>> with\n>>>> the vignette being somewhat broken. I just wanted to make my life a\n>>> little\n>>>> easier and tell them to grab it via biocLite rather than having them\n>>> install\n>>>> svn, etc. It has been about a week since others brought it up, and \n>>>> I just\n>>>> wanted to know about an ETA so I can tell them.\n>>> If the only issue is the vignette, then the best bet might be to\n>>> remove that particular vignette for now and replace it when it is\n>>> complete?\n>>>\n>>> Sean\n>>>\n>>>> On Wed, May 14, 2008 at 1:39 PM, Sean Davis <sdavis2 at mail.nih.gov>\n>>> wrote:\n>>>>> On Wed, May 14, 2008 at 8:00 AM, Tony Chiang <tchiang at fhcrc.org> \n>>>>> wrote:\n>>>>>> Hi all,\n>>>>>>\n>>>>>> Will there be an ETA on a fix for this problem? There seems to be \n>>>>>> many\n>>>>>> packages that I cannot load because they depend on annotate.\n>>>>> Tony,\n>>>>>\n>>>>> The package appears to install just fine for me doing (from the\n>>>>> command line--your mileage may vary):\n>>>>>\n>>>>> svn export\n>>>>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/annotate\n>>>>> R CMD INSTALL annotate\n>>>>>\n>>>>> This is on a unix-like system (Mac) and of course requires an svn\n>>>>> client and build tools for your system but, once installed, it will\n>>>>> allow installation of those other packages.\n>>>>>\n>>>>> Hope that helps in the short term.\n>>>>>\n>>>>> Sean\n>>>>>\n>>>>>> On Wed, May 7, 2008 at 10:56 PM, Marc Carlson <mcarlson at fhcrc.org>\n>>>>> wrote:\n>>>>>>> Hi Jim,\n>>>>>>>\n>>>>>>> I was planning to write a short vignette to replace the broken\n>>>>> hsahomology\n>>>>>>> one (since we have previously deprecated that).  I was going to\n>>> replace\n>>>>> it\n>>>>>>> with one that demonstrates how you can use the newer inparanoid\n>>>>> packages.  I\n>>>>>>> just have not had time to do it yet.  Please let me know if you \n>>>>>>> have\n>>>>> this\n>>>>>>> tackled already, but if not it is already on my \"to do \" list.  In\n>>> the\n>>>>>>> meantime, dropping the broken vignette that describes a defunct\n>>> package\n>>>>>>> seems like a step in the right direction.\n>>>>>>>\n>>>>>>>\n>>>>>>>   Marc\n>>>>>>>\n>>>>>>>\n>>>>>>>\n>>>>>>>\n>>>>>>>\n>>>>>>> James W. MacDonald wrote:\n>>>>>>>\n>>>>>>>> Hi Herve,\n>>>>>>>>\n>>>>>>>> Herve Pages wrote:\n>>>>>>>>\n>>>>>>>>> Hi Kasper,\n>>>>>>>>>\n>>>>>>>>> Kasper Daniel Hansen wrote:\n>>>>>>>>>\n>>>>>>>>>> The checks seems fine but I cannot obtain it with biocLite\n>>> under\n>>>>>>>>>> 2.8.0\n>>>>>>>>>>\n>>>>>>>>> The \"orange\" builds (i.e. the builds for R-2.7/BioC-2.2) look\n>>> fine\n>>>>> for\n>>>>>>>>> annotate:\n>>>>>>>>>\n>>>>>>>>>\n>>>>>>>>>\n>>> http://bioconductor.org/checkResults/2.2/bioc-LATEST/annotate/lamb1-buildsrc.html \n>>>\n>>>>>>>>> but not the \"aquarium\" builds (i.e. the builds for\n>>> R-2.8/BioC-2.3):\n>>>>>>>>>\n>>>>>>>>>\n>>> http://bioconductor.org/checkResults/2.3/bioc-LATEST/annotate/wilson1-buildsrc.html \n>>>\n>>>>>>>>> Therefore annotate will not be pushed to the BioC 2.3 public repo\n>>>>>>>>> until someone\n>>>>>>>>> fixes its vignette.\n>>>>>>>>>\n>>>>>>>> Unfortunately that vignette is unfixable - it is based on the old\n>>>>>>>> Homologene/env packages, so will need to be almost completely\n>>>>> rewritten to\n>>>>>>>> use the new InParanoid/SQLite packages.\n>>>>>>>>\n>>>>>>>> I should be able to replace it with something reasonable either\n>>> this\n>>>>>>>> week or the next. In the meantime I will just rename it so it \n>>>>>>>> won't\n>>>>>>>> interfere with the build.\n>>>>>>>>\n>>>>>>>> Best,\n>>>>>>>>\n>>>>>>>> Jim\n>>>>>>>>\n>>>>>>>>\n>>>>>>>>\n>>>>>>>>> Cheers,\n>>>>>>>>> H.\n>>>>>>>>>\n>>>>>>>>> PS: The general page for all our builds is:\n>>>>>>>>>\n>>>>>>>>>  http://bioconductor.org/checkResults/\n>>>>>>>>>\n>>>>>>>>>\n>>>>>>>>>\n>>>>>>>>>> Kasper\n>>>>>>>>>>\n>>>>>>>>>> _______________________________________________\n>>>>>>>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>>>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>>>>>>>\n>>>>>>>>> _______________________________________________\n>>>>>>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>>>>>>\n>>>>>>>>\n>>>>>>> _______________________________________________\n>>>>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>>>>\n>>>>>>        [[alternative HTML version deleted]]\n>>>>>>\n>>>>>> _______________________________________________\n>>>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>>>\n>>>>        [[alternative HTML version deleted]]\n>>>>\n>>>> _______________________________________________\n>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>\n>>\n>>     [[alternative HTML version deleted]]\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "I have replaced the useHomology vignette with a newer one that describes \nthe newer inparanoid based packages.\n\n    Marc\n\n\nJames W. MacDonald wrote:\n> My bad. Marc is going to fix the vignette, and in",
+      "thread_id": "thread-5d6db27c7f5a",
+      "thread_depth": 10,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-f07a71aac2e3",
+      "message_id": "<482C664D.1090807@fhcrc.org>",
+      "from_name": "Robert Gentleman",
+      "from_email_hash": "7de55c0000c437ab05b37d16b5a00e42a9bba6254ce27d76eb635498d1e3dda7",
+      "date": "2008-05-15T09:35:25-07:00",
+      "subject": "[Bioc-devel] annotate missing from devel",
+      "subject_clean": "[Bioc-devel] annotate missing from devel",
+      "in_reply_to": "<482B5847.7040204@fhcrc.org>",
+      "references": [
+        "<82594366-4045-4418-AEFC-A368B98D648C@stat.berkeley.edu>",
+        "<482201AE.6060203@fhcrc.org>",
+        "<48220925.2090001@med.umich.edu>",
+        "<482225A1.9010107@fhcrc.org>",
+        "<52f663c40805140500s7da680e8j376601b0c366e2ba@mail.gmail.com>",
+        "<264855a00805140539l661c02c7v9631f7f1bad2a91a@mail.gmail.com>",
+        "<52f663c40805140605h5b1fc2bai86f6b43f4d5b885b@mail.gmail.com>",
+        "<264855a00805140616i338ebc76j2984733040247b8c@mail.gmail.com>",
+        "<52f663c40805140630x722e84eepcf96112cd8e4e079@mail.gmail.com>",
+        "<482AEF61.4070500@med.umich.edu>",
+        "<482B5847.7040204@fhcrc.org>"
+      ],
+      "body_plain": "I did see a new version come down via update.packages - Tony can you \nconfirm that you are now getting one at your end?\n\nthe devel builds seem to be in a bit of a mess, we will be trying to \naddress that this week\n\nMarc Carlson wrote:\n> I have replaced the useHomology vignette with a newer one that describes \n> the newer inparanoid based packages.\n> \n>    Marc\n> \n> \n> James W. MacDonald wrote:\n>> My bad. Marc is going to fix the vignette, and in the meantime I stuck \n>> an extension on the old vignette so it would be ignored in the build \n>> process. However, I didn't change the depends field to remove \n>> hsahomology and xlahomology.\n>>\n>> Fixed now.\n>>\n>> Best,\n>>\n>> Jim\n>>\n>>\n>>\n>> Tony Chiang wrote:\n>>> I definitely agree with you; but as it is not my package I don't \n>>> think the\n>>> maintainers would appreciate me fiddling with it. Herve told us that the\n>>> Vignette was broken, and both Jim and Marc said they would update it \n>>> within\n>>> a week or so. I guess my e-mail was just a gentle reminder (I know \n>>> Jim and\n>>> Marc are both busy). Until the vignette is fixed and the changes \n>>> committed\n>>> to svn, biocLite won't work.\n>>>\n>>> Tony\n>>>\n>>> On Wed, May 14, 2008 at 2:16 PM, Sean Davis <sdavis2 at mail.nih.gov> \n>>> wrote:\n>>>\n>>>> On Wed, May 14, 2008 at 9:05 AM, Tony Chiang <tchiang at fhcrc.org> wrote:\n>>>>> Hi Sean,\n>>>>>\n>>>>> I know...I have all bioconductor source files checked out. There \n>>>>> are some\n>>>>> folks here who want to use some of my packages that depend on packages\n>>>> which\n>>>>> depend on annotate. For the short term, it is fine to install manually\n>>>> with\n>>>>> the vignette being somewhat broken. I just wanted to make my life a\n>>>> little\n>>>>> easier and tell them to grab it via biocLite rather than having them\n>>>> install\n>>>>> svn, etc. It has been about a week since others brought it up, and \n>>>>> I just\n>>>>> wanted to know about an ETA so I can tell them.\n>>>> If the only issue is the vignette, then the best bet might be to\n>>>> remove that particular vignette for now and replace it when it is\n>>>> complete?\n>>>>\n>>>> Sean\n>>>>\n>>>>> On Wed, May 14, 2008 at 1:39 PM, Sean Davis <sdavis2 at mail.nih.gov>\n>>>> wrote:\n>>>>>> On Wed, May 14, 2008 at 8:00 AM, Tony Chiang <tchiang at fhcrc.org> \n>>>>>> wrote:\n>>>>>>> Hi all,\n>>>>>>>\n>>>>>>> Will there be an ETA on a fix for this problem? There seems to be \n>>>>>>> many\n>>>>>>> packages that I cannot load because they depend on annotate.\n>>>>>> Tony,\n>>>>>>\n>>>>>> The package appears to install just fine for me doing (from the\n>>>>>> command line--your mileage may vary):\n>>>>>>\n>>>>>> svn export\n>>>>>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/annotate\n>>>>>> R CMD INSTALL annotate\n>>>>>>\n>>>>>> This is on a unix-like system (Mac) and of course requires an svn\n>>>>>> client and build tools for your system but, once installed, it will\n>>>>>> allow installation of those other packages.\n>>>>>>\n>>>>>> Hope that helps in the short term.\n>>>>>>\n>>>>>> Sean\n>>>>>>\n>>>>>>> On Wed, May 7, 2008 at 10:56 PM, Marc Carlson <mcarlson at fhcrc.org>\n>>>>>> wrote:\n>>>>>>>> Hi Jim,\n>>>>>>>>\n>>>>>>>> I was planning to write a short vignette to replace the broken\n>>>>>> hsahomology\n>>>>>>>> one (since we have previously deprecated that).  I was going to\n>>>> replace\n>>>>>> it\n>>>>>>>> with one that demonstrates how you can use the newer inparanoid\n>>>>>> packages.  I\n>>>>>>>> just have not had time to do it yet.  Please let me know if you \n>>>>>>>> have\n>>>>>> this\n>>>>>>>> tackled already, but if not it is already on my \"to do \" list.  In\n>>>> the\n>>>>>>>> meantime, dropping the broken vignette that describes a defunct\n>>>> package\n>>>>>>>> seems like a step in the right direction.\n>>>>>>>>\n>>>>>>>>\n>>>>>>>>   Marc\n>>>>>>>>\n>>>>>>>>\n>>>>>>>>\n>>>>>>>>\n>>>>>>>>\n>>>>>>>> James W. MacDonald wrote:\n>>>>>>>>\n>>>>>>>>> Hi Herve,\n>>>>>>>>>\n>>>>>>>>> Herve Pages wrote:\n>>>>>>>>>\n>>>>>>>>>> Hi Kasper,\n>>>>>>>>>>\n>>>>>>>>>> Kasper Daniel Hansen wrote:\n>>>>>>>>>>\n>>>>>>>>>>> The checks seems fine but I cannot obtain it with biocLite\n>>>> under\n>>>>>>>>>>> 2.8.0\n>>>>>>>>>>>\n>>>>>>>>>> The \"orange\" builds (i.e. the builds for R-2.7/BioC-2.2) look\n>>>> fine\n>>>>>> for\n>>>>>>>>>> annotate:\n>>>>>>>>>>\n>>>>>>>>>>\n>>>>>>>>>>\n>>>> http://bioconductor.org/checkResults/2.2/bioc-LATEST/annotate/lamb1-buildsrc.html \n>>>>\n>>>>>>>>>> but not the \"aquarium\" builds (i.e. the builds for\n>>>> R-2.8/BioC-2.3):\n>>>>>>>>>>\n>>>>>>>>>>\n>>>> http://bioconductor.org/checkResults/2.3/bioc-LATEST/annotate/wilson1-buildsrc.html \n>>>>\n>>>>>>>>>> Therefore annotate will not be pushed to the BioC 2.3 public repo\n>>>>>>>>>> until someone\n>>>>>>>>>> fixes its vignette.\n>>>>>>>>>>\n>>>>>>>>> Unfortunately that vignette is unfixable - it is based on the old\n>>>>>>>>> Homologene/env packages, so will need to be almost completely\n>>>>>> rewritten to\n>>>>>>>>> use the new InParanoid/SQLite packages.\n>>>>>>>>>\n>>>>>>>>> I should be able to replace it with something reasonable either\n>>>> this\n>>>>>>>>> week or the next. In the meantime I will just rename it so it \n>>>>>>>>> won't\n>>>>>>>>> interfere with the build.\n>>>>>>>>>\n>>>>>>>>> Best,\n>>>>>>>>>\n>>>>>>>>> Jim\n>>>>>>>>>\n>>>>>>>>>\n>>>>>>>>>\n>>>>>>>>>> Cheers,\n>>>>>>>>>> H.\n>>>>>>>>>>\n>>>>>>>>>> PS: The general page for all our builds is:\n>>>>>>>>>>\n>>>>>>>>>>  http://bioconductor.org/checkResults/\n>>>>>>>>>>\n>>>>>>>>>>\n>>>>>>>>>>\n>>>>>>>>>>> Kasper\n>>>>>>>>>>>\n>>>>>>>>>>> _______________________________________________\n>>>>>>>>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>>>>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>>>>>>>>\n>>>>>>>>>> _______________________________________________\n>>>>>>>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>>>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>>>>>>>\n>>>>>>>>>\n>>>>>>>> _______________________________________________\n>>>>>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>>>>>\n>>>>>>>        [[alternative HTML version deleted]]\n>>>>>>>\n>>>>>>> _______________________________________________\n>>>>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>>>>\n>>>>>        [[alternative HTML version deleted]]\n>>>>>\n>>>>> _______________________________________________\n>>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>>\n>>>\n>>>     [[alternative HTML version deleted]]\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n\n-- \nRobert Gentleman, PhD\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M2-B876\nPO Box 19024\nSeattle, Washington 98109-1024\n206-667-7700\nrgentlem at fhcrc.org",
+      "body_snippet": "I did see a new version come down via update.packages - Tony can you \nconfirm that you are now getting one at your end?\n\nthe devel builds seem to be in a bit of a mess, we will be trying to \naddress t",
+      "thread_id": "thread-5d6db27c7f5a",
+      "thread_depth": 11,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-50edc2af2cd3",
+      "message_id": "<C4631F88.7279%CMiller@PICR.man.ac.uk>",
+      "from_name": "Crispin Miller",
+      "from_email_hash": "51befd19438c82290a6884ec8f3c12084a4eb2a7810d922e731ad12ee78c22fd",
+      "date": "2008-05-28T14:41:12+01:00",
+      "subject": "[Bioc-devel] Sweave and integers specified as 0x...",
+      "subject_clean": "[Bioc-devel] Sweave and integers specified as 0x...",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\nI have a slight, I think, Sweave issue I'm hoping someone can help me\nwith... \n\n\nI have a function that takes an integer as a parameter, that I want to\nspecify in hex using 0x...\n\ne.g. 0xAABBCC\n\nI'm finding that this is being translated back into a 'normal' integer (e.g.\n11189196) in the finished document so that, for example, if I was to write\nthe following:\n \n<<echo=TRUE>>=\n my.fun(0xAABBCC)\n@\n\nIt appears in my assembled .pdf file as:\n\n > my.fun(11189196)\n\nAny ideas would be much appreciated -- I know I could specify it as a\nstring, but I'd like to avoid that if possible...\n\n\nCrispin \n--------------------------------------------------------\nThis email is confidential and intended solely for the u...{{dropped:12}}",
+      "body_snippet": "Hi,\nI have a slight, I think, Sweave issue I'm hoping someone can help me\nwith... \n\n\nI have a function that takes an integer as a parameter, that I want to\nspecify in hex using 0x...\n\ne.g. 0xAABBCC\n\nI",
+      "thread_id": "thread-50edc2af2cd3",
+      "thread_depth": 0,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-e54242bc0085",
+      "message_id": "<483D65CE.8060401@ebi.ac.uk>",
+      "from_name": "Joern Toedling",
+      "from_email_hash": "179331a143ca2f14693718b605784ee55ba4c0361b76d937bb1ef82b52b58ee3",
+      "date": "2008-05-28T15:01:50+01:00",
+      "subject": "[Bioc-devel] Sweave and integers specified as 0x...",
+      "subject_clean": "[Bioc-devel] Sweave and integers specified as 0x...",
+      "in_reply_to": "<C4631F88.7279%CMiller@PICR.man.ac.uk>",
+      "references": [
+        "<C4631F88.7279%CMiller@PICR.man.ac.uk>"
+      ],
+      "body_plain": "Hello,\nyou could use the Sweave option keep.source=TRUE for that code chunk, \nwhich would probably preserve the hex notation.\nRegards,\nJoern\n\nCrispin Miller wrote:\n> Hi,\n> I have a slight, I think, Sweave issue I'm hoping someone can help me\n> with... \n>\n>\n> I have a function that takes an integer as a parameter, that I want to\n> specify in hex using 0x...\n>\n> e.g. 0xAABBCC\n>\n> I'm finding that this is being translated back into a 'normal' integer (e.g.\n> 11189196) in the finished document so that, for example, if I was to write\n> the following:\n>  \n> <<echo=TRUE>>=\n>  my.fun(0xAABBCC)\n> @\n>\n> It appears in my assembled .pdf file as:\n>\n>  > my.fun(11189196)\n>\n> Any ideas would be much appreciated -- I know I could specify it as a\n> string, but I'd like to avoid that if possible...\n>\n>\n> Crispin \n> --------------------------------------------------------\n>",
+      "body_snippet": "Hello,\nyou could use the Sweave option keep.source=TRUE for that code chunk, \nwhich would probably preserve the hex notation.\nRegards,\nJoern\n\nCrispin Miller wrote:\n> Hi,\n> I have a slight, I think, Sw",
+      "thread_id": "thread-50edc2af2cd3",
+      "thread_depth": 1,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-d3830866ce53",
+      "message_id": "<C4632664.728A%CMiller@PICR.man.ac.uk>",
+      "from_name": "Crispin Miller",
+      "from_email_hash": "51befd19438c82290a6884ec8f3c12084a4eb2a7810d922e731ad12ee78c22fd",
+      "date": "2008-05-28T15:10:28+01:00",
+      "subject": "[Bioc-devel] Sweave and integers specified as 0x...",
+      "subject_clean": "[Bioc-devel] Sweave and integers specified as 0x...",
+      "in_reply_to": "<483D65CE.8060401@ebi.ac.uk>",
+      "references": [],
+      "body_plain": "Brilliant! Works perfectly - many thanks!\n\nCrispin\n\n\nOn 28/5/08 15:01, \"Joern Toedling\" <toedling at ebi.ac.uk> wrote:\n\n> Hello,\n> you could use the Sweave option keep.source=TRUE for that code chunk,\n> which would probably preserve the hex notation.\n> Regards,\n> Joern\n> \n> Crispin Miller wrote:\n>> Hi,\n>> I have a slight, I think, Sweave issue I'm hoping someone can help me\n>> with... \n>> \n>> \n>> I have a function that takes an integer as a parameter, that I want to\n>> specify in hex using 0x...\n>> \n>> e.g. 0xAABBCC\n>> \n>> I'm finding that this is being translated back into a 'normal' integer (e.g.\n>> 11189196) in the finished document so that, for example, if I was to write\n>> the following:\n>>  \n>> <<echo=TRUE>>=\n>>  my.fun(0xAABBCC)\n>> @\n>> \n>> It appears in my assembled .pdf file as:\n>> \n>>> my.fun(11189196)\n>> \n>> Any ideas would be much appreciated -- I know I could specify it as a\n>> string, but I'd like to avoid that if possible...\n>> \n>> \n>> Crispin \n>> --------------------------------------------------------\n>> \n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel \n--------------------------------------------------------\nThis email is confidential and intended solely for the u...{{dropped:12}}",
+      "body_snippet": "Brilliant! Works perfectly - many thanks!\n\nCrispin\n\n\nOn 28/5/08 15:01, \"Joern Toedling\" <toedling at ebi.ac.uk> wrote:\n\n> Hello,\n> you could use the Sweave option keep.source=TRUE for that code chunk,",
+      "thread_id": "thread-50edc2af2cd3",
+      "thread_depth": 2,
+      "month": "2008-05"
+    },
+    {
+      "id": "msg-6864ee73e032",
+      "message_id": "<1212152854.483ffc16bbe90@webmail.epfl.ch>",
+      "from_name": "Darlene Goldstein",
+      "from_email_hash": "17580dcb70c87d547740572499904bf016039c4c7ac6b3bda03d7202ef31bcef",
+      "date": "2008-05-30T15:07:34+02:00",
+      "subject": "[Bioc-devel] Lausanne BioC Devel 2008 - slides on the web",
+      "subject_clean": "[Bioc-devel] Lausanne BioC Devel 2008 - slides on the web",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi all,\n\nSlides from the talks given at the developer meeting in Lausanne are now\navailable at\nhttp://wiki.fhcrc.org/bioc/DetailedScheduleTentative\n\nThere are still a few talks that we have not received, speakers (including\nflashlight speakers if your talk is not already there) can send the pdf file to\nme or Martin Morgan and we will post it.\n\nThanks to all for a productive meeting!\n\nBest regards,\n\nDarlene\n-- \nDarlene Goldstein\n?cole Polytechnique F?d?rale de Lausanne (EPFL)\nInstitut de math?matiques\nB?timent MA, Station 8        Tel: +41 21 693 0528\nCH-1015 Lausanne              Fax: +41 21 693 4303\nSWITZERLAND",
+      "body_snippet": "Hi all,\n\nSlides from the talks given at the developer meeting in Lausanne are now\navailable at\nhttp://wiki.fhcrc.org/bioc/DetailedScheduleTentative\n\nThere are still a few talks that we have not receiv",
+      "thread_id": "thread-6864ee73e032",
+      "thread_depth": 0,
+      "month": "2008-05"
+    }
+  ],
+  "threads": [
+    {
+      "id": "thread-2997655e41de",
+      "subject": "[Bioc-devel] rbind for ExpressionSet objects?",
+      "message_count": 8,
+      "participants": [
+        "Gordon K Smyth",
+        "Laurent Gautier",
+        "Martin Maechler",
+        "Martin Morgan",
+        "Robert Gentleman"
+      ],
+      "started": "2008-05-01T10:26:01+10:00",
+      "last_reply": "2008-05-07T15:15:38+10:00",
+      "root_message_id": "msg-2997655e41de"
+    },
+    {
+      "id": "thread-57f339258603",
+      "subject": "[Bioc-devel] BioC 2.2 now available",
+      "message_count": 7,
+      "participants": [
+        "Dan Tenenbaum",
+        "Herve Pages",
+        "Martin Morgan",
+        "Patrick Aboyoun",
+        "Robert Gentleman",
+        "Sean Davis"
+      ],
+      "started": "2008-05-01T15:48:59-07:00",
+      "last_reply": "2008-05-02T07:58:57-07:00",
+      "root_message_id": "msg-57f339258603"
+    },
+    {
+      "id": "thread-c5a5c5c50071",
+      "subject": "[Bioc-devel] texi2dvi instead of pdflatex in R2.7.0? and related bioc 2.2 builds",
+      "message_count": 1,
+      "participants": [
+        "Oleg Sklyar"
+      ],
+      "started": "2008-05-04T01:33:52+01:00",
+      "last_reply": "2008-05-04T01:33:52+01:00",
+      "root_message_id": "msg-c5a5c5c50071"
+    },
+    {
+      "id": "thread-75e92c239a97",
+      "subject": "[Bioc-devel] lumiHumanV1 missing",
+      "message_count": 1,
+      "participants": [
+        "Pan Du"
+      ],
+      "started": "2008-05-07T09:44:54-05:00",
+      "last_reply": "2008-05-07T09:44:54-05:00",
+      "root_message_id": "msg-75e92c239a97"
+    },
+    {
+      "id": "thread-8e7edc1bb583",
+      "subject": "[Bioc-devel] Anyway of automatically inform the check errors/warnings of Bioc developing version?",
+      "message_count": 4,
+      "participants": [
+        "Herve Pages",
+        "Marc Carlson",
+        "Pan Du"
+      ],
+      "started": "2008-05-07T09:50:40-05:00",
+      "last_reply": "2008-05-07T09:41:18-07:00",
+      "root_message_id": "msg-8e7edc1bb583"
+    },
+    {
+      "id": "thread-5d6db27c7f5a",
+      "subject": "[Bioc-devel] annotate missing from devel",
+      "message_count": 13,
+      "participants": [
+        "Herve Pages",
+        "James W. MacDonald",
+        "Kasper Daniel Hansen",
+        "Marc Carlson",
+        "Robert Gentleman",
+        "Sean Davis",
+        "Tony Chiang"
+      ],
+      "started": "2008-05-07T10:07:31-07:00",
+      "last_reply": "2008-05-15T09:35:25-07:00",
+      "root_message_id": "msg-5d6db27c7f5a"
+    },
+    {
+      "id": "thread-72efa9e9fa8d",
+      "subject": "[Bioc-devel] lumiHumanV1 missing",
+      "message_count": 2,
+      "participants": [
+        "Keith Satterley",
+        "Vincent Carey 525-2265"
+      ],
+      "started": "2008-05-07T16:36:21+10:00",
+      "last_reply": "2008-05-07T06:47:37-04:00",
+      "root_message_id": "msg-72efa9e9fa8d"
+    },
+    {
+      "id": "thread-55cdaf8da08e",
+      "subject": "[Bioc-devel] BGmix package announcement",
+      "message_count": 1,
+      "participants": [
+        "Lewin, Alexandra M"
+      ],
+      "started": "2008-05-13T15:55:08+01:00",
+      "last_reply": "2008-05-13T15:55:08+01:00",
+      "root_message_id": "msg-55cdaf8da08e"
+    },
+    {
+      "id": "thread-797850b08fb3",
+      "subject": "[Bioc-devel] Rgraphviz error in Bioconductor 2.2 build for windows",
+      "message_count": 4,
+      "participants": [
+        "Martin Morgan",
+        "Robert Gentleman",
+        "rcaloger"
+      ],
+      "started": "2008-05-13T18:54:44+02:00",
+      "last_reply": "2008-05-13T10:48:21-07:00",
+      "root_message_id": "msg-797850b08fb3"
+    },
+    {
+      "id": "thread-50edc2af2cd3",
+      "subject": "[Bioc-devel] Sweave and integers specified as 0x...",
+      "message_count": 3,
+      "participants": [
+        "Crispin Miller",
+        "Joern Toedling"
+      ],
+      "started": "2008-05-28T14:41:12+01:00",
+      "last_reply": "2008-05-28T15:10:28+01:00",
+      "root_message_id": "msg-50edc2af2cd3"
+    },
+    {
+      "id": "thread-6864ee73e032",
+      "subject": "[Bioc-devel] Lausanne BioC Devel 2008 - slides on the web",
+      "message_count": 1,
+      "participants": [
+        "Darlene Goldstein"
+      ],
+      "started": "2008-05-30T15:07:34+02:00",
+      "last_reply": "2008-05-30T15:07:34+02:00",
+      "root_message_id": "msg-6864ee73e032"
+    }
+  ]
+}

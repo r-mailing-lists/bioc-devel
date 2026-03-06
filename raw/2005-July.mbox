@@ -1,0 +1,1433 @@
+From stvjc at channing.harvard.edu  Wed Jul  6 22:11:20 2005
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Wed, 6 Jul 2005 16:11:20 -0400 (EDT)
+Subject: [Bioc-devel] ANN: BioC Developer's Meeting/agenda/discussion
+In-Reply-To: <m2hdfqgjdh.fsf@macaroni.local>
+References: <m2hdfqgjdh.fsf@macaroni.local>
+Message-ID: <Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>
+
+I didn't see any discussion of this, and the upcoming
+meeting is approaching rapidly.  So here are some comments.
+
+>
+> We propose the following agenda items.
+>
+> 1. Who do we want as our audience? Lab biologists? Practical
+>    Bioinformaticians?  Statistics consultants/academics? What are the
+>    implications for our projects.
+
+It seems to me that the project has hit a reasonable target.
+Methodological developers want, in many cases, to build on the conventions
+and infrastructure of Bioconductor.  It gives them exposure and a grain
+of plausibility.  Lab biologists want to use open
+tools when those tools are convenient and valid, critically acceptable.
+If the biologists weren't interested, we'd probably have less interest
+from developers.  If the developers weren't interested, we wouldn't
+have the biologists.
+
+I don't think we have to alter our audience.  How we serve those
+two components does warrant discussion.  For developers, we could
+provide more guidelines/guidance.  For biologists, we could reduce
+system complexity.  For example, we could work to reduce the number
+of packages that somehow are manipulated to carry out a given task.
+
+Following the example of MLInterfaces, we could use namespaces to
+get access to code without explicit package loading.  The major
+activities (e.g., biocImport, biocPreproc, biocDiffExp, biocMachLearn,
+biocReportGen) would be functions in Biobase.  Biobase maintainers
+will define the API that a package must conform to in order for its
+code to be available through these wrappers.  This need not be very
+stringent, as we see with MLInterfaces.  I believe that this approach
+would take the user from a situation of navigating various packages
+and functions within packages to a situation of navigating options
+within one function within one package.
+
+(N.B.  MLInterfaces is no panacea.  The current design with a generic
+for every machine learning method is challenging to maintain and
+document.  But the underlying idea seems good.  A simple input container
+structure (exprSet), uniform output container structures (MLOutput and
+subclasses for clustering and classification).  The external software
+is acquired at run time through namespace qualifications in function calls.)
+
+>
+> 2. Integration of efforts (packages) that are currently duplicating
+>    (or competing with) each other.
+
+Yes, the task view catalog that I have established will help identify
+these competitions more conveniently.  I will shortly post links to this catalog.
+
+>
+> 3. Do we need a 3-day BioC developers retreat to go into more depth
+>    than what is possible on 1 day, if yes, settle on when, where (some
+>    isolated but attractive place in US or Europe), and who's
+>    organizing it.
+
+I think we need more time to discuss strategies in the current core.
+A joint retreat has to be more useful than three days of writ^H^H^H^Hfixing
+code separately.
+
+>
+> 4. Short-term and medium-term goals for BioC?
+
+Short term:  1) Agree on a set of task views.  I will give an example
+soon and there will probably be disagreements.  2) Create a reference
+card.  I started modifying the R reference card by Tom Short (CRAN/
+Documentation/Contributed) and
+will check in a package bcRefcard so that we can do this jointly.
+
+Medium term:  1) Can we simplify the big picture of the project?  I
+have described it as a set of containers and workflow components for
+statistics of high-throughput experiments.  The container set is
+somewhat large (marrayRaw, marrayInfo, affyBatch, RGList,
+exprSet, environment, ...) and the workflow components are very
+diverse and redundant in various cases.  I don't think we have
+to eliminate containers or components for a while, but we should
+be able to identify smaller sets of very durable component designs
+that we try to get people to invest in.  2) Some complexity arises
+because various packages assume roles for files on disk (e.g., targets
+files, gal files).  In many cases one could more readily create
+useful information in an R data frame than in a disk file, but the R data
+frame cannot be used directly.  A possible principle:  whenever a disk
+file plays a given role, it should be possible for an R object with equivalent
+information to play the same role.  3) Can we identify a
+good role for RDBMS?  4) Can we take advantage of compute clusters more
+routinely?
+
+Another agenda item: Should we survey users formally to determine
+how their needs are met and what needs are unmet?  Likewise with
+developers?
+
+Another agenda item: Forthcoming developments.  In bioc, how do
+we communicate to people when new resources are available and
+should be used, like eSet ?  In R, how do we get up-to-date information
+on evolution of S4 and take advantage of this in coding and planning?
+
+I suppose we could start maintaining a document like "Writing R
+extensions" that is focused on "Writing Bioconductor Packages".
+
+>
+> Whether or not you will be able to attend, we encourage you to
+> contribute suggestions for additional agenda items (send them to me
+> or, better yet, post to bioc-devel).
+>
+> Details on specific meeting location and times will follow, but we
+> wanted to put out this invitation as soon as possible to allow for
+> those interested to arrange their schedules.
+>
+> Note that the timing is between the R and BioC conferences being held
+> in Seattle.  Information on accommodations and airfare discounts
+> available here: http://www.bioconductor.org/meeting05/
+>
+> Best Wishes,
+>
+> + seth
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From stvjc at channing.harvard.edu  Fri Jul  8 05:33:44 2005
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Thu, 7 Jul 2005 23:33:44 -0400 (EDT)
+Subject: [Bioc-devel] ANN: BioC Developer's Meeting/agenda/discussion
+In-Reply-To: <Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>
+References: <m2hdfqgjdh.fsf@macaroni.local>
+	<Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>
+Message-ID: <Pine.GSO.4.58.0507072329520.19350@capecod.bwh.harvard.edu>
+
+> > 2. Integration of efforts (packages) that are currently duplicating
+> >    (or competing with) each other.
+>
+> Yes, the task view catalog that I have established will help identify
+> these competitions more conveniently.  I will shortly post links to this catalog.
+
+The first task view rendering can now be seen at
+http://www.biostat.harvard.edu/~carey/top.html
+
+comments welcome.  this was a fairly haphazard construction
+of topic-set and mapping to packages.
+
+> card.  I started modifying the R reference card by Tom Short (CRAN/
+> Documentation/Contributed) and
+> will check in a package bcRefcard so that we can do this jointly.
+
+now checked in at madman/Rpacks -- very little done for the bioc
+card at present.
+
+
+From rgentlem at fhcrc.org  Fri Jul  8 20:22:52 2005
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Fri, 08 Jul 2005 11:22:52 -0700
+Subject: [Bioc-devel] welcome to Li Long
+Message-ID: <42CEC47C.1010105@fhcrc.org>
+
+Hi folks,
+   Pleaes welcome Li to the group.
+Also, Seth is hoping for feedback on the new web site.
+
+  Best wishes
+    Robert
+
+
+From J.J.Goeman at lumc.nl  Mon Jul 11 14:08:45 2005
+From: J.J.Goeman at lumc.nl (Goeman, J.J. (MSTAT))
+Date: Mon, 11 Jul 2005 14:08:45 +0200
+Subject: [Bioc-devel] List of developmental packages
+Message-ID: <68735E80D5EB7C4F8477BF00C450D38E0A5937@mailc.lumcnet.prod.intern>
+
+ Hi,
+
+There seems to be something wrong with the automatic updating of the development repository list at 
+
+http://www.bioconductor.org/repository/devel/package/html/. 
+
+The versions here are much older than the versions at the check results page
+
+http://www.bioconductor.org/checkResults/checkResults.html. 
+
+Also, clicking on the packages to try to download them leads the user to the dowload page of the outdated packages and to error messages "Object not found!" or "Forbidden". Can anybody mend this?
+
+ Best,
+
+Jelle
+
+
+From sfalcon at fhcrc.org  Mon Jul 11 16:25:52 2005
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 11 Jul 2005 07:25:52 -0700
+Subject: [Bioc-devel] List of developmental packages
+In-Reply-To: <68735E80D5EB7C4F8477BF00C450D38E0A5937@mailc.lumcnet.prod.intern>
+	(J. J. Goeman's message of "Mon, 11 Jul 2005 14:08:45 +0200")
+References: <68735E80D5EB7C4F8477BF00C450D38E0A5937@mailc.lumcnet.prod.intern>
+Message-ID: <m2irzhqv0v.fsf@macaroni.local>
+
+Hi Jelle,
+
+On 11 Jul 2005, J.J.Goeman at lumc.nl wrote:
+> There seems to be something wrong with the automatic updating of the
+> development repository list at
+>
+> http://www.bioconductor.org/repository/devel/package/html/. 
+
+Yes, there is something wrong, in particular, the updating is not
+automatic :-(
+
+This has been on my list to fix, thanks for helping me raise the
+priority.
+
+> The versions here are much older than the versions at the check
+> results page
+>
+> http://www.bioconductor.org/checkResults/checkResults.html. 
+>
+> Also, clicking on the packages to try to download them leads the
+> user to the dowload page of the outdated packages and to error
+> messages "Object not found!" or "Forbidden". Can anybody mend this?
+
+Will do my best to get this resolved this week.  In the past couple
+days I've made progress on getting the Windows build going again.
+
+Thanks for catching and reporting this.
+
+Best,
+
++ seth
+
+
+From sfalcon at fhcrc.org  Tue Jul 12 01:29:57 2005
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 11 Jul 2005 16:29:57 -0700
+Subject: [Bioc-devel] Rgraphviz ported to Windows
+Message-ID: <m2d5poexai.fsf@macaroni.local>
+
+Hi all,
+
+Rgraphviz_1.6.1 is working (for me) on Windows using R 2.2 (devel).  I
+was able to compile the graphviz library using mingw (much
+hand-holding of the build process involved) and then things seemed to
+Just Work.
+
+I would like some folks to try it out before I make any announcements
+on the bioconductor list.
+
+How to try it:
+
+You need a development version of R (2.2.x).  Then:
+
+source("http://bioconductor.org/biocLite.R")
+biocLite("Rgraphviz")
+
+
+Best,
+
++ seth
+
+
+From sfalcon at fhcrc.org  Tue Jul 12 02:20:07 2005
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 11 Jul 2005 17:20:07 -0700
+Subject: [Bioc-devel] List of developmental packages
+In-Reply-To: <m2irzhqv0v.fsf@macaroni.local> (Seth Falcon's message of "Mon,
+	11 Jul 2005 07:25:52 -0700")
+References: <68735E80D5EB7C4F8477BF00C450D38E0A5937@mailc.lumcnet.prod.intern>
+	<m2irzhqv0v.fsf@macaroni.local>
+Message-ID: <m2oe98an9k.fsf@macaroni.local>
+
+BioC devel repository has been updated.
+
+And we are closer to having this automated, but not yet.
+
+Still need to fix the links from the check report.
+
++ seth
+
+
+From stvjc at channing.harvard.edu  Tue Jul 12 19:15:26 2005
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Tue, 12 Jul 2005 13:15:26 -0400 (EDT)
+Subject: [Bioc-devel] Rgraphviz ported to Windows
+In-Reply-To: <m2d5poexai.fsf@macaroni.local>
+References: <m2d5poexai.fsf@macaroni.local>
+Message-ID: <Pine.GSO.4.58.0507121313290.142@capecod.bwh.harvard.edu>
+
+i ran the biocGraph book chapter on windows.
+
+congratulations!  i hope you'll jot down the magical process
+of compilation
+
+
+> Hi all,
+>
+> Rgraphviz_1.6.1 is working (for me) on Windows using R 2.2 (devel).  I
+> was able to compile the graphviz library using mingw (much
+> hand-holding of the build process involved) and then things seemed to
+> Just Work.
+>
+> I would like some folks to try it out before I make any announcements
+> on the bioconductor list.
+>
+> How to try it:
+>
+> You need a development version of R (2.2.x).  Then:
+>
+> source("http://bioconductor.org/biocLite.R")
+> biocLite("Rgraphviz")
+>
+>
+> Best,
+>
+> + seth
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From Steven.VanVooren at esat.kuleuven.be  Thu Jul 14 14:52:37 2005
+From: Steven.VanVooren at esat.kuleuven.be (Steven Van Vooren)
+Date: Thu, 14 Jul 2005 14:52:37 +0200
+Subject: [Bioc-devel] excel plugins with BioC, anyone?
+Message-ID: <42D66015.6010306@esat.kuleuven.ac.be>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+Url: https://stat.ethz.ch/mailman/private/bioc-devel/attachments/20050714/b1792b86/attachment.pl
+
+From stvjc at channing.harvard.edu  Thu Jul 14 15:32:35 2005
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Thu, 14 Jul 2005 09:32:35 -0400 (EDT)
+Subject: [Bioc-devel] excel plugins with BioC, anyone?
+In-Reply-To: <42D66015.6010306@esat.kuleuven.ac.be>
+References: <42D66015.6010306@esat.kuleuven.ac.be>
+Message-ID: <Pine.GSO.4.58.0507140925560.4622@capecod.bwh.harvard.edu>
+
+One way to tighten this pipeline is to use DCOM.  There are at least
+two implementations of R-DCOM interfaces, and bidirectional operation
+through DCOM is possible.  Have a look at www.omegahat.org/RDCOMclient
+and, on CRAN, in "devel", rcom....
+
+> Dear List,
+>
+> Like so many people, we analyse our microarray data primarily in Excel,
+> and want to integrate our workflow more tightly with custom tools. The
+> transfer of data between Excel and BioC is manual and hence error prone.
+>
+> Does anyone have expericence in building MS Excel plugins that rely on
+> BioConductor?
+>
+> I noticed http://www.bioconductor.org/excel/excel.html has one plugin,
+> but it's a dead link.
+>
+> Thanks,
+> Steven
+> --
+>  \\\
+>  \\\'.
+>
+> Steven Van Vooren - PhD Student
+> Katholieke    Universiteit     Leuven
+>  Kasteelpark Arenberg 10  -  3000 Leuven
+>   [+32 16 32 86 54]   -   [+32 476 60 59 61]
+>
+>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From smyth at wehi.edu.au  Sun Jul 17 09:44:36 2005
+From: smyth at wehi.edu.au (Gordon Smyth)
+Date: Sun, 17 Jul 2005 17:44:36 +1000
+Subject: [Bioc-devel] ANN: BioC Developer's  Meeting/agenda/discussion
+In-Reply-To: <Pine.GSO.4.58.0507072329520.19350@capecod.bwh.harvard.edu>
+References: <m2hdfqgjdh.fsf@macaroni.local>
+	<Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>
+	<Pine.GSO.4.58.0507072329520.19350@capecod.bwh.harvard.edu>
+Message-ID: <6.2.1.2.1.20050717170119.02103858@imaphost.wehi.edu.au>
+
+At 01:33 PM 8/07/2005, Vincent Carey 525-2265 wrote:
+> > > 2. Integration of efforts (packages) that are currently duplicating
+> > >    (or competing with) each other.
+> >
+> > Yes, the task view catalog that I have established will help identify
+> > these competitions more conveniently.  I will shortly post links to 
+> this catalog.
+>
+>The first task view rendering can now be seen at
+>http://www.biostat.harvard.edu/~carey/top.html
+>
+>comments welcome.  this was a fairly haphazard construction
+>of topic-set and mapping to packages.
+
+Are you trying to put each package into one and only one category? I think 
+that this approach tends to emphasis fragmentation rather than unity and 
+doesn't do justice to packages with virtual integration. Topics like 
+"Bayes", "linear modelling", "factorial design", "differential expression" 
+and "multiple testing", for example, don't split into non-overlapping 
+topics. Rather they are all aspects of the same thing. Pre-processing and 
+normalization is somewhat more separate, but even this interacts deeply 
+with the same topics.
+
+I suggest that a grouping into larger and not mutually exclusive groups 
+might be more helpful.
+
+Here are some specific problems:
+
+The limma package isn't mentioned under "Bayesian", "FactorialDesigns", 
+"TimeSeries" or "MultipleTesting", even though it is probably the most used 
+package in each of these categories.
+
+Limma isn't mentioned anywhere in any of the Preprocessing categories, 
+although it is one of the most used packages for non-affy pre-processing. 
+The preprocessing package arrayMagic package, for example, calls limma 
+functions to do normalization and pre-processing.
+
+How are "ErrorModels" different from statistical models used to assess 
+differential expression? The LPE and plgem packages should surely get a 
+mention under differential expression rather than here. The LPE package is 
+very similar in spirit to the empirical Bayes approach for differential 
+expression, and should be grouped somewhere with packages like limma, 
+EBayes, siggenes etc.
+
+twilight is another package which seems to me to be doing differential 
+expression, but is currently only listed under "MultipleTesting".
+
+What sort of graphics is included under "Visualization"? Many of the 
+packages with pre-processing functionality including plotting functions, 
+including marray, limma, arrayMagic.
+
+Gordon
+
+> > card.  I started modifying the R reference card by Tom Short (CRAN/
+> > Documentation/Contributed) and
+> > will check in a package bcRefcard so that we can do this jointly.
+>
+>now checked in at madman/Rpacks -- very little done for the bioc
+>card at present.
+
+
+From smyth at wehi.edu.au  Sun Jul 17 10:19:32 2005
+From: smyth at wehi.edu.au (Gordon Smyth)
+Date: Sun, 17 Jul 2005 18:19:32 +1000
+Subject: [Bioc-devel] ANN: BioC Developer's  Meeting/agenda/discussion
+Message-ID: <6.2.1.2.1.20050717181538.0216cb10@imaphost.wehi.edu.au>
+
+Oops, "virtual integration" in the 2nd sentence of my previous post should 
+have been "vertical integration".
+
+Gordon
+
+
+From stvjc at channing.harvard.edu  Sun Jul 17 19:47:22 2005
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Sun, 17 Jul 2005 13:47:22 -0400 (EDT)
+Subject: [Bioc-devel] ANN: BioC Developer's  Meeting/agenda/discussion
+In-Reply-To: <6.2.1.2.1.20050717170119.02103858@imaphost.wehi.edu.au>
+References: <m2hdfqgjdh.fsf@macaroni.local>
+	<Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>
+	<Pine.GSO.4.58.0507072329520.19350@capecod.bwh.harvard.edu>
+	<6.2.1.2.1.20050717170119.02103858@imaphost.wehi.edu.au>
+Message-ID: <Pine.GSO.4.58.0507171338050.12382@capecod.bwh.harvard.edu>
+
+> > > >    (or competing with) each other.
+> > >
+> > > Yes, the task view catalog that I have established will help identify
+> > > these competitions more conveniently.  I will shortly post links to
+> > this catalog.
+> >
+> >The first task view rendering can now be seen at
+> >http://www.biostat.harvard.edu/~carey/top.html
+> >
+> >comments welcome.  this was a fairly haphazard construction
+> >of topic-set and mapping to packages.
+>
+> Are you trying to put each package into one and only one category? I think
+
+definitely not --  but that is a limitation of this first attempt
+
+> that this approach tends to emphasis fragmentation rather than unity and
+> doesn't do justice to packages with virtual integration. Topics like
+> "Bayes", "linear modelling", "factorial design", "differential expression"
+> and "multiple testing", for example, don't split into non-overlapping
+> topics. Rather they are all aspects of the same thing. Pre-processing and
+> normalization is somewhat more separate, but even this interacts deeply
+> with the same topics.
+>
+> I suggest that a grouping into larger and not mutually exclusive groups
+> might be more helpful.
+>
+> Here are some specific problems:
+>
+> The limma package isn't mentioned under "Bayesian", "FactorialDesigns",
+> "TimeSeries" or "MultipleTesting", even though it is probably the most used
+> package in each of these categories.
+>
+> Limma isn't mentioned anywhere in any of the Preprocessing categories,
+> although it is one of the most used packages for non-affy pre-processing.
+> The preprocessing package arrayMagic package, for example, calls limma
+> functions to do normalization and pre-processing.
+>
+> How are "ErrorModels" different from statistical models used to assess
+> differential expression? The LPE and plgem packages should surely get a
+> mention under differential expression rather than here. The LPE package is
+> very similar in spirit to the empirical Bayes approach for differential
+> expression, and should be grouped somewhere with packages like limma,
+> EBayes, siggenes etc.
+>
+> twilight is another package which seems to me to be doing differential
+> expression, but is currently only listed under "MultipleTesting".
+>
+> What sort of graphics is included under "Visualization"? Many of the
+> packages with pre-processing functionality including plotting functions,
+> including marray, limma, arrayMagic.
+>
+> Gordon
+
+all that you say is true.  i will soon have the ability
+for a package to lie in indefinitely many views.  i want to
+hear more dialogue on how the view set can be made more
+faithful to creators' intentions, and on which packages
+should be associated with which views.
+
+ultimately the view association efforts have to go back
+to the developers, with curation at the repository level.
+you'll be able to say which views you want your packages
+to be associated with, and with what comments.
+
+the metadata about a package that is presented with a
+view should vary from view to view.  this is a job the
+maintainer/developer should think about.  as you say,
+limma can be used for preprocessing and for visualization,
+but the comments associated with the view entry for each
+of these should be specific to the view.  (i don't have a
+comment-associating mechanism yet, but we need one)
+
+this is very early but could move rapidly to something useful
+if we do it well.
+
+
+From rgentlem at fhcrc.org  Sun Jul 17 20:24:59 2005
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Sun, 17 Jul 2005 11:24:59 -0700
+Subject: [Bioc-devel] ANN: BioC Developer's  Meeting/agenda/discussion
+In-Reply-To: <Pine.GSO.4.58.0507171338050.12382@capecod.bwh.harvard.edu>
+References: <m2hdfqgjdh.fsf@macaroni.local>	<Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>	<Pine.GSO.4.58.0507072329520.19350@capecod.bwh.harvard.edu>	<6.2.1.2.1.20050717170119.02103858@imaphost.wehi.edu.au>
+	<Pine.GSO.4.58.0507171338050.12382@capecod.bwh.harvard.edu>
+Message-ID: <42DAA27B.8080608@fhcrc.org>
+
+Hi,
+
+  To amplify a bit on both Gordon and Vince's comments. Yes packages 
+should be mentioned in multiple places, but there are also reasons to 
+split functionality into separate packages so that users have more 
+choice about methods that they use (this has always been a strength of R 
+and one that I am much in favor of) and the situations in which they use 
+them. But that said, we still need a mechanism that will allow for 
+multiple listings, one that lets package authors control the comments 
+and as Vince suggested, different comments for different headings does 
+seem worthwile, but not necessary.
+
+Also, I think Achim had mostly a CRAN view in mind when designing ctv 
+(hence its name) and while that view (where most packages do only one 
+thing and package dependencies are rare and not very complicated) is a 
+pretty good one for CRAN, it is less good for Bioconductor where there 
+are both more dependencies and more multi-purpose packages. So I think 
+some changes would be helpful, or perhaps the two repositories are so 
+different that we need a btv :-)
+
+We almost surely need some standard markup for the package author to 
+write what they want to have seen, once some vague notion of task views 
+are set up. My very strong preference is to do this in XML since there 
+are good tools for parsing and working with it. Quite possible in 
+inst/ctv would be a sensible spot so that it was available after 
+installation (although that might not be necessary). It would be very 
+straight forward to write some code to put in ctv that wrote one of 
+these out from basic user input, no need for them to know XML and 
+someone could surely write a widget in tcl/tk if they were so inclined.
+
+Life would be much simpler with an ontology, but that does not seem 
+likely to appear in any short order but perhaps we could decide if we 
+like the terms that Vince has used, and if there are any other 
+extensions. In some sense these belong either in ctv, or some other 
+place so that new developers have easy access to them (and no I don't 
+think we should use the KEYWORDS file in R; I have to say I find that 
+mechanism distinctly unhelpful). Gordon, do you have input on the 
+hierarchy of terms? And do you think it would be useful to have package 
+developers add themselves in and out, or should this be done by the 
+maintainer?
+
+Initially there were some arguments against developers doing it, as we 
+might want to have the view managed by an expert in the field who could 
+also give recommendations.
+
+  Best wishes
+   Robert
+
+Best wishes,
+   Robert
+
+
+
+Vincent Carey 525-2265 wrote:
+>>>>>   (or competing with) each other.
+>>>>
+>>>>Yes, the task view catalog that I have established will help identify
+>>>>these competitions more conveniently.  I will shortly post links to
+>>>
+>>>this catalog.
+>>>
+>>>The first task view rendering can now be seen at
+>>>http://www.biostat.harvard.edu/~carey/top.html
+>>>
+>>>comments welcome.  this was a fairly haphazard construction
+>>>of topic-set and mapping to packages.
+>>
+>>Are you trying to put each package into one and only one category? I think
+> 
+> 
+> definitely not --  but that is a limitation of this first attempt
+> 
+> 
+>>that this approach tends to emphasis fragmentation rather than unity and
+>>doesn't do justice to packages with virtual integration. Topics like
+>>"Bayes", "linear modelling", "factorial design", "differential expression"
+>>and "multiple testing", for example, don't split into non-overlapping
+>>topics. Rather they are all aspects of the same thing. Pre-processing and
+>>normalization is somewhat more separate, but even this interacts deeply
+>>with the same topics.
+>>
+>>I suggest that a grouping into larger and not mutually exclusive groups
+>>might be more helpful.
+>>
+>>Here are some specific problems:
+>>
+>>The limma package isn't mentioned under "Bayesian", "FactorialDesigns",
+>>"TimeSeries" or "MultipleTesting", even though it is probably the most used
+>>package in each of these categories.
+>>
+>>Limma isn't mentioned anywhere in any of the Preprocessing categories,
+>>although it is one of the most used packages for non-affy pre-processing.
+>>The preprocessing package arrayMagic package, for example, calls limma
+>>functions to do normalization and pre-processing.
+>>
+>>How are "ErrorModels" different from statistical models used to assess
+>>differential expression? The LPE and plgem packages should surely get a
+>>mention under differential expression rather than here. The LPE package is
+>>very similar in spirit to the empirical Bayes approach for differential
+>>expression, and should be grouped somewhere with packages like limma,
+>>EBayes, siggenes etc.
+>>
+>>twilight is another package which seems to me to be doing differential
+>>expression, but is currently only listed under "MultipleTesting".
+>>
+>>What sort of graphics is included under "Visualization"? Many of the
+>>packages with pre-processing functionality including plotting functions,
+>>including marray, limma, arrayMagic.
+>>
+>>Gordon
+> 
+> 
+> all that you say is true.  i will soon have the ability
+> for a package to lie in indefinitely many views.  i want to
+> hear more dialogue on how the view set can be made more
+> faithful to creators' intentions, and on which packages
+> should be associated with which views.
+> 
+> ultimately the view association efforts have to go back
+> to the developers, with curation at the repository level.
+> you'll be able to say which views you want your packages
+> to be associated with, and with what comments.
+> 
+> the metadata about a package that is presented with a
+> view should vary from view to view.  this is a job the
+> maintainer/developer should think about.  as you say,
+> limma can be used for preprocessing and for visualization,
+> but the comments associated with the view entry for each
+> of these should be specific to the view.  (i don't have a
+> comment-associating mechanism yet, but we need one)
+> 
+> this is very early but could move rapidly to something useful
+> if we do it well.
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From stvjc at channing.harvard.edu  Mon Jul 18 05:07:57 2005
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Sun, 17 Jul 2005 23:07:57 -0400 (EDT)
+Subject: [Bioc-devel] ANN: BioC Developer's  Meeting/agenda/discussion
+In-Reply-To: <42DAA27B.8080608@fhcrc.org>
+References: <m2hdfqgjdh.fsf@macaroni.local>
+	<Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>
+	<Pine.GSO.4.58.0507072329520.19350@capecod.bwh.harvard.edu>
+	<6.2.1.2.1.20050717170119.02103858@imaphost.wehi.edu.au>
+	<Pine.GSO.4.58.0507171338050.12382@capecod.bwh.harvard.edu>
+	<42DAA27B.8080608@fhcrc.org>
+Message-ID: <Pine.GSO.4.58.0507172258130.11495@capecod.bwh.harvard.edu>
+
+
+> Hi,
+>
+>   To amplify a bit on both Gordon and Vince's comments. Yes packages
+> should be mentioned in multiple places, but there are also reasons to
+> split functionality into separate packages so that users have more
+> choice about methods that they use (this has always been a strength of R
+> and one that I am much in favor of) and the situations in which they use
+> them. But that said, we still need a mechanism that will allow for
+> multiple listings, one that lets package authors control the comments
+> and as Vince suggested, different comments for different headings does
+> seem worthwile, but not necessary.
+
+i will try to get the multiple listings approach done soon and
+then check in the package so others can add value.
+
+>
+> Also, I think Achim had mostly a CRAN view in mind when designing ctv
+> (hence its name) and while that view (where most packages do only one
+> thing and package dependencies are rare and not very complicated) is a
+> pretty good one for CRAN, it is less good for Bioconductor where there
+> are both more dependencies and more multi-purpose packages. So I think
+> some changes would be helpful, or perhaps the two repositories are so
+> different that we need a btv :-)
+>
+> We almost surely need some standard markup for the package author to
+> write what they want to have seen, once some vague notion of task views
+> are set up. My very strong preference is to do this in XML since there
+> are good tools for parsing and working with it. Quite possible in
+
+i agree that we will use XML.  i am not happy about starting
+things out in XML as opposed to doing the data modeling and
+function design in R, and then getting the infrastructure
+to serialize to/deserialize from XML.  oddly enough I think
+one virtue of XML is that we can edit it manually and add
+content which R can then validate/process conveniently.
+
+> inst/ctv would be a sensible spot so that it was available after
+> installation (although that might not be necessary). It would be very
+> straight forward to write some code to put in ctv that wrote one of
+> these out from basic user input, no need for them to know XML and
+> someone could surely write a widget in tcl/tk if they were so inclined.
+
+right, but enough of our developers can write simple XML readily
+enough so no input infrastructre is absolutely necessary ... i think
+achim is expecting people to write the ctv-xml files by hand
+
+>
+> Life would be much simpler with an ontology, but that does not seem
+
+well, this basically is an ontology, like it or not.  it could
+be modeled in OWL with protege and i will probably do this before
+too long.
+
+> likely to appear in any short order but perhaps we could decide if we
+> like the terms that Vince has used, and if there are any other
+> extensions. In some sense these belong either in ctv, or some other
+> place so that new developers have easy access to them (and no I don't
+> think we should use the KEYWORDS file in R; I have to say I find that
+> mechanism distinctly unhelpful). Gordon, do you have input on the
+> hierarchy of terms? And do you think it would be useful to have package
+> developers add themselves in and out, or should this be done by the
+> maintainer?
+>
+> Initially there were some arguments against developers doing it, as we
+> might want to have the view managed by an expert in the field who could
+> also give recommendations.
+
+this is a good topic for "future of bioconductor".  we'd like this
+to be as non-confrontational as possible -- the developers should
+supply content/suggestions and some curators, perhaps a rotating group,
+would verify the content/suggestions, iterate with the developers on the
+view material, and then it would be finalized for a release.
+
+
+From stvjc at channing.harvard.edu  Mon Jul 18 05:34:03 2005
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Sun, 17 Jul 2005 23:34:03 -0400 (EDT)
+Subject: [Bioc-devel] ANN: BioC Developer's  Meeting/agenda/discussion
+In-Reply-To: <6.2.1.2.1.20050717170119.02103858@imaphost.wehi.edu.au>
+References: <m2hdfqgjdh.fsf@macaroni.local>
+	<Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>
+	<Pine.GSO.4.58.0507072329520.19350@capecod.bwh.harvard.edu>
+	<6.2.1.2.1.20050717170119.02103858@imaphost.wehi.edu.au>
+Message-ID: <Pine.GSO.4.58.0507172308090.11495@capecod.bwh.harvard.edu>
+
+> >
+> >The first task view rendering can now be seen at
+> >http://www.biostat.harvard.edu/~carey/top.html
+> >
+> >comments welcome.  this was a fairly haphazard construction
+> >of topic-set and mapping to packages.
+>
+> Are you trying to put each package into one and only one category? I think
+> that this approach tends to emphasis fragmentation rather than unity and
+> doesn't do justice to packages with virtual integration. Topics like
+> "Bayes", "linear modelling", "factorial design", "differential expression"
+> and "multiple testing", for example, don't split into non-overlapping
+> topics. Rather they are all aspects of the same thing. Pre-processing and
+> normalization is somewhat more separate, but even this interacts deeply
+> with the same topics.
+>
+> I suggest that a grouping into larger and not mutually exclusive groups
+> might be more helpful.
+
+Let's think about the objectives.  My gut feeling is that the
+multiplicity of packages that perform effectively the same
+tasks is a source of confusion and lost energy for users.
+One finds that several packages perform quantile normalization
+or MA plots, possibly slightly differently, and then one has to
+figure out which one is the most desirable for a given activity.
+
+To me it is relevant to the project to minimize this sort of
+occurrence.  It may not be possible to eliminate it, but it
+would be good to minimize it, and it requires collaboration
+among developers.
+
+The task view set was started in part to help us identify
+redundancies in package functionality.  Larger overlapping
+groups are less helpful for this aspect of the aim.
+
+To go out on a limb: I believe the package system is very
+good for developers, but somewhat cumbersome for users.  We
+want users to be concerned with identifying and carrying out
+tasks, not identifying and loading packages.  We need some
+packages explicitly loaded of course, but as MLInterfaces has
+demonstrated, the namespace mechanism can be used to get
+access to software without requiring manual loading of
+enclosing packages.  This has led to my suggestion that
+a few task wrappers be put in Biobase, possibly named
+Preproc, DiffExp, LinMod, ReportGen, which have relatively
+simple calling sequences with parameters that select approaches
+in software that ultimately comes from different packages.
+Developers go on as before, and users can
+always go directly to the package level if they want.
+Developers will communicate with the Biobase maintainer to
+make sure that options are available that call their particular
+wares.
+
+I believe that teaching about Bioconductor would be greatly
+simplified if we could say: to do preprocessing, use the
+Preproc function of Biobase -- here are the various parameter
+settings.  Presently we have to distinguish marray, limma,
+vsn, affy, etc., as packages, in addition to distinguishing
+them as methodologies.  An integrated interface like
+limmaGUI could draw its preprocessing workflow component
+from the Biobase specification of preprocessing.
+
+>
+> Here are some specific problems:
+>
+> The limma package isn't mentioned under "Bayesian", "FactorialDesigns",
+> "TimeSeries" or "MultipleTesting", even though it is probably the most used
+> package in each of these categories.
+>
+> Limma isn't mentioned anywhere in any of the Preprocessing categories,
+> although it is one of the most used packages for non-affy pre-processing.
+> The preprocessing package arrayMagic package, for example, calls limma
+> functions to do normalization and pre-processing.
+
+and does limma call marray anymore?
+
+>
+> How are "ErrorModels" different from statistical models used to assess
+> differential expression? The LPE and plgem packages should surely get a
+> mention under differential expression rather than here. The LPE package is
+> very similar in spirit to the empirical Bayes approach for differential
+> expression, and should be grouped somewhere with packages like limma,
+> EBayes, siggenes etc.
+
+I have not had enough time to use these packages to understand
+how they fit in the spectrum of solutions.  Your input here
+is most welcome.  I am particularly concerned with simply exposing
+these things to potential users so that their particular virtues are
+available for assessment.
+
+As Robert has suggested, once we get a set of view terms, developers
+can incorporate these terms into their package metadata or perhaps into
+the "Title" fields of DESCRIPTION, so that view maintenance is simpler.
+
+
+>
+> twilight is another package which seems to me to be doing differential
+> expression, but is currently only listed under "MultipleTesting".
+>
+> What sort of graphics is included under "Visualization"? Many of the
+> packages with pre-processing functionality including plotting functions,
+> including marray, limma, arrayMagic.
+
+Should these all be providing their own visualization software?  Can
+there be a centralized package for QC visualizations for two channel
+arrays?  Would this be good for developers/users?  I don't want to
+constrain developers in any way, but I would like the question to
+be considered.  Can a good set of task views help us set developmental
+agendas and reduce duplication of effort?
+
+
+From wettenhall at wehi.EDU.AU  Mon Jul 18 08:16:14 2005
+From: wettenhall at wehi.EDU.AU (James Wettenhall)
+Date: Mon, 18 Jul 2005 16:16:14 +1000 (EST)
+Subject: [Bioc-devel] ANN: BioC Developer's  Meeting/agenda/discussion
+In-Reply-To: <Pine.GSO.4.58.0507172308090.11495@capecod.bwh.harvard.edu>
+References: <m2hdfqgjdh.fsf@macaroni.local>
+	<Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>
+	<Pine.GSO.4.58.0507072329520.19350@capecod.bwh.harvard.edu>
+	<6.2.1.2.1.20050717170119.02103858@imaphost.wehi.edu.au>
+	<Pine.GSO.4.58.0507172308090.11495@capecod.bwh.harvard.edu>
+Message-ID: <1073.192.168.65.113.1121667374.squirrel@homebase.wehi.edu.au>
+
+Hi,
+
+I hope you don't mind a less senior (non-BioC-core) member commenting on
+this discussion...
+
+I think the issue of whether one package should do one thing or multiple
+things is related to the issue of whether BioC is for researchers or for
+users who expect commercial-style software quality assurance.  Here at the
+WEHI, we do complete microarray analyses for many biologists, mainly using
+the limma package, and we consider opportunities to enhance all steps of
+the analysis in a research sense.  But I think limma also has pretty good
+software quality assurance thanks to Gordon and maybe also because it has
+so many users to give feedback.  It is certainly convenient for us to have
+only one (or a small number of) packages to install when we do microarray
+analysis at WEHI.  If we regularly used 10 different BioC packages then I
+would feel less confident that they would all work together with each
+other, because it seems to me that leading up to each "stable" release of
+BioC, there are still quite a lot of major changes relative to
+testing/quality-assurance, for example some changes in hexbin for BioC 1.6
+Release broke the arrayQuality package for BioC 1.6 Release.  In addition
+to my nervousness about a larger number of packages (and their
+dependencies) working together, the other reason why it's nice to have
+overlapping features in BioC packages is that it allows some independent
+competitive research of these overlapping features - I imagine that many
+BioC developers would like some flexibility to do research and have the
+results implemented in a package they can quickly update and test, rather
+than waiting for someone in a different time zone to consider adding and
+testing their new features in the package, and possibly ending up with a
+package that depends on a development version of R.
+
+Unfortunately, I won't be at the meeting in Seattle.  I hope it goes well!
+
+Best wishes,
+James
+
+P.S. A colleague of mine here at WEHI, Keith Satterley, will be taking
+over development of limmaGUI and affylmGUI soon.
+
+
+From wettenhall at wehi.EDU.AU  Mon Jul 18 09:52:23 2005
+From: wettenhall at wehi.EDU.AU (James Wettenhall)
+Date: Mon, 18 Jul 2005 17:52:23 +1000 (EST)
+Subject: [Bioc-devel] ANN: BioC Developer's  Meeting/agenda/discussion
+In-Reply-To: <1073.192.168.65.113.1121667374.squirrel@homebase.wehi.edu.au>
+References: <m2hdfqgjdh.fsf@macaroni.local>
+	<Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>
+	<Pine.GSO.4.58.0507072329520.19350@capecod.bwh.harvard.edu>
+	<6.2.1.2.1.20050717170119.02103858@imaphost.wehi.edu.au>
+	<Pine.GSO.4.58.0507172308090.11495@capecod.bwh.harvard.edu>
+	<1073.192.168.65.113.1121667374.squirrel@homebase.wehi.edu.au>
+Message-ID: <1532.138.217.43.85.1121673143.squirrel@homebase.wehi.edu.au>
+
+Hi,
+
+A few more thoughts...  It seems that an emerging theme is the question of
+how a new user determines which packages they should look in to find
+certain functionality.
+
+I just did a Google search for "Bioconductor wiki" and didn't find
+anything ideal.  For anyone who doesn't know, a "wiki" is an basically an
+online encyclopedia entry, editable by everyone.  It would be nice to have
+a wiki overview of Bioconductor and it could have things like, "For
+normalization of 2-color array data, use package X, Y or Z.".  Then if the
+maintainer of package Z was disappointed with this order, they could email
+the maintainers of package X and Y and ask whether it was OK to change it
+to "Z, X or Y."  Of course the wiki entry could even refer to specific
+functions within packages as well or refer to separate wiki entries for
+individual packages.
+
+Some great ideas have been discussed about ways of internally storing some
+of the BioC package classification information, e.g. XML, or a formal
+ontology.
+
+I'm thinking more about what the end user might like to see (particularly
+the novice user).  Maybe on the BioC website, there could be an
+"installation helper", with some HTML forms, where the user could say:
+
+I want software for:
+x diagnostic plots
+x normalization
+x differential expression
+x GOs
+etc. (where each 'x' represents a check box)
+
+and perhaps some radio buttons:
+o 2-color array analysis only
+o affy analysis only
+o both 2-color and affy.
+
+Then, with the help of some server-side scripting (e.g. perl/cgi or php or
+python/zope), the user could be given some recommendations of which
+packages to install.  Then they could confirm that they actually want to
+install each one (with a series of checkboxes).  If you wanted to be even
+more helpful, you could even say which specific functions the user should
+look at in which packages.  And of course you could list the packages in
+some order e.g. popularity, rather than just alphabetical order.  Using
+popularity may sound controversial, but I think Google uses it, doesn't
+it?
+
+Of course, package dependencies add a small complication e.g. if the
+"affy" checkbox is selected, then the "reposTools" and "Biobase" packages
+(or whatever affy depends on) should be selected and grayed (disabled) so
+they can't be unselected.  Personally, I'm a fan of reducing package
+dependencies where possible - there are some BioC packages whose vignettes
+depend on quite a few packages (directly or indirectly) which are not
+really related to the main theme of the package.  But then if you're doing
+a full getBioC() installation, then dependencies are not an issue.
+
+Yet another possibility (which I don't think would be very popular) is to
+create some wrapper R packages with really generic names like
+"Normalization", "DifferentialExpression" etc. which are easy to install
+and then they would give instructions for installing appropriate packages
+for the user's normalization needs.  Whilst I think user-friendliness is
+important, I'm thinking that Tcl/Tk GUIs are not ideal for "installation
+helpers" because some people don't have Tcl/Tk installed to begin with. 
+But you still could possibly have some question/answer-style interface at
+the command-line.
+
+I hope these ideas were of interest to some people...
+
+Best wishes,
+James
+
+
+From istvan.albert at gmail.com  Mon Jul 18 15:53:26 2005
+From: istvan.albert at gmail.com (Istvan Albert)
+Date: Mon, 18 Jul 2005 09:53:26 -0400
+Subject: [Bioc-devel] on the future of the searchable mail archives
+Message-ID: <c878cd5605071806535ef51e8a@mail.gmail.com>
+
+Dear developers,
+
+The searchable mail archives have been around for a year and a half now. 
+
+http://files.protsuggest.org/cgi-bin/biocond.cgi
+
+The site turned out to be a lot more popular than I anticipated, 
+typically it gets around 15 thousand searches per month. Of course
+these measures are very inaccurate but even third of that would be
+more than what I originally expected.
+
+For more logs see: http://protsuggest.org/logs/ (no other active
+service is currenlty hosted on this server)
+
+I have no problem with doing it in the foreseeble future since I've
+already set it up in a way that it takes very little effort about 15
+minutes a month ... even though  I currently do not need to use BioC
+in my research.
+
+But you might want to think about  establishing a more official and
+better integrated search mechanism for  the BioC site and archives.
+
+best,
+
+Istvan.
+
+-- 
+Istvan Albert,
+Research Associate,
+Bioinformatics Consulting Center,
+Huck Institute for Life Sciences,
+Pennsylvania State University
+http://www.personal.psu.edu/iua1
+
+
+From stvjc at channing.harvard.edu  Mon Jul 18 16:12:55 2005
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Mon, 18 Jul 2005 10:12:55 -0400 (EDT)
+Subject: [Bioc-devel] ANN: BioC Developer's  Meeting/agenda/discussion
+In-Reply-To: <1532.138.217.43.85.1121673143.squirrel@homebase.wehi.edu.au>
+References: <m2hdfqgjdh.fsf@macaroni.local>
+	<Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>
+	<Pine.GSO.4.58.0507072329520.19350@capecod.bwh.harvard.edu>
+	<6.2.1.2.1.20050717170119.02103858@imaphost.wehi.edu.au>
+	<Pine.GSO.4.58.0507172308090.11495@capecod.bwh.harvard.edu>
+	<1073.192.168.65.113.1121667374.squirrel@homebase.wehi.edu.au>
+	<1532.138.217.43.85.1121673143.squirrel@homebase.wehi.edu.au>
+Message-ID: <Pine.GSO.4.58.0507181012120.16035@capecod.bwh.harvard.edu>
+
+>
+> I hope these ideas were of interest to some people...
+
+definitely of interest.  it will take some time for me at least
+to digest them; thanks a lot.
+
+>
+> Best wishes,
+> James
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From sfalcon at fhcrc.org  Mon Jul 18 16:36:26 2005
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 18 Jul 2005 07:36:26 -0700
+Subject: [Bioc-devel] on the future of the searchable mail archives
+In-Reply-To: <c878cd5605071806535ef51e8a@mail.gmail.com> (Istvan Albert's
+	message of "Mon, 18 Jul 2005 09:53:26 -0400")
+References: <c878cd5605071806535ef51e8a@mail.gmail.com>
+Message-ID: <m2ackktc45.fsf@fhcrc.org>
+
+Hi Istvan,
+
+On 18 Jul 2005, istvan.albert at gmail.com wrote:
+> I have no problem with doing it in the foreseeble future since I've
+> already set it up in a way that it takes very little effort about 15
+> minutes a month ... even though  I currently do not need to use BioC
+> in my research.
+>
+> But you might want to think about  establishing a more official and
+> better integrated search mechanism for  the BioC site and archives.
+
+First off, thank you for maintaining the searchable mail archives.  As
+your logs demonstrate, this service is greatly appreciated by the BioC
+community.  
+
+It sounds like it is time for the BioC community to plan for an
+alternate mechanism (or perhaps just an alternate host) for the
+searchable archives for the near future.
+
+Would you be willing to send me (off list) some details on how you've
+setup the search site?
+
+Best,
+
++ seth
+
+
+From smyth at wehi.edu.au  Tue Jul 19 02:11:18 2005
+From: smyth at wehi.edu.au (Gordon Smyth)
+Date: Tue, 19 Jul 2005 10:11:18 +1000
+Subject: [Bioc-devel] on the future of the searchable mail archives
+In-Reply-To: <m2ackktc45.fsf@fhcrc.org>
+References: <c878cd5605071806535ef51e8a@mail.gmail.com>
+	<m2ackktc45.fsf@fhcrc.org>
+Message-ID: <6.2.1.2.1.20050719100049.02129a58@imaphost.wehi.edu.au>
+
+At 12:36 AM 19/07/2005, Seth Falcon wrote:
+>Hi Istvan,
+>
+>On 18 Jul 2005, istvan.albert at gmail.com wrote:
+> > I have no problem with doing it in the foreseeble future since I've
+> > already set it up in a way that it takes very little effort about 15
+> > minutes a month ... even though  I currently do not need to use BioC
+> > in my research.
+> >
+> > But you might want to think about  establishing a more official and
+> > better integrated search mechanism for  the BioC site and archives.
+>
+>First off, thank you for maintaining the searchable mail archives.  As
+>your logs demonstrate, this service is greatly appreciated by the BioC
+>community.
+>
+>It sounds like it is time for the BioC community to plan for an
+>alternate mechanism (or perhaps just an alternate host) for the
+>searchable archives for the near future.
+>
+>Would you be willing to send me (off list) some details on how you've
+>setup the search site?
+>
+>Best,
+>
+>+ seth
+
+I actually find that google already provides a nice way to seach the 
+archives. For example, to search for "paired-t" on the BioC mailing list I 
+would search google for:
+
+     paired-t site:http://stat.ethz.ch BioC
+
+ From the user's point of view, this method has the advantage that the 
+links returned point to the actual mail archive rather than to a copy of 
+it. You can search all the R mailing lists at once simply by removing the 
+'BioC' term at the end.
+
+A simple way to achieve a BioC search mechanism from the Bioconductor www 
+page would be to create a form which sends the search string to google 
+after adding the appropriate site string.
+
+Cheers
+Gordon
+
+
+From smyth at wehi.edu.au  Sun Jul 24 09:47:40 2005
+From: smyth at wehi.edu.au (Gordon Smyth)
+Date: Sun, 24 Jul 2005 17:47:40 +1000
+Subject: [Bioc-devel] ANN: BioC Developer's   Meeting/agenda/discussion
+In-Reply-To: <Pine.GSO.4.58.0507172308090.11495@capecod.bwh.harvard.edu>
+References: <m2hdfqgjdh.fsf@macaroni.local>
+	<Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>
+	<Pine.GSO.4.58.0507072329520.19350@capecod.bwh.harvard.edu>
+	<6.2.1.2.1.20050717170119.02103858@imaphost.wehi.edu.au>
+	<Pine.GSO.4.58.0507172308090.11495@capecod.bwh.harvard.edu>
+Message-ID: <6.2.1.2.1.20050724174239.02129f60@imaphost.wehi.edu.au>
+
+At 01:34 PM 18/07/2005, Vincent Carey 525-2265 wrote:
+> > Here are some specific problems:
+> >
+> > The limma package isn't mentioned under "Bayesian", "FactorialDesigns",
+> > "TimeSeries" or "MultipleTesting", even though it is probably the most used
+> > package in each of these categories.
+> >
+> > Limma isn't mentioned anywhere in any of the Preprocessing categories,
+> > although it is one of the most used packages for non-affy pre-processing.
+> > The preprocessing package arrayMagic package, for example, calls limma
+> > functions to do normalization and pre-processing.
+>
+>and does limma call marray anymore?
+
+limma has never had an dependence on marray. Following a suggestion of 
+Wolgang's, it does call vsn.
+
+Does this mean that you have never looked at limma? :-)
+
+Gordon
+
+
+From smyth at wehi.edu.au  Mon Jul 25 06:43:37 2005
+From: smyth at wehi.edu.au (Gordon Smyth)
+Date: Mon, 25 Jul 2005 14:43:37 +1000
+Subject: [Bioc-devel] ANN: BioC Developer's   Meeting/agenda/discussion
+In-Reply-To: <42DAA27B.8080608@fhcrc.org>
+References: <m2hdfqgjdh.fsf@macaroni.local>
+	<Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>
+	<Pine.GSO.4.58.0507072329520.19350@capecod.bwh.harvard.edu>
+	<6.2.1.2.1.20050717170119.02103858@imaphost.wehi.edu.au>
+	<Pine.GSO.4.58.0507171338050.12382@capecod.bwh.harvard.edu>
+	<42DAA27B.8080608@fhcrc.org>
+Message-ID: <6.2.1.2.1.20050725141800.02128800@imaphost.wehi.edu.au>
+
+At 04:24 AM 18/07/2005, Robert Gentleman wrote:
+>Life would be much simpler with an ontology, but that does not seem likely 
+>to appear in any short order but perhaps we could decide if we like the 
+>terms that Vince has used, and if there are any other extensions. In some 
+>sense these belong either in ctv, or some other place so that new 
+>developers have easy access to them (and no I don't think we should use 
+>the KEYWORDS file in R; I have to say I find that mechanism distinctly 
+>unhelpful). Gordon, do you have input on the hierarchy of terms?
+
+Well, I've already made some input I think. I personally think that a 
+fairly broad and relaxed grouping, not unlike the grouping already on the 
+BioC faq page is best. I think that a detailed ontology is, by its very 
+nature, likely to have the opposite effect to that intended. An ontology 
+will tend to emphasise package differences rather than overlaps and will 
+reward package fragmentation rather than reducing the number of packages. A 
+package ontology needs to be done very well indeed, but someone who has 
+taken time to understand all the packages well, otherwise it risks being a 
+hindrance rather than a help. I don't think that the list of terms that 
+Vince currently has will do the job.
+
+1. The terms in the ontology need to stay fairly broad. Drilling down into 
+small topics with just one or two packages in them tends to hide package 
+overlaps, not display them.
+
+2. In order to be useful to users, the ontologies needs to focus on 
+processes that users want to do, not on mathematical concepts. A user 
+doesn't seek to fit a linear model for example, but they might want to 
+analyse a microarray experiments with multiple RNA sources. They certainly 
+don't start out wanting to fit an Error Model ...
+
+>  And do you think it would be useful to have package developers add 
+> themselves in and out, or should this be done by the maintainer?
+>
+>Initially there were some arguments against developers doing it, as we 
+>might want to have the view managed by an expert in the field who could 
+>also give recommendations.
+
+The idea of an expert in the field editing the work of the developers 
+really fills me with trepidation. Who are the experts if not the developers 
+themselves? I don't think that anyone could claim to know what all the 
+packages do. I think that the Harvard and Seattle BioC maintainers should 
+be very cautious about putting themselves forward as experts in this sense.
+
+If the "task view" remains a relaxed view like what is currently in the 
+BioC faq web page, then I am happy for it to be done by a BioC maintainer. 
+If a detailed package ontology is envisaged, then it needs to be done by 
+the package developers themselves.
+
+Gordon
+
+>  Best wishes
+>   Robert
+
+
+From stvjc at channing.harvard.edu  Mon Jul 25 13:50:27 2005
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Mon, 25 Jul 2005 07:50:27 -0400 (EDT)
+Subject: [Bioc-devel] ANN: BioC Developer's   Meeting/agenda/discussion
+In-Reply-To: <6.2.1.2.1.20050725141800.02128800@imaphost.wehi.edu.au>
+References: <m2hdfqgjdh.fsf@macaroni.local>
+	<Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>
+	<Pine.GSO.4.58.0507072329520.19350@capecod.bwh.harvard.edu>
+	<6.2.1.2.1.20050717170119.02103858@imaphost.wehi.edu.au>
+	<Pine.GSO.4.58.0507171338050.12382@capecod.bwh.harvard.edu>
+	<42DAA27B.8080608@fhcrc.org>
+	<6.2.1.2.1.20050725141800.02128800@imaphost.wehi.edu.au>
+Message-ID: <Pine.GSO.4.58.0507250735220.15529@capecod.bwh.harvard.edu>
+
+> reward package fragmentation rather than reducing the number of packages. A
+
+as long as we allow association of packages to any relevant terms the
+ontology/view system does not reward any approach to package design.
+
+> package ontology needs to be done very well indeed, but someone who has
+> taken time to understand all the packages well, otherwise it risks being a
+> hindrance rather than a help. I don't think that the list of terms that
+> Vince currently has will do the job.
+
+please supply a termlist (better, a DAG of terms) that will do a better job.
+i have been working on a general infrastructure for this problem: we build
+a graph representing the vocabulary, we have a primitive GUI
+that allows a curator to associate any package with any number
+of terms in the graph, we build XML documents describing the views
+according to ctv's model, and then ctv infrastructure builds a set
+of html pages.  in principle anyone can make their own view set
+with these tools.  if we can fold the package annotation problem into
+maintenance/development, there is minimal need for a centralized
+curator.  biocore can be asked to vote from time to time on
+specific conflicts between developers' characterizations
+if such arise.
+
+>
+> 1. The terms in the ontology need to stay fairly broad. Drilling down into
+> small topics with just one or two packages in them tends to hide package
+> overlaps, not display them.
+
+if someone is interested in a very specific topic and the view
+association is accurate, i do not see why this is a problem.
+as long as the broad terms are available and are properly used,
+a surveyor will observe the overlaps when visiting views of
+broad concepts.  associated commentary at
+the view level can also help describe the landscape and interactions
+between package concepts.
+
+>
+> 2. In order to be useful to users, the ontologies needs to focus on
+> processes that users want to do, not on mathematical concepts. A user
+> doesn't seek to fit a linear model for example, but they might want to
+> analyse a microarray experiments with multiple RNA sources. They certainly
+> don't start out wanting to fit an Error Model ...
+
+fair enough, this first attempt has been advertised as highly
+tentative.
+
+>
+> >  And do you think it would be useful to have package developers add
+> > themselves in and out, or should this be done by the maintainer?
+> >
+> >Initially there were some arguments against developers doing it, as we
+> >might want to have the view managed by an expert in the field who could
+> >also give recommendations.
+>
+> The idea of an expert in the field editing the work of the developers
+> really fills me with trepidation. Who are the experts if not the developers
+> themselves? I don't think that anyone could claim to know what all the
+
+as long as the terminology system is available to them it seems
+reasonable to hold the developers as the experts for annotation
+purposes.  but it is not necessarily the case that a developer
+can create/curate the ontology, so some other locus is needed.
+
+> packages do. I think that the Harvard and Seattle BioC maintainers should
+> be very cautious about putting themselves forward as experts in this sense.
+
+agreed.
+
+>
+> If the "task view" remains a relaxed view like what is currently in the
+> BioC faq web page, then I am happy for it to be done by a BioC maintainer.
+> If a detailed package ontology is envisaged, then it needs to be done by
+> the package developers themselves.
+
+one simple way to proceed is to identify the unobjectionable subgraph
+of the current graph and to verify the associations already made.  i
+will revise the view set to this restriction and we will republish.
+
+i hope to check in biocViews infrastructure package, with a vignette
+that illustrates the whole process, later today.
+
+thanks very much for your assistance.
+
+
+From stvjc at channing.harvard.edu  Mon Jul 25 22:46:12 2005
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Mon, 25 Jul 2005 16:46:12 -0400 (EDT)
+Subject: [Bioc-devel] biocViews now checked in
+In-Reply-To: <Pine.GSO.4.58.0507250735220.15529@capecod.bwh.harvard.edu>
+References: <m2hdfqgjdh.fsf@macaroni.local>
+	<Pine.GSO.4.58.0507061532310.6409@capecod.bwh.harvard.edu>
+	<Pine.GSO.4.58.0507072329520.19350@capecod.bwh.harvard.edu>
+	<6.2.1.2.1.20050717170119.02103858@imaphost.wehi.edu.au>
+	<Pine.GSO.4.58.0507171338050.12382@capecod.bwh.harvard.edu>
+	<42DAA27B.8080608@fhcrc.org>
+	<6.2.1.2.1.20050725141800.02128800@imaphost.wehi.edu.au>
+	<Pine.GSO.4.58.0507250735220.15529@capecod.bwh.harvard.edu>
+Message-ID: <Pine.GSO.4.58.0507251644330.13914@capecod.bwh.harvard.edu>
+
+biocViews, with vignette and man pages, is now checked in to
+the svn archive of bioconductor
+
+clearly we need to reformulate the vocabulary and reannotate
+relative to what is in the package.  i welcome all comments/
+contributions
+
+

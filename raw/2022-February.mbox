@@ -1,0 +1,3232 @@
+From MAX@MCGRATH @end|ng |rom UCDENVER@EDU  Tue Feb  1 17:00:46 2022
+From: MAX@MCGRATH @end|ng |rom UCDENVER@EDU (McGrath, Max)
+Date: Tue, 1 Feb 2022 16:00:46 +0000
+Subject: [Bioc-devel] Unable to Push Error
+Message-ID: <CY4PR05MB3381AAF7A44EA7CC4CA4843A84229@CY4PR05MB3381.namprd05.prod.outlook.com>
+
+Hi all,
+
+I am the new maintainer for the package "discordant" and have an update I am trying to push to BIOC devel. However, after fetching and merging the version on BIOCs master branch, when I try to push I get the error:
+
+
+remote: Error: You cannot push without resolving merge conflicts.
+
+remote:
+
+remote: Please check the files in the commit pushed to the git-server
+
+remote: for merge conflict markers like '<<<<<<<', '========', '>>>>>>>'.
+
+remote:
+
+To git.bioconductor.org:packages/discordant
+
+ ! [remote rejected] master -> master (pre-receive hook declined)
+
+error: failed to push some refs to 'git.bioconductor.org:packages/discordant'
+
+
+Now, I've checked the files in the most updated version of the package (available at https://github.com/max-mcgrath/discordant ) both "manually" and with grep for the "<<<<<<< HEAD" string specified in BIOC's pre-receive hooks with no results. I do, however, get a result with the old version of the package currently available on BIOC. An unmerged commit was left in the old vignette when the package was made available on BIOC five years ago, see lines 104-108 here: https://github.com/siskac/discordant/blob/master/vignettes/Discordant_vignette.Rnw#L104 . I deleted this file during the update (switched to .Rmd), however it seems to still be causing issues (see deletion commit here: https://github.com/max-mcgrath/discordant/commit/f747838c6969bca4b63dd7f7d37ab458ac588812 ).
+
+
+I'm not positive this is the problem, but if it is I have no clue how to fix it. I'm hoping someone here could lend some insight into the source of this issue and a potential solution.
+
+
+Thank you for your time,
+
+
+Max
+
+
+
+
+	[[alternative HTML version deleted]]
+
+
+From jm@cdon @end|ng |rom uw@edu  Tue Feb  1 17:51:42 2022
+From: jm@cdon @end|ng |rom uw@edu (James W. MacDonald)
+Date: Tue, 1 Feb 2022 16:51:42 +0000
+Subject: [Bioc-devel] Unable to Push Error
+In-Reply-To: <CY4PR05MB3381AAF7A44EA7CC4CA4843A84229@CY4PR05MB3381.namprd05.prod.outlook.com>
+References: <CY4PR05MB3381AAF7A44EA7CC4CA4843A84229@CY4PR05MB3381.namprd05.prod.outlook.com>
+Message-ID: <MWHPR08MB3533C4A5361ECEE1C20F1E11C2269@MWHPR08MB3533.namprd08.prod.outlook.com>
+
+The error you are seeing has to do with the files in your local repository, not what's on either GitHub or the Bioconductor repository. 
+
+Usually this happens when you haven't first pulled any commits on the remote repositories before you make changes locally. For example, you could have version 1.2.0 or whatever, and the devel version on Bioconductor might be at 1.3.0, because it's meant to be an odd middle number. If that were true, then in the DESCRIPTION file in your local repository you would see the version line bracketed with a bunch of <<<<<<<<<<<<<<<<<< to indicate where the merge conflict arose.
+
+That's probably likely, as this is what is on Bioconductor:
+
+Package: discordant
+Version: 1.19.0
+Date: 2016-10-21
+
+And on your GitHub it's 1.19.1
+
+Best,
+
+Jim
+
+
+
+-----Original Message-----
+From: Bioc-devel <bioc-devel-bounces at r-project.org> On Behalf Of McGrath, Max
+Sent: Tuesday, February 01, 2022 11:01 AM
+To: Herv? Pag?s <bioc-devel at r-project.org>
+Subject: [Bioc-devel] Unable to Push Error
+
+Hi all,
+
+I am the new maintainer for the package "discordant" and have an update I am trying to push to BIOC devel. However, after fetching and merging the version on BIOCs master branch, when I try to push I get the error:
+
+
+remote: Error: You cannot push without resolving merge conflicts.
+
+remote:
+
+remote: Please check the files in the commit pushed to the git-server
+
+remote: for merge conflict markers like '<<<<<<<', '========', '>>>>>>>'.
+
+remote:
+
+To git.bioconductor.org:packages/discordant
+
+ ! [remote rejected] master -> master (pre-receive hook declined)
+
+error: failed to push some refs to 'git.bioconductor.org:packages/discordant'
+
+
+Now, I've checked the files in the most updated version of the package (available at https://github.com/max-mcgrath/discordant ) both "manually" and with grep for the "<<<<<<< HEAD" string specified in BIOC's pre-receive hooks with no results. I do, however, get a result with the old version of the package currently available on BIOC. An unmerged commit was left in the old vignette when the package was made available on BIOC five years ago, see lines 104-108 here: https://github.com/siskac/discordant/blob/master/vignettes/Discordant_vignette.Rnw#L104 . I deleted this file during the update (switched to .Rmd), however it seems to still be causing issues (see deletion commit here: https://github.com/max-mcgrath/discordant/commit/f747838c6969bca4b63dd7f7d37ab458ac588812 ).
+
+
+I'm not positive this is the problem, but if it is I have no clue how to fix it. I'm hoping someone here could lend some insight into the source of this issue and a potential solution.
+
+
+Thank you for your time,
+
+
+Max
+
+
+
+
+	[[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From MAX@MCGRATH @end|ng |rom UCDENVER@EDU  Tue Feb  1 22:21:51 2022
+From: MAX@MCGRATH @end|ng |rom UCDENVER@EDU (McGrath, Max)
+Date: Tue, 1 Feb 2022 21:21:51 +0000
+Subject: [Bioc-devel] Unable to Push Error
+In-Reply-To: <MWHPR08MB3533C4A5361ECEE1C20F1E11C2269@MWHPR08MB3533.namprd08.prod.outlook.com>
+References: <CY4PR05MB3381AAF7A44EA7CC4CA4843A84229@CY4PR05MB3381.namprd05.prod.outlook.com>
+ <MWHPR08MB3533C4A5361ECEE1C20F1E11C2269@MWHPR08MB3533.namprd08.prod.outlook.com>
+Message-ID: <CY4PR05MB3381684B8BABA4521B3C8A7B84269@CY4PR05MB3381.namprd05.prod.outlook.com>
+
+Hi Jim,
+
+Thanks for looking at this. The GitHub repo I've referenced is even with my local master branch (when I push I get the message "Everything up-to-date" with working tree clean), and you can see that I merged the most recent version bump in the commit history here: https://github.com/max-mcgrath/discordant/commit/bb3b4761b241d7eb5002b5342dfec2068772eb84. I did bump the DESCRIPTION version number to 1.19.1 to trigger a rebuild when I push, but I did so after I merged the October 1.19.0 bump. I've also tried pushing from a fresh clone of the GitHub repo (after syncing with BIOC), all with the same results. When I pull from BIOC master, I receive the message "Already up to date", and then the push fails. I've searched my local repository thoroughly for long strings of "<", "=", and ">" using both visual inspection and terminal commands like "grep -r "<<<<<<<" * .[^.]?*" but have been unable to locate any merge conflicts. I apologize if I'm missing something obvious here, but as far as I can tell all remote commits have been merged locally (and on the GitHub remote), so I'm at a loss.
+
+I'm not that experienced with python, but it appears that the pre-receive hook defined here https://github.com/Bioconductor/git-hooks/blob/master/prevent_merge_markers.py searches the git diff between the BIOC version and the new version for the string "<<<<<<< HEAD" (lines 93-96 and 67-77), and that string does appear in the git diff between the current BIOC version and my local copy (or a fresh clone of the GitHub repo) due to the deleted file containing the merge conflict. I've attempted a reproducible example below (for UNIX systems), but I'm pretty far out of my wheelhouse so I can provide any additional information if needed to resolve this issue.
+
+
+git clone git at github.com:max-mcgrath/discordant.git
+
+cd discordant
+
+git diff -G "<<<<<<< HEAD" bb3b4761b241d7eb5002b5342dfec2068772eb84..1523b91eddb0bc46403438389a108e66efdb5c4e
+
+
+Again, I apologize if I'm missing something obvious, but I've been trying to resolve this issue for some time and am at a dead end.
+
+
+Thanks,
+
+Max
+
+
+
+
+
+
+________________________________
+From: James W. MacDonald <jmacdon at uw.edu>
+Sent: Tuesday, February 1, 2022 9:51 AM
+To: McGrath, Max <MAX.MCGRATH at UCDENVER.EDU>; Herv? Pag?s <bioc-devel at r-project.org>
+Subject: RE: [Bioc-devel] Unable to Push Error
+
+[External Email - Use Caution]
+
+The error you are seeing has to do with the files in your local repository, not what's on either GitHub or the Bioconductor repository.
+
+Usually this happens when you haven't first pulled any commits on the remote repositories before you make changes locally. For example, you could have version 1.2.0 or whatever, and the devel version on Bioconductor might be at 1.3.0, because it's meant to be an odd middle number. If that were true, then in the DESCRIPTION file in your local repository you would see the version line bracketed with a bunch of <<<<<<<<<<<<<<<<<< to indicate where the merge conflict arose.
+
+That's probably likely, as this is what is on Bioconductor:
+
+Package: discordant
+Version: 1.19.0
+Date: 2016-10-21
+
+And on your GitHub it's 1.19.1
+
+Best,
+
+Jim
+
+
+
+-----Original Message-----
+From: Bioc-devel <bioc-devel-bounces at r-project.org> On Behalf Of McGrath, Max
+Sent: Tuesday, February 01, 2022 11:01 AM
+To: Herv? Pag?s <bioc-devel at r-project.org>
+Subject: [Bioc-devel] Unable to Push Error
+
+Hi all,
+
+I am the new maintainer for the package "discordant" and have an update I am trying to push to BIOC devel. However, after fetching and merging the version on BIOCs master branch, when I try to push I get the error:
+
+
+remote: Error: You cannot push without resolving merge conflicts.
+
+remote:
+
+remote: Please check the files in the commit pushed to the git-server
+
+remote: for merge conflict markers like '<<<<<<<', '========', '>>>>>>>'.
+
+remote:
+
+To git.bioconductor.org:packages/discordant
+
+ ! [remote rejected] master -> master (pre-receive hook declined)
+
+error: failed to push some refs to 'git.bioconductor.org:packages/discordant'
+
+
+Now, I've checked the files in the most updated version of the package (available at https://github.com/max-mcgrath/discordant ) both "manually" and with grep for the "<<<<<<< HEAD" string specified in BIOC's pre-receive hooks with no results. I do, however, get a result with the old version of the package currently available on BIOC. An unmerged commit was left in the old vignette when the package was made available on BIOC five years ago, see lines 104-108 here: https://github.com/siskac/discordant/blob/master/vignettes/Discordant_vignette.Rnw#L104 . I deleted this file during the update (switched to .Rmd), however it seems to still be causing issues (see deletion commit here: https://github.com/max-mcgrath/discordant/commit/f747838c6969bca4b63dd7f7d37ab458ac588812 ).
+
+
+I'm not positive this is the problem, but if it is I have no clue how to fix it. I'm hoping someone here could lend some insight into the source of this issue and a potential solution.
+
+
+Thank you for your time,
+
+
+Max
+
+
+
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+	[[alternative HTML version deleted]]
+
+
+From jm@cdon @end|ng |rom uw@edu  Tue Feb  1 23:42:28 2022
+From: jm@cdon @end|ng |rom uw@edu (James W. MacDonald)
+Date: Tue, 1 Feb 2022 22:42:28 +0000
+Subject: [Bioc-devel] Unable to Push Error
+In-Reply-To: <CY4PR05MB3381684B8BABA4521B3C8A7B84269@CY4PR05MB3381.namprd05.prod.outlook.com>
+References: <CY4PR05MB3381AAF7A44EA7CC4CA4843A84229@CY4PR05MB3381.namprd05.prod.outlook.com>
+ <MWHPR08MB3533C4A5361ECEE1C20F1E11C2269@MWHPR08MB3533.namprd08.prod.outlook.com>
+ <CY4PR05MB3381684B8BABA4521B3C8A7B84269@CY4PR05MB3381.namprd05.prod.outlook.com>
+Message-ID: <MWHPR08MB3533D6EC99519CE496642854C2269@MWHPR08MB3533.namprd08.prod.outlook.com>
+
+Hi Max,
+
+The issue is a merge conflict with what you have on your local repository (and your GitHub) and what is on the Bioconductor server. So cloning your Github repo locally and looking for the <<< won?t help because the merge problems happen after that fact. It?s a difference between what is on the Bioc devel repo and your local. In other words, there is probably some commit on the Bioconductor repo that is ahead of your local commit, so when you try to push you get the merge error.
+
+I find Git to be completely mysterious, and all the things like cherry picking and whatnot never seem to work for me, so I just keep it simple. I have had problems like this before and my simple stupid solution is to consider the Bioconductor repo the gold standard and start with that. I have a particular directory on my local computer that has all my repos, so I first move my updated, local repo somewhere else. I then clone the Bioconductor repo in my normal ?repo? directory and copy the updated files from my updated repo (that I moved) into the newly cloned repo. After moving all the updated files into the new cloned repo I can then push the changes to the Bioconductor git repo without problems.
+
+This often causes problems with my GitHub repo, so I just go on GitHub, delete the repository, generate a new blank one, and then push my ?fixed? repo.
+
+I am sure there are way more sophisticated ways to fix things using cherry pick and whatnot, but I have never been able to get that to work and I find reading about Git to be both confusing and boring in the same measure, so I would rather just burn things to the ground and start over.
+
+Nitesh is the local Git expert, and he will probably have some suggestions that are not so dumb and brute force.
+
+Best,
+
+Jim
+
+
+
+From: McGrath, Max <MAX.MCGRATH at UCDENVER.EDU>
+Sent: Tuesday, February 01, 2022 4:22 PM
+To: James W. MacDonald <jmacdon at uw.edu>
+Cc: Herv? Pag?s <bioc-devel at r-project.org>
+Subject: Re: [Bioc-devel] Unable to Push Error
+
+Hi Jim,
+
+Thanks for looking at this. The GitHub repo I've referenced is even with my local master branch (when I push I get the message "Everything up-to-date" with working tree clean), and you can see that I merged the most recent version bump in the commit history here: https://github.com/max-mcgrath/discordant/commit/bb3b4761b241d7eb5002b5342dfec2068772eb84. I did bump the DESCRIPTION version number to 1.19.1 to trigger a rebuild when I push, but I did so after I merged the October 1.19.0 bump. I've also tried pushing from a fresh clone of the GitHub repo (after syncing with BIOC), all with the same results. When I pull from BIOC master, I receive the message "Already up to date", and then the push fails. I've searched my local repository thoroughly for long strings of "<", "=", and ">" using both visual inspection and terminal commands like "grep -r "<<<<<<<" * .[^.]?*" but have been unable to locate any merge conflicts. I apologize if I'm missing something obvious here, but as far as I can tell all remote commits have been merged locally (and on the GitHub remote), so I'm at a loss.
+
+I'm not that experienced with python, but it appears that the pre-receive hook defined here https://github.com/Bioconductor/git-hooks/blob/master/prevent_merge_markers.py searches the git diff between the BIOC version and the new version for the string "<<<<<<< HEAD" (lines 93-96 and 67-77), and that string does appear in the git diff between the current BIOC version and my local copy (or a fresh clone of the GitHub repo) due to the deleted file containing the merge conflict. I've attempted a reproducible example below (for UNIX systems), but I'm pretty far out of my wheelhouse so I can provide any additional information if needed to resolve this issue.
+
+
+git clone git at github.com:max-mcgrath/discordant.git<mailto:git at github.com:max-mcgrath/discordant.git>
+
+cd discordant
+
+git diff -G "<<<<<<< HEAD" bb3b4761b241d7eb5002b5342dfec2068772eb84..1523b91eddb0bc46403438389a108e66efdb5c4e
+
+
+
+Again, I apologize if I'm missing something obvious, but I've been trying to resolve this issue for some time and am at a dead end.
+
+
+
+Thanks,
+
+Max
+
+
+
+
+
+
+________________________________
+From: James W. MacDonald <jmacdon at uw.edu<mailto:jmacdon at uw.edu>>
+Sent: Tuesday, February 1, 2022 9:51 AM
+To: McGrath, Max <MAX.MCGRATH at UCDENVER.EDU<mailto:MAX.MCGRATH at UCDENVER.EDU>>; Herv? Pag?s <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>>
+Subject: RE: [Bioc-devel] Unable to Push Error
+
+[External Email - Use Caution]
+
+The error you are seeing has to do with the files in your local repository, not what's on either GitHub or the Bioconductor repository.
+
+Usually this happens when you haven't first pulled any commits on the remote repositories before you make changes locally. For example, you could have version 1.2.0 or whatever, and the devel version on Bioconductor might be at 1.3.0, because it's meant to be an odd middle number. If that were true, then in the DESCRIPTION file in your local repository you would see the version line bracketed with a bunch of <<<<<<<<<<<<<<<<<< to indicate where the merge conflict arose.
+
+That's probably likely, as this is what is on Bioconductor:
+
+Package: discordant
+Version: 1.19.0
+Date: 2016-10-21
+
+And on your GitHub it's 1.19.1
+
+Best,
+
+Jim
+
+
+
+-----Original Message-----
+From: Bioc-devel <bioc-devel-bounces at r-project.org<mailto:bioc-devel-bounces at r-project.org>> On Behalf Of McGrath, Max
+Sent: Tuesday, February 01, 2022 11:01 AM
+To: Herv? Pag?s <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>>
+Subject: [Bioc-devel] Unable to Push Error
+
+Hi all,
+
+I am the new maintainer for the package "discordant" and have an update I am trying to push to BIOC devel. However, after fetching and merging the version on BIOCs master branch, when I try to push I get the error:
+
+
+remote: Error: You cannot push without resolving merge conflicts.
+
+remote:
+
+remote: Please check the files in the commit pushed to the git-server
+
+remote: for merge conflict markers like '<<<<<<<', '========', '>>>>>>>'.
+
+remote:
+
+To git.bioconductor.org:packages/discordant
+
+ ! [remote rejected] master -> master (pre-receive hook declined)
+
+error: failed to push some refs to 'git.bioconductor.org:packages/discordant'
+
+
+Now, I've checked the files in the most updated version of the package (available at https://github.com/max-mcgrath/discordant ) both "manually" and with grep for the "<<<<<<< HEAD" string specified in BIOC's pre-receive hooks with no results. I do, however, get a result with the old version of the package currently available on BIOC. An unmerged commit was left in the old vignette when the package was made available on BIOC five years ago, see lines 104-108 here: https://github.com/siskac/discordant/blob/master/vignettes/Discordant_vignette.Rnw#L104 . I deleted this file during the update (switched to .Rmd), however it seems to still be causing issues (see deletion commit here: https://github.com/max-mcgrath/discordant/commit/f747838c6969bca4b63dd7f7d37ab458ac588812 ).
+
+
+I'm not positive this is the problem, but if it is I have no clue how to fix it. I'm hoping someone here could lend some insight into the source of this issue and a potential solution.
+
+
+Thank you for your time,
+
+
+Max
+
+
+
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org<mailto:Bioc-devel at r-project.org> mailing list
+https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+	[[alternative HTML version deleted]]
+
+
+From robert@c@@te|o @end|ng |rom up|@edu  Wed Feb  2 09:02:03 2022
+From: robert@c@@te|o @end|ng |rom up|@edu (Robert Castelo)
+Date: Wed, 2 Feb 2022 09:02:03 +0100
+Subject: [Bioc-devel] Unable to Push Error
+In-Reply-To: <MWHPR08MB3533D6EC99519CE496642854C2269@MWHPR08MB3533.namprd08.prod.outlook.com>
+References: <CY4PR05MB3381AAF7A44EA7CC4CA4843A84229@CY4PR05MB3381.namprd05.prod.outlook.com>
+ <MWHPR08MB3533C4A5361ECEE1C20F1E11C2269@MWHPR08MB3533.namprd08.prod.outlook.com>
+ <CY4PR05MB3381684B8BABA4521B3C8A7B84269@CY4PR05MB3381.namprd05.prod.outlook.com>
+ <MWHPR08MB3533D6EC99519CE496642854C2269@MWHPR08MB3533.namprd08.prod.outlook.com>
+Message-ID: <06598c48-4e79-9786-4c3a-660dc685c8c6@upf.edu>
+
+https://xkcd.com/1597 :)
+
+On 2/1/22 23:42, James W. MacDonald wrote:
+> Hi Max,
+>
+> The issue is a merge conflict with what you have on your local repository (and your GitHub) and what is on the Bioconductor server. So cloning your Github repo locally and looking for the <<< won?t help because the merge problems happen after that fact. It?s a difference between what is on the Bioc devel repo and your local. In other words, there is probably some commit on the Bioconductor repo that is ahead of your local commit, so when you try to push you get the merge error.
+>
+> I find Git to be completely mysterious, and all the things like cherry picking and whatnot never seem to work for me, so I just keep it simple. I have had problems like this before and my simple stupid solution is to consider the Bioconductor repo the gold standard and start with that. I have a particular directory on my local computer that has all my repos, so I first move my updated, local repo somewhere else. I then clone the Bioconductor repo in my normal ?repo? directory and copy the updated files from my updated repo (that I moved) into the newly cloned repo. After moving all the updated files into the new cloned repo I can then push the changes to the Bioconductor git repo without problems.
+>
+> This often causes problems with my GitHub repo, so I just go on GitHub, delete the repository, generate a new blank one, and then push my ?fixed? repo.
+>
+> I am sure there are way more sophisticated ways to fix things using cherry pick and whatnot, but I have never been able to get that to work and I find reading about Git to be both confusing and boring in the same measure, so I would rather just burn things to the ground and start over.
+>
+> Nitesh is the local Git expert, and he will probably have some suggestions that are not so dumb and brute force.
+>
+> Best,
+>
+> Jim
+>
+>
+>
+> From: McGrath, Max <MAX.MCGRATH at UCDENVER.EDU>
+> Sent: Tuesday, February 01, 2022 4:22 PM
+> To: James W. MacDonald <jmacdon at uw.edu>
+> Cc: Herv? Pag?s <bioc-devel at r-project.org>
+> Subject: Re: [Bioc-devel] Unable to Push Error
+>
+> Hi Jim,
+>
+> Thanks for looking at this. The GitHub repo I've referenced is even with my local master branch (when I push I get the message "Everything up-to-date" with working tree clean), and you can see that I merged the most recent version bump in the commit history here: https://github.com/max-mcgrath/discordant/commit/bb3b4761b241d7eb5002b5342dfec2068772eb84. I did bump the DESCRIPTION version number to 1.19.1 to trigger a rebuild when I push, but I did so after I merged the October 1.19.0 bump. I've also tried pushing from a fresh clone of the GitHub repo (after syncing with BIOC), all with the same results. When I pull from BIOC master, I receive the message "Already up to date", and then the push fails. I've searched my local repository thoroughly for long strings of "<", "=", and ">" using both visual inspection and terminal commands like "grep -r "<<<<<<<" * .[^.]?*" but have been unable to locate any merge conflicts. I apologize if I'm missing something obvious here, but as far as I can tell all remote commits have been merged locally (and on the GitHub remote), so I'm at a loss.
+>
+> I'm not that experienced with python, but it appears that the pre-receive hook defined here https://github.com/Bioconductor/git-hooks/blob/master/prevent_merge_markers.py searches the git diff between the BIOC version and the new version for the string "<<<<<<< HEAD" (lines 93-96 and 67-77), and that string does appear in the git diff between the current BIOC version and my local copy (or a fresh clone of the GitHub repo) due to the deleted file containing the merge conflict. I've attempted a reproducible example below (for UNIX systems), but I'm pretty far out of my wheelhouse so I can provide any additional information if needed to resolve this issue.
+>
+>
+> git clone git at github.com:max-mcgrath/discordant.git<mailto:git at github.com:max-mcgrath/discordant.git>
+>
+> cd discordant
+>
+> git diff -G "<<<<<<< HEAD" bb3b4761b241d7eb5002b5342dfec2068772eb84..1523b91eddb0bc46403438389a108e66efdb5c4e
+>
+>
+>
+> Again, I apologize if I'm missing something obvious, but I've been trying to resolve this issue for some time and am at a dead end.
+>
+>
+>
+> Thanks,
+>
+> Max
+>
+>
+>
+>
+>
+>
+> ________________________________
+> From: James W. MacDonald <jmacdon at uw.edu<mailto:jmacdon at uw.edu>>
+> Sent: Tuesday, February 1, 2022 9:51 AM
+> To: McGrath, Max <MAX.MCGRATH at UCDENVER.EDU<mailto:MAX.MCGRATH at UCDENVER.EDU>>; Herv? Pag?s <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>>
+> Subject: RE: [Bioc-devel] Unable to Push Error
+>
+> [External Email - Use Caution]
+>
+> The error you are seeing has to do with the files in your local repository, not what's on either GitHub or the Bioconductor repository.
+>
+> Usually this happens when you haven't first pulled any commits on the remote repositories before you make changes locally. For example, you could have version 1.2.0 or whatever, and the devel version on Bioconductor might be at 1.3.0, because it's meant to be an odd middle number. If that were true, then in the DESCRIPTION file in your local repository you would see the version line bracketed with a bunch of <<<<<<<<<<<<<<<<<< to indicate where the merge conflict arose.
+>
+> That's probably likely, as this is what is on Bioconductor:
+>
+> Package: discordant
+> Version: 1.19.0
+> Date: 2016-10-21
+>
+> And on your GitHub it's 1.19.1
+>
+> Best,
+>
+> Jim
+>
+>
+>
+> -----Original Message-----
+> From: Bioc-devel <bioc-devel-bounces at r-project.org<mailto:bioc-devel-bounces at r-project.org>> On Behalf Of McGrath, Max
+> Sent: Tuesday, February 01, 2022 11:01 AM
+> To: Herv? Pag?s <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>>
+> Subject: [Bioc-devel] Unable to Push Error
+>
+> Hi all,
+>
+> I am the new maintainer for the package "discordant" and have an update I am trying to push to BIOC devel. However, after fetching and merging the version on BIOCs master branch, when I try to push I get the error:
+>
+>
+> remote: Error: You cannot push without resolving merge conflicts.
+>
+> remote:
+>
+> remote: Please check the files in the commit pushed to the git-server
+>
+> remote: for merge conflict markers like '<<<<<<<', '========', '>>>>>>>'.
+>
+> remote:
+>
+> To git.bioconductor.org:packages/discordant
+>
+>   ! [remote rejected] master -> master (pre-receive hook declined)
+>
+> error: failed to push some refs to 'git.bioconductor.org:packages/discordant'
+>
+>
+> Now, I've checked the files in the most updated version of the package (available at https://github.com/max-mcgrath/discordant ) both "manually" and with grep for the "<<<<<<< HEAD" string specified in BIOC's pre-receive hooks with no results. I do, however, get a result with the old version of the package currently available on BIOC. An unmerged commit was left in the old vignette when the package was made available on BIOC five years ago, see lines 104-108 here: https://github.com/siskac/discordant/blob/master/vignettes/Discordant_vignette.Rnw#L104 . I deleted this file during the update (switched to .Rmd), however it seems to still be causing issues (see deletion commit here: https://github.com/max-mcgrath/discordant/commit/f747838c6969bca4b63dd7f7d37ab458ac588812 ).
+>
+>
+> I'm not positive this is the problem, but if it is I have no clue how to fix it. I'm hoping someone here could lend some insight into the source of this issue and a potential solution.
+>
+>
+> Thank you for your time,
+>
+>
+> Max
+>
+>
+>
+>
+>          [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org<mailto:Bioc-devel at r-project.org> mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Robert Castelo, PhD
+Associate Professor
+Dept. of Experimental and Health Sciences
+Universitat Pompeu Fabra (UPF)
+Barcelona Biomedical Research Park (PRBB)
+Dr Aiguader 88
+E-08003 Barcelona, Spain
+telf: +34.933.160.514
+fax: +34.933.160.550
+
+
+From ntur@g@@b|oc @end|ng |rom gm@||@com  Wed Feb  2 15:13:11 2022
+From: ntur@g@@b|oc @end|ng |rom gm@||@com (Nitesh Turaga)
+Date: Wed, 2 Feb 2022 09:13:11 -0500
+Subject: [Bioc-devel] Unable to Push Error
+In-Reply-To: <06598c48-4e79-9786-4c3a-660dc685c8c6@upf.edu>
+References: <CY4PR05MB3381AAF7A44EA7CC4CA4843A84229@CY4PR05MB3381.namprd05.prod.outlook.com>
+ <MWHPR08MB3533C4A5361ECEE1C20F1E11C2269@MWHPR08MB3533.namprd08.prod.outlook.com>
+ <CY4PR05MB3381684B8BABA4521B3C8A7B84269@CY4PR05MB3381.namprd05.prod.outlook.com>
+ <MWHPR08MB3533D6EC99519CE496642854C2269@MWHPR08MB3533.namprd08.prod.outlook.com>
+ <06598c48-4e79-9786-4c3a-660dc685c8c6@upf.edu>
+Message-ID: <D4C7C116-AC29-4E8B-AD79-BC9964F4C010@gmail.com>
+
+Hi Everyone,
+
+Thanks for your responses.
+
+I will fix it on the Bioconductor end since there is an issue here. Max, you shouldn?t see the merge conflict markers anymore on the Row file. I made a push removing this. 
+
+Please sync your local repository and github now and try to push Bioconductor. It should work.
+
+Best
+
+
+Nitesh Turaga
+Scientist II, Department of Data Science,
+Bioconductor Core Team Member
+Dana Farber Cancer Institute
+
+> On Feb 2, 2022, at 3:02 AM, Robert Castelo <robert.castelo at upf.edu> wrote:
+> 
+> https://xkcd.com/1597 :)
+> 
+> On 2/1/22 23:42, James W. MacDonald wrote:
+>> Hi Max,
+>> 
+>> The issue is a merge conflict with what you have on your local repository (and your GitHub) and what is on the Bioconductor server. So cloning your Github repo locally and looking for the <<< won?t help because the merge problems happen after that fact. It?s a difference between what is on the Bioc devel repo and your local. In other words, there is probably some commit on the Bioconductor repo that is ahead of your local commit, so when you try to push you get the merge error.
+>> 
+>> I find Git to be completely mysterious, and all the things like cherry picking and whatnot never seem to work for me, so I just keep it simple. I have had problems like this before and my simple stupid solution is to consider the Bioconductor repo the gold standard and start with that. I have a particular directory on my local computer that has all my repos, so I first move my updated, local repo somewhere else. I then clone the Bioconductor repo in my normal ?repo? directory and copy the updated files from my updated repo (that I moved) into the newly cloned repo. After moving all the updated files into the new cloned repo I can then push the changes to the Bioconductor git repo without problems.
+>> 
+>> This often causes problems with my GitHub repo, so I just go on GitHub, delete the repository, generate a new blank one, and then push my ?fixed? repo.
+>> 
+>> I am sure there are way more sophisticated ways to fix things using cherry pick and whatnot, but I have never been able to get that to work and I find reading about Git to be both confusing and boring in the same measure, so I would rather just burn things to the ground and start over.
+>> 
+>> Nitesh is the local Git expert, and he will probably have some suggestions that are not so dumb and brute force.
+>> 
+>> Best,
+>> 
+>> Jim
+>> 
+>> 
+>> 
+>> From: McGrath, Max <MAX.MCGRATH at UCDENVER.EDU>
+>> Sent: Tuesday, February 01, 2022 4:22 PM
+>> To: James W. MacDonald <jmacdon at uw.edu>
+>> Cc: Herv? Pag?s <bioc-devel at r-project.org>
+>> Subject: Re: [Bioc-devel] Unable to Push Error
+>> 
+>> Hi Jim,
+>> 
+>> Thanks for looking at this. The GitHub repo I've referenced is even with my local master branch (when I push I get the message "Everything up-to-date" with working tree clean), and you can see that I merged the most recent version bump in the commit history here: https://github.com/max-mcgrath/discordant/commit/bb3b4761b241d7eb5002b5342dfec2068772eb84. I did bump the DESCRIPTION version number to 1.19.1 to trigger a rebuild when I push, but I did so after I merged the October 1.19.0 bump. I've also tried pushing from a fresh clone of the GitHub repo (after syncing with BIOC), all with the same results. When I pull from BIOC master, I receive the message "Already up to date", and then the push fails. I've searched my local repository thoroughly for long strings of "<", "=", and ">" using both visual inspection and terminal commands like "grep -r "<<<<<<<" * .[^.]?*" but have been unable to locate any merge conflicts. I apologize if I'm missing something obvious here, but as far as I can tell all remote commits have been merged locally (and on the GitHub remote), so I'm at a loss.
+>> 
+>> I'm not that experienced with python, but it appears that the pre-receive hook defined here https://github.com/Bioconductor/git-hooks/blob/master/prevent_merge_markers.py searches the git diff between the BIOC version and the new version for the string "<<<<<<< HEAD" (lines 93-96 and 67-77), and that string does appear in the git diff between the current BIOC version and my local copy (or a fresh clone of the GitHub repo) due to the deleted file containing the merge conflict. I've attempted a reproducible example below (for UNIX systems), but I'm pretty far out of my wheelhouse so I can provide any additional information if needed to resolve this issue.
+>> 
+>> 
+>> git clone git at github.com:max-mcgrath/discordant.git<mailto:git at github.com:max-mcgrath/discordant.git>
+>> 
+>> cd discordant
+>> 
+>> git diff -G "<<<<<<< HEAD" bb3b4761b241d7eb5002b5342dfec2068772eb84..1523b91eddb0bc46403438389a108e66efdb5c4e
+>> 
+>> 
+>> 
+>> Again, I apologize if I'm missing something obvious, but I've been trying to resolve this issue for some time and am at a dead end.
+>> 
+>> 
+>> 
+>> Thanks,
+>> 
+>> Max
+>> 
+>> 
+>> 
+>> 
+>> 
+>> 
+>> ________________________________
+>> From: James W. MacDonald <jmacdon at uw.edu<mailto:jmacdon at uw.edu>>
+>> Sent: Tuesday, February 1, 2022 9:51 AM
+>> To: McGrath, Max <MAX.MCGRATH at UCDENVER.EDU<mailto:MAX.MCGRATH at UCDENVER.EDU>>; Herv? Pag?s <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>>
+>> Subject: RE: [Bioc-devel] Unable to Push Error
+>> 
+>> [External Email - Use Caution]
+>> 
+>> The error you are seeing has to do with the files in your local repository, not what's on either GitHub or the Bioconductor repository.
+>> 
+>> Usually this happens when you haven't first pulled any commits on the remote repositories before you make changes locally. For example, you could have version 1.2.0 or whatever, and the devel version on Bioconductor might be at 1.3.0, because it's meant to be an odd middle number. If that were true, then in the DESCRIPTION file in your local repository you would see the version line bracketed with a bunch of <<<<<<<<<<<<<<<<<< to indicate where the merge conflict arose.
+>> 
+>> That's probably likely, as this is what is on Bioconductor:
+>> 
+>> Package: discordant
+>> Version: 1.19.0
+>> Date: 2016-10-21
+>> 
+>> And on your GitHub it's 1.19.1
+>> 
+>> Best,
+>> 
+>> Jim
+>> 
+>> 
+>> 
+>> -----Original Message-----
+>> From: Bioc-devel <bioc-devel-bounces at r-project.org<mailto:bioc-devel-bounces at r-project.org>> On Behalf Of McGrath, Max
+>> Sent: Tuesday, February 01, 2022 11:01 AM
+>> To: Herv? Pag?s <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>>
+>> Subject: [Bioc-devel] Unable to Push Error
+>> 
+>> Hi all,
+>> 
+>> I am the new maintainer for the package "discordant" and have an update I am trying to push to BIOC devel. However, after fetching and merging the version on BIOCs master branch, when I try to push I get the error:
+>> 
+>> 
+>> remote: Error: You cannot push without resolving merge conflicts.
+>> 
+>> remote:
+>> 
+>> remote: Please check the files in the commit pushed to the git-server
+>> 
+>> remote: for merge conflict markers like '<<<<<<<', '========', '>>>>>>>'.
+>> 
+>> remote:
+>> 
+>> To git.bioconductor.org:packages/discordant
+>> 
+>>  ! [remote rejected] master -> master (pre-receive hook declined)
+>> 
+>> error: failed to push some refs to 'git.bioconductor.org:packages/discordant'
+>> 
+>> 
+>> Now, I've checked the files in the most updated version of the package (available at https://github.com/max-mcgrath/discordant ) both "manually" and with grep for the "<<<<<<< HEAD" string specified in BIOC's pre-receive hooks with no results. I do, however, get a result with the old version of the package currently available on BIOC. An unmerged commit was left in the old vignette when the package was made available on BIOC five years ago, see lines 104-108 here: https://github.com/siskac/discordant/blob/master/vignettes/Discordant_vignette.Rnw#L104 . I deleted this file during the update (switched to .Rmd), however it seems to still be causing issues (see deletion commit here: https://github.com/max-mcgrath/discordant/commit/f747838c6969bca4b63dd7f7d37ab458ac588812 ).
+>> 
+>> 
+>> I'm not positive this is the problem, but if it is I have no clue how to fix it. I'm hoping someone here could lend some insight into the source of this issue and a potential solution.
+>> 
+>> 
+>> Thank you for your time,
+>> 
+>> 
+>> Max
+>> 
+>> 
+>> 
+>> 
+>>         [[alternative HTML version deleted]]
+>> 
+>> _______________________________________________
+>> Bioc-devel at r-project.org<mailto:Bioc-devel at r-project.org> mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>> 
+>> 	[[alternative HTML version deleted]]
+>> 
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> -- 
+> Robert Castelo, PhD
+> Associate Professor
+> Dept. of Experimental and Health Sciences
+> Universitat Pompeu Fabra (UPF)
+> Barcelona Biomedical Research Park (PRBB)
+> Dr Aiguader 88
+> E-08003 Barcelona, Spain
+> telf: +34.933.160.514
+> fax: +34.933.160.550
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From ntur@g@@b|oc @end|ng |rom gm@||@com  Wed Feb  2 15:18:26 2022
+From: ntur@g@@b|oc @end|ng |rom gm@||@com (Nitesh Turaga)
+Date: Wed, 2 Feb 2022 09:18:26 -0500
+Subject: [Bioc-devel] DeMixT Bioconductor maintainer
+In-Reply-To: <BYAPR14MB248737DB9DD6E15DF5C7E275A8209@BYAPR14MB2487.namprd14.prod.outlook.com>
+References: <BYAPR14MB248737DB9DD6E15DF5C7E275A8209@BYAPR14MB2487.namprd14.prod.outlook.com>
+Message-ID: <A8239F17-B52A-406D-BF78-04F731DA4FED@gmail.com>
+
+Hi Shuangxi,
+
+You should have access to the package now. 
+
+Please activate your account with the email below at https://git.bioconductor.org/BiocCredentials/account_activation and add your SSH keys.
+
+Once you do that you?ll get access to your package. 
+
+Best,
+
+Nitesh 
+
+
+Nitesh Turaga
+Scientist II, Department of Data Science,
+Bioconductor Core Team Member
+Dana Farber Cancer Institute
+
+> On Jan 26, 2022, at 11:08 AM, Guo, Shuai <Shuai.Guo at uth.tmc.edu> wrote:
+> 
+> Hi Bioconductor team,
+> 
+> I would like to add a maintainer for our DeMixT package.
+> 
+> https://bioconductor.org/packages/release/bioc/html/DeMixT.html
+> 
+> Below is the contact information:
+> maintainer: Shuangxi Ji
+> email: jiyunmathbham at gmail.com (cc'd in this email)
+> 
+> I will update the new maintainer information in DESCRIPTION, and push to the Bioconductor (devel brunch) very soon.
+>  
+> Thanks,
+> Shuai
+> -------------------------------------
+> Shuai Guo
+> Graduate Research Assistant
+> Department of Bioinformatics and Computational Biology
+> The University of Texas MD Anderson Cancer Center and UTHealth 
+> Graduate School of Biomedical Sciences
+> Phone: +1 (346) 404-8748
+> E-mail: shuai.guo at uth.tmc.edu
+> Location: 1400 Pressler St, Houston, TX 77030
+
+
+From MAX@MCGRATH @end|ng |rom UCDENVER@EDU  Wed Feb  2 16:19:19 2022
+From: MAX@MCGRATH @end|ng |rom UCDENVER@EDU (McGrath, Max)
+Date: Wed, 2 Feb 2022 15:19:19 +0000
+Subject: [Bioc-devel] Unable to Push Error
+In-Reply-To: <D4C7C116-AC29-4E8B-AD79-BC9964F4C010@gmail.com>
+References: <CY4PR05MB3381AAF7A44EA7CC4CA4843A84229@CY4PR05MB3381.namprd05.prod.outlook.com>
+ <MWHPR08MB3533C4A5361ECEE1C20F1E11C2269@MWHPR08MB3533.namprd08.prod.outlook.com>
+ <CY4PR05MB3381684B8BABA4521B3C8A7B84269@CY4PR05MB3381.namprd05.prod.outlook.com>
+ <MWHPR08MB3533D6EC99519CE496642854C2269@MWHPR08MB3533.namprd08.prod.outlook.com>
+ <06598c48-4e79-9786-4c3a-660dc685c8c6@upf.edu>
+ <D4C7C116-AC29-4E8B-AD79-BC9964F4C010@gmail.com>
+Message-ID: <CY4PR05MB338165BA8D5966EC25C2C11684279@CY4PR05MB3381.namprd05.prod.outlook.com>
+
+Hi Everyone,
+
+Nitesh, the repositories are now synced, and I was able to push to Bioconductor. Thank you so much! And Jim, thank you for your time and input (and Robert for the humor!)
+
+Best,
+Max
+________________________________
+From: Nitesh Turaga <nturaga.bioc at gmail.com>
+Sent: Wednesday, February 2, 2022 7:13 AM
+To: McGrath, Max <MAX.MCGRATH at UCDENVER.EDU>
+Cc: James W. MacDonald <jmacdon at uw.edu>; Herv? Pag?s <bioc-devel at r-project.org>; Robert Castelo <robert.castelo at upf.edu>
+Subject: Re: [Bioc-devel] Unable to Push Error
+
+[External Email - Use Caution]
+
+Hi Everyone,
+
+Thanks for your responses.
+
+I will fix it on the Bioconductor end since there is an issue here. Max, you shouldn?t see the merge conflict markers anymore on the Row file. I made a push removing this.
+
+Please sync your local repository and github now and try to push Bioconductor. It should work.
+
+Best
+
+
+Nitesh Turaga
+Scientist II, Department of Data Science,
+Bioconductor Core Team Member
+Dana Farber Cancer Institute
+
+> On Feb 2, 2022, at 3:02 AM, Robert Castelo <robert.castelo at upf.edu> wrote:
+>
+> https://xkcd.com/1597 :)
+>
+> On 2/1/22 23:42, James W. MacDonald wrote:
+>> Hi Max,
+>>
+>> The issue is a merge conflict with what you have on your local repository (and your GitHub) and what is on the Bioconductor server. So cloning your Github repo locally and looking for the <<< won?t help because the merge problems happen after that fact. It?s a difference between what is on the Bioc devel repo and your local. In other words, there is probably some commit on the Bioconductor repo that is ahead of your local commit, so when you try to push you get the merge error.
+>>
+>> I find Git to be completely mysterious, and all the things like cherry picking and whatnot never seem to work for me, so I just keep it simple. I have had problems like this before and my simple stupid solution is to consider the Bioconductor repo the gold standard and start with that. I have a particular directory on my local computer that has all my repos, so I first move my updated, local repo somewhere else. I then clone the Bioconductor repo in my normal ?repo? directory and copy the updated files from my updated repo (that I moved) into the newly cloned repo. After moving all the updated files into the new cloned repo I can then push the changes to the Bioconductor git repo without problems.
+>>
+>> This often causes problems with my GitHub repo, so I just go on GitHub, delete the repository, generate a new blank one, and then push my ?fixed? repo.
+>>
+>> I am sure there are way more sophisticated ways to fix things using cherry pick and whatnot, but I have never been able to get that to work and I find reading about Git to be both confusing and boring in the same measure, so I would rather just burn things to the ground and start over.
+>>
+>> Nitesh is the local Git expert, and he will probably have some suggestions that are not so dumb and brute force.
+>>
+>> Best,
+>>
+>> Jim
+>>
+>>
+>>
+>> From: McGrath, Max <MAX.MCGRATH at UCDENVER.EDU>
+>> Sent: Tuesday, February 01, 2022 4:22 PM
+>> To: James W. MacDonald <jmacdon at uw.edu>
+>> Cc: Herv? Pag?s <bioc-devel at r-project.org>
+>> Subject: Re: [Bioc-devel] Unable to Push Error
+>>
+>> Hi Jim,
+>>
+>> Thanks for looking at this. The GitHub repo I've referenced is even with my local master branch (when I push I get the message "Everything up-to-date" with working tree clean), and you can see that I merged the most recent version bump in the commit history here: https://github.com/max-mcgrath/discordant/commit/bb3b4761b241d7eb5002b5342dfec2068772eb84. I did bump the DESCRIPTION version number to 1.19.1 to trigger a rebuild when I push, but I did so after I merged the October 1.19.0 bump. I've also tried pushing from a fresh clone of the GitHub repo (after syncing with BIOC), all with the same results. When I pull from BIOC master, I receive the message "Already up to date", and then the push fails. I've searched my local repository thoroughly for long strings of "<", "=", and ">" using both visual inspection and terminal commands like "grep -r "<<<<<<<" * .[^.]?*" but have been unable to locate any merge conflicts. I apologize if I'm missing something obvious here, but as far as I can tell all remote commits have been merged locally (and on the GitHub remote), so I'm at a loss.
+>>
+>> I'm not that experienced with python, but it appears that the pre-receive hook defined here https://github.com/Bioconductor/git-hooks/blob/master/prevent_merge_markers.py searches the git diff between the BIOC version and the new version for the string "<<<<<<< HEAD" (lines 93-96 and 67-77), and that string does appear in the git diff between the current BIOC version and my local copy (or a fresh clone of the GitHub repo) due to the deleted file containing the merge conflict. I've attempted a reproducible example below (for UNIX systems), but I'm pretty far out of my wheelhouse so I can provide any additional information if needed to resolve this issue.
+>>
+>>
+>> git clone git at github.com:max-mcgrath/discordant.git<mailto:git at github.com:max-mcgrath/discordant.git>
+>>
+>> cd discordant
+>>
+>> git diff -G "<<<<<<< HEAD" bb3b4761b241d7eb5002b5342dfec2068772eb84..1523b91eddb0bc46403438389a108e66efdb5c4e
+>>
+>>
+>>
+>> Again, I apologize if I'm missing something obvious, but I've been trying to resolve this issue for some time and am at a dead end.
+>>
+>>
+>>
+>> Thanks,
+>>
+>> Max
+>>
+>>
+>>
+>>
+>>
+>>
+>> ________________________________
+>> From: James W. MacDonald <jmacdon at uw.edu<mailto:jmacdon at uw.edu>>
+>> Sent: Tuesday, February 1, 2022 9:51 AM
+>> To: McGrath, Max <MAX.MCGRATH at UCDENVER.EDU<mailto:MAX.MCGRATH at UCDENVER.EDU>>; Herv? Pag?s <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>>
+>> Subject: RE: [Bioc-devel] Unable to Push Error
+>>
+>> [External Email - Use Caution]
+>>
+>> The error you are seeing has to do with the files in your local repository, not what's on either GitHub or the Bioconductor repository.
+>>
+>> Usually this happens when you haven't first pulled any commits on the remote repositories before you make changes locally. For example, you could have version 1.2.0 or whatever, and the devel version on Bioconductor might be at 1.3.0, because it's meant to be an odd middle number. If that were true, then in the DESCRIPTION file in your local repository you would see the version line bracketed with a bunch of <<<<<<<<<<<<<<<<<< to indicate where the merge conflict arose.
+>>
+>> That's probably likely, as this is what is on Bioconductor:
+>>
+>> Package: discordant
+>> Version: 1.19.0
+>> Date: 2016-10-21
+>>
+>> And on your GitHub it's 1.19.1
+>>
+>> Best,
+>>
+>> Jim
+>>
+>>
+>>
+>> -----Original Message-----
+>> From: Bioc-devel <bioc-devel-bounces at r-project.org<mailto:bioc-devel-bounces at r-project.org>> On Behalf Of McGrath, Max
+>> Sent: Tuesday, February 01, 2022 11:01 AM
+>> To: Herv? Pag?s <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>>
+>> Subject: [Bioc-devel] Unable to Push Error
+>>
+>> Hi all,
+>>
+>> I am the new maintainer for the package "discordant" and have an update I am trying to push to BIOC devel. However, after fetching and merging the version on BIOCs master branch, when I try to push I get the error:
+>>
+>>
+>> remote: Error: You cannot push without resolving merge conflicts.
+>>
+>> remote:
+>>
+>> remote: Please check the files in the commit pushed to the git-server
+>>
+>> remote: for merge conflict markers like '<<<<<<<', '========', '>>>>>>>'.
+>>
+>> remote:
+>>
+>> To git.bioconductor.org:packages/discordant
+>>
+>>  ! [remote rejected] master -> master (pre-receive hook declined)
+>>
+>> error: failed to push some refs to 'git.bioconductor.org:packages/discordant'
+>>
+>>
+>> Now, I've checked the files in the most updated version of the package (available at https://github.com/max-mcgrath/discordant ) both "manually" and with grep for the "<<<<<<< HEAD" string specified in BIOC's pre-receive hooks with no results. I do, however, get a result with the old version of the package currently available on BIOC. An unmerged commit was left in the old vignette when the package was made available on BIOC five years ago, see lines 104-108 here: https://github.com/siskac/discordant/blob/master/vignettes/Discordant_vignette.Rnw#L104 . I deleted this file during the update (switched to .Rmd), however it seems to still be causing issues (see deletion commit here: https://github.com/max-mcgrath/discordant/commit/f747838c6969bca4b63dd7f7d37ab458ac588812 ).
+>>
+>>
+>> I'm not positive this is the problem, but if it is I have no clue how to fix it. I'm hoping someone here could lend some insight into the source of this issue and a potential solution.
+>>
+>>
+>> Thank you for your time,
+>>
+>>
+>> Max
+>>
+>>
+>>
+>>
+>>         [[alternative HTML version deleted]]
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org<mailto:Bioc-devel at r-project.org> mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>       [[alternative HTML version deleted]]
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> --
+> Robert Castelo, PhD
+> Associate Professor
+> Dept. of Experimental and Health Sciences
+> Universitat Pompeu Fabra (UPF)
+> Barcelona Biomedical Research Park (PRBB)
+> Dr Aiguader 88
+> E-08003 Barcelona, Spain
+> telf: +34.933.160.514
+> fax: +34.933.160.550
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+	[[alternative HTML version deleted]]
+
+
+From @hokooh| @end|ng |rom |c|oud@com  Mon Feb  7 19:35:02 2022
+From: @hokooh| @end|ng |rom |c|oud@com (Farhad Shokoohi)
+Date: Mon, 7 Feb 2022 10:35:02 -0800
+Subject: [Bioc-devel] DMCHMM problems reported in the Multiple platform
+ build/check report for BioC 3.14
+Message-ID: <C048F752-1E4C-4578-80CF-4F96A6AB9E48@icloud.com>
+
+Hello,
+I have fixed the problem and uploaded the new version of my package. 
+I don?t understand why I get the following message :
+
+
+
+[This is an automatically generated email. Please don't reply.]
+
+Hi DMCHMM maintainer,
+
+According to the Multiple platform build/check report for BioC 3.14,
+the DMCHMM package has the following problem(s):
+
+ o ERROR for 'R CMD build' on nebbiolo2. See the details here:
+     https://master.bioconductor.org/checkResults/3.14/bioc-LATEST/DMCHMM/nebbiolo2-buildsrc.html <https://master.bioconductor.org/checkResults/3.14/bioc-LATEST/DMCHMM/nebbiolo2-buildsrc.html>
+
+Please take the time to address this by committing and pushing
+changes to your package at git.bioconductor.org <http://git.bioconductor.org/>
+
+Notes:
+
+ * This was the status of your package at the time this email was sent to you.
+   Given that the online report is updated daily (in normal conditions) you
+   could see something different when you visit the URL(s) above, especially if
+   you do so several days after you received this email.
+
+ * It is possible that the problems reported in this report are false positives,
+   either because another package (from CRAN or Bioconductor) breaks your
+   package (if yours depends on it) or because of a Build System problem.
+   If this is the case, then you can ignore this email.
+
+ * Please check the report again 24h after you've committed your changes to the
+   package and make sure that all the problems have gone.
+
+ * If you have questions about this report or need help with the
+   maintenance of your package, please use the Bioc-devel mailing list:
+
+     https://bioconductor.org/help/mailing-list/ <https://bioconductor.org/help/mailing-list/>
+
+   (all package maintainers are requested to subscribe to this list)
+
+For immediate notification of package build status, please
+subscribe to your package's RSS feed. Information is at:
+
+https://bioconductor.org/developers/rss-feeds/ <https://bioconductor.org/developers/rss-feeds/>
+
+Thanks for contributing to the Bioconductor project!
+	[[alternative HTML version deleted]]
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Mon Feb  7 19:41:16 2022
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Mon, 7 Feb 2022 18:41:16 +0000
+Subject: [Bioc-devel] DMCHMM problems reported in the Multiple platform
+ build/check report for BioC 3.14
+In-Reply-To: <C048F752-1E4C-4578-80CF-4F96A6AB9E48@icloud.com>
+References: <C048F752-1E4C-4578-80CF-4F96A6AB9E48@icloud.com>
+Message-ID: <BL1PR12MB53015DC63D0A46F39DEEE8ADF92C9@BL1PR12MB5301.namprd12.prod.outlook.com>
+
+As often stated Bioconductor has two different branches a RELEASE_3_14 and a devel branch.  You have pushed changes only to the master branch that corresponds to devel.
+
+You must also push changes to the RELEASE_3_14 branch to fix the Bioc 3.14 version of the package.
+
+See:
+http://bioconductor.org/developers/how-to/git/bug-fix-in-release-and-devel/
+
+Cheers,
+
+
+
+Lori Shepherd - Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Farhad Shokoohi via Bioc-devel <bioc-devel at r-project.org>
+Sent: Monday, February 7, 2022 1:35 PM
+To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: Re: [Bioc-devel] DMCHMM problems reported in the Multiple platform build/check report for BioC 3.14
+
+Hello,
+I have fixed the problem and uploaded the new version of my package.
+I don?t understand why I get the following message :
+
+
+
+[This is an automatically generated email. Please don't reply.]
+
+Hi DMCHMM maintainer,
+
+According to the Multiple platform build/check report for BioC 3.14,
+the DMCHMM package has the following problem(s):
+
+ o ERROR for 'R CMD build' on nebbiolo2. See the details here:
+     https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html <https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html>
+
+Please take the time to address this by committing and pushing
+changes to your package at git.bioconductor.org <http://secure-web.cisco.com/1aDeESrR98AvHxh4i43VmaShO71JlXCoL1b7ZM1bUOyQNKhYqk_Wem616ytR_7ERi1gVXM-ZJPrCDpHn8YK2g8tqHRhoai-JmDB6bwtFiICTCMhFt-fTzRIprGb553TUV1DUJh_1QGBVir4KBLb6Q2TH-r7Bc59RUkGeFwJ47rHXuw0yEpEldKbnGNMc3ZWpGBAlk91-g5nUB0vIunDXvBXSyVYP_Y7kBW4IX4oeuNA10BGWI0ysZ2jb34vW_whutuwHMHitG7TvDqvu6dcjZWvsykInEjGiDHsaKj41NImxiBfQCWEE033AfOGl1A7vF/http%3A%2F%2Fgit.bioconductor.org%2F>
+
+Notes:
+
+ * This was the status of your package at the time this email was sent to you.
+   Given that the online report is updated daily (in normal conditions) you
+   could see something different when you visit the URL(s) above, especially if
+   you do so several days after you received this email.
+
+ * It is possible that the problems reported in this report are false positives,
+   either because another package (from CRAN or Bioconductor) breaks your
+   package (if yours depends on it) or because of a Build System problem.
+   If this is the case, then you can ignore this email.
+
+ * Please check the report again 24h after you've committed your changes to the
+   package and make sure that all the problems have gone.
+
+ * If you have questions about this report or need help with the
+   maintenance of your package, please use the Bioc-devel mailing list:
+
+     https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F <https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F>
+
+   (all package maintainers are requested to subscribe to this list)
+
+For immediate notification of package build status, please
+subscribe to your package's RSS feed. Information is at:
+
+https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F <https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F>
+
+Thanks for contributing to the Bioconductor project!
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://secure-web.cisco.com/1M4fH12dRsFiQKCy3smll89SOLDxNy-0YobIsrCzFI3Vhzbg4f1BrxNw5iEZoivwXdhpMoHnE4Aob28y1XVttI5chReCjeycXaZgGG86Guf3R2xVAp4PfBxxDAT2iacvIt99p6GVDFGwRyAXZrBU9N9ado-qdfOKaaU8oz6bOFDQP7J0CGJMoxCFien9BZe_R8zKwPTEKpxVnzpxlIc6AJdwtp3Ce9pCh-dHcxeWxvXsRgTRbaObh12UluRI4xiwnU3rHTQXAHTiTsru2Wt5_clg8mSZlLQVBGGk7tlErDv1WnCh-bzxcBmqsuodF35d7/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From mcjm|gd@| @end|ng |rom gm@||@com  Tue Feb  8 12:41:00 2022
+From: mcjm|gd@| @end|ng |rom gm@||@com (migdal migdal)
+Date: Tue, 8 Feb 2022 12:41:00 +0100
+Subject: [Bioc-devel] Query about package submission status
+Message-ID: <CADh+v5x=VpALDc1vff16h1rmOketMjJOA5p17OPB0HgmrhzOzA@mail.gmail.com>
+
+Dear bioc-devel moderators,
+
+I would like to ask about my recent package submission status (
+https://github.com/Bioconductor/Contributions/issues/2496). Sorry if I am
+impatient here, some time ago I submitted requested fixes and now I noticed
+that no one is assigned to my ticket. Please kindly, let me know about my
+submission status or if I missed something on my end.
+
+All the best
+Maciek
+
+	[[alternative HTML version deleted]]
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Wed Feb  9 13:10:15 2022
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Wed, 9 Feb 2022 12:10:15 +0000
+Subject: [Bioc-devel] Join the Bioconductor Community Advisory Board
+In-Reply-To: <BL1PR12MB53014FD0717DE31D3CC30165F95E9@BL1PR12MB5301.namprd12.prod.outlook.com>
+References: <BL1PR12MB53014FD0717DE31D3CC30165F95E9@BL1PR12MB5301.namprd12.prod.outlook.com>
+Message-ID: <BL1PR12MB5301A717B688CCD866487C41F92E9@BL1PR12MB5301.namprd12.prod.outlook.com>
+
+There is still 2 weeks to put in your nomination for joining the community advisory board.  See more information on the support site posting including the nomination form:
+https://support.bioconductor.org/p/9141753/
+
+
+
+
+
+Lori Shepherd - Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Kern, Lori <Lori.Shepherd at RoswellPark.org>
+Sent: Monday, January 24, 2022 8:03 AM
+To: Bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: [Bioc-devel] Join the Bioconductor Community Advisory Board
+
+The Bioconductor Community Advisory Board is accepting applications for new members.  Please see https://secure-web.cisco.com/1uSgVyc6wX4hQNadp-gPguDldsrVpZxaRlYefx6_WmBgMcmQIcNx0o-Wyc5v_ohbgZK7To-NqGutM8irD-JC0NZJYYQUkP_pMwwBwuuAvL38GyaobKkOlRnEY1_ZE2lcz1fDAapEd-bFM-_XiMDR91fTJyzgM1Mb-gi9BSrVX7cfVHHMcu1TcLn48kqkZ8QMcME7Unvr9s-l-zUVf4rU1r_8g9vk3Qb7NQMFvYKDepsPE_3FFv6l84T-y1vRAopjzQvzudgezdb3-_9v0x01G-J-FaysDJDfbAPU96SZUxlaXUh4iv-1UBpPFGJC2uRjQFTmWtN_FmSZ-V21_-NMjOg/https%3A%2F%2Fsupport.bioconductor.org%2Fp%2F9141753%2F  for more information.
+
+Cheers,
+
+
+Lori Shepherd - Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://secure-web.cisco.com/1tL3MtHOr0VFwdDc2hjR9z86XXmqMm1kaVWZ3SUf10wqdWcmACCQsFBc-LC9MBrNgHDnPri1o7UjD_d34UatqYAL_tfioNZpazNUfULFCb69p4GoVWaarXwOikZFb7C8Mw6FoijeakkncE4wJ990vR25WNYD-YzPZBnq6hDr_BUbz-Q7QFXF8_cennVuGHEXsGs0nnmg2uERsE2kbGfBq6hHShlB42xBOU70RFxEKeXDVUDKyJRYeRLmxuLycNJa3d7Ie9Y9uTTyoxvSoWlHmLd2Ed2pZaislmYe2AfB4bv8c9AsHFxXW5_kBKG2QTOJ3pBKAVpWeICbaNN2tXk0OnQ/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From c@meron@@evern @end|ng |rom gm@||@com  Thu Feb 10 19:06:04 2022
+From: c@meron@@evern @end|ng |rom gm@||@com (Cameron Severn)
+Date: Thu, 10 Feb 2022 11:06:04 -0700
+Subject: [Bioc-devel] Maintainer change for pairkat package
+Message-ID: <CACOQoqpmkYb19Sv_Fq+6rgj44ACg2BtvEP2kBeKZu5=7qEiSig@mail.gmail.com>
+
+Hello,
+
+I am looking to change the transfer maintenance of "pairkat" to Max
+McGrath. max.mcgrath at ucdenver.edu. I have pushed a bumped version number
+with Max added to the description file. Please let me know if there is
+anything else I need to do to proceed.
+
+Thanks!
+
+Cameron Severn
+
+	[[alternative HTML version deleted]]
+
+
+From mcjm|gd@| @end|ng |rom gm@||@com  Wed Feb 16 09:35:38 2022
+From: mcjm|gd@| @end|ng |rom gm@||@com (migdal migdal)
+Date: Wed, 16 Feb 2022 09:35:38 +0100
+Subject: [Bioc-devel] Supplementing package vignette with workflow vignette
+Message-ID: <CADh+v5wz2BYY0w8_UUqu2EAGCkXanTxnCA2SGJCQ97nK=9U1hQ@mail.gmail.com>
+
+Dear bioc-devel,
+
+one of the requirements for the Bioconductor package is to pass the R CMD
+BUILD, including some constraints on the time. To accommodate for some
+specific cases, Bioconductor implements a concept of long tests which are
+excluded from the build time limit. I wonder if a corresponding concept
+exists for the vignettes? I do realize the need for time constraints.
+However, I think it could be of use to supplement a main vignette with
+supplementary vignettes that could showcase the package use eg. on a larger
+dataset. Those could have a less strict constraints policy eg. more time to
+run, more resources like number of cores, RAM etc. Are there any ways to
+accomplish this?
+
+Best Maciek
+
+	[[alternative HTML version deleted]]
+
+
+From @hokooh| @end|ng |rom |c|oud@com  Wed Feb 16 19:58:09 2022
+From: @hokooh| @end|ng |rom |c|oud@com (Farhad Shokoohi)
+Date: Wed, 16 Feb 2022 10:58:09 -0800
+Subject: [Bioc-devel] DMCHMM problems reported in the Multiple platform
+ build/check report for BioC 3.14
+In-Reply-To: <BL1PR12MB53015DC63D0A46F39DEEE8ADF92C9@BL1PR12MB5301.namprd12.prod.outlook.com>
+References: <C048F752-1E4C-4578-80CF-4F96A6AB9E48@icloud.com>
+ <BL1PR12MB53015DC63D0A46F39DEEE8ADF92C9@BL1PR12MB5301.namprd12.prod.outlook.com>
+Message-ID: <3F8A161A-5BE9-47F5-98FC-3C0297503EE5@icloud.com>
+
+Hello
+
+I think I have fixed the problem; see the log; However, I do not know how to make sure everything is up-to-date. 
+Best,
+
+farhad at Farhads-iMac DMCHMM %  git push upstream master
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM %  git push origin master
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git checkout RELEASE_3_14
+Already on 'RELEASE_3_14'
+Your branch is up to date with 'origin/RELEASE_3_14'.
+farhad at Farhads-iMac DMCHMM % git merge upstream/RELEASE_3_14
+Already up to date.
+farhad at Farhads-iMac DMCHMM % git merge origin/RELEASE_3_14
+Already up to date.
+farhad at Farhads-iMac DMCHMM % git push upstream RELEASE_3_14
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git push origin RELEASE_3_14
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git push upstream RELEASE_3_14
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git push origin RELEASE_3_14
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git checkout RELEASE_3_14
+Already on 'RELEASE_3_14'
+Your branch is up to date with 'origin/RELEASE_3_14'.
+
+
+
+> On Feb 7, 2022, at 10:41 AM, Kern, Lori <Lori.Shepherd at RoswellPark.org> wrote:
+> 
+> As often stated Bioconductor has two different branches a RELEASE_3_14 and a devel branch.  You have pushed changes only to the master branch that corresponds to devel.  
+> 
+> You must also push changes to the RELEASE_3_14 branch to fix the Bioc 3.14 version of the package. 
+> 
+> See: 
+> http://bioconductor.org/developers/how-to/git/bug-fix-in-release-and-devel/ <http://bioconductor.org/developers/how-to/git/bug-fix-in-release-and-devel/>
+> 
+> Cheers, 
+> 
+> 
+> Lori Shepherd - Kern
+> Bioconductor Core Team
+> Roswell Park Comprehensive Cancer Center
+> Department of Biostatistics & Bioinformatics
+> Elm & Carlton Streets
+> Buffalo, New York 14263
+> From: Bioc-devel <bioc-devel-bounces at r-project.org <mailto:bioc-devel-bounces at r-project.org>> on behalf of Farhad Shokoohi via Bioc-devel <bioc-devel at r-project.org <mailto:bioc-devel at r-project.org>>
+> Sent: Monday, February 7, 2022 1:35 PM
+> To: bioc-devel at r-project.org <mailto:bioc-devel at r-project.org> <bioc-devel at r-project.org <mailto:bioc-devel at r-project.org>>
+> Subject: Re: [Bioc-devel] DMCHMM problems reported in the Multiple platform build/check report for BioC 3.14
+>  
+> Hello,
+> I have fixed the problem and uploaded the new version of my package. 
+> I don?t understand why I get the following message :
+> 
+> 
+> 
+> [This is an automatically generated email. Please don't reply.]
+> 
+> Hi DMCHMM maintainer,
+> 
+> According to the Multiple platform build/check report for BioC 3.14,
+> the DMCHMM package has the following problem(s):
+> 
+>  o ERROR for 'R CMD build' on nebbiolo2. See the details here:
+>      https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html <https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html> <https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html <https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html>>
+> 
+> Please take the time to address this by committing and pushing
+> changes to your package at git.bioconductor.org <http://git.bioconductor.org/> <http://secure-web.cisco.com/1aDeESrR98AvHxh4i43VmaShO71JlXCoL1b7ZM1bUOyQNKhYqk_Wem616ytR_7ERi1gVXM-ZJPrCDpHn8YK2g8tqHRhoai-JmDB6bwtFiICTCMhFt-fTzRIprGb553TUV1DUJh_1QGBVir4KBLb6Q2TH-r7Bc59RUkGeFwJ47rHXuw0yEpEldKbnGNMc3ZWpGBAlk91-g5nUB0vIunDXvBXSyVYP_Y7kBW4IX4oeuNA10BGWI0ysZ2jb34vW_whutuwHMHitG7TvDqvu6dcjZWvsykInEjGiDHsaKj41NImxiBfQCWEE033AfOGl1A7vF/http%3A%2F%2Fgit.bioconductor.org%2F <http://secure-web.cisco.com/1aDeESrR98AvHxh4i43VmaShO71JlXCoL1b7ZM1bUOyQNKhYqk_Wem616ytR_7ERi1gVXM-ZJPrCDpHn8YK2g8tqHRhoai-JmDB6bwtFiICTCMhFt-fTzRIprGb553TUV1DUJh_1QGBVir4KBLb6Q2TH-r7Bc59RUkGeFwJ47rHXuw0yEpEldKbnGNMc3ZWpGBAlk91-g5nUB0vIunDXvBXSyVYP_Y7kBW4IX4oeuNA10BGWI0ysZ2jb34vW_whutuwHMHitG7TvDqvu6dcjZWvsykInEjGiDHsaKj41NImxiBfQCWEE033AfOGl1A7vF/http%3A%2F%2Fgit.bioconductor.org%2F>>
+> 
+> Notes:
+> 
+>  * This was the status of your package at the time this email was sent to you.
+>    Given that the online report is updated daily (in normal conditions) you
+>    could see something different when you visit the URL(s) above, especially if
+>    you do so several days after you received this email.
+> 
+>  * It is possible that the problems reported in this report are false positives,
+>    either because another package (from CRAN or Bioconductor) breaks your
+>    package (if yours depends on it) or because of a Build System problem.
+>    If this is the case, then you can ignore this email.
+> 
+>  * Please check the report again 24h after you've committed your changes to the
+>    package and make sure that all the problems have gone.
+> 
+>  * If you have questions about this report or need help with the
+>    maintenance of your package, please use the Bioc-devel mailing list:
+> 
+>      https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F <https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F> <https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F <https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F>>
+> 
+>    (all package maintainers are requested to subscribe to this list)
+> 
+> For immediate notification of package build status, please
+> subscribe to your package's RSS feed. Information is at:
+> 
+> https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F <https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F> <https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F <https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F>>
+> 
+> Thanks for contributing to the Bioconductor project!
+>         [[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org> mailing list
+> https://secure-web.cisco.com/1M4fH12dRsFiQKCy3smll89SOLDxNy-0YobIsrCzFI3Vhzbg4f1BrxNw5iEZoivwXdhpMoHnE4Aob28y1XVttI5chReCjeycXaZgGG86Guf3R2xVAp4PfBxxDAT2iacvIt99p6GVDFGwRyAXZrBU9N9ado-qdfOKaaU8oz6bOFDQP7J0CGJMoxCFien9BZe_R8zKwPTEKpxVnzpxlIc6AJdwtp3Ce9pCh-dHcxeWxvXsRgTRbaObh12UluRI4xiwnU3rHTQXAHTiTsru2Wt5_clg8mSZlLQVBGGk7tlErDv1WnCh-bzxcBmqsuodF35d7/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel <https://secure-web.cisco.com/1M4fH12dRsFiQKCy3smll89SOLDxNy-0YobIsrCzFI3Vhzbg4f1BrxNw5iEZoivwXdhpMoHnE4Aob28y1XVttI5chReCjeycXaZgGG86Guf3R2xVAp4PfBxxDAT2iacvIt99p6GVDFGwRyAXZrBU9N9ado-qdfOKaaU8oz6bOFDQP7J0CGJMoxCFien9BZe_R8zKwPTEKpxVnzpxlIc6AJdwtp3Ce9pCh-dHcxeWxvXsRgTRbaObh12UluRI4xiwnU3rHTQXAHTiTsru2Wt5_clg8mSZlLQVBGGk7tlErDv1WnCh-bzxcBmqsuodF35d7/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel>
+> 
+> 
+> This email message may contain legally privileged and/or confidential information. If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited. If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you. 
+
+
+	[[alternative HTML version deleted]]
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Wed Feb 16 20:14:08 2022
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Wed, 16 Feb 2022 19:14:08 +0000
+Subject: [Bioc-devel] DMCHMM problems reported in the Multiple platform
+ build/check report for BioC 3.14
+In-Reply-To: <3F8A161A-5BE9-47F5-98FC-3C0297503EE5@icloud.com>
+References: <C048F752-1E4C-4578-80CF-4F96A6AB9E48@icloud.com>
+ <BL1PR12MB53015DC63D0A46F39DEEE8ADF92C9@BL1PR12MB5301.namprd12.prod.outlook.com>
+ <3F8A161A-5BE9-47F5-98FC-3C0297503EE5@icloud.com>
+Message-ID: <DM4PR12MB5309F040AED2617D6B621D02F9359@DM4PR12MB5309.namprd12.prod.outlook.com>
+
+There are no changes on the RELEASE_3_14 branch.
+You need to checkout the RELEASE_3_14 branch.  Commit the necessary changes to fix the ERROR. Commit a version bump to 1.16.1.  And then push back to RELEASE_3_14
+
+
+
+
+Lori Shepherd - Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Farhad Shokoohi <shokoohi at icloud.com>
+Sent: Wednesday, February 16, 2022 1:58 PM
+To: Kern, Lori <Lori.Shepherd at RoswellPark.org>
+Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: Re: [Bioc-devel] DMCHMM problems reported in the Multiple platform build/check report for BioC 3.14
+
+Hello
+
+I think I have fixed the problem; see the log; However, I do not know how to make sure everything is up-to-date.
+Best,
+
+farhad at Farhads-iMac DMCHMM %  git push upstream master
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM %  git push origin master
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git checkout RELEASE_3_14
+Already on 'RELEASE_3_14'
+Your branch is up to date with 'origin/RELEASE_3_14'.
+farhad at Farhads-iMac DMCHMM % git merge upstream/RELEASE_3_14
+Already up to date.
+farhad at Farhads-iMac DMCHMM % git merge origin/RELEASE_3_14
+Already up to date.
+farhad at Farhads-iMac DMCHMM % git push upstream RELEASE_3_14
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git push origin RELEASE_3_14
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git push upstream RELEASE_3_14
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git push origin RELEASE_3_14
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git checkout RELEASE_3_14
+Already on 'RELEASE_3_14'
+Your branch is up to date with 'origin/RELEASE_3_14'.
+
+
+
+On Feb 7, 2022, at 10:41 AM, Kern, Lori <Lori.Shepherd at RoswellPark.org<mailto:Lori.Shepherd at RoswellPark.org>> wrote:
+
+As often stated Bioconductor has two different branches a RELEASE_3_14 and a devel branch.  You have pushed changes only to the master branch that corresponds to devel.
+
+You must also push changes to the RELEASE_3_14 branch to fix the Bioc 3.14 version of the package.
+
+See:
+http://bioconductor.org/developers/how-to/git/bug-fix-in-release-and-devel/<http://secure-web.cisco.com/1-QI2WWddDLwW1h9mtghZtNCZxpol-AqkiYkRg3CIz0Ot18YYS9tzWRTD5WRo_D4JbbSzldhyf5iw65sRUukPZYNYhhPVMnyoZkFk4SJSOQ5J1QoZ37mM3tfj4ShtODqlVvSZZzElSi4gLlIOObXNOgt0uYxmm1kS1mendUdmluYc3PFdqL_iIk0hsH6MroWBHQJs0oiK184k25oIzOFwr1oiOAUSdD4AC0sgeZDKVVGjZD0ohK4lkANmVkJyKP_mI3Yn1AHiXSTNV7Rg6nDYEHXxwGK4TE9dQwBzg3lOvYNRsHxml6FMmqJa-X-Vy5pE/http%3A%2F%2Fbioconductor.org%2Fdevelopers%2Fhow-to%2Fgit%2Fbug-fix-in-release-and-devel%2F>
+
+Cheers,
+
+
+Lori Shepherd - Kern
+Bioconductor Core Team
+Roswell Park Comprehensive Cancer Center
+Department of Biostatistics & Bioinformatics
+Elm & Carlton Streets
+Buffalo, New York 14263
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org<mailto:bioc-devel-bounces at r-project.org>> on behalf of Farhad Shokoohi via Bioc-devel <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>>
+Sent: Monday, February 7, 2022 1:35 PM
+To: bioc-devel at r-project.org<mailto:bioc-devel at r-project.org> <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>>
+Subject: Re: [Bioc-devel] DMCHMM problems reported in the Multiple platform build/check report for BioC 3.14
+
+Hello,
+I have fixed the problem and uploaded the new version of my package.
+I don?t understand why I get the following message :
+
+
+
+[This is an automatically generated email. Please don't reply.]
+
+Hi DMCHMM maintainer,
+
+According to the Multiple platform build/check report for BioC 3.14,
+the DMCHMM package has the following problem(s):
+
+ o ERROR for 'R CMD build' on nebbiolo2. See the details here:
+     https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html <https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html>
+
+Please take the time to address this by committing and pushing
+changes to your package at git.bioconductor.org<http://secure-web.cisco.com/1nD0C1B5bcxbSndtf3SiNfSxx-oc7FOfAN3NpXj159XQDk0Bk4cwFuVxBs8hWmGVynw0wlMg_DOJaAU0AKv5fWfpNes5W-PQSmc-n907aYTsXW3TRz2d1_68yHWjIYD3gb4tUQMdNzG13FlcePSoflFG_a6-Fzqo0TJ5-n8PaBpwdfr6oAuMqIhBT7FG52yK_cyQJmtfRY0OwHGL1RHxiKCFbGtq4nP1i20tAvGFLLlUfAbi2dDlgS3op2zr3etIfjnWFhbTTqqfaWsiovdEv2-03VEwKxiNktb1XIW0xY-Cu2fCMYvn6J5-BkMem3pfx/http%3A%2F%2Fgit.bioconductor.org%2F> <http://secure-web.cisco.com/1aDeESrR98AvHxh4i43VmaShO71JlXCoL1b7ZM1bUOyQNKhYqk_Wem616ytR_7ERi1gVXM-ZJPrCDpHn8YK2g8tqHRhoai-JmDB6bwtFiICTCMhFt-fTzRIprGb553TUV1DUJh_1QGBVir4KBLb6Q2TH-r7Bc59RUkGeFwJ47rHXuw0yEpEldKbnGNMc3ZWpGBAlk91-g5nUB0vIunDXvBXSyVYP_Y7kBW4IX4oeuNA10BGWI0ysZ2jb34vW_whutuwHMHitG7TvDqvu6dcjZWvsykInEjGiDHsaKj41NImxiBfQCWEE033AfOGl1A7vF/http%3A%2F%2Fgit.bioconductor.org%2F>
+
+Notes:
+
+ * This was the status of your package at the time this email was sent to you.
+   Given that the online report is updated daily (in normal conditions) you
+   could see something different when you visit the URL(s) above, especially if
+   you do so several days after you received this email.
+
+ * It is possible that the problems reported in this report are false positives,
+   either because another package (from CRAN or Bioconductor) breaks your
+   package (if yours depends on it) or because of a Build System problem.
+   If this is the case, then you can ignore this email.
+
+ * Please check the report again 24h after you've committed your changes to the
+   package and make sure that all the problems have gone.
+
+ * If you have questions about this report or need help with the
+   maintenance of your package, please use the Bioc-devel mailing list:
+
+     https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F <https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F>
+
+   (all package maintainers are requested to subscribe to this list)
+
+For immediate notification of package build status, please
+subscribe to your package's RSS feed. Information is at:
+
+https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F <https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F>
+
+Thanks for contributing to the Bioconductor project!
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org<mailto:Bioc-devel at r-project.org> mailing list
+https://secure-web.cisco.com/1M4fH12dRsFiQKCy3smll89SOLDxNy-0YobIsrCzFI3Vhzbg4f1BrxNw5iEZoivwXdhpMoHnE4Aob28y1XVttI5chReCjeycXaZgGG86Guf3R2xVAp4PfBxxDAT2iacvIt99p6GVDFGwRyAXZrBU9N9ado-qdfOKaaU8oz6bOFDQP7J0CGJMoxCFien9BZe_R8zKwPTEKpxVnzpxlIc6AJdwtp3Ce9pCh-dHcxeWxvXsRgTRbaObh12UluRI4xiwnU3rHTQXAHTiTsru2Wt5_clg8mSZlLQVBGGk7tlErDv1WnCh-bzxcBmqsuodF35d7/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+This email message may contain legally privileged and/or confidential information. If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited. If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From @hokooh| @end|ng |rom |c|oud@com  Wed Feb 16 20:27:17 2022
+From: @hokooh| @end|ng |rom |c|oud@com (Farhad Shokoohi)
+Date: Wed, 16 Feb 2022 11:27:17 -0800
+Subject: [Bioc-devel] DMCHMM problems reported in the Multiple platform
+ build/check report for BioC 3.14
+In-Reply-To: <DM4PR12MB5309F040AED2617D6B621D02F9359@DM4PR12MB5309.namprd12.prod.outlook.com>
+References: <C048F752-1E4C-4578-80CF-4F96A6AB9E48@icloud.com>
+ <BL1PR12MB53015DC63D0A46F39DEEE8ADF92C9@BL1PR12MB5301.namprd12.prod.outlook.com>
+ <3F8A161A-5BE9-47F5-98FC-3C0297503EE5@icloud.com>
+ <DM4PR12MB5309F040AED2617D6B621D02F9359@DM4PR12MB5309.namprd12.prod.outlook.com>
+Message-ID: <39EE5467-43C4-4B93-BDDA-0E250D886FF0@icloud.com>
+
+I have already fixed the problem; when I try to push the changes it says everything is uptodate. 
+
+
+> On Feb 16, 2022, at 11:14 AM, Kern, Lori <Lori.Shepherd at RoswellPark.org> wrote:
+> 
+> There are no changes on the RELEASE_3_14 branch.  
+> You need to checkout the RELEASE_3_14 branch.  Commit the necessary changes to fix the ERROR. Commit a version bump to 1.16.1.  And then push back to RELEASE_3_14 
+> 
+> 
+> 
+> Lori Shepherd - Kern
+> Bioconductor Core Team
+> Roswell Park Comprehensive Cancer Center
+> Department of Biostatistics & Bioinformatics
+> Elm & Carlton Streets
+> Buffalo, New York 14263
+> From: Farhad Shokoohi <shokoohi at icloud.com>
+> Sent: Wednesday, February 16, 2022 1:58 PM
+> To: Kern, Lori <Lori.Shepherd at RoswellPark.org>
+> Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>
+> Subject: Re: [Bioc-devel] DMCHMM problems reported in the Multiple platform build/check report for BioC 3.14
+>  
+> Hello
+> 
+> I think I have fixed the problem; see the log; However, I do not know how to make sure everything is up-to-date. 
+> Best,
+> 
+> farhad at Farhads-iMac DMCHMM %  git push upstream master
+> Everything up-to-date
+> farhad at Farhads-iMac DMCHMM %  git push origin master
+> Everything up-to-date
+> farhad at Farhads-iMac DMCHMM % git checkout RELEASE_3_14
+> Already on 'RELEASE_3_14'
+> Your branch is up to date with 'origin/RELEASE_3_14'.
+> farhad at Farhads-iMac DMCHMM % git merge upstream/RELEASE_3_14
+> Already up to date.
+> farhad at Farhads-iMac DMCHMM % git merge origin/RELEASE_3_14
+> Already up to date.
+> farhad at Farhads-iMac DMCHMM % git push upstream RELEASE_3_14
+> Everything up-to-date
+> farhad at Farhads-iMac DMCHMM % git push origin RELEASE_3_14
+> Everything up-to-date
+> farhad at Farhads-iMac DMCHMM % git push upstream RELEASE_3_14
+> Everything up-to-date
+> farhad at Farhads-iMac DMCHMM % git push origin RELEASE_3_14
+> Everything up-to-date
+> farhad at Farhads-iMac DMCHMM % git checkout RELEASE_3_14
+> Already on 'RELEASE_3_14'
+> Your branch is up to date with 'origin/RELEASE_3_14'.
+> 
+> 
+> 
+>> On Feb 7, 2022, at 10:41 AM, Kern, Lori <Lori.Shepherd at RoswellPark.org <mailto:Lori.Shepherd at RoswellPark.org>> wrote:
+>> 
+>> As often stated Bioconductor has two different branches a RELEASE_3_14 and a devel branch.  You have pushed changes only to the master branch that corresponds to devel.  
+>> 
+>> You must also push changes to the RELEASE_3_14 branch to fix the Bioc 3.14 version of the package. 
+>> 
+>> See: 
+>> http://bioconductor.org/developers/how-to/git/bug-fix-in-release-and-devel/ <http://secure-web.cisco.com/1-QI2WWddDLwW1h9mtghZtNCZxpol-AqkiYkRg3CIz0Ot18YYS9tzWRTD5WRo_D4JbbSzldhyf5iw65sRUukPZYNYhhPVMnyoZkFk4SJSOQ5J1QoZ37mM3tfj4ShtODqlVvSZZzElSi4gLlIOObXNOgt0uYxmm1kS1mendUdmluYc3PFdqL_iIk0hsH6MroWBHQJs0oiK184k25oIzOFwr1oiOAUSdD4AC0sgeZDKVVGjZD0ohK4lkANmVkJyKP_mI3Yn1AHiXSTNV7Rg6nDYEHXxwGK4TE9dQwBzg3lOvYNRsHxml6FMmqJa-X-Vy5pE/http%3A%2F%2Fbioconductor.org%2Fdevelopers%2Fhow-to%2Fgit%2Fbug-fix-in-release-and-devel%2F>
+>> 
+>> Cheers, 
+>> 
+>> 
+>> Lori Shepherd - Kern
+>> Bioconductor Core Team
+>> Roswell Park Comprehensive Cancer Center
+>> Department of Biostatistics & Bioinformatics
+>> Elm & Carlton Streets
+>> Buffalo, New York 14263
+>> From: Bioc-devel <bioc-devel-bounces at r-project.org <mailto:bioc-devel-bounces at r-project.org>> on behalf of Farhad Shokoohi via Bioc-devel <bioc-devel at r-project.org <mailto:bioc-devel at r-project.org>>
+>> Sent: Monday, February 7, 2022 1:35 PM
+>> To: bioc-devel at r-project.org <mailto:bioc-devel at r-project.org> <bioc-devel at r-project.org <mailto:bioc-devel at r-project.org>>
+>> Subject: Re: [Bioc-devel] DMCHMM problems reported in the Multiple platform build/check report for BioC 3.14
+>>  
+>> Hello,
+>> I have fixed the problem and uploaded the new version of my package. 
+>> I don?t understand why I get the following message :
+>> 
+>> 
+>> 
+>> [This is an automatically generated email. Please don't reply.]
+>> 
+>> Hi DMCHMM maintainer,
+>> 
+>> According to the Multiple platform build/check report for BioC 3.14,
+>> the DMCHMM package has the following problem(s):
+>> 
+>>  o ERROR for 'R CMD build' on nebbiolo2. See the details here:
+>>      https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html <https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html> <https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html <https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html>>
+>> 
+>> Please take the time to address this by committing and pushing
+>> changes to your package at git.bioconductor.org <http://secure-web.cisco.com/1nD0C1B5bcxbSndtf3SiNfSxx-oc7FOfAN3NpXj159XQDk0Bk4cwFuVxBs8hWmGVynw0wlMg_DOJaAU0AKv5fWfpNes5W-PQSmc-n907aYTsXW3TRz2d1_68yHWjIYD3gb4tUQMdNzG13FlcePSoflFG_a6-Fzqo0TJ5-n8PaBpwdfr6oAuMqIhBT7FG52yK_cyQJmtfRY0OwHGL1RHxiKCFbGtq4nP1i20tAvGFLLlUfAbi2dDlgS3op2zr3etIfjnWFhbTTqqfaWsiovdEv2-03VEwKxiNktb1XIW0xY-Cu2fCMYvn6J5-BkMem3pfx/http%3A%2F%2Fgit.bioconductor.org%2F> <http://secure-web.cisco.com/1aDeESrR98AvHxh4i43VmaShO71JlXCoL1b7ZM1bUOyQNKhYqk_Wem616ytR_7ERi1gVXM-ZJPrCDpHn8YK2g8tqHRhoai-JmDB6bwtFiICTCMhFt-fTzRIprGb553TUV1DUJh_1QGBVir4KBLb6Q2TH-r7Bc59RUkGeFwJ47rHXuw0yEpEldKbnGNMc3ZWpGBAlk91-g5nUB0vIunDXvBXSyVYP_Y7kBW4IX4oeuNA10BGWI0ysZ2jb34vW_whutuwHMHitG7TvDqvu6dcjZWvsykInEjGiDHsaKj41NImxiBfQCWEE033AfOGl1A7vF/http%3A%2F%2Fgit.bioconductor.org%2F <http://secure-web.cisco.com/1aDeESrR98AvHxh4i43VmaShO71JlXCoL1b7ZM1bUOyQNKhYqk_Wem616ytR_7ERi1gVXM-ZJPrCDpHn8YK2g8tqHRhoai-JmDB6bwtFiICTCMhFt-fTzRIprGb553TUV1DUJh_1QGBVir4KBLb6Q2TH-r7Bc59RUkGeFwJ47rHXuw0yEpEldKbnGNMc3ZWpGBAlk91-g5nUB0vIunDXvBXSyVYP_Y7kBW4IX4oeuNA10BGWI0ysZ2jb34vW_whutuwHMHitG7TvDqvu6dcjZWvsykInEjGiDHsaKj41NImxiBfQCWEE033AfOGl1A7vF/http%3A%2F%2Fgit.bioconductor.org%2F>>
+>> 
+>> Notes:
+>> 
+>>  * This was the status of your package at the time this email was sent to you.
+>>    Given that the online report is updated daily (in normal conditions) you
+>>    could see something different when you visit the URL(s) above, especially if
+>>    you do so several days after you received this email.
+>> 
+>>  * It is possible that the problems reported in this report are false positives,
+>>    either because another package (from CRAN or Bioconductor) breaks your
+>>    package (if yours depends on it) or because of a Build System problem.
+>>    If this is the case, then you can ignore this email.
+>> 
+>>  * Please check the report again 24h after you've committed your changes to the
+>>    package and make sure that all the problems have gone.
+>> 
+>>  * If you have questions about this report or need help with the
+>>    maintenance of your package, please use the Bioc-devel mailing list:
+>> 
+>>      https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F <https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F> <https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F <https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F>>
+>> 
+>>    (all package maintainers are requested to subscribe to this list)
+>> 
+>> For immediate notification of package build status, please
+>> subscribe to your package's RSS feed. Information is at:
+>> 
+>> https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F <https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F> <https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F <https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F>>
+>> 
+>> Thanks for contributing to the Bioconductor project!
+>>         [[alternative HTML version deleted]]
+>> 
+>> _______________________________________________
+>> Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org> mailing list
+>> https://secure-web.cisco.com/1M4fH12dRsFiQKCy3smll89SOLDxNy-0YobIsrCzFI3Vhzbg4f1BrxNw5iEZoivwXdhpMoHnE4Aob28y1XVttI5chReCjeycXaZgGG86Guf3R2xVAp4PfBxxDAT2iacvIt99p6GVDFGwRyAXZrBU9N9ado-qdfOKaaU8oz6bOFDQP7J0CGJMoxCFien9BZe_R8zKwPTEKpxVnzpxlIc6AJdwtp3Ce9pCh-dHcxeWxvXsRgTRbaObh12UluRI4xiwnU3rHTQXAHTiTsru2Wt5_clg8mSZlLQVBGGk7tlErDv1WnCh-bzxcBmqsuodF35d7/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel <https://secure-web.cisco.com/1M4fH12dRsFiQKCy3smll89SOLDxNy-0YobIsrCzFI3Vhzbg4f1BrxNw5iEZoivwXdhpMoHnE4Aob28y1XVttI5chReCjeycXaZgGG86Guf3R2xVAp4PfBxxDAT2iacvIt99p6GVDFGwRyAXZrBU9N9ado-qdfOKaaU8oz6bOFDQP7J0CGJMoxCFien9BZe_R8zKwPTEKpxVnzpxlIc6AJdwtp3Ce9pCh-dHcxeWxvXsRgTRbaObh12UluRI4xiwnU3rHTQXAHTiTsru2Wt5_clg8mSZlLQVBGGk7tlErDv1WnCh-bzxcBmqsuodF35d7/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel>
+>> 
+>> 
+>> This email message may contain legally privileged and/or confidential information. If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited. If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you. 
+> 
+> 
+> This email message may contain legally privileged and/or confidential information. If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited. If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you. 
+
+
+	[[alternative HTML version deleted]]
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Wed Feb 16 20:34:21 2022
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Wed, 16 Feb 2022 19:34:21 +0000
+Subject: [Bioc-devel] DMCHMM problems reported in the Multiple platform
+ build/check report for BioC 3.14
+In-Reply-To: <39EE5467-43C4-4B93-BDDA-0E250D886FF0@icloud.com>
+References: <C048F752-1E4C-4578-80CF-4F96A6AB9E48@icloud.com>
+ <BL1PR12MB53015DC63D0A46F39DEEE8ADF92C9@BL1PR12MB5301.namprd12.prod.outlook.com>
+ <3F8A161A-5BE9-47F5-98FC-3C0297503EE5@icloud.com>
+ <DM4PR12MB5309F040AED2617D6B621D02F9359@DM4PR12MB5309.namprd12.prod.outlook.com>
+ <39EE5467-43C4-4B93-BDDA-0E250D886FF0@icloud.com>
+Message-ID: <DM4PR12MB5309C4DC1D38759C15313AD2F9359@DM4PR12MB5309.namprd12.prod.outlook.com>
+
+As mentioned in the previous response.  You fixed the ERROR on the devel branch.
+
+You need to make the same changes on a RELEASE_3_14 branch.   It does not appear as if you did commit changes to an origin/RELEASE_3_14 to be able to merge.  And there are no updates on our git.bioconductor.org that should correspond to upstream/RELEASE_3_14
+
+You can check your remotes with
+git remote -v
+
+
+
+
+
+Lori Shepherd - Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Farhad Shokoohi <shokoohi at icloud.com>
+Sent: Wednesday, February 16, 2022 2:27 PM
+To: Kern, Lori <Lori.Shepherd at RoswellPark.org>
+Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: Re: [Bioc-devel] DMCHMM problems reported in the Multiple platform build/check report for BioC 3.14
+
+I have already fixed the problem; when I try to push the changes it says everything is uptodate.
+
+
+On Feb 16, 2022, at 11:14 AM, Kern, Lori <Lori.Shepherd at RoswellPark.org<mailto:Lori.Shepherd at RoswellPark.org>> wrote:
+
+There are no changes on the RELEASE_3_14 branch.
+You need to checkout the RELEASE_3_14 branch.  Commit the necessary changes to fix the ERROR. Commit a version bump to 1.16.1.  And then push back to RELEASE_3_14
+
+
+
+Lori Shepherd - Kern
+Bioconductor Core Team
+Roswell Park Comprehensive Cancer Center
+Department of Biostatistics & Bioinformatics
+Elm & Carlton Streets
+Buffalo, New York 14263
+________________________________
+From: Farhad Shokoohi <shokoohi at icloud.com<mailto:shokoohi at icloud.com>>
+Sent: Wednesday, February 16, 2022 1:58 PM
+To: Kern, Lori <Lori.Shepherd at RoswellPark.org<mailto:Lori.Shepherd at RoswellPark.org>>
+Cc: bioc-devel at r-project.org<mailto:bioc-devel at r-project.org> <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>>
+Subject: Re: [Bioc-devel] DMCHMM problems reported in the Multiple platform build/check report for BioC 3.14
+
+Hello
+
+I think I have fixed the problem; see the log; However, I do not know how to make sure everything is up-to-date.
+Best,
+
+farhad at Farhads-iMac DMCHMM %  git push upstream master
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM %  git push origin master
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git checkout RELEASE_3_14
+Already on 'RELEASE_3_14'
+Your branch is up to date with 'origin/RELEASE_3_14'.
+farhad at Farhads-iMac DMCHMM % git merge upstream/RELEASE_3_14
+Already up to date.
+farhad at Farhads-iMac DMCHMM % git merge origin/RELEASE_3_14
+Already up to date.
+farhad at Farhads-iMac DMCHMM % git push upstream RELEASE_3_14
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git push origin RELEASE_3_14
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git push upstream RELEASE_3_14
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git push origin RELEASE_3_14
+Everything up-to-date
+farhad at Farhads-iMac DMCHMM % git checkout RELEASE_3_14
+Already on 'RELEASE_3_14'
+Your branch is up to date with 'origin/RELEASE_3_14'.
+
+
+
+On Feb 7, 2022, at 10:41 AM, Kern, Lori <Lori.Shepherd at RoswellPark.org<mailto:Lori.Shepherd at RoswellPark.org>> wrote:
+
+As often stated Bioconductor has two different branches a RELEASE_3_14 and a devel branch.  You have pushed changes only to the master branch that corresponds to devel.
+
+You must also push changes to the RELEASE_3_14 branch to fix the Bioc 3.14 version of the package.
+
+See:
+http://bioconductor.org/developers/how-to/git/bug-fix-in-release-and-devel/<http://secure-web.cisco.com/1-QI2WWddDLwW1h9mtghZtNCZxpol-AqkiYkRg3CIz0Ot18YYS9tzWRTD5WRo_D4JbbSzldhyf5iw65sRUukPZYNYhhPVMnyoZkFk4SJSOQ5J1QoZ37mM3tfj4ShtODqlVvSZZzElSi4gLlIOObXNOgt0uYxmm1kS1mendUdmluYc3PFdqL_iIk0hsH6MroWBHQJs0oiK184k25oIzOFwr1oiOAUSdD4AC0sgeZDKVVGjZD0ohK4lkANmVkJyKP_mI3Yn1AHiXSTNV7Rg6nDYEHXxwGK4TE9dQwBzg3lOvYNRsHxml6FMmqJa-X-Vy5pE/http%3A%2F%2Fbioconductor.org%2Fdevelopers%2Fhow-to%2Fgit%2Fbug-fix-in-release-and-devel%2F>
+
+Cheers,
+
+
+Lori Shepherd - Kern
+Bioconductor Core Team
+Roswell Park Comprehensive Cancer Center
+Department of Biostatistics & Bioinformatics
+Elm & Carlton Streets
+Buffalo, New York 14263
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org<mailto:bioc-devel-bounces at r-project.org>> on behalf of Farhad Shokoohi via Bioc-devel <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>>
+Sent: Monday, February 7, 2022 1:35 PM
+To: bioc-devel at r-project.org<mailto:bioc-devel at r-project.org> <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>>
+Subject: Re: [Bioc-devel] DMCHMM problems reported in the Multiple platform build/check report for BioC 3.14
+
+Hello,
+I have fixed the problem and uploaded the new version of my package.
+I don?t understand why I get the following message :
+
+
+
+[This is an automatically generated email. Please don't reply.]
+
+Hi DMCHMM maintainer,
+
+According to the Multiple platform build/check report for BioC 3.14,
+the DMCHMM package has the following problem(s):
+
+ o ERROR for 'R CMD build' on nebbiolo2. See the details here:
+     https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html <https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html>
+
+Please take the time to address this by committing and pushing
+changes to your package at git.bioconductor.org<http://secure-web.cisco.com/1nD0C1B5bcxbSndtf3SiNfSxx-oc7FOfAN3NpXj159XQDk0Bk4cwFuVxBs8hWmGVynw0wlMg_DOJaAU0AKv5fWfpNes5W-PQSmc-n907aYTsXW3TRz2d1_68yHWjIYD3gb4tUQMdNzG13FlcePSoflFG_a6-Fzqo0TJ5-n8PaBpwdfr6oAuMqIhBT7FG52yK_cyQJmtfRY0OwHGL1RHxiKCFbGtq4nP1i20tAvGFLLlUfAbi2dDlgS3op2zr3etIfjnWFhbTTqqfaWsiovdEv2-03VEwKxiNktb1XIW0xY-Cu2fCMYvn6J5-BkMem3pfx/http%3A%2F%2Fgit.bioconductor.org%2F> <http://secure-web.cisco.com/1aDeESrR98AvHxh4i43VmaShO71JlXCoL1b7ZM1bUOyQNKhYqk_Wem616ytR_7ERi1gVXM-ZJPrCDpHn8YK2g8tqHRhoai-JmDB6bwtFiICTCMhFt-fTzRIprGb553TUV1DUJh_1QGBVir4KBLb6Q2TH-r7Bc59RUkGeFwJ47rHXuw0yEpEldKbnGNMc3ZWpGBAlk91-g5nUB0vIunDXvBXSyVYP_Y7kBW4IX4oeuNA10BGWI0ysZ2jb34vW_whutuwHMHitG7TvDqvu6dcjZWvsykInEjGiDHsaKj41NImxiBfQCWEE033AfOGl1A7vF/http%3A%2F%2Fgit.bioconductor.org%2F>
+
+Notes:
+
+ * This was the status of your package at the time this email was sent to you.
+   Given that the online report is updated daily (in normal conditions) you
+   could see something different when you visit the URL(s) above, especially if
+   you do so several days after you received this email.
+
+ * It is possible that the problems reported in this report are false positives,
+   either because another package (from CRAN or Bioconductor) breaks your
+   package (if yours depends on it) or because of a Build System problem.
+   If this is the case, then you can ignore this email.
+
+ * Please check the report again 24h after you've committed your changes to the
+   package and make sure that all the problems have gone.
+
+ * If you have questions about this report or need help with the
+   maintenance of your package, please use the Bioc-devel mailing list:
+
+     https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F <https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F>
+
+   (all package maintainers are requested to subscribe to this list)
+
+For immediate notification of package build status, please
+subscribe to your package's RSS feed. Information is at:
+
+https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F <https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F>
+
+Thanks for contributing to the Bioconductor project!
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org<mailto:Bioc-devel at r-project.org> mailing list
+https://secure-web.cisco.com/1M4fH12dRsFiQKCy3smll89SOLDxNy-0YobIsrCzFI3Vhzbg4f1BrxNw5iEZoivwXdhpMoHnE4Aob28y1XVttI5chReCjeycXaZgGG86Guf3R2xVAp4PfBxxDAT2iacvIt99p6GVDFGwRyAXZrBU9N9ado-qdfOKaaU8oz6bOFDQP7J0CGJMoxCFien9BZe_R8zKwPTEKpxVnzpxlIc6AJdwtp3Ce9pCh-dHcxeWxvXsRgTRbaObh12UluRI4xiwnU3rHTQXAHTiTsru2Wt5_clg8mSZlLQVBGGk7tlErDv1WnCh-bzxcBmqsuodF35d7/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+This email message may contain legally privileged and/or confidential information. If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited. If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+
+
+This email message may contain legally privileged and/or confidential information. If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited. If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From mtmorg@n@b|oc @end|ng |rom gm@||@com  Wed Feb 16 21:27:30 2022
+From: mtmorg@n@b|oc @end|ng |rom gm@||@com (Martin Morgan)
+Date: Wed, 16 Feb 2022 20:27:30 +0000
+Subject: [Bioc-devel] DMCHMM problems reported in the Multiple platform
+ build/check report for BioC 3.14
+In-Reply-To: <39EE5467-43C4-4B93-BDDA-0E250D886FF0@icloud.com>
+References: <C048F752-1E4C-4578-80CF-4F96A6AB9E48@icloud.com>
+ <BL1PR12MB53015DC63D0A46F39DEEE8ADF92C9@BL1PR12MB5301.namprd12.prod.outlook.com>
+ <3F8A161A-5BE9-47F5-98FC-3C0297503EE5@icloud.com>
+ <DM4PR12MB5309F040AED2617D6B621D02F9359@DM4PR12MB5309.namprd12.prod.outlook.com>
+ <39EE5467-43C4-4B93-BDDA-0E250D886FF0@icloud.com>
+Message-ID: <BN8PR04MB62411A663336121DD90DD9D7F9359@BN8PR04MB6241.namprd04.prod.outlook.com>
+
+I cloned your repository and made sure that the upstream remote points to Bioconductor
+
+$ git remote -v
+...
+upstream	git at git.bioconductor.org:packages/DMCHMM (fetch)
+upstream	git at git.bioconductor.org:packages/DMCHMM (push)
+
+I then made a local branch from the upstream branch
+
+git checkout -b RELEASE_3_14 upstream/RELEASE_3_14
+
+I then looked for differences between the RELEASE_3_14 and master branches
+
+git diff --stat RELEASE_3_14 master
+ DESCRIPTION         | 2 +-
+ R/findDMCs-method.R | 7 ++++---
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
+and I see that there are changes in two files. In more detail, from the output of
+
+git diff RELEASE_3_14 master
+
+I see that the DESCRIPTION difference is version bump, and the change in R/findDMCs-method.R is I guess the change that you'd like to make.
+
+Is that what you see? If so it means that you need to make (or copy) the same changes on the release branch as on the master branch, but using the correct version bump. I did this manually, by checking out the RELEASE_3_14 branch and updating according to the diff; there are much more clever ways of doing this... After making and committing the changes, I see
+
+$ git diff --stat master
+ DESCRIPTION | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+so only the DESCRIPTION file differs between branches, with the reason being that I have made a slightly different 'version bump'
+
+$ git diff master
+diff --git a/DESCRIPTION b/DESCRIPTION
+index 1412398..a1531d0 100644
+--- a/DESCRIPTION
++++ b/DESCRIPTION
+@@ -1,7 +1,7 @@
+ Package: DMCHMM
+ Type: Package
+ Title: Differentially Methylated CpG using Hidden Markov Model
+-Version: 1.17.1
++Version: 1.16.1
+ Authors at R: c(person("Farhad", "Shokoohi", role = c("aut", "cre"),
+                      email = "shokoohi at icloud.com", comment = c(ORCID = "0000-0002-6224-2609"))
+               )
+
+When I ask about the status of my local branch I now see
+
+$ git status
+On branch RELEASE_3_14
+Your branch is ahead of 'upstream/RELEASE_3_14' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+
+and I am ready to git push upstream
+
+
+?On 2/16/22, 2:27 PM, "Bioc-devel on behalf of Farhad Shokoohi via Bioc-devel" <bioc-devel-bounces at r-project.org on behalf of bioc-devel at r-project.org> wrote:
+
+    I have already fixed the problem; when I try to push the changes it says everything is uptodate. 
+
+
+    > On Feb 16, 2022, at 11:14 AM, Kern, Lori <Lori.Shepherd at RoswellPark.org> wrote:
+    > 
+    > There are no changes on the RELEASE_3_14 branch.  
+    > You need to checkout the RELEASE_3_14 branch.  Commit the necessary changes to fix the ERROR. Commit a version bump to 1.16.1.  And then push back to RELEASE_3_14 
+    > 
+    > 
+    > 
+    > Lori Shepherd - Kern
+    > Bioconductor Core Team
+    > Roswell Park Comprehensive Cancer Center
+    > Department of Biostatistics & Bioinformatics
+    > Elm & Carlton Streets
+    > Buffalo, New York 14263
+    > From: Farhad Shokoohi <shokoohi at icloud.com>
+    > Sent: Wednesday, February 16, 2022 1:58 PM
+    > To: Kern, Lori <Lori.Shepherd at RoswellPark.org>
+    > Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>
+    > Subject: Re: [Bioc-devel] DMCHMM problems reported in the Multiple platform build/check report for BioC 3.14
+    >  
+    > Hello
+    > 
+    > I think I have fixed the problem; see the log; However, I do not know how to make sure everything is up-to-date. 
+    > Best,
+    > 
+    > farhad at Farhads-iMac DMCHMM %  git push upstream master
+    > Everything up-to-date
+    > farhad at Farhads-iMac DMCHMM %  git push origin master
+    > Everything up-to-date
+    > farhad at Farhads-iMac DMCHMM % git checkout RELEASE_3_14
+    > Already on 'RELEASE_3_14'
+    > Your branch is up to date with 'origin/RELEASE_3_14'.
+    > farhad at Farhads-iMac DMCHMM % git merge upstream/RELEASE_3_14
+    > Already up to date.
+    > farhad at Farhads-iMac DMCHMM % git merge origin/RELEASE_3_14
+    > Already up to date.
+    > farhad at Farhads-iMac DMCHMM % git push upstream RELEASE_3_14
+    > Everything up-to-date
+    > farhad at Farhads-iMac DMCHMM % git push origin RELEASE_3_14
+    > Everything up-to-date
+    > farhad at Farhads-iMac DMCHMM % git push upstream RELEASE_3_14
+    > Everything up-to-date
+    > farhad at Farhads-iMac DMCHMM % git push origin RELEASE_3_14
+    > Everything up-to-date
+    > farhad at Farhads-iMac DMCHMM % git checkout RELEASE_3_14
+    > Already on 'RELEASE_3_14'
+    > Your branch is up to date with 'origin/RELEASE_3_14'.
+    > 
+    > 
+    > 
+    >> On Feb 7, 2022, at 10:41 AM, Kern, Lori <Lori.Shepherd at RoswellPark.org <mailto:Lori.Shepherd at RoswellPark.org>> wrote:
+    >> 
+    >> As often stated Bioconductor has two different branches a RELEASE_3_14 and a devel branch.  You have pushed changes only to the master branch that corresponds to devel.  
+    >> 
+    >> You must also push changes to the RELEASE_3_14 branch to fix the Bioc 3.14 version of the package. 
+    >> 
+    >> See: 
+    >> http://bioconductor.org/developers/how-to/git/bug-fix-in-release-and-devel/ <http://secure-web.cisco.com/1-QI2WWddDLwW1h9mtghZtNCZxpol-AqkiYkRg3CIz0Ot18YYS9tzWRTD5WRo_D4JbbSzldhyf5iw65sRUukPZYNYhhPVMnyoZkFk4SJSOQ5J1QoZ37mM3tfj4ShtODqlVvSZZzElSi4gLlIOObXNOgt0uYxmm1kS1mendUdmluYc3PFdqL_iIk0hsH6MroWBHQJs0oiK184k25oIzOFwr1oiOAUSdD4AC0sgeZDKVVGjZD0ohK4lkANmVkJyKP_mI3Yn1AHiXSTNV7Rg6nDYEHXxwGK4TE9dQwBzg3lOvYNRsHxml6FMmqJa-X-Vy5pE/http%3A%2F%2Fbioconductor.org%2Fdevelopers%2Fhow-to%2Fgit%2Fbug-fix-in-release-and-devel%2F>
+    >> 
+    >> Cheers, 
+    >> 
+    >> 
+    >> Lori Shepherd - Kern
+    >> Bioconductor Core Team
+    >> Roswell Park Comprehensive Cancer Center
+    >> Department of Biostatistics & Bioinformatics
+    >> Elm & Carlton Streets
+    >> Buffalo, New York 14263
+    >> From: Bioc-devel <bioc-devel-bounces at r-project.org <mailto:bioc-devel-bounces at r-project.org>> on behalf of Farhad Shokoohi via Bioc-devel <bioc-devel at r-project.org <mailto:bioc-devel at r-project.org>>
+    >> Sent: Monday, February 7, 2022 1:35 PM
+    >> To: bioc-devel at r-project.org <mailto:bioc-devel at r-project.org> <bioc-devel at r-project.org <mailto:bioc-devel at r-project.org>>
+    >> Subject: Re: [Bioc-devel] DMCHMM problems reported in the Multiple platform build/check report for BioC 3.14
+    >>  
+    >> Hello,
+    >> I have fixed the problem and uploaded the new version of my package. 
+    >> I don?t understand why I get the following message :
+    >> 
+    >> 
+    >> 
+    >> [This is an automatically generated email. Please don't reply.]
+    >> 
+    >> Hi DMCHMM maintainer,
+    >> 
+    >> According to the Multiple platform build/check report for BioC 3.14,
+    >> the DMCHMM package has the following problem(s):
+    >> 
+    >>  o ERROR for 'R CMD build' on nebbiolo2. See the details here:
+    >>      https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html <https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html> <https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html <https://secure-web.cisco.com/1orvjT1F0A8Kb2qBMadMQzdTu5DcniWrLBCeXh-uOCUt8YYDSo6oCzNxe0Xn0tf-okh7lRqBuQ842Cz347vLeopiMrcBGggpW9t5HeiDD-Bc2p2yzYfJdlCM7u-ZxOh7IDTmHtgp5EVx1ly05kIh5W5P3LVykoZd9r5n29mlh1TLEBHZ1CYcIUz5IiFLILUQMcRImRCf0p2Ltnun__v6T1U70OGKXbAuaRXiRBw5fNf1gIbySrkyPrvatg3o1HgXaRNsH1apdsVjoUmyznlRD3lkxxaK48rkq8QHmccIT5NOoaX41MAd61JEfA2DxPOhD/https%3A%2F%2Fmaster.bioconductor.org%2FcheckResults%2F3.14%2Fbioc-LATEST%2FDMCHMM%2Fnebbiolo2-buildsrc.html>>
+    >> 
+    >> Please take the time to address this by committing and pushing
+    >> changes to your package at git.bioconductor.org <http://secure-web.cisco.com/1nD0C1B5bcxbSndtf3SiNfSxx-oc7FOfAN3NpXj159XQDk0Bk4cwFuVxBs8hWmGVynw0wlMg_DOJaAU0AKv5fWfpNes5W-PQSmc-n907aYTsXW3TRz2d1_68yHWjIYD3gb4tUQMdNzG13FlcePSoflFG_a6-Fzqo0TJ5-n8PaBpwdfr6oAuMqIhBT7FG52yK_cyQJmtfRY0OwHGL1RHxiKCFbGtq4nP1i20tAvGFLLlUfAbi2dDlgS3op2zr3etIfjnWFhbTTqqfaWsiovdEv2-03VEwKxiNktb1XIW0xY-Cu2fCMYvn6J5-BkMem3pfx/http%3A%2F%2Fgit.bioconductor.org%2F> <http://secure-web.cisco.com/1aDeESrR98AvHxh4i43VmaShO71JlXCoL1b7ZM1bUOyQNKhYqk_Wem616ytR_7ERi1gVXM-ZJPrCDpHn8YK2g8tqHRhoai-JmDB6bwtFiICTCMhFt-fTzRIprGb553TUV1DUJh_1QGBVir4KBLb6Q2TH-r7Bc59RUkGeFwJ47rHXuw0yEpEldKbnGNMc3ZWpGBAlk91-g5nUB0vIunDXvBXSyVYP_Y7kBW4IX4oeuNA10BGWI0ysZ2jb34vW_whutuwHMHitG7TvDqvu6dcjZWvsykInEjGiDHsaKj41NImxiBfQCWEE033AfOGl1A7vF/http%3A%2F%2Fgit.bioconductor.org%2F <http://secure-web.cisco.com/1aDeESrR98AvHxh4i43VmaShO71JlXCoL1b7ZM1bUOyQNKhYqk_Wem616ytR_7ERi1gVXM-ZJPrCDpHn8YK2g8tqHRhoai-JmDB6bwtFiICTCMhFt-fTzRIprGb553TUV1DUJh_1QGBVir4KBLb6Q2TH-r7Bc59RUkGeFwJ47rHXuw0yEpEldKbnGNMc3ZWpGBAlk91-g5nUB0vIunDXvBXSyVYP_Y7kBW4IX4oeuNA10BGWI0ysZ2jb34vW_whutuwHMHitG7TvDqvu6dcjZWvsykInEjGiDHsaKj41NImxiBfQCWEE033AfOGl1A7vF/http%3A%2F%2Fgit.bioconductor.org%2F>>
+    >> 
+    >> Notes:
+    >> 
+    >>  * This was the status of your package at the time this email was sent to you.
+    >>    Given that the online report is updated daily (in normal conditions) you
+    >>    could see something different when you visit the URL(s) above, especially if
+    >>    you do so several days after you received this email.
+    >> 
+    >>  * It is possible that the problems reported in this report are false positives,
+    >>    either because another package (from CRAN or Bioconductor) breaks your
+    >>    package (if yours depends on it) or because of a Build System problem.
+    >>    If this is the case, then you can ignore this email.
+    >> 
+    >>  * Please check the report again 24h after you've committed your changes to the
+    >>    package and make sure that all the problems have gone.
+    >> 
+    >>  * If you have questions about this report or need help with the
+    >>    maintenance of your package, please use the Bioc-devel mailing list:
+    >> 
+    >>      https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F <https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F> <https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F <https://secure-web.cisco.com/1eqqFb45FdT2k83xw6U1ogbRVxLMvoKHR1LRzy7n7JY_EgPdTeGMuzALEZP-lwdlJW-nZrFh1PlrPuAD5pRc5W7iqfBU597wCsIIeJwV23FxXA0aXf1VPdGDDeZXnmhB1-519BPqQLHVGsINCf6hFQmkKJ1vRcMg-dTrZgsT-EDMcryBjhLIrGaV8ZUo2q7xvoGx32g-rOvJf-HTxxve6hatiFwq663jrpmLGRiPyzsbv-OMIZ8ovp9xR3WfIBLlTFKF88GqKruipdk_rMdrd6ZGzpohchPDCJkXHjvRaIOIoILmQ05wx5kZIVZgk3hG_/https%3A%2F%2Fbioconductor.org%2Fhelp%2Fmailing-list%2F>>
+    >> 
+    >>    (all package maintainers are requested to subscribe to this list)
+    >> 
+    >> For immediate notification of package build status, please
+    >> subscribe to your package's RSS feed. Information is at:
+    >> 
+    >> https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F <https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F> <https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F <https://secure-web.cisco.com/1a2VM8_2m06fMhIJcSvgyufqGmITJtIhE3zVmpbcPLxPXEIsRgo0RNvKoyDPRdJQV0C_hWyvvM8dwTaa5P0m5pfwIrQuF0k4LnmeJm3KS4WcZurWYadGShPyAclpLhT0_5iSfXg3kopE_inyKMv6PiNXWE7Ete4TPyY4ot5qPG91NQmoTmuUqk-ClMxJ6JVkXuN7zyTD9EWs2LHwgmxNlHu7Wlhtxp6YeMVe7XY_VjZPZRa0W47o1VGBPH8reRixC5zSE4ScziepVblY0qrg4C5yeiKU44JbeEBXoivE0NWA4hAgmIXr3KaTg-SprGrTV/https%3A%2F%2Fbioconductor.org%2Fdevelopers%2Frss-feeds%2F>>
+    >> 
+    >> Thanks for contributing to the Bioconductor project!
+    >>         [[alternative HTML version deleted]]
+    >> 
+    >> _______________________________________________
+    >> Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org> mailing list
+    >> https://secure-web.cisco.com/1M4fH12dRsFiQKCy3smll89SOLDxNy-0YobIsrCzFI3Vhzbg4f1BrxNw5iEZoivwXdhpMoHnE4Aob28y1XVttI5chReCjeycXaZgGG86Guf3R2xVAp4PfBxxDAT2iacvIt99p6GVDFGwRyAXZrBU9N9ado-qdfOKaaU8oz6bOFDQP7J0CGJMoxCFien9BZe_R8zKwPTEKpxVnzpxlIc6AJdwtp3Ce9pCh-dHcxeWxvXsRgTRbaObh12UluRI4xiwnU3rHTQXAHTiTsru2Wt5_clg8mSZlLQVBGGk7tlErDv1WnCh-bzxcBmqsuodF35d7/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel <https://secure-web.cisco.com/1M4fH12dRsFiQKCy3smll89SOLDxNy-0YobIsrCzFI3Vhzbg4f1BrxNw5iEZoivwXdhpMoHnE4Aob28y1XVttI5chReCjeycXaZgGG86Guf3R2xVAp4PfBxxDAT2iacvIt99p6GVDFGwRyAXZrBU9N9ado-qdfOKaaU8oz6bOFDQP7J0CGJMoxCFien9BZe_R8zKwPTEKpxVnzpxlIc6AJdwtp3Ce9pCh-dHcxeWxvXsRgTRbaObh12UluRI4xiwnU3rHTQXAHTiTsru2Wt5_clg8mSZlLQVBGGk7tlErDv1WnCh-bzxcBmqsuodF35d7/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel>
+    >> 
+    >> 
+    >> This email message may contain legally privileged and/or confidential information. If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited. If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you. 
+    > 
+    > 
+    > This email message may contain legally privileged and/or confidential information. If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited. If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you. 
+
+
+    	[[alternative HTML version deleted]]
+
+    _______________________________________________
+    Bioc-devel at r-project.org mailing list
+    https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+From hp@ge@@on@g|thub @end|ng |rom gm@||@com  Thu Feb 17 02:29:32 2022
+From: hp@ge@@on@g|thub @end|ng |rom gm@||@com (=?UTF-8?B?SGVydsOpIFBhZ8Oocw==?=)
+Date: Wed, 16 Feb 2022 17:29:32 -0800
+Subject: [Bioc-devel] 
+ Supplementing package vignette with workflow vignette
+In-Reply-To: <CADh+v5wz2BYY0w8_UUqu2EAGCkXanTxnCA2SGJCQ97nK=9U1hQ@mail.gmail.com>
+References: <CADh+v5wz2BYY0w8_UUqu2EAGCkXanTxnCA2SGJCQ97nK=9U1hQ@mail.gmail.com>
+Message-ID: <5bd71df4-761f-aa03-fe37-415ba560c8b2@gmail.com>
+
+On 16/02/2022 00:35, migdal migdal wrote:
+
+> Dear bioc-devel,
+>
+> one of the requirements for the Bioconductor package is to pass the R CMD
+> BUILD, including some constraints on the time. To accommodate for some
+> specific cases, Bioconductor implements a concept of long tests which are
+> excluded from the build time limit. I wonder if a corresponding concept
+> exists for the vignettes? I do realize the need for time constraints.
+> However, I think it could be of use to supplement a main vignette with
+> supplementary vignettes that could showcase the package use eg. on a larger
+> dataset. Those could have a less strict constraints policy eg. more time to
+> run, more resources like number of cores, RAM etc. Are there any ways to
+> accomplish this?
+
+Yes, by creating (and submitting) a workflow package. This is basically 
+a vignette wrapped in its own dedicated package (the package typically 
+contains no R code).
+
+List of existing workflow packages:
+
+https://bioconductor.org/packages/devel/BiocViews.html#___Workflow
+
+Workflow builds (Tuesdays and Fridays):
+
+ ? https://bioconductor.org/checkResults/3.15/workflows-LATEST/
+
+Timeout limit is 2h for these packages.
+
+Cheers,
+
+H.
+
+
+>
+> Best Maciek
+>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Herv? Pag?s
+
+Bioconductor Core Team
+hpages.on.github at gmail.com
+
+
+From mcjm|gd@| @end|ng |rom gm@||@com  Thu Feb 17 08:56:10 2022
+From: mcjm|gd@| @end|ng |rom gm@||@com (migdal migdal)
+Date: Thu, 17 Feb 2022 08:56:10 +0100
+Subject: [Bioc-devel] 
+ Supplementing package vignette with workflow vignette
+In-Reply-To: <5bd71df4-761f-aa03-fe37-415ba560c8b2@gmail.com>
+References: <CADh+v5wz2BYY0w8_UUqu2EAGCkXanTxnCA2SGJCQ97nK=9U1hQ@mail.gmail.com>
+ <5bd71df4-761f-aa03-fe37-415ba560c8b2@gmail.com>
+Message-ID: <CADh+v5wBfQCjFZGFgfTx9W=njVTTnrPJB=R+XpiT25c+G5WM5A@mail.gmail.com>
+
+Awesome, thanks!
+
+On Thu, 17 Feb 2022 at 02:29, Herv? Pag?s <hpages.on.github at gmail.com>
+wrote:
+
+> On 16/02/2022 00:35, migdal migdal wrote:
+>
+> > Dear bioc-devel,
+> >
+> > one of the requirements for the Bioconductor package is to pass the R CMD
+> > BUILD, including some constraints on the time. To accommodate for some
+> > specific cases, Bioconductor implements a concept of long tests which are
+> > excluded from the build time limit. I wonder if a corresponding concept
+> > exists for the vignettes? I do realize the need for time constraints.
+> > However, I think it could be of use to supplement a main vignette with
+> > supplementary vignettes that could showcase the package use eg. on a
+> larger
+> > dataset. Those could have a less strict constraints policy eg. more time
+> to
+> > run, more resources like number of cores, RAM etc. Are there any ways to
+> > accomplish this?
+>
+> Yes, by creating (and submitting) a workflow package. This is basically
+> a vignette wrapped in its own dedicated package (the package typically
+> contains no R code).
+>
+> List of existing workflow packages:
+>
+> https://bioconductor.org/packages/devel/BiocViews.html#___Workflow
+>
+> Workflow builds (Tuesdays and Fridays):
+>
+>    https://bioconductor.org/checkResults/3.15/workflows-LATEST/
+>
+> Timeout limit is 2h for these packages.
+>
+> Cheers,
+>
+> H.
+>
+>
+> >
+> > Best Maciek
+> >
+> >       [[alternative HTML version deleted]]
+> >
+> > _______________________________________________
+> > Bioc-devel at r-project.org mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> --
+> Herv? Pag?s
+>
+> Bioconductor Core Team
+> hpages.on.github at gmail.com
+>
+>
+
+	[[alternative HTML version deleted]]
+
+
+From ntur@g@@b|oc @end|ng |rom gm@||@com  Sat Feb 19 19:46:55 2022
+From: ntur@g@@b|oc @end|ng |rom gm@||@com (Nitesh Turaga)
+Date: Sat, 19 Feb 2022 13:46:55 -0500
+Subject: [Bioc-devel] Change SpatialDecon Maintainer
+In-Reply-To: <CO6PR04MB7796F4965EBBA56224CDE06CD9339@CO6PR04MB7796.namprd04.prod.outlook.com>
+References: <CO6PR04MB7796F4965EBBA56224CDE06CD9339@CO6PR04MB7796.namprd04.prod.outlook.com>
+Message-ID: <C0443315-FC0F-4D68-B818-2222648EA82B@gmail.com>
+
+Hi Nicole and Maddy,
+
+Maddy should have access to the package now, and can add SSH keys to the BiocCredentils application once it is activated at https://git.bioconductor.org/BiocCredentials/account_activation. 
+
+Please change the maintainer field in the DESCRIPTION of the package.
+
+Best,
+
+Nitesh 
+
+
+Nitesh Turaga
+Scientist II, Department of Data Science,
+Bioconductor Core Team Member
+Dana Farber Cancer Institute
+
+> On Feb 14, 2022, at 12:29 PM, Nicole Ortogero <nortogero at nanostring.com> wrote:
+> 
+> Hi Bioconductor team,
+>  
+> Can we update the SpatialDecon maintainer to Maddy Griswold mgriswold at nanostring.com.
+>  
+> Package: SpatialDecon
+> New maintainer: Maddy Griswold mgriswold at nanostring.com
+> Old maintainer: Nicole Ortogero
+>  
+> Thanks,
+> Nicole Ortogero, PhD  
+> Senior Bioinformatics Scientist
+> NanoString Technologies, Inc. ? nanostring.com
+> <image001.png>      
+> <image002.png>  
+> <image003.png>  
+> <image004.png>  
+> <image005.png>
+
+
+From ntur@g@@b|oc @end|ng |rom gm@||@com  Sat Feb 19 19:49:33 2022
+From: ntur@g@@b|oc @end|ng |rom gm@||@com (Nitesh Turaga)
+Date: Sat, 19 Feb 2022 13:49:33 -0500
+Subject: [Bioc-devel] Maintainer change for pairkat package
+In-Reply-To: <CACOQoqpmkYb19Sv_Fq+6rgj44ACg2BtvEP2kBeKZu5=7qEiSig@mail.gmail.com>
+References: <CACOQoqpmkYb19Sv_Fq+6rgj44ACg2BtvEP2kBeKZu5=7qEiSig@mail.gmail.com>
+Message-ID: <EA09A1DE-0E74-4B03-BA1E-A90E917E8A0C@gmail.com>
+
+Hi Cameron and Max,
+
+Max should have access to the package with the registered BiocCredentials address. 
+
+Best,
+
+Nitesh 
+
+
+Nitesh Turaga
+Scientist II, Department of Data Science,
+Bioconductor Core Team Member
+Dana Farber Cancer Institute
+
+> On Feb 10, 2022, at 1:06 PM, Cameron Severn <cameron.severn at gmail.com> wrote:
+> 
+> Hello,
+> 
+> I am looking to change the transfer maintenance of "pairkat" to Max
+> McGrath. max.mcgrath at ucdenver.edu. I have pushed a bumped version number
+> with Max added to the description file. Please let me know if there is
+> anything else I need to do to proceed.
+> 
+> Thanks!
+> 
+> Cameron Severn
+> 
+> 	[[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From @myth @end|ng |rom weh|@edu@@u  Sun Feb 20 00:59:55 2022
+From: @myth @end|ng |rom weh|@edu@@u (Gordon Smyth)
+Date: Sat, 19 Feb 2022 23:59:55 +0000
+Subject: [Bioc-devel] Bioconductor install instructions for M1-based Mac
+Message-ID: <MEYP282MB20860A5754DE47C9124D39B1F2389@MEYP282MB2086.AUSP282.PROD.OUTLOOK.COM>
+
+Given all the questions on the Bioc Support forum, it would be timely to have guidance on the Bioconductor install page:
+
+  https://www.bioconductor.org/install/
+
+for users with an M1-based Mac. As far as I know, there isn't any documentation alerting a beginner user that Bioconductor doesn't support the native M1 compilation of R.
+
+Thanks
+Gordon
+
+------------------------------------------
+Professor Gordon K Smyth
+Joint Head, Bioinformatics Division
+
+[WEHI Logo]
+
+
+Walter and Eliza Hall Institute of Medical Research
+1G Royal Parade Parkville Victoria 3052 Australia
+
+www.wehi.edu.au<https://wehi.edu.au>
+
+Twitter<https://twitter.com/WEHI_research>  |  Facebook<https://www.facebook.com/WEHIresearch/>  |  Instagram<https://www.instagram.com/wehi_research>  |  Youtube<https://www.youtube.com/user/WEHImovies>  |  LinkedIn<https://www.linkedin.com/company/wehi_research>
+
+
+WEHI acknowledges the Wurundjeri people of the Kulin Nation as the traditional owners of the land where our campuses are located and the continuing connection to country and community.
+
+Private and confidential
+The content of this e-mail and any attachments may be private and confidential, intended only for use of the individual or entity named. If you are not the intended recipient of this message you must not read, forward, print, copy, disclose, use or store in any way the information this e-mail or any attachment contains. If you are not the intended recipient, please notify the sender immediately and delete or destroy all copies of this e-mail and any attachment.
+
+	[[alternative HTML version deleted]]
+
+
+From @tvjc @end|ng |rom ch@nn|ng@h@rv@rd@edu  Sun Feb 20 04:18:37 2022
+From: @tvjc @end|ng |rom ch@nn|ng@h@rv@rd@edu (Vincent Carey)
+Date: Sat, 19 Feb 2022 22:18:37 -0500
+Subject: [Bioc-devel] Bioconductor install instructions for M1-based Mac
+In-Reply-To: <MEYP282MB20860A5754DE47C9124D39B1F2389@MEYP282MB2086.AUSP282.PROD.OUTLOOK.COM>
+References: <MEYP282MB20860A5754DE47C9124D39B1F2389@MEYP282MB2086.AUSP282.PROD.OUTLOOK.COM>
+Message-ID: <CAANT7+VrqY6SqrOn+VC0EBpPDSQajeRn19n3qvkHftrr2+THPA@mail.gmail.com>
+
+Thanks Gordon, I agree that some documentation should be added.  While
+we are not in a position to provide
+binaries for M1 at this time, anyone who has prepared their
+M1-oriented version of R to install packages from source
+can install Bioconductor packages.  I will respond on the support
+site, and we will work on enhancing the
+documentation for users.
+
+On Sat, Feb 19, 2022 at 7:00 PM Gordon Smyth <smyth at wehi.edu.au> wrote:
+>
+> Given all the questions on the Bioc Support forum, it would be timely to have guidance on the Bioconductor install page:
+>
+>   https://www.bioconductor.org/install/
+>
+> for users with an M1-based Mac. As far as I know, there isn't any documentation alerting a beginner user that Bioconductor doesn't support the native M1 compilation of R.
+>
+> Thanks
+> Gordon
+>
+> ------------------------------------------
+> Professor Gordon K Smyth
+> Joint Head, Bioinformatics Division
+>
+> [WEHI Logo]
+>
+>
+> Walter and Eliza Hall Institute of Medical Research
+> 1G Royal Parade Parkville Victoria 3052 Australia
+>
+> www.wehi.edu.au<https://wehi.edu.au>
+>
+> Twitter<https://twitter.com/WEHI_research>  |  Facebook<https://www.facebook.com/WEHIresearch/>  |  Instagram<https://www.instagram.com/wehi_research>  |  Youtube<https://www.youtube.com/user/WEHImovies>  |  LinkedIn<https://www.linkedin.com/company/wehi_research>
+>
+>
+> WEHI acknowledges the Wurundjeri people of the Kulin Nation as the traditional owners of the land where our campuses are located and the continuing connection to country and community.
+>
+> Private and confidential
+> The content of this e-mail and any attachments may be private and confidential, intended only for use of the individual or entity named. If you are not the intended recipient of this message you must not read, forward, print, copy, disclose, use or store in any way the information this e-mail or any attachment contains. If you are not the intended recipient, please notify the sender immediately and delete or destroy all copies of this e-mail and any attachment.
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+The information in this e-mail is intended only for the ...{{dropped:16}}
+
+
+From o|ek@||@n|ko|@|enko @end|ng |rom gm@||@com  Sun Feb 20 14:23:38 2022
+From: o|ek@||@n|ko|@|enko @end|ng |rom gm@||@com (Oleksii Nikolaienko)
+Date: Sun, 20 Feb 2022 14:23:38 +0100
+Subject: [Bioc-devel] Bioconductor install instructions for M1-based Mac
+In-Reply-To: <CAANT7+VrqY6SqrOn+VC0EBpPDSQajeRn19n3qvkHftrr2+THPA@mail.gmail.com>
+References: <MEYP282MB20860A5754DE47C9124D39B1F2389@MEYP282MB2086.AUSP282.PROD.OUTLOOK.COM>
+ <CAANT7+VrqY6SqrOn+VC0EBpPDSQajeRn19n3qvkHftrr2+THPA@mail.gmail.com>
+Message-ID: <CAOxY_KwNQ7ViOFiCkgX1hbBbVK4+dOtKnd8ms49gZK87-mURCw@mail.gmail.com>
+
+I don't know if this has been mentioned, but the following pages are of an
+immense help:
+https://mac.r-project.org/
+https://mac.r-project.org/openmp/
+It is possible and quite easy to get a native M1 build of R with OpenMP
+support and no issues with Bioc packages.
+
+Best,
+Oleksii
+
+On Sun, 20 Feb 2022 at 04:19, Vincent Carey <stvjc at channing.harvard.edu>
+wrote:
+
+> Thanks Gordon, I agree that some documentation should be added.  While
+> we are not in a position to provide
+> binaries for M1 at this time, anyone who has prepared their
+> M1-oriented version of R to install packages from source
+> can install Bioconductor packages.  I will respond on the support
+> site, and we will work on enhancing the
+> documentation for users.
+>
+> On Sat, Feb 19, 2022 at 7:00 PM Gordon Smyth <smyth at wehi.edu.au> wrote:
+> >
+> > Given all the questions on the Bioc Support forum, it would be timely to
+> have guidance on the Bioconductor install page:
+> >
+> >   https://www.bioconductor.org/install/
+> >
+> > for users with an M1-based Mac. As far as I know, there isn't any
+> documentation alerting a beginner user that Bioconductor doesn't support
+> the native M1 compilation of R.
+> >
+> > Thanks
+> > Gordon
+> >
+> > ------------------------------------------
+> > Professor Gordon K Smyth
+> > Joint Head, Bioinformatics Division
+> >
+> > [WEHI Logo]
+> >
+> >
+> > Walter and Eliza Hall Institute of Medical Research
+> > 1G Royal Parade Parkville Victoria 3052 Australia
+> >
+> > www.wehi.edu.au<https://wehi.edu.au>
+> >
+> > Twitter<https://twitter.com/WEHI_research>  |  Facebook<
+> https://www.facebook.com/WEHIresearch/>  |  Instagram<
+> https://www.instagram.com/wehi_research>  |  Youtube<
+> https://www.youtube.com/user/WEHImovies>  |  LinkedIn<
+> https://www.linkedin.com/company/wehi_research>
+> >
+> >
+> > WEHI acknowledges the Wurundjeri people of the Kulin Nation as the
+> traditional owners of the land where our campuses are located and the
+> continuing connection to country and community.
+> >
+> > Private and confidential
+> > The content of this e-mail and any attachments may be private and
+> confidential, intended only for use of the individual or entity named. If
+> you are not the intended recipient of this message you must not read,
+> forward, print, copy, disclose, use or store in any way the information
+> this e-mail or any attachment contains. If you are not the intended
+> recipient, please notify the sender immediately and delete or destroy all
+> copies of this e-mail and any attachment.
+> >
+> >         [[alternative HTML version deleted]]
+> >
+> > _______________________________________________
+> > Bioc-devel at r-project.org mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> --
+> The information in this e-mail is intended only for th...{{dropped:10}}
+
+
+From chen_y|ng @end|ng |rom g|@@@-@t@r@edu@@g  Mon Feb 21 04:31:10 2022
+From: chen_y|ng @end|ng |rom g|@@@-@t@r@edu@@g (CHEN Ying)
+Date: Mon, 21 Feb 2022 03:31:10 +0000
+Subject: [Bioc-devel] Can't reproduce the build errors with same system and
+ R version
+Message-ID: <SG2PR01MB2919C40D27047FAE2EAF126AD73A9@SG2PR01MB2919.apcprd01.prod.exchangelabs.com>
+
+Hi Bioc-devel team,
+
+I am trying to debug the build error of the bambu development branch, and the report suggested a problem in loading data from the ExperimentHub package. With the same ubuntu system and R version, I can't seem to reproduce the errors on my laptop. Could someone help me with this? The build error has been there for quite some time. Do I need to re-upload the data?
+
+Thank you
+Regards,
+Ying
+This e-mail and any attachments are only for the use of the intended recipient and may contain material that is confidential, privileged and/or protected by the Official Secrets Act. If you are not the intended recipient, please delete it or notify the sender immediately. Please do not copy or use it for any purpose or disclose the contents to any other person.
+
+	[[alternative HTML version deleted]]
+
+
+From @erg|@@yo|@pu|g @end|ng |rom gm@||@com  Tue Feb 22 10:38:11 2022
+From: @erg|@@yo|@pu|g @end|ng |rom gm@||@com (sergi sayols puig)
+Date: Tue, 22 Feb 2022 09:38:11 +0000
+Subject: [Bioc-devel] 
+ Can't reproduce the build errors with same system and R version
+In-Reply-To: <SG2PR01MB2919C40D27047FAE2EAF126AD73A9@SG2PR01MB2919.apcprd01.prod.exchangelabs.com>
+References: <SG2PR01MB2919C40D27047FAE2EAF126AD73A9@SG2PR01MB2919.apcprd01.prod.exchangelabs.com>
+Message-ID: <CAHZXQQWx8+YytWGJKr-TZU+XVfYhMvB9zQo2qKDiuQV8v1pUaQ@mail.gmail.com>
+
+Hi Ying,
+with regard to reproducing the build environment used in
+Bioconductor's build machines, I've been quite successful using
+Bioconductor's docker image.
+Here's an example to create the build environment and building the
+rrvgo package in it:
+
+```
+* pull docker image
+    $ docker pull bioconductor/bioconductor_docker:devel
+* open a shell in the running container:
+    $ docker exec -it bioconductor/bioconductor_docker:devel /bin/bash
+* install package + dependencies (within the container):
+    # R
+    R> install.packages("BiocManager")
+    R> BiocManager::install(version='devel')
+    R> BiocManager::install(c("rrvgo", "org.Hs.eg.db"))   # the latetr
+is required to build the vignette
+    R> q()
+* clone the devel branch of the package:
+    # git clone https://git.bioconductor.org/packages/rrvgo
+* get nebbiolo1's .Renviron:
+    # wget -qO-
+http://bioconductor.org/checkResults/devel/bioc-LATEST/Renviron.bioc >
+Renviron.bioc
+* and build as described in the build report:
+    # R_ENVIRON_USER=Renviron.bioc R CMD build --keep-empty-dirs
+--no-resave-data rrvgo
+```
+
+Hope this helps.
+
+Cheers,
+Sergi
+
+Missatge de CHEN Ying <chen_ying at gis.a-star.edu.sg> del dia dl., 21 de
+febr. 2022 a les 3:31:
+
+>
+> Hi Bioc-devel team,
+>
+> I am trying to debug the build error of the bambu development branch, and the report suggested a problem in loading data from the ExperimentHub package. With the same ubuntu system and R version, I can't seem to reproduce the errors on my laptop. Could someone help me with this? The build error has been there for quite some time. Do I need to re-upload the data?
+>
+> Thank you
+> Regards,
+> Ying
+> This e-mail and any attachments are only for the use of the intended recipient and may contain material that is confidential, privileged and/or protected by the Official Secrets Act. If you are not the intended recipient, please delete it or notify the sender immediately. Please do not copy or use it for any purpose or disclose the contents to any other person.
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From o|ek@||@n|ko|@|enko @end|ng |rom gm@||@com  Wed Feb 23 10:44:33 2022
+From: o|ek@||@n|ko|@|enko @end|ng |rom gm@||@com (Oleksii Nikolaienko)
+Date: Wed, 23 Feb 2022 10:44:33 +0100
+Subject: [Bioc-devel] error on riesling1 but not on palomino3
+Message-ID: <CAOxY_Kw5T62xqQuQPcZ9Uxvt=nH4yv3q-VO4BsGK+dqGBa_SuQ@mail.gmail.com>
+
+Dear Bioc team,
+my package (epiallleleR) currently fails tests on riesling1, but not on the
+other hosts. Wrong results are produced by compiled c++ code, and at the
+moment I don't understand why. I can see that both Windows hosts use GCC
+8.3.0, but the compiler flags are different. I don't have access to
+Windows, but I wasn't able to reproduce this error on my Linux with GCC
+7.5.0 when tried to set "-fno-reorder-blocks-and-partition" in my Makevars,
+or did "pkgbuild::with_debug(devtools::check())".
+What are the other differences between riesling1 and palomino3? Is, for
+example, sizeof(int)<4? And what can I do to debug it if I don't have
+Windows around?
+
+Best regards,
+Oleksii
+
+	[[alternative HTML version deleted]]
+
+
+From chen_y|ng @end|ng |rom g|@@@-@t@r@edu@@g  Wed Feb 23 12:40:31 2022
+From: chen_y|ng @end|ng |rom g|@@@-@t@r@edu@@g (CHEN Ying)
+Date: Wed, 23 Feb 2022 11:40:31 +0000
+Subject: [Bioc-devel] 
+ Can't reproduce the build errors with same system and R version
+Message-ID: <SG2PR01MB2919724A8A7714AEA725E494D73C9@SG2PR01MB2919.apcprd01.prod.exchangelabs.com>
+
+Hi Sergi,
+
+Thank you so much for your help! The docker image solution is very useful. I am able to get it run. However, I still can't reproduce the errors, which to me look like a ExperimentHub connection issue.
+
+Thanks a lot anyways!!
+Regards,
+Ying
+
+
+________________________________
+From: sergi sayols puig <sergisayolspuig at gmail.com>
+Sent: Tuesday, 22 February 2022 5:38 pm
+To: CHEN Ying <chen_ying at gis.a-star.edu.sg>
+Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: Re: [Bioc-devel] Can't reproduce the build errors with same system and R version
+
+Hi Ying,
+with regard to reproducing the build environment used in
+Bioconductor's build machines, I've been quite successful using
+Bioconductor's docker image.
+Here's an example to create the build environment and building the
+rrvgo package in it:
+
+```
+* pull docker image
+    $ docker pull bioconductor/bioconductor_docker:devel
+* open a shell in the running container:
+    $ docker exec -it bioconductor/bioconductor_docker:devel /bin/bash
+* install package + dependencies (within the container):
+    # R
+    R> install.packages("BiocManager")
+    R> BiocManager::install(version='devel')
+    R> BiocManager::install(c("rrvgo", "org.Hs.eg.db"))   # the latetr
+is required to build the vignette
+    R> q()
+* clone the devel branch of the package:
+    # git clone https://git.bioconductor.org/packages/rrvgo
+* get nebbiolo1's .Renviron:
+    # wget -qO-
+http://bioconductor.org/checkResults/devel/bioc-LATEST/Renviron.bioc >
+Renviron.bioc
+* and build as described in the build report:
+    # R_ENVIRON_USER=Renviron.bioc R CMD build --keep-empty-dirs
+--no-resave-data rrvgo
+```
+
+Hope this helps.
+
+Cheers,
+Sergi
+
+Missatge de CHEN Ying <chen_ying at gis.a-star.edu.sg> del dia dl., 21 de
+febr. 2022 a les 3:31:
+
+>
+> Hi Bioc-devel team,
+>
+> I am trying to debug the build error of the bambu development branch, and the report suggested a problem in loading data from the ExperimentHub package. With the same ubuntu system and R version, I can't seem to reproduce the errors on my laptop. Could someone help me with this? The build error has been there for quite some time. Do I need to re-upload the data?
+>
+> Thank you
+> Regards,
+> Ying
+> This e-mail and any attachments are only for the use of the intended recipient and may contain material that is confidential, privileged and/or protected by the Official Secrets Act. If you are not the intended recipient, please delete it or notify the sender immediately. Please do not copy or use it for any purpose or disclose the contents to any other person.
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+This e-mail and any attachments are only for the use of the intended recipient and may contain material that is confidential, privileged and/or protected by the Official Secrets Act. If you are not the intended recipient, please delete it or notify the sender immediately. Please do not copy or use it for any purpose or disclose the contents to any other person.
+
+	[[alternative HTML version deleted]]
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Wed Feb 23 12:57:04 2022
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Wed, 23 Feb 2022 11:57:04 +0000
+Subject: [Bioc-devel] 
+ Can't reproduce the build errors with same system and R version
+In-Reply-To: <SG2PR01MB2919724A8A7714AEA725E494D73C9@SG2PR01MB2919.apcprd01.prod.exchangelabs.com>
+References: <SG2PR01MB2919724A8A7714AEA725E494D73C9@SG2PR01MB2919.apcprd01.prod.exchangelabs.com>
+Message-ID: <BL1PR12MB53014603044A045E2860749CF93C9@BL1PR12MB5301.namprd12.prod.outlook.com>
+
+I had a look at the downloaded data from the hub and it looks like there might have been a bad file download.  I have reset the cache on nebbiolo1.  Let's see if it clears up over the next 2 days otherwise we can follow up with assistance debugging.
+
+Cheers,
+
+
+Lori Shepherd - Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of CHEN Ying <chen_ying at gis.a-star.edu.sg>
+Sent: Wednesday, February 23, 2022 6:40 AM
+To: sergi sayols puig <sergisayolspuig at gmail.com>
+Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: Re: [Bioc-devel] Can't reproduce the build errors with same system and R version
+
+Hi Sergi,
+
+Thank you so much for your help! The docker image solution is very useful. I am able to get it run. However, I still can't reproduce the errors, which to me look like a ExperimentHub connection issue.
+
+Thanks a lot anyways!!
+Regards,
+Ying
+
+
+________________________________
+From: sergi sayols puig <sergisayolspuig at gmail.com>
+Sent: Tuesday, 22 February 2022 5:38 pm
+To: CHEN Ying <chen_ying at gis.a-star.edu.sg>
+Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: Re: [Bioc-devel] Can't reproduce the build errors with same system and R version
+
+Hi Ying,
+with regard to reproducing the build environment used in
+Bioconductor's build machines, I've been quite successful using
+Bioconductor's docker image.
+Here's an example to create the build environment and building the
+rrvgo package in it:
+
+```
+* pull docker image
+    $ docker pull bioconductor/bioconductor_docker:devel
+* open a shell in the running container:
+    $ docker exec -it bioconductor/bioconductor_docker:devel /bin/bash
+* install package + dependencies (within the container):
+    # R
+    R> install.packages("BiocManager")
+    R> BiocManager::install(version='devel')
+    R> BiocManager::install(c("rrvgo", "org.Hs.eg.db"))   # the latetr
+is required to build the vignette
+    R> q()
+* clone the devel branch of the package:
+    # git clone https://secure-web.cisco.com/1j3I9olTt5f0WTOwBiDaa_qk0tQv_3JWPoYWTIWLbVwH7dNX3eEKu6lCSUvU3CD4zgiod_sTOzpamY7w6HAPyBpqTS7NVr6gRo9Wq-GcE9kWsnSc129W8D8TcsoGyIf4DEQIs7arOeF1YMUgqjXaJqUOwmgYn0zjRClgCY-cEaY7QHLag670QC1LVZNJ0EabTuL8oGlxfDWprLxoLp0kDRUqsZieFBJJacM0T3dTk_PTWACkX5sRLJBQqVdsKvd20Uqi-ElcpVQIx0OADh-Yg5gbSu3TI1bhUhYHDt2fqjBALy3nKW4Oib15hXs7gjTaF/https%3A%2F%2Fgit.bioconductor.org%2Fpackages%2Frrvgo
+* get nebbiolo1's .Renviron:
+    # wget -qO-
+http://secure-web.cisco.com/1ZcHL7ar03hb6LyJ18L3hutm5VKAna5fZP1WgvcIHkFGq0uOxaEcej0kixKYzyuniW2C02zlW3199R8dVSTBg3xhsh7FsZFD9YldGmtjK7riTRRHhVEtFcWJvYRb4n_ioVxwcJ1EnOEQM4mGggeZ9DMSqsxYpAm4UUkvI0Mf2ydu8Me5cfJAdQ6P_Oan3Ci0mrRJhW-vrfhHZuZhDbzOcVWtxORa8C4JdWGiVeGjXxML1aaaBI8SMSk-c0Nf7choTT4Lj1Fm7FQgR3yP2S_zsmGF-ntWdO4kKo7GchMCmW0Z4ev02UNkM5VS4FJKr41rP/http%3A%2F%2Fbioconductor.org%2FcheckResults%2Fdevel%2Fbioc-LATEST%2FRenviron.bioc >
+Renviron.bioc
+* and build as described in the build report:
+    # R_ENVIRON_USER=Renviron.bioc R CMD build --keep-empty-dirs
+--no-resave-data rrvgo
+```
+
+Hope this helps.
+
+Cheers,
+Sergi
+
+Missatge de CHEN Ying <chen_ying at gis.a-star.edu.sg> del dia dl., 21 de
+febr. 2022 a les 3:31:
+
+>
+> Hi Bioc-devel team,
+>
+> I am trying to debug the build error of the bambu development branch, and the report suggested a problem in loading data from the ExperimentHub package. With the same ubuntu system and R version, I can't seem to reproduce the errors on my laptop. Could someone help me with this? The build error has been there for quite some time. Do I need to re-upload the data?
+>
+> Thank you
+> Regards,
+> Ying
+> This e-mail and any attachments are only for the use of the intended recipient and may contain material that is confidential, privileged and/or protected by the Official Secrets Act. If you are not the intended recipient, please delete it or notify the sender immediately. Please do not copy or use it for any purpose or disclose the contents to any other person.
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://secure-web.cisco.com/160cddQU7Wl8jNei-eWMr11o56-gDDBOU-L__dH8ND6ivCy7ucerdfvRP5iUEHYetATEci0ALiO8mL2M4gtLAw3VhIpskFEyzgoJaDSylJXP4avovf7qsE8ds9wBMWMsJqwTWUoqCRah6xg-cfmnihYmlBedh8OPEqwZQh0jhxzLsubujnaIoem8LlxYVKK9-ioFDIUPRAca70ozBjrU_wWXeGd_ZDsZvt6ed9fMwEV22Lbl5xkdeQ8tYjNM5AdzxNYIZCJl41VCVdFFgmt3zrRzyQmsWXh9mYN2jz4tzbkOR_0VruqtBEkXCpAGMmkL6/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+This e-mail and any attachments are only for the use of the intended recipient and may contain material that is confidential, privileged and/or protected by the Official Secrets Act. If you are not the intended recipient, please delete it or notify the sender immediately. Please do not copy or use it for any purpose or disclose the contents to any other person.
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://secure-web.cisco.com/160cddQU7Wl8jNei-eWMr11o56-gDDBOU-L__dH8ND6ivCy7ucerdfvRP5iUEHYetATEci0ALiO8mL2M4gtLAw3VhIpskFEyzgoJaDSylJXP4avovf7qsE8ds9wBMWMsJqwTWUoqCRah6xg-cfmnihYmlBedh8OPEqwZQh0jhxzLsubujnaIoem8LlxYVKK9-ioFDIUPRAca70ozBjrU_wWXeGd_ZDsZvt6ed9fMwEV22Lbl5xkdeQ8tYjNM5AdzxNYIZCJl41VCVdFFgmt3zrRzyQmsWXh9mYN2jz4tzbkOR_0VruqtBEkXCpAGMmkL6/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From y@ochung@chen @end|ng |rom |u-ber||n@de  Mon Feb 21 19:01:22 2022
+From: y@ochung@chen @end|ng |rom |u-ber||n@de (Yao-Chung Chen)
+Date: Mon, 21 Feb 2022 19:01:22 +0100
+Subject: [Bioc-devel] Build Error: "ggpubr suggested but not available"
+ (package: TEKRABber)
+Message-ID: <63997.87.77.187.190.1645466482.webmail@webmail.zedat.fu-berlin.de>
+
+Hello everyone,
+
+My package, TEKRABber, is accepted. However it faces "Package suggested
+but not available: ggpubr" ERROR when runs check on the merida1(macOS) on
+git at git.bioconductor.org. (Report:
+https://bioconductor.org/checkResults/3.15/bioc-LATEST/TEKRABber/merida1-checksrc.html)
+
+I think this situation is similar to "mosbi" package with not available
+"runibic"
+(https://www.mail-archive.com/bioc-devel at r-project.org/msg14682.html).
+
+I would like to know if it is possible for merida1 to provide ggpubr with
+its dependencies before the next release? If not, is there any suggestions
+for this issue?
+
+Thank you for your time!
+
+Best,
+Yao-Chung
+
+
+From y@ochung@chen @end|ng |rom |u-ber||n@de  Tue Feb 22 09:55:19 2022
+From: y@ochung@chen @end|ng |rom |u-ber||n@de (Yao-Chung Chen)
+Date: Tue, 22 Feb 2022 09:55:19 +0100
+Subject: [Bioc-devel] TEKRABber package: Package suggested but not
+ available: ggpubr
+Message-ID: <50084.87.77.187.190.1645520119.webmail@webmail.zedat.fu-berlin.de>
+
+Hello everyone,
+
+My package, TEKRABber, is accepted. However it faces "Package suggested
+but not available: ggpubr" ERROR when runs check on the merida1(macOS) on
+git at git.bioconductor.org. (Report:
+https://bioconductor.org/checkResults/3.15/bioc-LATEST/TEKRABber/merida1-checksrc.html)
+
+I think this situation is similar to "mosbi" package with not available
+"runibic"
+(https://www.mail-archive.com/bioc-devel at r-project.org/msg14682.html).
+
+I would like to know if it is possible for merida1 to provide ggpubr with
+its dependencies before the next release? If not, is there any suggestions
+for this issue?
+
+Thank you for your time!
+
+p.s. Sorry I did not add [Bioc-devel] at the front of my previous email,
+so I send this email again.
+
+Best,
+Yao-Chung
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Wed Feb 23 14:30:39 2022
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Wed, 23 Feb 2022 13:30:39 +0000
+Subject: [Bioc-devel] TEKRABber package: Package suggested but not
+ available: ggpubr
+In-Reply-To: <50084.87.77.187.190.1645520119.webmail@webmail.zedat.fu-berlin.de>
+References: <50084.87.77.187.190.1645520119.webmail@webmail.zedat.fu-berlin.de>
+Message-ID: <BL1PR12MB5301C2F5B9A8F927F0AF4C86F93C9@BL1PR12MB5301.namprd12.prod.outlook.com>
+
+Bioc devel is currently using R-devel.   It presents an interesting problem that CRAN sometimes has not yet created the macos binary for use.  Which appears to be the case per the CRAN package page
+
+https://cran.r-project.org/web/packages/ggpubr/index.html
+
+As soon as it becomes available on CRAN then it will be available on our builders.  You do not need to do anything at this time and can ignore the ERROR.  We don't do manual installs of these packages before they become available as we can't ensure compatibility otherwise.
+
+Cheers,
+
+
+
+
+Lori Shepherd - Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Yao-Chung Chen <yaochung.chen at fu-berlin.de>
+Sent: Tuesday, February 22, 2022 3:55 AM
+To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: [Bioc-devel] TEKRABber package: Package suggested but not available: ggpubr
+
+Hello everyone,
+
+My package, TEKRABber, is accepted. However it faces "Package suggested
+but not available: ggpubr" ERROR when runs check on the merida1(macOS) on
+git at git.bioconductor.org. (Report:
+https://secure-web.cisco.com/1XKYpwAWLQEmKJiZyfrNKdQYVNZUV0puFC-jDON7YWBEvOMTVSasq_JCtZSlWSVL4chpaMn-QP0k5S144h_hPhLGJOuL9-cRsxro_4ovw-PYRsk151J4WZpZjhoLeRvQAfQyRFCXoH41UdZZnGlQjk7hyevFmBi2-UJ8RnEe-k9bFMbvjvKIsj61X_s_fUcHz-YJ-t-A75kFOJtC7BZEMPn_SIZIWR1MtizIJ45lgfKzN-YzxeOClUPFPPab46DWQ6koTrlwEvjbXTxmazbFecX1apjpZRnpBX4ExIBYwmaf3wfNrFsqhEa2Jp7701Q0V/https%3A%2F%2Fbioconductor.org%2FcheckResults%2F3.15%2Fbioc-LATEST%2FTEKRABber%2Fmerida1-checksrc.html)
+
+I think this situation is similar to "mosbi" package with not available
+"runibic"
+(https://secure-web.cisco.com/1oi10jt_k1jmLe3KPqO7XgUJreQdd_5kLira44x6NwTwQ27TMYJ4H5eqirsqsB_4eSauCdEL4SFP6EZ-sZPSi02Jhi52HiYvKyqK0TU90glcyVW_iQFCj681xOANU7t89WQWr3Tx-L8pMapcoEO2IKJx2eKgjjCSQVdoBg82V_VNo8Z7U7hhigWdMY961g8JaCJHCxAoRnyuMar8X1G4HaydhgjbizkKwu43wvuOXQKAwN16b0Yw-W3xmvOGaMxu8Pubs8UvAqkDdN7OTpT7PJhDOVQSAe6akWJ3OhzLGXbCMHsFGwZbKkjHrWXGlWIEu/https%3A%2F%2Fwww.mail-archive.com%2Fbioc-devel%40r-project.org%2Fmsg14682.html).
+
+I would like to know if it is possible for merida1 to provide ggpubr with
+its dependencies before the next release? If not, is there any suggestions
+for this issue?
+
+Thank you for your time!
+
+p.s. Sorry I did not add [Bioc-devel] at the front of my previous email,
+so I send this email again.
+
+Best,
+Yao-Chung
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://secure-web.cisco.com/1778rIr99JlY7rsHajo_p1OFF7-is08PEbTRe4O_UbPa6wMWObCZjyEWCXhOf5El-BnJmNYfFR5YGtRktYIsun0htV0rrjbQmN5KJXCxyfZZaQ9Mc3eMYItfK3T1qYfDha5qKvIVXcILHUR3Y7Pks1kXWm_24A23mfLDJJzbhtJREIfVTcF6oZ43953wN_62HrsyppNuBp_abinJsCXuDsmGIbCFDTyc-VmOv9ukI-a7FwtesOTkmmlhrdw4bbuhxj5Ve4-y-TEEyesaLuaxm58ff5YsIMDGclkq2kJ00nW-rTr7eEbpB80eUJe1ijkpL/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From Jenn||er@Wok@ty @end|ng |rom @ph@cuny@edu  Wed Feb 23 14:34:44 2022
+From: Jenn||er@Wok@ty @end|ng |rom @ph@cuny@edu (Jennifer Wokaty)
+Date: Wed, 23 Feb 2022 13:34:44 +0000
+Subject: [Bioc-devel] Build Error: "ggpubr suggested but not available"
+ (package: TEKRABber)
+In-Reply-To: <63997.87.77.187.190.1645466482.webmail@webmail.zedat.fu-berlin.de>
+References: <63997.87.77.187.190.1645466482.webmail@webmail.zedat.fu-berlin.de>
+Message-ID: <1645623287462.79535@sph.cuny.edu>
+
+I recently updated R on merida1 and noticed some packages were missing. Although I haven't gotten all of them yet, I did install ggpubr yesterday, so you should see the error clear up within a day or two on the build report for merida1. 
+
+Jennifer Wokaty
+Bioconductor Core Team
+
+________________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Yao-Chung Chen <yaochung.chen at fu-berlin.de>
+Sent: Monday, February 21, 2022 1:01 PM
+To: bioc-devel at r-project.org
+Subject: [Bioc-devel] Build Error: "ggpubr suggested but not available" (package: TEKRABber)
+
+***ATTENTION: This email came from an external source. Do not open attachments or click on links from unknown senders or unexpected emails.***
+
+Hello everyone,
+
+My package, TEKRABber, is accepted. However it faces "Package suggested
+but not available: ggpubr" ERROR when runs check on the merida1(macOS) on
+git at git.bioconductor.org. (Report:
+https://urldefense.proofpoint.com/v2/url?u=https-3A__bioconductor.org_checkResults_3.15_bioc-2DLATEST_TEKRABber_merida1-2Dchecksrc.html&d=DwICAg&c=mRWFL96tuqj9V0Jjj4h40ddo0XsmttALwKjAEOCyUjY&r=FKSqKXkUOES-D4VQb2jSn9QK7Vz5lE18rLcyn73CPhA&m=rUXl1c8Vc4hE_mrkOKJxTtZ20hKiR6dWHT7d5aqJy9o&s=kocSId-bMF7qT7l6TOt7_-OkmLWPbKL2LQyv3S-KtWo&e= )
+
+I think this situation is similar to "mosbi" package with not available
+"runibic"
+(https://urldefense.proofpoint.com/v2/url?u=https-3A__www.mail-2Darchive.com_bioc-2Ddevel-40r-2Dproject.org_msg14682.html&d=DwICAg&c=mRWFL96tuqj9V0Jjj4h40ddo0XsmttALwKjAEOCyUjY&r=FKSqKXkUOES-D4VQb2jSn9QK7Vz5lE18rLcyn73CPhA&m=rUXl1c8Vc4hE_mrkOKJxTtZ20hKiR6dWHT7d5aqJy9o&s=qiBXdcHLeemiSEPkZYm_np3jIjgqtY-EheVp8t38Iwk&e= ).
+
+I would like to know if it is possible for merida1 to provide ggpubr with
+its dependencies before the next release? If not, is there any suggestions
+for this issue?
+
+Thank you for your time!
+
+Best,
+Yao-Chung
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://urldefense.proofpoint.com/v2/url?u=https-3A__stat.ethz.ch_mailman_listinfo_bioc-2Ddevel&d=DwICAg&c=mRWFL96tuqj9V0Jjj4h40ddo0XsmttALwKjAEOCyUjY&r=FKSqKXkUOES-D4VQb2jSn9QK7Vz5lE18rLcyn73CPhA&m=rUXl1c8Vc4hE_mrkOKJxTtZ20hKiR6dWHT7d5aqJy9o&s=-7tCbBd2y87U2vvOmbRbelgvTTabsetrWEDTPh41-hA&e=
+
+
+From Jenn||er@Wok@ty @end|ng |rom @ph@cuny@edu  Wed Feb 23 15:14:28 2022
+From: Jenn||er@Wok@ty @end|ng |rom @ph@cuny@edu (Jennifer Wokaty)
+Date: Wed, 23 Feb 2022 14:14:28 +0000
+Subject: [Bioc-devel] error on riesling1 but not on palomino3
+In-Reply-To: <CAOxY_Kw5T62xqQuQPcZ9Uxvt=nH4yv3q-VO4BsGK+dqGBa_SuQ@mail.gmail.com>
+References: <CAOxY_Kw5T62xqQuQPcZ9Uxvt=nH4yv3q-VO4BsGK+dqGBa_SuQ@mail.gmail.com>
+Message-ID: <1645625671350.58254@sph.cuny.edu>
+
+Hi Oleksii,
+
+Palomino3, which has the new UCRT toolchain to allow native support of UTF-8 and non-European languages, will replace Riesling1 soon, so please disregard the error on Riesling1, which is only running for historical reference.
+
+We're also working on a way to help troubleshoot issues related to Windows environments.
+
+Jennifer Wokaty
+Bioconductor Core Team
+
+________________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Oleksii Nikolaienko <oleksii.nikolaienko at gmail.com>
+Sent: Wednesday, February 23, 2022 4:44 AM
+To: bioc-devel at r-project.org
+Subject: [Bioc-devel] error on riesling1 but not on palomino3
+
+***ATTENTION: This email came from an external source. Do not open attachments or click on links from unknown senders or unexpected emails.***
+
+Dear Bioc team,
+my package (epiallleleR) currently fails tests on riesling1, but not on the
+other hosts. Wrong results are produced by compiled c++ code, and at the
+moment I don't understand why. I can see that both Windows hosts use GCC
+8.3.0, but the compiler flags are different. I don't have access to
+Windows, but I wasn't able to reproduce this error on my Linux with GCC
+7.5.0 when tried to set "-fno-reorder-blocks-and-partition" in my Makevars,
+or did "pkgbuild::with_debug(devtools::check())".
+What are the other differences between riesling1 and palomino3? Is, for
+example, sizeof(int)<4? And what can I do to debug it if I don't have
+Windows around?
+
+Best regards,
+Oleksii
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://urldefense.proofpoint.com/v2/url?u=https-3A__stat.ethz.ch_mailman_listinfo_bioc-2Ddevel&d=DwICAg&c=mRWFL96tuqj9V0Jjj4h40ddo0XsmttALwKjAEOCyUjY&r=FKSqKXkUOES-D4VQb2jSn9QK7Vz5lE18rLcyn73CPhA&m=B6xvuxERd0zSWbao7oo7byBakBmrV9_gcBwdPoQjWfU&s=CaWbJnskDbCqNtl0c7wj_FQLs6tJcb5PktYg_0E9h10&e=
+
+
+From bhuv@@d @end|ng |rom weh|@edu@@u  Thu Feb 24 01:18:09 2022
+From: bhuv@@d @end|ng |rom weh|@edu@@u (Dharmesh Bhuva)
+Date: Thu, 24 Feb 2022 00:18:09 +0000
+Subject: [Bioc-devel] vissE: error on palomino, not riesling
+Message-ID: <MEYP282MB23578ADAAB082F05DEBFC9BFAB3D9@MEYP282MB2357.AUSP282.PROD.OUTLOOK.COM>
+
+Hi,
+
+My package, vissE, is currently passing all tests on all systems except for palomino. The error seems to be created in the vignette when I try to download some external data (error: "SSL connect error"). Is this something wrong on my end or is there some configuration on palomino that prevents data access?
+
+Cheers,
+
+Dharmesh D. Bhuva
+Research officer
+Walter & Eliza Hall Institute of Medical Research
+
+
+[WEHI Logo]
+
+
+Walter and Eliza Hall Institute of Medical Research
+1G Royal Parade Parkville Victoria 3052 Australia
+
+www.wehi.edu.au<https://wehi.edu.au>
+
+Twitter<https://twitter.com/WEHI_research>  |  Facebook<https://www.facebook.com/WEHIresearch/>  |  Instagram<https://www.instagram.com/wehi_research>  |  Youtube<https://www.youtube.com/user/WEHImovies>  |  LinkedIn<https://www.linkedin.com/company/wehi_research>
+
+
+WEHI acknowledges the Wurundjeri people of the Kulin Nation as the traditional owners of the land where our campuses are located and the continuing connection to country and community.
+
+Private and confidential
+The content of this e-mail and any attachments may be private and confidential, intended only for use of the individual or entity named. If you are not the intended recipient of this message you must not read, forward, print, copy, disclose, use or store in any way the information this e-mail or any attachment contains. If you are not the intended recipient, please notify the sender immediately and delete or destroy all copies of this e-mail and any attachment.
+
+	[[alternative HTML version deleted]]
+
+
+From o|ek@||@n|ko|@|enko @end|ng |rom gm@||@com  Thu Feb 24 11:05:33 2022
+From: o|ek@||@n|ko|@|enko @end|ng |rom gm@||@com (Oleksii Nikolaienko)
+Date: Thu, 24 Feb 2022 11:05:33 +0100
+Subject: [Bioc-devel] error on riesling1 but not on palomino3
+In-Reply-To: <1645625671350.58254@sph.cuny.edu>
+References: <CAOxY_Kw5T62xqQuQPcZ9Uxvt=nH4yv3q-VO4BsGK+dqGBa_SuQ@mail.gmail.com>
+ <1645625671350.58254@sph.cuny.edu>
+Message-ID: <CAOxY_Kyd=G5wHM8RY0J7OcrGkTUtAS-hEmasVNpcEeSbToCWHQ@mail.gmail.com>
+
+Thanks Jennifer,
+I tried to fix it and now ran into another (known?) issue because of lack
+of proper support for ?snprintf?. I would like to disregard this error, but
+could you please confirm that it won?t be a problem for a coming Bioc
+release? Package is marked as failing its build on the dev package page?
+
+Best,
+Oleksii
+
+On Wed, 23 Feb 2022 at 15:14, Jennifer Wokaty <Jennifer.Wokaty at sph.cuny.edu>
+wrote:
+
+> Hi Oleksii,
+>
+> Palomino3, which has the new UCRT toolchain to allow native support of
+> UTF-8 and non-European languages, will replace Riesling1 soon, so please
+> disregard the error on Riesling1, which is only running for historical
+> reference.
+>
+> We're also working on a way to help troubleshoot issues related to Windows
+> environments.
+>
+> Jennifer Wokaty
+> Bioconductor Core Team
+>
+> ________________________________________
+> From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Oleksii
+> Nikolaienko <oleksii.nikolaienko at gmail.com>
+> Sent: Wednesday, February 23, 2022 4:44 AM
+> To: bioc-devel at r-project.org
+> Subject: [Bioc-devel] error on riesling1 but not on palomino3
+>
+> ***ATTENTION: This email came from an external source. Do not open
+> attachments or click on links from unknown senders or unexpected emails.***
+>
+> Dear Bioc team,
+> my package (epiallleleR) currently fails tests on riesling1, but not on the
+> other hosts. Wrong results are produced by compiled c++ code, and at the
+> moment I don't understand why. I can see that both Windows hosts use GCC
+> 8.3.0, but the compiler flags are different. I don't have access to
+> Windows, but I wasn't able to reproduce this error on my Linux with GCC
+> 7.5.0 when tried to set "-fno-reorder-blocks-and-partition" in my Makevars,
+> or did "pkgbuild::with_debug(devtools::check())".
+> What are the other differences between riesling1 and palomino3? Is, for
+> example, sizeof(int)<4? And what can I do to debug it if I don't have
+> Windows around?
+>
+> Best regards,
+> Oleksii
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+>
+> https://urldefense.proofpoint.com/v2/url?u=https-3A__stat.ethz.ch_mailman_listinfo_bioc-2Ddevel&d=DwICAg&c=mRWFL96tuqj9V0Jjj4h40ddo0XsmttALwKjAEOCyUjY&r=FKSqKXkUOES-D4VQb2jSn9QK7Vz5lE18rLcyn73CPhA&m=B6xvuxERd0zSWbao7oo7byBakBmrV9_gcBwdPoQjWfU&s=CaWbJnskDbCqNtl0c7wj_FQLs6tJcb5PktYg_0E9h10&e=
+>
+
+	[[alternative HTML version deleted]]
+
+
+From chen_y|ng @end|ng |rom g|@@@-@t@r@edu@@g  Thu Feb 24 13:31:58 2022
+From: chen_y|ng @end|ng |rom g|@@@-@t@r@edu@@g (CHEN Ying)
+Date: Thu, 24 Feb 2022 12:31:58 +0000
+Subject: [Bioc-devel] 
+ Can't reproduce the build errors with same system and R version
+In-Reply-To: <BL1PR12MB53014603044A045E2860749CF93C9@BL1PR12MB5301.namprd12.prod.outlook.com>
+References: <SG2PR01MB2919724A8A7714AEA725E494D73C9@SG2PR01MB2919.apcprd01.prod.exchangelabs.com>
+ <BL1PR12MB53014603044A045E2860749CF93C9@BL1PR12MB5301.namprd12.prod.outlook.com>
+Message-ID: <SG2PR01MB29197D86A1C97F3AD34978E3D73D9@SG2PR01MB2919.apcprd01.prod.exchangelabs.com>
+
+Thank you for fixing this, Lori. The build error is gone now.
+
+Regards,
+Ying
+________________________________
+From: Kern, Lori <Lori.Shepherd at RoswellPark.org>
+Sent: Wednesday, 23 February 2022 7:57 pm
+To: CHEN Ying <chen_ying at gis.a-star.edu.sg>; sergi sayols puig <sergisayolspuig at gmail.com>
+Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: Re: [Bioc-devel] Can't reproduce the build errors with same system and R version
+
+I had a look at the downloaded data from the hub and it looks like there might have been a bad file download.  I have reset the cache on nebbiolo1.  Let's see if it clears up over the next 2 days otherwise we can follow up with assistance debugging.
+
+Cheers,
+
+
+Lori Shepherd - Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of CHEN Ying <chen_ying at gis.a-star.edu.sg>
+Sent: Wednesday, February 23, 2022 6:40 AM
+To: sergi sayols puig <sergisayolspuig at gmail.com>
+Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: Re: [Bioc-devel] Can't reproduce the build errors with same system and R version
+
+Hi Sergi,
+
+Thank you so much for your help! The docker image solution is very useful. I am able to get it run. However, I still can't reproduce the errors, which to me look like a ExperimentHub connection issue.
+
+Thanks a lot anyways!!
+Regards,
+Ying
+
+
+________________________________
+From: sergi sayols puig <sergisayolspuig at gmail.com>
+Sent: Tuesday, 22 February 2022 5:38 pm
+To: CHEN Ying <chen_ying at gis.a-star.edu.sg>
+Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: Re: [Bioc-devel] Can't reproduce the build errors with same system and R version
+
+Hi Ying,
+with regard to reproducing the build environment used in
+Bioconductor's build machines, I've been quite successful using
+Bioconductor's docker image.
+Here's an example to create the build environment and building the
+rrvgo package in it:
+
+```
+* pull docker image
+    $ docker pull bioconductor/bioconductor_docker:devel
+* open a shell in the running container:
+    $ docker exec -it bioconductor/bioconductor_docker:devel /bin/bash
+* install package + dependencies (within the container):
+    # R
+    R> install.packages("BiocManager")
+    R> BiocManager::install(version='devel')
+    R> BiocManager::install(c("rrvgo", "org.Hs.eg.db"))   # the latetr
+is required to build the vignette
+    R> q()
+* clone the devel branch of the package:
+    # git clone https://secure-web.cisco.com/1j3I9olTt5f0WTOwBiDaa_qk0tQv_3JWPoYWTIWLbVwH7dNX3eEKu6lCSUvU3CD4zgiod_sTOzpamY7w6HAPyBpqTS7NVr6gRo9Wq-GcE9kWsnSc129W8D8TcsoGyIf4DEQIs7arOeF1YMUgqjXaJqUOwmgYn0zjRClgCY-cEaY7QHLag670QC1LVZNJ0EabTuL8oGlxfDWprLxoLp0kDRUqsZieFBJJacM0T3dTk_PTWACkX5sRLJBQqVdsKvd20Uqi-ElcpVQIx0OADh-Yg5gbSu3TI1bhUhYHDt2fqjBALy3nKW4Oib15hXs7gjTaF/https%3A%2F%2Fgit.bioconductor.org%2Fpackages%2Frrvgo
+* get nebbiolo1's .Renviron:
+    # wget -qO-
+http://secure-web.cisco.com/1ZcHL7ar03hb6LyJ18L3hutm5VKAna5fZP1WgvcIHkFGq0uOxaEcej0kixKYzyuniW2C02zlW3199R8dVSTBg3xhsh7FsZFD9YldGmtjK7riTRRHhVEtFcWJvYRb4n_ioVxwcJ1EnOEQM4mGggeZ9DMSqsxYpAm4UUkvI0Mf2ydu8Me5cfJAdQ6P_Oan3Ci0mrRJhW-vrfhHZuZhDbzOcVWtxORa8C4JdWGiVeGjXxML1aaaBI8SMSk-c0Nf7choTT4Lj1Fm7FQgR3yP2S_zsmGF-ntWdO4kKo7GchMCmW0Z4ev02UNkM5VS4FJKr41rP/http%3A%2F%2Fbioconductor.org%2FcheckResults%2Fdevel%2Fbioc-LATEST%2FRenviron.bioc >
+Renviron.bioc
+* and build as described in the build report:
+    # R_ENVIRON_USER=Renviron.bioc R CMD build --keep-empty-dirs
+--no-resave-data rrvgo
+```
+
+Hope this helps.
+
+Cheers,
+Sergi
+
+Missatge de CHEN Ying <chen_ying at gis.a-star.edu.sg> del dia dl., 21 de
+febr. 2022 a les 3:31:
+
+>
+> Hi Bioc-devel team,
+>
+> I am trying to debug the build error of the bambu development branch, and the report suggested a problem in loading data from the ExperimentHub package. With the same ubuntu system and R version, I can't seem to reproduce the errors on my laptop. Could someone help me with this? The build error has been there for quite some time. Do I need to re-upload the data?
+>
+> Thank you
+> Regards,
+> Ying
+> This e-mail and any attachments are only for the use of the intended recipient and may contain material that is confidential, privileged and/or protected by the Official Secrets Act. If you are not the intended recipient, please delete it or notify the sender immediately. Please do not copy or use it for any purpose or disclose the contents to any other person.
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://secure-web.cisco.com/160cddQU7Wl8jNei-eWMr11o56-gDDBOU-L__dH8ND6ivCy7ucerdfvRP5iUEHYetATEci0ALiO8mL2M4gtLAw3VhIpskFEyzgoJaDSylJXP4avovf7qsE8ds9wBMWMsJqwTWUoqCRah6xg-cfmnihYmlBedh8OPEqwZQh0jhxzLsubujnaIoem8LlxYVKK9-ioFDIUPRAca70ozBjrU_wWXeGd_ZDsZvt6ed9fMwEV22Lbl5xkdeQ8tYjNM5AdzxNYIZCJl41VCVdFFgmt3zrRzyQmsWXh9mYN2jz4tzbkOR_0VruqtBEkXCpAGMmkL6/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+This e-mail and any attachments are only for the use of the intended recipient and may contain material that is confidential, privileged and/or protected by the Official Secrets Act. If you are not the intended recipient, please delete it or notify the sender immediately. Please do not copy or use it for any purpose or disclose the contents to any other person.
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://secure-web.cisco.com/160cddQU7Wl8jNei-eWMr11o56-gDDBOU-L__dH8ND6ivCy7ucerdfvRP5iUEHYetATEci0ALiO8mL2M4gtLAw3VhIpskFEyzgoJaDSylJXP4avovf7qsE8ds9wBMWMsJqwTWUoqCRah6xg-cfmnihYmlBedh8OPEqwZQh0jhxzLsubujnaIoem8LlxYVKK9-ioFDIUPRAca70ozBjrU_wWXeGd_ZDsZvt6ed9fMwEV22Lbl5xkdeQ8tYjNM5AdzxNYIZCJl41VCVdFFgmt3zrRzyQmsWXh9mYN2jz4tzbkOR_0VruqtBEkXCpAGMmkL6/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+This email message may contain legally privileged and/or confidential information. If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited. If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+This e-mail and any attachments are only for the use of the intended recipient and may contain material that is confidential, privileged and/or protected by the Official Secrets Act. If you are not the intended recipient, please delete it or notify the sender immediately. Please do not copy or use it for any purpose or disclose the contents to any other person.
+
+	[[alternative HTML version deleted]]
+
+

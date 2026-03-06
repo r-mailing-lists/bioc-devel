@@ -1,0 +1,549 @@
+{
+  "list": "bioc-devel",
+  "description": "",
+  "month": "2009-12",
+  "messages": [
+    {
+      "id": "msg-dff948cba39d",
+      "message_id": "<4B158C22.6010806@fhcrc.org>",
+      "from_name": "Marc Carlson",
+      "from_email_hash": "63182bae9b15df223407341203cb8ed095d4cf2c8e9f0f84a8b7320bd591907d",
+      "date": "2009-12-01T13:35:30-08:00",
+      "subject": "[Bioc-devel] Oddity in hgu133plus2.db?",
+      "subject_clean": "[Bioc-devel] Oddity in hgu133plus2.db?",
+      "in_reply_to": "<4d9dc8480911250732w3748d0fdof9e10d9345cd380@mail.gmail.com>",
+      "references": [
+        "<4B0CD7DC020000EE0009027E@gwia01x.med.umich.edu>",
+        "<4d9dc8480911250449n4b67f796qb6cd97a70bb9b08f@mail.gmail.com>",
+        "<4B0D353B.5010606@med.umich.edu>",
+        "<4d9dc8480911250732w3748d0fdof9e10d9345cd380@mail.gmail.com>"
+      ],
+      "body_plain": "Hi Lasse,\n\nJust to clarify and add some comments:  The behavior of Rkeys() on these\nmappings is actually the same as it has been before, it has always\nreturned the total right keys (whether they have been mapped or not). \nTo get mapped right keys you would want to use mappedRkeys().  The\ndifference is that now the possible unmapped right keys have been\nexpanded to include all possible keys (gene symbols for this example),\nwhile before this was artificially subset to only the keys for genes\nrepresented by the platform. \n\nNow for some platforms, this may mean that before the value of Rkeys(x)\ncould have sometimes been the same as mappedRkeys(x).  And this could\nhave happened if everything in 'x' was mapped on that platform.  But\nthis was only ever a serendipitous situation, and not meant to be relied\nupon.  So if you want to really check for mapped keys you will should\nuse mappedRkeys().\n\nI hope this clarifies things,\n\n\n  Marc\n\n\n\nLasse Folkersen wrote:\n> Ok. I'll put checks for gensymbols linking to NA values for probeset\n> into my code in the future. Thank you so much for the info.\n> Lasse\n>\n> 2009/11/25 James W. MacDonald <jmacdon at med.umich.edu>:\n>   \n>> I should change slightly what I have said. The hgu133plus2.db package in the\n>> new version of BioC has changed quite a bit, and no longer contains much\n>> data. Instead, it is a thin wrapper for the org.Hs.eg.db package.\n>>\n>> Since org.Hs.eg.db *does* contain mappings for this symbol, the Rkey exists:\n>>\n>>     \n>>> grep(\"CD68\", Rkeys(hgu133plus2SYMBOL), value=T)\n>>>       \n>> [1] \"CD68\"\n>>\n>> But this doesn't mean this gene product is interrogated by the hgu133plus2\n>> chip. The Lkey for this symbol is NA, because a matching probeset is Not\n>> Available on the hgu133plus2 chip.\n>>\n>> So the behavior is consistent - there is a Rkey for this symbol, but the\n>> Lkey is NA.\n>>\n>> Best,\n>>\n>> Jim\n>>\n>>\n>>\n>> Lasse Folkersen wrote:\n>>     \n>>> I see. Its just when genes doesn't exist in a table they usually gives\n>>> error messages, like this:\n>>>\n>>> get(\"whatever\", revmap(hgu133plus2SYMBOL))\n>>> Error in .checkKeys(value, Rkeys(x), x at ifnotfound) :\n>>>  value for \"whatever\" not found\n>>>\n>>> instead of NA. When asking for existence\n>>> \"CD68\" %in% Rkeys(hgu133plus2SYMBOL)\n>>> it does gives TRUE\n>>>\n>>> So I thought it could have been a bug or un-wanted behaviour. But\n>>> thanks for your answer.\n>>> Lasse\n>>>\n>>> 2009/11/25 James MacDonald <jmacdon at med.umich.edu>:\n>>>       \n>>>> Hi Lasse,\n>>>>\n>>>> This gene doesn't exist in that table:\n>>>>\n>>>>         \n>>>>> get(\"CD68\", revmap(hgu133plus2SYMBOL))\n>>>>>           \n>>>> [1] NA\n>>>>\n>>>> It just so happens that selecting things the way you did returns an empty\n>>>> ProbeAnnDbBimap, which when converted to character gives you character(0).\n>>>>\n>>>>         \n>>>>> revmap(hgu133plus2SYMBOL)[\"CD68\"]\n>>>>>           \n>>>> revmap(SYMBOL) submap for chip hgu133plus2 (object of class\n>>>> \"ProbeAnnDbBimap\")\n>>>>\n>>>> Best,\n>>>>\n>>>> Jim\n>>>>\n>>>>\n>>>>         \n>>>>>>> Lasse Folkersen <lasse.folkersen at ki.se> 11/25/09 6:40 AM >>>\n>>>>>>>               \n>>>> I know it is a very specific case, but this seems to me like a general\n>>>> error:\n>>>>\n>>>> in hgu133plus2.db package, using\n>>>> as.character(revmap(hgu133plus2SYMBOL)[\"CD68\"])\n>>>> returns\n>>>> named character(0)\n>>>> Now, it may be that annotations change, but isn't it a mistake that\n>>>> there exists an Rkey entry for the gene which links to nothing?\n>>>> Usually genes with no known probesets just didn't exist in the\n>>>> database at all.\n>>>>\n>>>> Best regards\n>>>> Lasse\n>>>>\n>>>> _______________________________________________\n>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>\n>>>> **********************************************************\n>>>> Electronic Mail is not secure, may not be read every day, and should not\n>>>> be used for urgent or sensitive issues\n>>>>\n>>>>         \n>> --\n>> James W. MacDonald, M.S.\n>> Biostatistician\n>> Douglas Lab\n>> University of Michigan\n>> Department of Human Genetics\n>> 5912 Buhl\n>> 1241 E. Catherine St.\n>> Ann Arbor MI 48109-5618\n>> 734-615-7826\n>> **********************************************************\n>> Electronic Mail is not secure, may not be read every day, and should not be\n>> used for urgent or sensitive issues\n>>\n>>     \n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n>",
+      "body_snippet": "Hi Lasse,\n\nJust to clarify and add some comments:  The behavior of Rkeys() on these\nmappings is actually the same as it has been before, it has always\nreturned the total right keys (whether they have ",
+      "thread_id": "thread-dff948cba39d",
+      "thread_depth": 0,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-1f9430c1d002",
+      "message_id": "<4B16B9C8.80203@fhcrc.org>",
+      "from_name": "Hervé Pagès",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2009-12-02T11:02:32-08:00",
+      "subject": "[Bioc-devel] our svn server is down",
+      "subject_clean": "[Bioc-devel] our svn server is down",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi developers,\n\nOur Subversion server at hedgehog.fhcrc.org is currently down due\nto a hardware failure early this morning. The IT people here at the\nHutch are working hard to come with a rescue plan. They've replaced\nthe hardware, the new hedgehog is up and running again, and, if\neverything goes well, access to our Subversion repo should be\nworking again towards the end of the day. We'll keep you updated.\n\nThanks for your patience and sorry for the inconvenience!\n\n- The Seattle Team",
+      "body_snippet": "Hi developers,\n\nOur Subversion server at hedgehog.fhcrc.org is currently down due\nto a hardware failure early this morning. The IT people here at the\nHutch are working hard to come with a rescue plan.",
+      "thread_id": "thread-1f9430c1d002",
+      "thread_depth": 0,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-8264c8b584f5",
+      "message_id": "<4B16C2D7.7060906@fhcrc.org>",
+      "from_name": "Patrick Aboyoun",
+      "from_email_hash": "dc50c3c245d3952d5b85da1e198abf49dacd056ac9649061263764cf7191a8de",
+      "date": "2009-12-02T11:41:11-08:00",
+      "subject": "[Bioc-devel] our svn server is down",
+      "subject_clean": "[Bioc-devel] our svn server is down",
+      "in_reply_to": "<4B16B9C8.80203@fhcrc.org>",
+      "references": [
+        "<4B16B9C8.80203@fhcrc.org>"
+      ],
+      "body_plain": "I just received word that the Subversion server is back up again. IT is \nstill working on configuring the new hedgehog.fhcrc.org server, however, \nso there may be intermittent downtimes over the next four hours. To be \non the safe side, I would recommend using svn for check outs only until \nthe four hour window for IT work has completed. Thanks again for your \npatience!\n\n\nCheers,\nPatrick\n\n\n\nHerv? Pag?s wrote:\n> Hi developers,\n>\n> Our Subversion server at hedgehog.fhcrc.org is currently down due\n> to a hardware failure early this morning. The IT people here at the\n> Hutch are working hard to come with a rescue plan. They've replaced\n> the hardware, the new hedgehog is up and running again, and, if\n> everything goes well, access to our Subversion repo should be\n> working again towards the end of the day. We'll keep you updated.\n>\n> Thanks for your patience and sorry for the inconvenience!\n>\n> - The Seattle Team\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "I just received word that the Subversion server is back up again. IT is \nstill working on configuring the new hedgehog.fhcrc.org server, however, \nso there may be intermittent downtimes over the next ",
+      "thread_id": "thread-1f9430c1d002",
+      "thread_depth": 1,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-7d93f552aaa3",
+      "message_id": "<38475A805F094643B2BDE29E85B12E1B01521B79@maild.lumcnet.prod.intern>",
+      "from_name": "J.J.Goeman at lumc.nl",
+      "from_email_hash": "1f01fc7453ce37472270b221b03e9f97fdcb3e930204a17d17132c72bd23a5a6",
+      "date": "2009-12-04T14:09:23+01:00",
+      "subject": "[Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi",
+      "subject_clean": "[Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Dear all,\n\nI ran into a NAMESPACE problem, which I solved (more or less) but which\nI still want to share, because I do not completely understand what is\nhappening.\n\nOn Rcmd check, my package vignette gave the error\n\nError in as.list.default(alias) : \n  no method for coercing this S4 class to a vector\n\nThe culprit was a call of as.list(alias), where alias = hu6800SYMBOL,\ninside a function. Similar errors arose using mget on hu6800SYMBOL.\n\nAs the vignette ran without errors if I just sourced all my R files, I\nconcluded it must be a namespace problem. I INSTALLed my package with a\nbrowser() in the right location, and I was able to produce the following\noutput:\n\n> features(res, alias=hu6800SYMBOL)\nCalled from: covariates(...)\nBrowse[1]> class(alias)\n[1] \"ProbeAnnDbBimap\"\nattr(,\"package\")\n[1] \"AnnotationDbi\"\nBrowse[1]> showMethods(\"as.list\")\nFunction: as.list (package base)\nx=\"AgiAnnDbMap\"\nx=\"AnnDbBimap\"\nx=\"ANY\"\nx=\"Bimap\"\nx=\"EBMTP\"\nx=\"FlatBimap\"\n    (inherited from: x=\"Bimap\")\nx=\"GoAnnDbBimap\"\nx=\"GOTermsAnnDbBimap\"\nx=\"IpiAnnDbMap\"\nx=\"logical\"\n    (inherited from: x=\"ANY\")\nx=\"MTP\"\nx=\"ProbeAnnDbBimap\"\n    (inherited from: x=\"AnnDbBimap\")\nBrowse[1]> as.list(alias)\nError in as.list.default(alias) : \n  no method for coercing this S4 class to a vector\n\nClearly, AnnotationDbi is attached, but somehow as.list() is not able to\nfind the method for the ProbeAnnDbBimap object that is inherited from\nAnnDbBimap.\n\nAs I had already concluded that it was a namespace problem, I tried\nadding \n\nimportFrom(AnnotationDbi, as.list)\n\nto my NAMESPACE file. That solved the error (or worked around it?), but\nI don't really understand why.\n\nI'd be grateful if somebody who knows more about namespaces could\nexplain this issue to me.\n\nSession info below.\n\nJelle\n\n\nR version 2.10.0 (2009-10-26) \ni386-pc-mingw32 \n\nlocale:\n[1] LC_COLLATE=English_United Kingdom.1252 \n[2] LC_CTYPE=English_United Kingdom.1252   \n[3] LC_MONETARY=English_United Kingdom.1252\n[4] LC_NUMERIC=C                           \n[5] LC_TIME=English_United Kingdom.1252    \n\nattached base packages:\n[1] stats     graphics  grDevices utils     datasets  methods   base\n\n\nother attached packages:\n [1] annotate_1.24.0     KEGG.db_2.3.5       hu6800.db_2.3.5    \n [4] org.Hs.eg.db_2.3.6  RSQLite_0.7-3       DBI_0.2-4          \n [7] AnnotationDbi_1.8.1 vsn_3.14.0          golubEsets_1.4.7   \n[10] globaltest_5.1.1    Biobase_2.5.8      \n\nloaded via a namespace (and not attached):\n [1] affy_1.24.2          affyio_1.14.0        grid_2.10.0         \n [4] lattice_0.17-26      limma_2.19.1         MASS_7.3-4          \n [7] multtest_2.2.0       preprocessCore_1.7.4 splines_2.10.0      \n[10] survival_2.35-7      tools_2.10.0         xtable_1.5-6 \n\nwww.msbi.nl/goeman",
+      "body_snippet": "Dear all,\n\nI ran into a NAMESPACE problem, which I solved (more or less) but which\nI still want to share, because I do not completely understand what is\nhappening.\n\nOn Rcmd check, my package vignette ",
+      "thread_id": "thread-7d93f552aaa3",
+      "thread_depth": 0,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-e9e72d00a90d",
+      "message_id": "<4B194832.8050201@fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2009-12-04T09:34:42-08:00",
+      "subject": "[Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi",
+      "subject_clean": "[Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi",
+      "in_reply_to": "<38475A805F094643B2BDE29E85B12E1B01521B79@maild.lumcnet.prod.intern>",
+      "references": [
+        "<38475A805F094643B2BDE29E85B12E1B01521B79@maild.lumcnet.prod.intern>"
+      ],
+      "body_plain": "Hi Jelle --\n\nJ.J.Goeman at lumc.nl wrote:\n>  Dear all,\n> \n> I ran into a NAMESPACE problem, which I solved (more or less) but which\n> I still want to share, because I do not completely understand what is\n> happening.\n> \n> On Rcmd check, my package vignette gave the error\n> \n> Error in as.list.default(alias) : \n>   no method for coercing this S4 class to a vector\n> \n> The culprit was a call of as.list(alias), where alias = hu6800SYMBOL,\n> inside a function. Similar errors arose using mget on hu6800SYMBOL.\n> \n> As the vignette ran without errors if I just sourced all my R files, I\n> concluded it must be a namespace problem. I INSTALLed my package with a\n> browser() in the right location, and I was able to produce the following\n> output:\n> \n>> features(res, alias=hu6800SYMBOL)\n> Called from: covariates(...)\n> Browse[1]> class(alias)\n> [1] \"ProbeAnnDbBimap\"\n> attr(,\"package\")\n> [1] \"AnnotationDbi\"\n> Browse[1]> showMethods(\"as.list\")\n> Function: as.list (package base)\n> x=\"AgiAnnDbMap\"\n> x=\"AnnDbBimap\"\n> x=\"ANY\"\n> x=\"Bimap\"\n> x=\"EBMTP\"\n> x=\"FlatBimap\"\n>     (inherited from: x=\"Bimap\")\n> x=\"GoAnnDbBimap\"\n> x=\"GOTermsAnnDbBimap\"\n> x=\"IpiAnnDbMap\"\n> x=\"logical\"\n>     (inherited from: x=\"ANY\")\n> x=\"MTP\"\n> x=\"ProbeAnnDbBimap\"\n>     (inherited from: x=\"AnnDbBimap\")\n> Browse[1]> as.list(alias)\n> Error in as.list.default(alias) : \n>   no method for coercing this S4 class to a vector\n> \n> Clearly, AnnotationDbi is attached, but somehow as.list() is not able to\n> find the method for the ProbeAnnDbBimap object that is inherited from\n> AnnDbBimap.\n> \n> As I had already concluded that it was a namespace problem, I tried\n> adding \n> \n> importFrom(AnnotationDbi, as.list)\n> \n> to my NAMESPACE file. That solved the error (or worked around it?), but\n> I don't really understand why.\n\nAnnotationDbi promotes as.list to an S4 generic. Without the import,\nyour package finds base::as.list, which knows nothing of the generic\n(and methods associated with it). This is analogous to the situation\nwith a regular function.\n\nThere might be some additional complexity with the showMethods output.\nConsistent with my understanding, if in a new R session I\n\nlibrary(Biobase)\nlibrary(AnnotationDbi)\ndata(sample.ExpressionSet)\ntrace(pData, browser) # I'll be inside the Biobase name space\n\nI get\n\n> showMethods(as.list)\nFunction: as.list (package base)\nx=\"AgiAnnDbMap\"\nx=\"AnnDbBimap\"\nx=\"ANY\"\nx=\"Bimap\"\nx=\"GoAnnDbBimap\"\nx=\"GOTermsAnnDbBimap\"\nx=\"IpiAnnDbMap\"\n\n> pData(sample.ExpressionSet)\nTracing pData(phenoData(object)) on entry\nCalled from: eval(expr, envir, enclos)\nBrowse[1]> showMethods(as.list)\n\nFunction \"as.list\":\n <not a generic function>\n\nThere does seem to be a glitch here, though, because forcing name\nresolution rather than symbol look up results in\n\nBrowse[1]> showMethods(\"as.list\")\nFunction: as.list (package base)\nx=\"AgiAnnDbMap\"\nx=\"AnnDbBimap\"\nx=\"ANY\"\nx=\"Bimap\"\nx=\"GoAnnDbBimap\"\nx=\"GOTermsAnnDbBimap\"\nx=\"IpiAnnDbMap\"\n\nI guess logically this is making some sense -- as.list is not a generic,\nwhereas showMethods(\"as.list\") says explicitly to look for the methods\non the as.list generic, and since base::as.list is not a generic the\nsearch continues until AnnotationDbi::as.list is encountered.\n\nMartin\n\n> \n> I'd be grateful if somebody who knows more about namespaces could\n> explain this issue to me.\n> \n> Session info below.\n> \n> Jelle\n> \n> \n> R version 2.10.0 (2009-10-26) \n> i386-pc-mingw32 \n> \n> locale:\n> [1] LC_COLLATE=English_United Kingdom.1252 \n> [2] LC_CTYPE=English_United Kingdom.1252   \n> [3] LC_MONETARY=English_United Kingdom.1252\n> [4] LC_NUMERIC=C                           \n> [5] LC_TIME=English_United Kingdom.1252    \n> \n> attached base packages:\n> [1] stats     graphics  grDevices utils     datasets  methods   base\n> \n> \n> other attached packages:\n>  [1] annotate_1.24.0     KEGG.db_2.3.5       hu6800.db_2.3.5    \n>  [4] org.Hs.eg.db_2.3.6  RSQLite_0.7-3       DBI_0.2-4          \n>  [7] AnnotationDbi_1.8.1 vsn_3.14.0          golubEsets_1.4.7   \n> [10] globaltest_5.1.1    Biobase_2.5.8      \n> \n> loaded via a namespace (and not attached):\n>  [1] affy_1.24.2          affyio_1.14.0        grid_2.10.0         \n>  [4] lattice_0.17-26      limma_2.19.1         MASS_7.3-4          \n>  [7] multtest_2.2.0       preprocessCore_1.7.4 splines_2.10.0      \n> [10] survival_2.35-7      tools_2.10.0         xtable_1.5-6 \n> \n> www.msbi.nl/goeman \n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nMartin Morgan\nComputational Biology / Fred Hutchinson Cancer Research Center\n1100 Fairview Ave. N.\nPO Box 19024 Seattle, WA 98109\n\nLocation: Arnold Building M1 B861\nPhone: (206) 667-2793",
+      "body_snippet": "Hi Jelle --\n\nJ.J.Goeman at lumc.nl wrote:\n>  Dear all,\n> \n> I ran into a NAMESPACE problem, which I solved (more or less) but which\n> I still want to share, because I do not completely understand what",
+      "thread_id": "thread-7d93f552aaa3",
+      "thread_depth": 1,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-eced5629a671",
+      "message_id": "<4B196462.5070003@fhcrc.org>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2009-12-04T11:34:58-08:00",
+      "subject": "[Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi",
+      "subject_clean": "[Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi",
+      "in_reply_to": "<4B194832.8050201@fhcrc.org>",
+      "references": [
+        "<38475A805F094643B2BDE29E85B12E1B01521B79@maild.lumcnet.prod.intern>",
+        "<4B194832.8050201@fhcrc.org>"
+      ],
+      "body_plain": "Hi Jelle,\n\nI think I have an explanation for you.  Prior to your change, you had \nAnnotationDbi listed in the 'Imports' field of the DESCRIPTION file for \nyour globaltest package.  Listing a package in Imports tells R that \nthese packges are dependencies, but does not actually cause these \npackages to be imported into your package's name space.  For that you \nhave to add something to NAMESPACE.\n\nThe addition you made is fine.  You can also do a wholesale import as:\n\n   import(\"AnnotationDbi\")\n\nAnd then you should not need the more granular imports.  However, the \ngranular imports where you import specific symbols is generally a good \npractice since it avoids unintentional name conflicts.  A change in a \npackage you import could introduce a symbol clash, but this will not be \nan issue if you have imported the minimal set of symbols.\n\nDoes that help?\n\n+ seth\n\n-- \nSeth Falcon\nProgram in Computational Biology | Fred Hutchinson Cancer Research Center",
+      "body_snippet": "Hi Jelle,\n\nI think I have an explanation for you.  Prior to your change, you had \nAnnotationDbi listed in the 'Imports' field of the DESCRIPTION file for \nyour globaltest package.  Listing a package i",
+      "thread_id": "thread-7d93f552aaa3",
+      "thread_depth": 2,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-2c85485efd60",
+      "message_id": "<6b93d1830912042040w6182adf1k887ce394cd97b2e7@mail.gmail.com>",
+      "from_name": "Mark Kimpel",
+      "from_email_hash": "65173e3ce5ef1df0c4ea86f7a1d58fca4361b63a6d56b019a5e2b66e7388efaa",
+      "date": "2009-12-04T23:40:19-05:00",
+      "subject": "[Bioc-devel] package \"oligo\" fails to build on R-devel using 64-bit Ubuntu 9.10 Karmic Koala",
+      "subject_clean": "[Bioc-devel] package \"oligo\" fails to build on R-devel using 64-bit Ubuntu 9.10 Karmic Koala",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091204/56834c85/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091204/56834c85/attachment.pl>",
+      "thread_id": "thread-2c85485efd60",
+      "thread_depth": 0,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-7194c9996ab7",
+      "message_id": "<24CC1B04-24D8-4261-9083-5181388F6342@jhsph.edu>",
+      "from_name": "Benilton Carvalho",
+      "from_email_hash": "d8cff7ac2a4ccbeef33498c39f0a354aeb121d52ba3c79e0effdaca9ea990794",
+      "date": "2009-12-05T03:08:37-02:00",
+      "subject": "[Bioc-devel] package \"oligo\" fails to build on R-devel using 64-bit Ubuntu 9.10 Karmic Koala",
+      "subject_clean": "[Bioc-devel] package \"oligo\" fails to build on R-devel using 64-bit Ubuntu 9.10 Karmic Koala",
+      "in_reply_to": "<6b93d1830912042040w6182adf1k887ce394cd97b2e7@mail.gmail.com>",
+      "references": [
+        "<6b93d1830912042040w6182adf1k887ce394cd97b2e7@mail.gmail.com>"
+      ],
+      "body_plain": "Hi Mark,\n\nApologies for the inconvenience this may cause. We've been working on oligo & friends, implementing changes that will simplify usage and improve user's experience.\n\nSlowly things are falling back in place: earlier today I committed changes that address some of the problems below. And I believe that this particular version isn't yet visible for most of the users, although you will be able to get it straight from the svn server.\n\nIn the meantime, I hope that oligo on the release branch is sufficient for your tasks.\n\nCheers,\n\nb\n\nOn Dec 5, 2009, at 2:40 AM, Mark Kimpel wrote:\n\n> Today I installed the current R-devel for the first time and all packages\n> build except \"oligo\" and a couple packages that depend on it. Below is my\n> buid output followed by sessionInfo(). Please let me know if I can provide\n> any other information that might be helpful. Thanks,\n> D\n> Mark\n> \n> downloaded 696 Kb\n> \n> Loading required package: utils\n> * installing *source* package ?oligo? ...\n> ** libs\n> gcc -std=gnu99 -I/home/mkimpel/R_HOME/R-devel/R-build/lib64/R/include\n> -I/usr/local/include\n> -I\"/home/mkimpel/R_HOME/site-library-2.11.0/preprocessCore/include\"   -fpic\n> -g -O2 -c ParserXYS.c -o ParserXYS.o\n> ParserXYS.c: In function ?xys_header_field?:\n> ParserXYS.c:144: warning: ignoring return value of ?fgets?, declared with\n> attribute warn_unused_result\n> ParserXYS.c: In function ?R_read_xys_header?:\n> ParserXYS.c:318: warning: ignoring return value of ?fgets?, declared with\n> attribute warn_unused_result\n> gcc -std=gnu99 -I/home/mkimpel/R_HOME/R-devel/R-build/lib64/R/include\n> -I/usr/local/include\n> -I\"/home/mkimpel/R_HOME/site-library-2.11.0/preprocessCore/include\"   -fpic\n> -g -O2 -c baseProfile.c -o baseProfile.o\n> gcc -std=gnu99 -I/home/mkimpel/R_HOME/R-devel/R-build/lib64/R/include\n> -I/usr/local/include\n> -I\"/home/mkimpel/R_HOME/site-library-2.11.0/preprocessCore/include\"   -fpic\n> -g -O2 -c basecontent.c -o basecontent.o\n> gcc -std=gnu99 -I/home/mkimpel/R_HOME/R-devel/R-build/lib64/R/include\n> -I/usr/local/include\n> -I\"/home/mkimpel/R_HOME/site-library-2.11.0/preprocessCore/include\"   -fpic\n> -g -O2 -c rma2.c -o rma2.o\n> gcc -std=gnu99 -I/home/mkimpel/R_HOME/R-devel/R-build/lib64/R/include\n> -I/usr/local/include\n> -I\"/home/mkimpel/R_HOME/site-library-2.11.0/preprocessCore/include\"   -fpic\n> -g -O2 -c rma_common.c -o rma_common.o\n> gcc -std=gnu99 -I/home/mkimpel/R_HOME/R-devel/R-build/lib64/R/include\n> -I/usr/local/include\n> -I\"/home/mkimpel/R_HOME/site-library-2.11.0/preprocessCore/include\"   -fpic\n> -g -O2 -c trimmed.c -o trimmed.o\n> gcc -std=gnu99 -shared -L/usr/local/lib64 -o oligo.so ParserXYS.o\n> baseProfile.o basecontent.o rma2.o rma_common.o trimmed.o\n> ** R\n> ** inst\n> ** preparing package for lazy loading\n> Loading required package: Biobase\n> \n> Welcome to Bioconductor\n> \n>  Vignettes contain introductory material. To view, type\n>  'openVignette()'. To cite Bioconductor, see\n>  'citation(\"Biobase\")' and for packages 'citation(pkgname)'.\n> \n> Error in setMethod(\"pmSequence\", \"FeatureSet\", function(object)\n> pmSequence(getPD(object))) :\n>  no existing definition for function \"pmSequence\"\n> Error : unable to load R code in package 'oligo'\n> ERROR: lazy loading failed for package ?oligo?\n> * removing ?/home/mkimpel/R_HOME/site-library-2.11.0/oligo?\n> \n> The downloaded packages are in\n> ?/tmp/RtmpTF8R6F/downloaded_packages?\n> Warning message:\n> In install.packages(pkgs = pkgs, repos = repos, ...) :\n>  installation of package 'oligo' had non-zero exit status\n>> sessionInfo()\n> R version 2.11.0 Under development (unstable) (2009-12-03 r50653)\n> x86_64-unknown-linux-gnu\n> \n> locale:\n> [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n> [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8\n> [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8\n> [7] LC_PAPER=en_US.UTF-8       LC_NAME=C\n> [9] LC_ADDRESS=C               LC_TELEPHONE=C\n> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n> \n> attached base packages:\n> [1] stats     graphics  grDevices datasets  utils     methods   base\n> \n> other attached packages:\n> [1] Biobase_2.7.0\n> \n> loaded via a namespace (and not attached):\n> [1] tools_2.11.0\n> \n> Mark W. Kimpel MD  ** Neuroinformatics ** Dept. of Psychiatry\n> Indiana University School of Medicine\n> \n> 15032 Hunter Court, Westfield, IN  46074\n> \n> (317) 490-5129 Work, & Mobile & VoiceMail\n> (317) 399-1219 Skype No Voicemail please\n> \n>        [[alternative HTML version deleted]]\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "Hi Mark,\n\nApologies for the inconvenience this may cause. We've been working on oligo & friends, implementing changes that will simplify usage and improve user's experience.\n\nSlowly things are falling",
+      "thread_id": "thread-2c85485efd60",
+      "thread_depth": 1,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-2dab9901bb71",
+      "message_id": "<6b93d1830912050957v16f0c9a0o9f12b5af29125e7b@mail.gmail.com>",
+      "from_name": "Mark Kimpel",
+      "from_email_hash": "65173e3ce5ef1df0c4ea86f7a1d58fca4361b63a6d56b019a5e2b66e7388efaa",
+      "date": "2009-12-05T12:57:49-05:00",
+      "subject": "[Bioc-devel] package \"oligo\" fails to build on R-devel using 64-bit Ubuntu 9.10 Karmic Koala",
+      "subject_clean": "[Bioc-devel] package \"oligo\" fails to build on R-devel using 64-bit Ubuntu 9.10 Karmic Koala",
+      "in_reply_to": "<24CC1B04-24D8-4261-9083-5181388F6342@jhsph.edu>",
+      "references": [
+        "<6b93d1830912042040w6182adf1k887ce394cd97b2e7@mail.gmail.com>",
+        "<24CC1B04-24D8-4261-9083-5181388F6342@jhsph.edu>"
+      ],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091205/8d44dd0a/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091205/8d44dd0a/attachment.pl>",
+      "thread_id": "thread-2c85485efd60",
+      "thread_depth": 2,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-a7bd00a6ea7b",
+      "message_id": "<4E25B744-DF40-42A8-BA89-199699FC06FE@jhsph.edu>",
+      "from_name": "Benilton Carvalho",
+      "from_email_hash": "d8cff7ac2a4ccbeef33498c39f0a354aeb121d52ba3c79e0effdaca9ea990794",
+      "date": "2009-12-05T20:50:54-02:00",
+      "subject": "[Bioc-devel] package \"oligo\" fails to build on R-devel using 64-bit Ubuntu 9.10 Karmic Koala",
+      "subject_clean": "[Bioc-devel] package \"oligo\" fails to build on R-devel using 64-bit Ubuntu 9.10 Karmic Koala",
+      "in_reply_to": "<6b93d1830912050957v16f0c9a0o9f12b5af29125e7b@mail.gmail.com>",
+      "references": [
+        "<6b93d1830912042040w6182adf1k887ce394cd97b2e7@mail.gmail.com>",
+        "<24CC1B04-24D8-4261-9083-5181388F6342@jhsph.edu>",
+        "<6b93d1830912050957v16f0c9a0o9f12b5af29125e7b@mail.gmail.com>"
+      ],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091205/738f615e/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091205/738f615e/attachment.pl>",
+      "thread_id": "thread-2c85485efd60",
+      "thread_depth": 3,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-f913fa545d47",
+      "message_id": "<38475A805F094643B2BDE29E85B12E1B01521BF3@maild.lumcnet.prod.intern>",
+      "from_name": "J.J.Goeman at lumc.nl",
+      "from_email_hash": "1f01fc7453ce37472270b221b03e9f97fdcb3e930204a17d17132c72bd23a5a6",
+      "date": "2009-12-07T09:51:22+01:00",
+      "subject": "[Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi",
+      "subject_clean": "[Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi",
+      "in_reply_to": "<4B196462.5070003@fhcrc.org>",
+      "references": [
+        "<38475A805F094643B2BDE29E85B12E1B01521B79@maild.lumcnet.prod.intern>",
+        "<4B194832.8050201@fhcrc.org>",
+        "<4B196462.5070003@fhcrc.org>"
+      ],
+      "body_plain": "Dear Seth and Martin,\n\nThank you very much for your explanation. So, what is happening is that\nwe have two functions\n\n- as.list, the base function, from the base package and therefore always\nin my namespace.\n- as.list, the S4 generic based on the function above, in AnnotationDbi\nwhich had been attached to the user workspace with require().\n\nIn the namespace hierarchy the function (in the namespace) takes\nprecedence over the generic (in the user workspace), resulting in R\nstubbornly trying to apply the base function to an object from the\nAnnotationDbi package, even though a method for that object is\navailable.\n\nI can see that this makes perfect sense from a namespace perspective,\nbut it is rather peculiar from an S4 classes perspective. Would it not\nbe sensible if generics would always override the base functions they\nare based on?\n\nBest regards,\n\nJelle\n\n \n\n> -----Original Message-----\n> From: bioc-devel-bounces at stat.math.ethz.ch \n> [mailto:bioc-devel-bounces at stat.math.ethz.ch] On Behalf Of Seth Falcon\n> Sent: 04 December 2009 20:35\n> To: bioc-devel at stat.math.ethz.ch\n> Subject: Re: [Bioc-devel] NAMESPACE issue, possibly related \n> to AnnotationDbi\n> \n> Hi Jelle,\n> \n> I think I have an explanation for you.  Prior to your change, \n> you had AnnotationDbi listed in the 'Imports' field of the \n> DESCRIPTION file for your globaltest package.  Listing a \n> package in Imports tells R that these packges are \n> dependencies, but does not actually cause these packages to \n> be imported into your package's name space.  For that you \n> have to add something to NAMESPACE.\n> \n> The addition you made is fine.  You can also do a wholesale import as:\n> \n>    import(\"AnnotationDbi\")\n> \n> And then you should not need the more granular imports.  \n> However, the granular imports where you import specific \n> symbols is generally a good practice since it avoids \n> unintentional name conflicts.  A change in a package you \n> import could introduce a symbol clash, but this will not be \n> an issue if you have imported the minimal set of symbols.\n> \n> Does that help?\n> \n> + seth\n> \n> --\n> Seth Falcon\n> Program in Computational Biology | Fred Hutchinson Cancer \n> Research Center\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list \n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "Dear Seth and Martin,\n\nThank you very much for your explanation. So, what is happening is that\nwe have two functions\n\n- as.list, the base function, from the base package and therefore always\nin my nam",
+      "thread_id": "thread-7d93f552aaa3",
+      "thread_depth": 3,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-79e6b9f5d5ff",
+      "message_id": "<4B1D102E.8050206@fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2009-12-07T06:24:46-08:00",
+      "subject": "[Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi",
+      "subject_clean": "[Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi",
+      "in_reply_to": "<38475A805F094643B2BDE29E85B12E1B01521BF3@maild.lumcnet.prod.intern>",
+      "references": [
+        "<38475A805F094643B2BDE29E85B12E1B01521B79@maild.lumcnet.prod.intern>",
+        "<4B194832.8050201@fhcrc.org>",
+        "<4B196462.5070003@fhcrc.org>",
+        "<38475A805F094643B2BDE29E85B12E1B01521BF3@maild.lumcnet.prod.intern>"
+      ],
+      "body_plain": "J.J.Goeman at lumc.nl wrote:\n>  Dear Seth and Martin,\n> \n> Thank you very much for your explanation. So, what is happening is that\n> we have two functions\n> \n> - as.list, the base function, from the base package and therefore always\n> in my namespace.\n> - as.list, the S4 generic based on the function above, in AnnotationDbi\n> which had been attached to the user workspace with require().\n> \n> In the namespace hierarchy the function (in the namespace) takes\n> precedence over the generic (in the user workspace), resulting in R\n> stubbornly trying to apply the base function to an object from the\n> AnnotationDbi package, even though a method for that object is\n> available.\n> \n> I can see that this makes perfect sense from a namespace perspective,\n> but it is rather peculiar from an S4 classes perspective. Would it not\n> be sensible if generics would always override the base functions they\n> are based on?\n\nHi Jelle --\n\nYes, if S4 generics and base functions were more tightly integrated, one\nmight expect methods attached in the user name space to be reached. One\nwould still like name space protection -- the package author would want\nto specify that the desired method comes from AnnotationDbi.\n\nMartin\n\n> \n> Best regards,\n> \n> Jelle\n> \n>  \n> \n>> -----Original Message-----\n>> From: bioc-devel-bounces at stat.math.ethz.ch \n>> [mailto:bioc-devel-bounces at stat.math.ethz.ch] On Behalf Of Seth Falcon\n>> Sent: 04 December 2009 20:35\n>> To: bioc-devel at stat.math.ethz.ch\n>> Subject: Re: [Bioc-devel] NAMESPACE issue, possibly related \n>> to AnnotationDbi\n>>\n>> Hi Jelle,\n>>\n>> I think I have an explanation for you.  Prior to your change, \n>> you had AnnotationDbi listed in the 'Imports' field of the \n>> DESCRIPTION file for your globaltest package.  Listing a \n>> package in Imports tells R that these packges are \n>> dependencies, but does not actually cause these packages to \n>> be imported into your package's name space.  For that you \n>> have to add something to NAMESPACE.\n>>\n>> The addition you made is fine.  You can also do a wholesale import as:\n>>\n>>    import(\"AnnotationDbi\")\n>>\n>> And then you should not need the more granular imports.  \n>> However, the granular imports where you import specific \n>> symbols is generally a good practice since it avoids \n>> unintentional name conflicts.  A change in a package you \n>> import could introduce a symbol clash, but this will not be \n>> an issue if you have imported the minimal set of symbols.\n>>\n>> Does that help?\n>>\n>> + seth\n>>\n>> --\n>> Seth Falcon\n>> Program in Computational Biology | Fred Hutchinson Cancer \n>> Research Center\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list \n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nMartin Morgan\nComputational Biology / Fred Hutchinson Cancer Research Center\n1100 Fairview Ave. N.\nPO Box 19024 Seattle, WA 98109\n\nLocation: Arnold Building M1 B861\nPhone: (206) 667-2793",
+      "body_snippet": "J.J.Goeman at lumc.nl wrote:\n>  Dear Seth and Martin,\n> \n> Thank you very much for your explanation. So, what is happening is that\n> we have two functions\n> \n> - as.list, the base function, from the b",
+      "thread_id": "thread-7d93f552aaa3",
+      "thread_depth": 4,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-0a41da41f0b9",
+      "message_id": "<4B2115A1.5060603@gmail.com>",
+      "from_name": "Paolo Sonego",
+      "from_email_hash": "7eeb2292e5b8e35e1fd61df91edf0784b896a422df331023ff683b15268c3941",
+      "date": "2009-12-10T16:37:05+01:00",
+      "subject": "[Bioc-devel] get rid of require/depends warning",
+      "subject_clean": "[Bioc-devel] get rid of require/depends warning",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\n\nI'm working on a package and I'd like to get rid of the following warning:\n\n* checking for unstated dependencies in R code ... WARNING\n'library' or 'require' calls not declared from:\n   paste(eset at annotation, \".db\", sep = \"\") raw.data at annotation\nSee the information on DESCRIPTION files in the chapter 'Creating R\npackages' of the 'Writing R Extensions' manual.\n\n From this thread \n(https://stat.ethz.ch/pipermail/bioc-devel/2008-July/001662.html) I know \nI should add the required annotation libraries in 'Suggests' but,\nas you can see from the above warning, some functions load the \nappropriate annotation package (if they're installed) according to the \nstring saved in the annotation slot.\n\nAny help would appreciated!\n\nRegards,\nPaolo",
+      "body_snippet": "Hi,\n\nI'm working on a package and I'd like to get rid of the following warning:\n\n* checking for unstated dependencies in R code ... WARNING\n'library' or 'require' calls not declared from:\n   paste(ese",
+      "thread_id": "thread-0a41da41f0b9",
+      "thread_depth": 0,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-cc3f86614fba",
+      "message_id": "<4B212BB1.2090400@fhcrc.org>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2009-12-10T09:11:13-08:00",
+      "subject": "[Bioc-devel] get rid of require/depends warning",
+      "subject_clean": "[Bioc-devel] get rid of require/depends warning",
+      "in_reply_to": "<4B2115A1.5060603@gmail.com>",
+      "references": [
+        "<4B2115A1.5060603@gmail.com>"
+      ],
+      "body_plain": "On 12/10/09 7:37 AM, Paolo Sonego wrote:\n> Hi,\n>\n> I'm working on a package and I'd like to get rid of the following warning:\n>\n> * checking for unstated dependencies in R code ... WARNING\n> 'library' or 'require' calls not declared from:\n> paste(eset at annotation, \".db\", sep = \"\") raw.data at annotation\n> See the information on DESCRIPTION files in the chapter 'Creating R\n> packages' of the 'Writing R Extensions' manual.\n>\n>  From this thread\n> (https://stat.ethz.ch/pipermail/bioc-devel/2008-July/001662.html) I know\n> I should add the required annotation libraries in 'Suggests' but,\n> as you can see from the above warning, some functions load the\n> appropriate annotation package (if they're installed) according to the\n> string saved in the annotation slot.\n>\n> Any help would appreciated!\n\nIt would help if you could provide a bit more of the code you are using. \n  You might take a look at the annotate package that uses require() to \nload annotation packages and does not have warnings on check (and does \nnot list every annotation package in Suggests).\n\n+ seth\n\n-- \nSeth Falcon\nProgram in Computational Biology | Fred Hutchinson Cancer Research Center",
+      "body_snippet": "On 12/10/09 7:37 AM, Paolo Sonego wrote:\n> Hi,\n>\n> I'm working on a package and I'd like to get rid of the following warning:\n>\n> * checking for unstated dependencies in R code ... WARNING\n> 'library'",
+      "thread_id": "thread-0a41da41f0b9",
+      "thread_depth": 1,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-a4f78525be15",
+      "message_id": "<4B225142.5060400@gmail.com>",
+      "from_name": "Paolo Sonego",
+      "from_email_hash": "7eeb2292e5b8e35e1fd61df91edf0784b896a422df331023ff683b15268c3941",
+      "date": "2009-12-11T15:03:46+01:00",
+      "subject": "[Bioc-devel] get rid of require/depends warning",
+      "subject_clean": "[Bioc-devel] get rid of require/depends warning",
+      "in_reply_to": "<mailman.27.1260529207.29081.bioc-devel@stat.math.ethz.ch>",
+      "references": [
+        "<mailman.27.1260529207.29081.bioc-devel@stat.math.ethz.ch>"
+      ],
+      "body_plain": "Dear Seth,\nThanks for the useful suggestions. I'm digging the source code of the \nannotate package, it seems really interesting...\nBelow a chunk of my code that use require:\n\nimp.data <- function(...){\n     # importing raw.data\n     ...\n     ...\n     ## load the proper annotation package regardless the technology\n     if( !grepl(\"\\\\.db\", raw.data at annotation) ) {\n         raw.data at annotation <- paste(raw.data at annotation, \".db\", sep=\"\")\n     }\n     require( raw.data at annotation, character.only=T )\n\n     return(raw.data)\n}\n\nraw.data is an object of class 'ExpressionSet'.\n\nThanks again for the help!\n\nRegards,\nPaolo",
+      "body_snippet": "Dear Seth,\nThanks for the useful suggestions. I'm digging the source code of the \nannotate package, it seems really interesting...\nBelow a chunk of my code that use require:\n\nimp.data <- function(...)",
+      "thread_id": "thread-a4f78525be15",
+      "thread_depth": 0,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-032b9ab22b6e",
+      "message_id": "<4B22C208.30507@fhcrc.org>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2009-12-11T14:04:56-08:00",
+      "subject": "[Bioc-devel] get rid of require/depends warning",
+      "subject_clean": "[Bioc-devel] get rid of require/depends warning",
+      "in_reply_to": "<4B225142.5060400@gmail.com>",
+      "references": [
+        "<mailman.27.1260529207.29081.bioc-devel@stat.math.ethz.ch>",
+        "<4B225142.5060400@gmail.com>"
+      ],
+      "body_plain": "On 12/11/09 6:03 AM, Paolo Sonego wrote:\n> Dear Seth,\n> Thanks for the useful suggestions. I'm digging the source code of the\n> annotate package, it seems really interesting...\n> Below a chunk of my code that use require:\n>\n> imp.data <- function(...){\n> # importing raw.data\n> ...\n> ...\n> ## load the proper annotation package regardless the technology\n> if( !grepl(\"\\\\.db\", raw.data at annotation) ) {\n> raw.data at annotation <- paste(raw.data at annotation, \".db\", sep=\"\")\n> }\n> require( raw.data at annotation, character.only=T )\n>\n> return(raw.data)\n> }\n\nYou can avoid the warning by specifying character.only=TRUE.  The check \nactually examines the source code for TRUE so T will not work to avoid \nthe warning message.\n\nThat said, based on your example, it looks like your actual goal is to \ndynamically load annotation packages.  If that is the case, I would \nrecommend using the code that already does this for you in the annotate \npackage, and in particular the getAnnMap function might be of use.\n\nOne advantage of using the annotate functions is that you should not \nhave to worry about the \".db\" extension, those functions should figure \nout the right thing.\n\nBest,\n\n+ seth\n\n-- \nSeth Falcon\nProgram in Computational Biology | Fred Hutchinson Cancer Research Center",
+      "body_snippet": "On 12/11/09 6:03 AM, Paolo Sonego wrote:\n> Dear Seth,\n> Thanks for the useful suggestions. I'm digging the source code of the\n> annotate package, it seems really interesting...\n> Below a chunk of my c",
+      "thread_id": "thread-a4f78525be15",
+      "thread_depth": 1,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-fcf610c92bed",
+      "message_id": "<4B23A148.7000903@gmail.com>",
+      "from_name": "Paolo Sonego",
+      "from_email_hash": "7eeb2292e5b8e35e1fd61df91edf0784b896a422df331023ff683b15268c3941",
+      "date": "2009-12-12T14:57:28+01:00",
+      "subject": "[Bioc-devel] get rid of require/depends warning",
+      "subject_clean": "[Bioc-devel] get rid of require/depends warning",
+      "in_reply_to": "<mailman.19.1260615605.17287.bioc-devel@stat.math.ethz.ch>",
+      "references": [
+        "<mailman.19.1260615605.17287.bioc-devel@stat.math.ethz.ch>"
+      ],
+      "body_plain": "Dear Seth,\n\nThanks so much! You identifiedmy intention correctly and your suggestion \nsolved my problem!\n\nRegards,\nPaolo\n\nOn 12/12/09 12:00 PM, bioc-devel-request at stat.math.ethz.ch wrote:\n> Send Bioc-devel mailing list submissions to\n> \tbioc-devel at stat.math.ethz.ch\n>\n> To subscribe or unsubscribe via the World Wide Web, visit\n> \thttps://stat.ethz.ch/mailman/listinfo/bioc-devel\n> or, via email, send a message with subject or body 'help' to\n> \tbioc-devel-request at stat.math.ethz.ch\n>\n> You can reach the person managing the list at\n> \tbioc-devel-owner at stat.math.ethz.ch\n>\n> When replying, please edit your Subject line so it is more specific\n> than \"Re: Contents of Bioc-devel digest...\"\n>\n>\n> Today's Topics:\n>\n>     1. Re: get rid of require/depends warning (Paolo Sonego)\n>     2. Re: get rid of require/depends warning (Seth Falcon)\n>\n>\n> ----------------------------------------------------------------------\n>\n> Message: 1\n> Date: Fri, 11 Dec 2009 15:03:46 +0100\n> From: Paolo Sonego<paolo.sonego at gmail.com>\n> Subject: Re: [Bioc-devel] get rid of require/depends warning\n> To: bioc-devel at stat.math.ethz.ch\n> Cc: sfalcon at fhcrc.org\n> Message-ID:<4B225142.5060400 at gmail.com>\n> Content-Type: text/plain; charset=ISO-8859-1; format=flowed\n>\n> Dear Seth,\n> Thanks for the useful suggestions. I'm digging the source code of the\n> annotate package, it seems really interesting...\n> Below a chunk of my code that use require:\n>\n> imp.data<- function(...){\n>       # importing raw.data\n>       ...\n>       ...\n>       ## load the proper annotation package regardless the technology\n>       if( !grepl(\"\\\\.db\", raw.data at annotation) ) {\n>           raw.data at annotation<- paste(raw.data at annotation, \".db\", sep=\"\")\n>       }\n>       require( raw.data at annotation, character.only=T )\n>\n>       return(raw.data)\n> }\n>\n> raw.data is an object of class 'ExpressionSet'.\n>\n> Thanks again for the help!\n>\n> Regards,\n> Paolo\n>\n>\n>\n> ------------------------------\n>\n> Message: 2\n> Date: Fri, 11 Dec 2009 14:04:56 -0800\n> From: Seth Falcon<sfalcon at fhcrc.org>\n> Subject: Re: [Bioc-devel] get rid of require/depends warning\n> To: bioc-devel at stat.math.ethz.ch\n> Message-ID:<4B22C208.30507 at fhcrc.org>\n> Content-Type: text/plain; charset=UTF-8; format=flowed\n>\n> On 12/11/09 6:03 AM, Paolo Sonego wrote:\n>    \n>> Dear Seth,\n>> Thanks for the useful suggestions. I'm digging the source code of the\n>> annotate package, it seems really interesting...\n>> Below a chunk of my code that use require:\n>>\n>> imp.data<- function(...){\n>> # importing raw.data\n>> ...\n>> ...\n>> ## load the proper annotation package regardless the technology\n>> if( !grepl(\"\\\\.db\", raw.data at annotation) ) {\n>> raw.data at annotation<- paste(raw.data at annotation, \".db\", sep=\"\")\n>> }\n>> require( raw.data at annotation, character.only=T )\n>>\n>> return(raw.data)\n>> }\n>>      \n> You can avoid the warning by specifying character.only=TRUE.  The check\n> actually examines the source code for TRUE so T will not work to avoid\n> the warning message.\n>\n> That said, based on your example, it looks like your actual goal is to\n> dynamically load annotation packages.  If that is the case, I would\n> recommend using the code that already does this for you in the annotate\n> package, and in particular the getAnnMap function might be of use.\n>\n> One advantage of using the annotate functions is that you should not\n> have to worry about the \".db\" extension, those functions should figure\n> out the right thing.\n>\n> Best,\n>\n> + seth\n>\n>",
+      "body_snippet": "Dear Seth,\n\nThanks so much! You identifiedmy intention correctly and your suggestion \nsolved my problem!\n\nRegards,\nPaolo\n\nOn 12/12/09 12:00 PM, bioc-devel-request at stat.math.ethz.ch wrote:\n> Send Bi",
+      "thread_id": "thread-fcf610c92bed",
+      "thread_depth": 0,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-00a8faaede63",
+      "message_id": "<C74967D0.2017%julie.zhu@umassmed.edu>",
+      "from_name": "Julie Zhu",
+      "from_email_hash": "d6f73336059c5c55d4db91c0294f8674a52ef21e95684df99d72c17c2c50bedc",
+      "date": "2009-12-12T15:31:28-05:00",
+      "subject": "[Bioc-devel] BSgenome error",
+      "subject_clean": "[Bioc-devel] BSgenome error",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi Herve,\n\nI encountered problem loading Bsgenome. Please let me know how to fix it.\nThe ChIPpeakAnno package I am working on relies on Bsgenome. Thank you very\nmuch for your help!\n\nBest regards,\n\nJulie\n\n> library(BSgenome)\nError: package 'IRanges' 1.3.49 is loaded, but >= 1.3.79 is required by\n'BSgenome'\nIn addition: Warning message:\npackage 'BSgenome' claims to be built under R version 2.10.0 but is missing\nsome help files and needs to be re-installed\n\n\n> sessionInfo()\nR version 2.10.0 (2009-10-26)\ni386-apple-darwin8.11.1\n\nlocale:\n[1] en_US.UTF-8/en_US.UTF-8/C/C/en_US.UTF-8/en_US.UTF-8\n\nattached base packages:\n[1] stats     graphics  grDevices utils     datasets  methods   base\n\nother attached packages:\n [1] Biostrings_2.13.30            IRanges_1.3.49\nmulttest_2.1.2                biomaRt_2.1.0\n [5] mogene10stv1.r3.xdacdf_1.24.0 makecdfenv_1.24.0\naffyio_1.14.0                 mogene10stv1.r3cdf_2.5.0\n [9] annaffy_1.17.1                KEGG.db_2.3.5                 GO.db_2.3.5\nRSQLite_0.7-1      \n[13] DBI_0.2-4                     AnnotationDbi_1.8.1\naffxparser_1.18.0             affy_1.23.5\n[17] Biobase_2.5.5 \n\nloaded via a namespace (and not attached):\n[1] MASS_7.3-3           preprocessCore_1.8.0 RCurl_0.98-1\nsplines_2.10.0       survival_2.35-7      tools_2.10.0\n[7] XML_2.3-0      \n>",
+      "body_snippet": "Hi Herve,\n\nI encountered problem loading Bsgenome. Please let me know how to fix it.\nThe ChIPpeakAnno package I am working on relies on Bsgenome. Thank you very\nmuch for your help!\n\nBest regards,\n\nJul",
+      "thread_id": "thread-00a8faaede63",
+      "thread_depth": 0,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-e23c21cf0c50",
+      "message_id": "<52f663c40912121318o239f3860idc492f07c981c96f@mail.gmail.com>",
+      "from_name": "Tony Chiang",
+      "from_email_hash": "9ebd881620c095055c1af52b74c4847ccfe07f5853999ccdedf800c66fa6d7bd",
+      "date": "2009-12-12T13:18:36-08:00",
+      "subject": "[Bioc-devel] BSgenome error",
+      "subject_clean": "[Bioc-devel] BSgenome error",
+      "in_reply_to": "<C74967D0.2017%julie.zhu@umassmed.edu>",
+      "references": [
+        "<C74967D0.2017%julie.zhu@umassmed.edu>"
+      ],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091212/27960e96/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091212/27960e96/attachment.pl>",
+      "thread_id": "thread-00a8faaede63",
+      "thread_depth": 1,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-b9006a7da69c",
+      "message_id": "<4B2679E1.8070409@uidaho.edu>",
+      "from_name": "Matt Settles",
+      "from_email_hash": "46a3bc5e3856c12667c09e96c2f908d3757711b77b96eaf224e6a448b61d1ecb",
+      "date": "2009-12-14T09:46:09-08:00",
+      "subject": "[Bioc-devel] reverseComplement broken in development version of R and Biostrings",
+      "subject_clean": "[Bioc-devel] reverseComplement broken in development version of R and Biostrings",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "the function reverseComplement in Biostrings appears to be broken in the \ndevelopment version of R and Biostrings\nMatt Settles\n\n > library(Biostrings)\nLoading required package: IRanges\n\nAttaching package: 'IRanges'\n\n\n    The following object(s) are masked from package:base :\n\n     cbind,\n     Map,\n     mapply,\n     order,\n     pmax,\n     pmax.int,\n     pmin,\n     pmin.int,\n     rbind,\n     rep.int,\n     table\n\n > example(reverseComplement)\n\nrvrsCm>   ## \n---------------------------------------------------------------------\nrvrsCm>   ## A. SOME SIMPLE EXAMPLES\nrvrsCm>   ## \n---------------------------------------------------------------------\nrvrsCm>\nrvrsCm>   x <- DNAString(\"ACGT-YN-\")\n\nrvrsCm>   reverseComplement(x)\nError in reverseComplement(x) : could not find function \"xvcopy\"\n > sessionInfo()\nR version 2.11.0 Under development (unstable) (2009-12-14 r50724)\nx86_64-unknown-linux-gnu\n\nlocale:\n [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               \nLC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8     \nLC_MONETARY=C              LC_MESSAGES=en_US.UTF-8    \nLC_PAPER=en_US.UTF-8     \n [8] LC_NAME=C                  LC_ADDRESS=C               \nLC_TELEPHONE=C             LC_MEASUREMENT=en_US.UTF-8 \nLC_IDENTIFICATION=C      \n\nattached base packages:\n[1] stats     graphics  grDevices datasets  utils     methods   base    \n\nother attached packages:\n[1] Biostrings_2.14.8 IRanges_1.5.2   \n\nloaded via a namespace (and not attached):\n[1] Biobase_2.6.1 tools_2.11.0\n >\n\n-- \n------------------------------------\nMatt Settles\nBioinformatics Scientist\nIBEST DNA Sequencing Analysis Core\nDepartment of Biological Sciences\nUniversity of Idaho\nMoscow, Idaho 83844",
+      "body_snippet": "the function reverseComplement in Biostrings appears to be broken in the \ndevelopment version of R and Biostrings\nMatt Settles\n\n > library(Biostrings)\nLoading required package: IRanges\n\nAttaching pack",
+      "thread_id": "thread-b9006a7da69c",
+      "thread_depth": 0,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-65239ff77ada",
+      "message_id": "<4B267C3B.5090401@fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2009-12-14T09:56:11-08:00",
+      "subject": "[Bioc-devel] reverseComplement broken in development version of R\tand Biostrings",
+      "subject_clean": "[Bioc-devel] reverseComplement broken in development version of R\tand Biostrings",
+      "in_reply_to": "<4B2679E1.8070409@uidaho.edu>",
+      "references": [
+        "<4B2679E1.8070409@uidaho.edu>"
+      ],
+      "body_plain": "Hi Matt --\n\n'devel' packages have odd-numbered y in version string x.y.z, so you've \ngot a mix of devel and release packages. So update packages as at\n\n  http://bioconductor.org/docs/install/\n\nSee also the build report\n\n  http://bioconductor.org/checkResults/2.6/bioc-LATEST/\n\nwhich shows Biostrings passing build and check (which implies that the \nexamples run without error).\n\nMartin\n\nMatt Settles wrote:\n> the function reverseComplement in Biostrings appears to be broken in \n> the development version of R and Biostrings\n> Matt Settles\n>\n> > library(Biostrings)\n> Loading required package: IRanges\n>\n> Attaching package: 'IRanges'\n>\n>\n>    The following object(s) are masked from package:base :\n>\n>     cbind,\n>     Map,\n>     mapply,\n>     order,\n>     pmax,\n>     pmax.int,\n>     pmin,\n>     pmin.int,\n>     rbind,\n>     rep.int,\n>     table\n>\n> > example(reverseComplement)\n>\n> rvrsCm>   ## \n> ---------------------------------------------------------------------\n> rvrsCm>   ## A. SOME SIMPLE EXAMPLES\n> rvrsCm>   ## \n> ---------------------------------------------------------------------\n> rvrsCm>\n> rvrsCm>   x <- DNAString(\"ACGT-YN-\")\n>\n> rvrsCm>   reverseComplement(x)\n> Error in reverseComplement(x) : could not find function \"xvcopy\"\n> > sessionInfo()\n> R version 2.11.0 Under development (unstable) (2009-12-14 r50724)\n> x86_64-unknown-linux-gnu\n>\n> locale:\n> [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               \n> LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8     \n> LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8    \n> LC_PAPER=en_US.UTF-8     [8] LC_NAME=C                  \n> LC_ADDRESS=C               LC_TELEPHONE=C             \n> LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C     \n> attached base packages:\n> [1] stats     graphics  grDevices datasets  utils     methods   base   \n> other attached packages:\n> [1] Biostrings_2.14.8 IRanges_1.5.2  \n> loaded via a namespace (and not attached):\n> [1] Biobase_2.6.1 tools_2.11.0\n> >\n>\n\n\n-- \nMartin Morgan\nComputational Biology / Fred Hutchinson Cancer Research Center\n1100 Fairview Ave. N.\nPO Box 19024 Seattle, WA 98109\n\nLocation: Arnold Building M1 B861\nPhone: (206) 667-2793",
+      "body_snippet": "Hi Matt --\n\n'devel' packages have odd-numbered y in version string x.y.z, so you've \ngot a mix of devel and release packages. So update packages as at\n\n  http://bioconductor.org/docs/install/\n\nSee als",
+      "thread_id": "thread-b9006a7da69c",
+      "thread_depth": 1,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-b97cc8d1e518",
+      "message_id": "<4B2FC5A4.2080202@fhcrc.org>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2009-12-21T10:59:48-08:00",
+      "subject": "[Bioc-devel] License change for package mclust",
+      "subject_clean": "[Bioc-devel] License change for package mclust",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi all,\n\nI've been informed that the license for the mclust package has changed. \n  If you maintain a package that uses mclust, I encourage you to review \nthe mclust license terms and make sure that the license of your package \nis compatible.\n\nWhen mclust is loaded it displays the following message:\n\n>> library(\"mclust\")\n>\n> by using mclust, or by using any other package that invokes mclust,\n> you accept the license agreement in the mclust LICENSE file\n> and at http://www.stat.washington.edu/mclust/license.txt\n\nThe terms suggest that a package depending on mclust is only free for \nacademic use.  Such restrictions are, in my opinion, not in the spirit \nof the Bioconductor project.  As such, you may wish to reconsider use of \nmclust in your packages.\n\n+ seth\n\nPS: Packages that currently list mclust in Depends or Suggests are:\n\nRingo\nRolexa\nSpeCond\narrayQuality\nFlowClust\nflowMerge\npuma\nspotSegmentation\n\n-- \nSeth Falcon\nProgram in Computational Biology | Fred Hutchinson Cancer Research Center",
+      "body_snippet": "Hi all,\n\nI've been informed that the license for the mclust package has changed. \n  If you maintain a package that uses mclust, I encourage you to review \nthe mclust license terms and make sure that t",
+      "thread_id": "thread-b97cc8d1e518",
+      "thread_depth": 0,
+      "month": "2009-12"
+    },
+    {
+      "id": "msg-7fd11865831d",
+      "message_id": "<4B38E16F.9050707@fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2009-12-28T08:48:47-08:00",
+      "subject": "[Bioc-devel] Changing 'release' versus 'devel' branches of Bioconductor",
+      "subject_clean": "[Bioc-devel] Changing 'release' versus 'devel' branches of Bioconductor",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Developers --\n\nOnly critical bug-fix changes are appropriate for the 'release' branch\nof Bioconductor, i.e., in the svn repository beginning with\n\n https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_2_5/\n\nAll other changes, including introduction of new features and minor bug\nfixes, must be restricted to the 'devel' repository\n\n  https://hedgehog.fhcrc.org/bioconductor/trunk/\n\nPlease ask if you are uncertain about whether changes you are\nconsidering are appropriate for the release branch.\n\nThe release branch is meant to provide a stable environment for\nreproducible research, and this stability is compromised whenever change\nis introduced.\n\nA consequence of this is that users seeking new features MUST use the\ndevelopment version of R. This is appropriate, because it represents an\nexplicit choice on the part of the user, showing that they are willing\nto take on the added instability of software that is still under active\ndevelopment.\n\nIt is NOT appropriate to suggest that the user install the development\nversion of a package on top of the release version of other packages.\nThe mailing list is littered with posts where this leads to\nunanticipated problems.\n\nUnder extraordinary conditions, the Bioconductor team will take active\nsteps to enforce this policy, including reverting non-critical changes\nand restricting access to the svn release branch repository.\n\nAdditional developer information is available at\n\n  http://wiki.fhcrc.org/bioc/DeveloperPage\n  http://wiki.fhcrc.org/bioc/HowTo\n  http://wiki.fhcrc.org/bioc/HowTo/Update_Release_Branch\n\n\nBest wishes,\n\nMartin\n-- \nMartin Morgan\nComputational Biology / Fred Hutchinson Cancer Research Center\n1100 Fairview Ave. N.\nPO Box 19024 Seattle, WA 98109\n\nLocation: Arnold Building M1 B861\nPhone: (206) 667-2793",
+      "body_snippet": "Developers --\n\nOnly critical bug-fix changes are appropriate for the 'release' branch\nof Bioconductor, i.e., in the svn repository beginning with\n\n https://hedgehog.fhcrc.org/bioconductor/branches/REL",
+      "thread_id": "thread-7fd11865831d",
+      "thread_depth": 0,
+      "month": "2009-12"
+    }
+  ],
+  "threads": [
+    {
+      "id": "thread-dff948cba39d",
+      "subject": "[Bioc-devel] Oddity in hgu133plus2.db?",
+      "message_count": 1,
+      "participants": [
+        "Marc Carlson"
+      ],
+      "started": "2009-12-01T13:35:30-08:00",
+      "last_reply": "2009-12-01T13:35:30-08:00",
+      "root_message_id": "msg-dff948cba39d"
+    },
+    {
+      "id": "thread-1f9430c1d002",
+      "subject": "[Bioc-devel] our svn server is down",
+      "message_count": 2,
+      "participants": [
+        "Hervé Pagès",
+        "Patrick Aboyoun"
+      ],
+      "started": "2009-12-02T11:02:32-08:00",
+      "last_reply": "2009-12-02T11:41:11-08:00",
+      "root_message_id": "msg-1f9430c1d002"
+    },
+    {
+      "id": "thread-7d93f552aaa3",
+      "subject": "[Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi",
+      "message_count": 5,
+      "participants": [
+        "J.J.Goeman at lumc.nl",
+        "Martin Morgan",
+        "Seth Falcon"
+      ],
+      "started": "2009-12-04T14:09:23+01:00",
+      "last_reply": "2009-12-07T06:24:46-08:00",
+      "root_message_id": "msg-7d93f552aaa3"
+    },
+    {
+      "id": "thread-2c85485efd60",
+      "subject": "[Bioc-devel] package \"oligo\" fails to build on R-devel using 64-bit Ubuntu 9.10 Karmic Koala",
+      "message_count": 4,
+      "participants": [
+        "Benilton Carvalho",
+        "Mark Kimpel"
+      ],
+      "started": "2009-12-04T23:40:19-05:00",
+      "last_reply": "2009-12-05T20:50:54-02:00",
+      "root_message_id": "msg-2c85485efd60"
+    },
+    {
+      "id": "thread-0a41da41f0b9",
+      "subject": "[Bioc-devel] get rid of require/depends warning",
+      "message_count": 2,
+      "participants": [
+        "Paolo Sonego",
+        "Seth Falcon"
+      ],
+      "started": "2009-12-10T16:37:05+01:00",
+      "last_reply": "2009-12-10T09:11:13-08:00",
+      "root_message_id": "msg-0a41da41f0b9"
+    },
+    {
+      "id": "thread-a4f78525be15",
+      "subject": "[Bioc-devel] get rid of require/depends warning",
+      "message_count": 2,
+      "participants": [
+        "Paolo Sonego",
+        "Seth Falcon"
+      ],
+      "started": "2009-12-11T15:03:46+01:00",
+      "last_reply": "2009-12-11T14:04:56-08:00",
+      "root_message_id": "msg-a4f78525be15"
+    },
+    {
+      "id": "thread-fcf610c92bed",
+      "subject": "[Bioc-devel] get rid of require/depends warning",
+      "message_count": 1,
+      "participants": [
+        "Paolo Sonego"
+      ],
+      "started": "2009-12-12T14:57:28+01:00",
+      "last_reply": "2009-12-12T14:57:28+01:00",
+      "root_message_id": "msg-fcf610c92bed"
+    },
+    {
+      "id": "thread-00a8faaede63",
+      "subject": "[Bioc-devel] BSgenome error",
+      "message_count": 2,
+      "participants": [
+        "Julie Zhu",
+        "Tony Chiang"
+      ],
+      "started": "2009-12-12T15:31:28-05:00",
+      "last_reply": "2009-12-12T13:18:36-08:00",
+      "root_message_id": "msg-00a8faaede63"
+    },
+    {
+      "id": "thread-b9006a7da69c",
+      "subject": "[Bioc-devel] reverseComplement broken in development version of R and Biostrings",
+      "message_count": 2,
+      "participants": [
+        "Martin Morgan",
+        "Matt Settles"
+      ],
+      "started": "2009-12-14T09:46:09-08:00",
+      "last_reply": "2009-12-14T09:56:11-08:00",
+      "root_message_id": "msg-b9006a7da69c"
+    },
+    {
+      "id": "thread-b97cc8d1e518",
+      "subject": "[Bioc-devel] License change for package mclust",
+      "message_count": 1,
+      "participants": [
+        "Seth Falcon"
+      ],
+      "started": "2009-12-21T10:59:48-08:00",
+      "last_reply": "2009-12-21T10:59:48-08:00",
+      "root_message_id": "msg-b97cc8d1e518"
+    },
+    {
+      "id": "thread-7fd11865831d",
+      "subject": "[Bioc-devel] Changing 'release' versus 'devel' branches of Bioconductor",
+      "message_count": 1,
+      "participants": [
+        "Martin Morgan"
+      ],
+      "started": "2009-12-28T08:48:47-08:00",
+      "last_reply": "2009-12-28T08:48:47-08:00",
+      "root_message_id": "msg-7fd11865831d"
+    }
+  ]
+}

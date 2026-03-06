@@ -1,0 +1,5609 @@
+From sfalcon at fhcrc.org  Fri Sep  1 15:43:27 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 01 Sep 2006 06:43:27 -0700
+Subject: [Bioc-devel] ifnotfound in mget
+In-Reply-To: <1156861792.10265.284.camel@elm.mcb.mcgill.ca> (Francois Pepin's
+	message of "Tue, 29 Aug 2006 10:29:52 -0400")
+References: <1156861792.10265.284.camel@elm.mcb.mcgill.ca>
+Message-ID: <m2sljb7lds.fsf@ziti.fhcrc.org>
+
+Francois Pepin <fpepin at cs.mcgill.ca> writes:
+
+> Hi everyone,
+>
+> is there a particular reason why there is no "ifnotfound = NA" arguments
+> in most bioconductor functions regarding the chip annotations
+> (findLargest in Category being one example)?
+
+Isn't findLargest in the genefilter package?  Anyhow, I'll venture an
+answer regarding ifnotfound behavior.
+
+> It turns out that some chips (for example the Agilent ones) have a
+> several features that do not get it in the annotation package.
+>
+> For example, hgug4112a (human whole genome array) and has 43931
+> features, while the annotation package knows about 41000. The missing
+> ones include the control probes as well as some truly obscure probes
+> that are almost unannotatable.
+>
+> If it is in the 41k and no data is found, then mget will return an NA,
+> so the "ifnotfound=NA" argument gives a proper behavior (except that no
+> name is attached to it).
+>
+> It is a bit frustrating to have to filter those away before calling
+> mget, or a function which calls it.
+>
+> Or maybe that would be considered a problem with the annotation
+> packages? I still think that having mget calling stop whenever an
+> unknown probe is used is pretty harsh (an NA and a warning would be more
+> reasonable, I think).
+
+While frustrating, doing careful filtering is an important step of
+many analysis.  And for findLargest, I guess you are asking for
+'na.rm', not ifnotfound.
+
+What do others think?  Is this an issue that deserves solving with
+extra arguments? 
+
+
++ seth
+
+
+From sfalcon at fhcrc.org  Fri Sep  1 21:04:24 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 01 Sep 2006 12:04:24 -0700
+Subject: [Bioc-devel] ifnotfound in mget
+In-Reply-To: <1157136277.10265.432.camel@elm.mcb.mcgill.ca> (Francois Pepin's
+	message of "Fri, 01 Sep 2006 14:44:37 -0400")
+References: <1156861792.10265.284.camel@elm.mcb.mcgill.ca>
+	<m2sljb7lds.fsf@ziti.fhcrc.org>
+	<1157136277.10265.432.camel@elm.mcb.mcgill.ca>
+Message-ID: <m2bqpz2ytj.fsf@ziti.fhcrc.org>
+
+Francois Pepin <fpepin at aei.ca> writes:
+> Yes, filtering is essential for many analyses. Not doing any can be a
+> useful sanity check in many cases, for example in differential
+> expression or looking for batch effects.
+>
+> The issue with the ifnotfound is it will call stop if an unknown probe
+> is put in the mix:
+>> args(mget)
+> function (x, envir, mode = "any", ifnotfound = list(function(x) stop
+> (paste("value for '",x, "' not found", sep = ""), call. = FALSE)),
+> inherits = FALSE)
+
+> I would like if the control were treated as probes that do not map to
+> anything instead of evil things that make code crash.
+
+If you send a patch, we'll review it :-)
+In many cases, it seems to me that raising an error is the best
+thing.  In general, I prefer errors to warnings.  Warnings one tends
+to ignore until you discover you really shouldn't have ignored them.
+Errors make you fix your mess right away.
+
+> I'd agree its probably not very high in the list of priorities, as the
+> workaround is pretty trivial (ie filter control probes).
+
+We agree on this.
+
++ seth
+
+
+From fpepin at cs.mcgill.ca  Fri Sep  1 21:06:22 2006
+From: fpepin at cs.mcgill.ca (Francois Pepin)
+Date: Fri, 01 Sep 2006 15:06:22 -0400
+Subject: [Bioc-devel] [Fwd: Re:  ifnotfound in mget]
+Message-ID: <1157137582.10265.436.camel@elm.mcb.mcgill.ca>
+
+> > is there a particular reason why there is no "ifnotfound = NA" arguments
+> > in most bioconductor functions regarding the chip annotations
+> > (findLargest in Category being one example)?
+> 
+> Isn't findLargest in the genefilter package?  Anyhow, I'll venture an
+> answer regarding ifnotfound behavior.
+
+yes, I also work on R 2.1 where it was still in Category.
+
+> > For example, hgug4112a (human whole genome array) and has 43931
+> > features, while the annotation package knows about 41000. The missing
+> > ones include the control probes as well as some truly obscure probes
+> > that are almost unannotatable.
+
+As a note, I was mistaken and the 41k in the annotation package is
+indeed correct. There are 41000 unique non-control probes on the chip.
+So the issue here is only with control probes and not nearly as serious
+as I thought.
+
+> While frustrating, doing careful filtering is an important step of
+> many analysis.  And for findLargest, I guess you are asking for
+> 'na.rm', not ifnotfound.
+
+Yes, filtering is essential for many analyses. Not doing any can be a
+useful sanity check in many cases, for example in differential
+expression or looking for batch effects.
+
+The issue with the ifnotfound is it will call stop if an unknown probe
+is put in the mix:
+> args(mget)
+function (x, envir, mode = "any", ifnotfound = list(function(x) stop
+(paste("value for '",x, "' not found", sep = ""), call. = FALSE)),
+inherits = FALSE)
+
+findLargest is dealing with probes with no Entrez Gene matching quite
+well. I do not see how adding a na.rm would work in this case.
+
+I would like if the control were treated as probes that do not map to
+anything instead of evil things that make code crash.
+
+I'd agree its probably not very high in the list of priorities, as the
+workaround is pretty trivial (ie filter control probes).
+
+Francois
+
+
+From ellis at stat.harvard.edu  Fri Sep  1 21:42:34 2006
+From: ellis at stat.harvard.edu (Byron Ellis)
+Date: Fri, 1 Sep 2006 12:42:34 -0700
+Subject: [Bioc-devel] FCS3.0 DiVa files?
+Message-ID: <7098abec0609011242r65aed89byf3895ba4cf602ab2@mail.gmail.com>
+
+Hi all,
+
+I remember a couple of months ago there was a brief discussion about
+FCS3.0 files, in particular DiVA files recorded in floating point. Was
+there ever any progress made on reading those in? I took a look
+through the logs, but I may have missed something. I suddenly find
+myself working with an LSR2 using DiVa that generates a lot of these
+files. :-)
+
+If not, I'll take a stab at it since I need to read these files sooner
+rather than later.
+
+-- 
+Byron Ellis (byron.ellis at gmail.com)
+"Oook" -- The Librarian
+
+
+From jmacdon at med.umich.edu  Fri Sep  1 23:06:12 2006
+From: jmacdon at med.umich.edu (James MacDonald)
+Date: Fri, 01 Sep 2006 17:06:12 -0400
+Subject: [Bioc-devel] NEWS August 2006
+Message-ID: <44F8682D.47B0.00EE.0@med.umich.edu>
+
+	August 2006
+
+affxparser
+	Added trial version of updateDelUnits()
+	
+affycoretools
+	Fixed buglet in annBM() that didn't list 'Symbol' as something
+that could be annotated if passed with a mart argument
+	Added vignette for new biomaRt based functions
+	Removed celfiles from /examples directory, replaced with .Rdata
+files, to make package download quicker
+	Bugfix in getStat() where the 'tstat' argument wasn't working
+correctly
+	Fixed bugs in affycoretools vignette
+	Modified plotDeg() to put the legend on the right instead of on
+top of the plotted lines
+
+affyPLM
+	Small fix to boxplot() when applied to a PLMset containing a
+non-default model
+	Fixed a problem with a model of the style PM ~ -1 + samples +
+treatment:probes being misidentified as the default model
+	
+AnnBuilder
+	Included Gallus gallus (chicken)
+	Updates to athPkgBuilder:
+		Changed data source for probe-to-gene mapping, PubMed
+annotation
+		Added annotation from KEGG - now environment 'PATH' is
+annotation from KEGG
+		Annotation from AraCyc is stored in environment
+'ARACYC'
+		Added function getFileExt() to auto-generate the value
+for parameter fileExt in athPkgBuilder()
+		baseName can be missing - uses default mapping from
+ftp://ftp.arabidopsis.org/home/tair/Microarrays/Affymetrix/ 
+		Added a parameter 'indexby', value is either 'PROBE'
+(default) or 'ACCNUM' - if it is PROBE, all annotations are indexed by
+probe ID, if ACCNUM, they are indexed by AGI locus ID
+	
+annotate
+	Updates to work with eSet/ExpressionSet class
+	Bugfix in htmlpage() that wasn't handling list length checking
+correctly. Thanks to Laurant Buffat for pointing this out
+	
+arrayQCplot
+	New Package:
+		Explore microarray data and check quality and
+reproducibility.
+	Maintainer:
+		Eun-kyung Lee
+
+beadarray
+	Changed readBeadLevelData() to read single and two channel data
+in the new BeadScan format
+	Made $G the name for single channel data (rather than $R)
+	Added BLImagePlot which produces a bead level image plot
+	Improved BLImagePlot with arguments for the color of high and
+low intensity areas.
+	
+beadarraySNP
+	New Package:
+		Importing data from Illumina SNP experiments and
+performing copy number calculations and reports.
+	Maintainer:
+		Jan Oosting
+
+Biobase
+	Changes to vignette on eSet and Biobase development
+	Exported selectSome for use in GGtools
+	Fixed bug in cache() preventing use from inside a function
+	
+biomaRt
+	Changed the output of listAttributes() and listFilters() to a
+data.frame where the first column is the attribute/filter name, and the
+second column contains the description
+	Updated vignette
+	Changed the default output of listMarts to a data.frame only
+containing the name and version of available BioMart databases
+	Fixed bug in getSequence() when used in MySQL mode
+
+Biostrings
+	Fixed vignettes and examples to use the new 'Biostrings-based
+genome data packages'
+
+BSgenome
+	Renamed the GenomeBase package to BSgenome to match resulting
+data packages
+	Replaced BStringGenome class by more general BSgenome class
+	Added 'prefix' and 'suffix' arguments to buildDataFiles()
+function
+
+Category
+	Removed default value for 'lib' argument in GOHyperG. The
+default was 'hgu95av2' and if people didn't change it, they would get
+unexpected results
+	Added pvalue.cufoff slot to GeneCategoryHyperGeoTestResult
+class
+	Refactored hypergeometric testing code
+		Added base class for test result
+		Added accessor methods for result classes
+		Rationalized return result
+		We now keep the category to gene ID mapping and compute
+the counts on it
+	
+cellHTS
+	Modifications to allow one to have a single plate in the cellHTS
+object
+	Small correction in vignette; summarize replicates using mean
+instead of RMS
+	Added a basic function to get a matrix with replicate values for
+a given channel in columns, given an array of raw or normalized
+intensities
+	
+clusterStab
+	Added methods for ExpressionSets
+	
+	
+copa
+	Added S4 methods for input objects
+
+geneplotter
+	smoothScatter() and densCols can now also work with NA values
+	
+GEOquery
+	Fixed getGEOfile() to reflect new URL for GDS raw data
+	Changes to GDS2MA() and GDS2eSet() to deal with NULL in GDS
+datatable
+	
+GGtools
+	New Package:
+		Software and data for genetical genomics, dealing with
+hapmap SNP reports, GWAS, etc.
+	Maintainer:
+		VJ Carey
+
+GOstats
+	Added conditional GO hypergeometric algorithm
+(goHyperGeoTest())
+
+lapmix
+	New Package:
+		Laplace mixture modelling of microarray experiments. 
+		A hierarchical Bayesian approach is used, and the
+hyperparameters 
+		are estimated using empirical Bayes. The main purpose is
+to
+		identify differentially expressed genes.
+	Maintainer:
+		Yann Ruffieux
+
+limma
+	CARMAweb reference added to User's guide
+	In read.maimages(), flush = TRUE added to all instances of
+read.table(), making read.maimages() tolerant to spurious columns at the
+end of data lines
+	Added 'cutoff' argument to wtflags(), argument 'w' renamed
+'weight'
+	Added Fitted Model Objects to User's guide
+	read.imagene() uses mean background instead of median if the
+auto segmentation method has been set
+	readImaGeneHeader() updated to allow for extraneous trailing
+white space in the lines of data files
+	In geneSetTest(), values "two.sided", "less" or "greater" are
+now permitted as synonyms for "either", "down" or "up"
+	geneSetTest() no longer issues warning with type = "t", and all
+positive values for statistic
+	New function as.matrix.PLMset(), allowing lmFit() to work
+correctly on PLMset objects
+	Bob case study updated in User's guide
+	New argument 'coefficients' for contrasts.fit(). This provides a
+simple way to specify the contrast matrix when the contrasts are just a
+subset of the original coefficients.
+	New function topTableF() to rank genes on the basis of
+F-statistics
+	normalizeWithinArrays() was incorrect with method="composite"
+and weights=NULL, now fixed.
+	makeContrasts() now gives informative error message if parameter
+names are not syntactically valid.
+	New argument 'contrasts' for makeContrasts() which will accept a
+character vector of contrasts. 
+	The matrix produced by makeContrasts() now has named dimensions
+	New function exprs.MA() to extract log-expression matrix from
+MAList
+	
+maDB
+	Changes in writeTable(), fixing problems with annotation
+packages that don't provide all annotation sources
+
+made4
+	Bug fix in bga(), so one can now plot results bga.suppl so that
+the coordinates of the new test projection are plotted onto the results
+of bga (as in Fig 3 of Culhane et al., 2002)
+
+pkgDepTools
+	New Package:
+		Tools for examining package dependencies
+	Maintainer:
+		Seth Falcon
+
+ppiStats
+	New Package:
+		Protein-Protein Interaction Statistical Package -
+Package to analyze Bait to Prey Data Sets
+	Maintainer:
+		Tony Chiang
+quantsmooth
+	Improved handling of sex chromosomes in
+prepareGenomePlot.html()
+	
+SAGx
+	New Package:
+		A package for retrieval, preparation and analysis of
+data from the Affymetrix GeneChip. In particular the issue of
+identifying  differentially expressed genes is addressed.
+	Maintainer:
+		Per Broberg
+
+snapCGH
+	Added function nudSegmentation() for highlighting regions of
+gain, loss, amplification and deletion.	
+	Fixed functionality of readPositionalInfo() when using Nimblegen
+data
+
+splots
+	New Package:
+		New small utility package with the emphasis on minimal
+dependencies for visualizations for high throughput screens
+	Maintainer:
+		Oleg Sklyar
+
+tilingArray
+	Added ability to plot segment boundaries on heatmap plot when
+seqObj specified
+	Fixed background index bug in normalizeByReference()
+	
+weaver
+	New Package:
+		This package provides enhancements on the Sweave()
+function
+ 		in the base package.  In particular a facility for
+caching code chunk
+		results is included.
+	Maintainer:
+		Seth Falcon
+
+xcms
+	Fixed bug where xcmsSet() failed if less than two peaks were
+detected in a file
+	Added warning to scmsSet() if less than ten peaks were detedted
+in a file
+
+	
+
+
+
+
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.
+
+
+From hb at stat.berkeley.edu  Mon Sep  4 06:14:57 2006
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Sun, 3 Sep 2006 21:14:57 -0700
+Subject: [Bioc-devel] [Rd] Unexpected source() behavior in R-devel
+In-Reply-To: <44FC1DED.4010500@mail.nih.gov>
+References: <200609031625.57963.sdavis2@mail.nih.gov>
+	<x21wqsmzie.fsf@turmalin.kubism.ku.dk>
+	<59d7961d0609031427v6239ac5bp16c7b2af679e996c@mail.gmail.com>
+	<x2wt8klj76.fsf@turmalin.kubism.ku.dk> <m264g4cw9w.fsf@ziti.fhcrc.org>
+	<44FC1DED.4010500@mail.nih.gov>
+Message-ID: <59d7961d0609032114x43665bc0r8bf1a72e22541a9@mail.gmail.com>
+
+On 9/4/06, Sean Davis <sdavis2 at mail.nih.gov> wrote:
+> Seth Falcon wrote:
+> > Peter Dalgaard <p.dalgaard at biostat.ku.dk> writes:
+> >
+> >
+> >> "Henrik Bengtsson" <hb at stat.berkeley.edu> writes:
+> >>
+> >>
+> >>> This has been reported before on r-devel, e.g. May 9, 2006 "[Rd] Seg
+> >>> fault when installing package from bad repository".
+> >>>
+> >>> It's happening on Mac OSX when trying to download non-existing
+> >>> webpages (HTTP status 404). That's all I know (not using OSX myself).
+> >>>
+> >> It is not entirely obvious that it is the same problem, but it might be.
+> >>
+> >> This happened to me on Linux (2.3.1 on FC5), but it has only happened
+> >> that one time. I don't think I did anything particularly strange
+> >> earlier in that session.
+> >>
+> >> Of course, with 20/20 hindsight, I should have taken the core dump
+> >> option...
+> >>
+> >
+> > I'm pretty sure this is the same issue and one that has been fixed in
+> > R-devel.
+> >
+> >     r38716 | ripley | 2006-07-30 00:19:35 -0700 (Sun, 30 Jul 2006) | 1 line
+> >     Changed paths:
+> >        M /trunk/src/modules/internet/internet.c
+> >
+> >     crash workaround from Seth Falcon
+> >
+> >
+> > Sean: can you try just download.file with a URL that gives 404?  Are
+> > you running an R version prior to the above commit?
+> >
+> Seth,
+>
+> As Peter pointed out, this looks like a simple server-side issue.  Here
+> is the sessionInfo() from my original post.  And below is the output of
+> two versions of download.file.
+>
+> > sessionInfo()
+> R version 2.4.0 Under development (unstable) (2006-09-02 r39068)
+>
+>  > download.file('http://bioconductor.org/getBioC.R',destfile='/tmp/junk.R')
+> trying URL 'http://bioconductor.org/getBioC.R'
+> Error in download.file("http://bioconductor.org/getBioC.R", destfile =
+> "/tmp/junk.R") :
+>         cannot open URL 'http://bioconductor.org/getBioC.R'
+> In addition: Warning message:
+> cannot open: HTTP status was '404 Not Found'
+>  >
+> download.file('http://www.bioconductor.org/getBioC.R',destfile='/tmp/junk.R')
+> trying URL 'http://www.bioconductor.org/getBioC.R'
+> Content type 'text/plain; charset=ISO-8859-1' length 1345 bytes
+> opened URL
+> ==================================================
+> downloaded 1345 bytes
+>
+
+Yes, there's been some problems with the Bioconductor server the last
+few days, e.g. http://bioconductor.org/biocLite.R is not working
+either.  It was down on Monday night too and then it was not possible
+to install any packages from them.  I think they are aware of this
+problem, but maybe not that it is down in this very minute.  I've
+cross-posted this reply to the bioc-devel to make sure the right
+person gets it.
+
+However, a HTTP 404 response should not crash R regardless.  For
+instance, the code for install.packages() tries to download
+PACKAGES.gz and if missing it tries to download PACKAGES.  All of a
+sudden I started to receive reports for OSX users that tried to
+install my packages from http://www.braju.com/R/ saying my code core
+dumped their R session.  I didn't have PACKAGE.gz and it worked for
+everyone but OSX users.  It sounds like they've located and solved
+this problem in R-devel by the end of July.
+
+/Henrik
+
+
+From f.hahne at dkfz-heidelberg.de  Mon Sep  4 10:45:11 2006
+From: f.hahne at dkfz-heidelberg.de (Florian Hahne)
+Date: Mon, 04 Sep 2006 10:45:11 +0200
+Subject: [Bioc-devel] FCS3.0 DiVa files?
+In-Reply-To: <7098abec0609011242r65aed89byf3895ba4cf602ab2@mail.gmail.com>
+References: <7098abec0609011242r65aed89byf3895ba4cf602ab2@mail.gmail.com>
+Message-ID: <44FBE797.8090808@dkfz-heidelberg.de>
+
+Hi Byron,
+As far as I know these files don't seem to adhere to the specifications
+in the FCS 3.0 format. I had one example file which I read in using a
+number of different software tools and almost all of them produced
+different results.
+readFCS could read the file without errors and the plots of the data
+looked ok. The only problem is that the absolute values are not the same
+for the different software, but the measurement relations are the same,
+i.e. the data is on different scales. And since I don't know what the
+correct values are (and are there "correct" values at all? In the end
+these are just arbitrary dimensionless numbers that somehow reflect the
+fluorescence intensities...) I didn't know how to proceed.
+Please feel free to take a stab at the import if you think that is a
+problem or send me one or two of your files along with some info about
+the expected range so I can give it another try.
+Cheers,
+Florian
+
+Byron Ellis schrieb:
+> Hi all,
+>
+> I remember a couple of months ago there was a brief discussion about
+> FCS3.0 files, in particular DiVA files recorded in floating point. Was
+> there ever any progress made on reading those in? I took a look
+> through the logs, but I may have missed something. I suddenly find
+> myself working with an LSR2 using DiVa that generates a lot of these
+> files. :-)
+>
+> If not, I'll take a stab at it since I need to read these files sooner
+> rather than later.
+>
+>   
+
+
+-- 
+Florian Hahne
+Abt. Molekulare Genomanalyse (B050)
+Deutsches Krebsforschungszentrum (DKFZ)
+Im Neuenheimer Feld 580
+D-69120 Heidelberg
+phone: 0049 6221 424764
+fax: 0049 6221 423454
+web: www.dkfz.de/mga
+
+
+From mtmorgan at fhcrc.org  Mon Sep  4 16:08:13 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 04 Sep 2006 07:08:13 -0700
+Subject: [Bioc-devel] Recent / forthcoming changes to Biobase
+Message-ID: <6phodtv912q.fsf@gopher4.fhcrc.org>
+
+A quick note to alert developers to an eSet change. There is a new
+slot featureData, added following discussion at BioC2006. The slot is
+an AnnotatedDataFrame, like phenoData, but meant for
+experiment-specific data about features (continue using the annotation
+slot for efficiently referencing annotations common to several
+experiments). Classes derived from eSet likely need "initialize"
+methods modified; for an example see "initialize" for ExpressionSet.
+
+Data instances in Biobase (e.g., sample.ExpressionSet) are *not* yet
+updated, but will be in the next several days. 
+
+Martin
+-- 
+Bioconductor
+
+
+From sfalcon at fhcrc.org  Mon Sep  4 18:59:45 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 04 Sep 2006 09:59:45 -0700
+Subject: [Bioc-devel] BioC 1.9 Release Schedule now available
+Message-ID: <m2lkoza7pa.fsf@ziti.fhcrc.org>
+
+Hi all,
+
+The release schedule for Bioconductor 1.9 has been finalized and is
+available here:
+
+    http://wiki.fhcrc.org/bioc/BioC_1.9_Release_Schedule
+
+If you are a BioC package maintainer, please review the schedule and
+plan on spending some time checking your package and reviewing the
+reports here:  
+
+    http://www.bioconductor.org/checkResults/1.9/
+
+
+Highlights:
+
+  05 Sep: Use R-2.4.0 alpha to test your packages
+  
+  19 Sep: Code freeze, must pass R CMD check without errors
+  
+  29 Sep: Must pass R CMD check without warnings
+  
+  03 Oct: R 2.4.0 released
+  
+  04 Oct: BioC 1.9 released
+
+
+Best Wishes,
+
++ seth
+
+
+From sfalcon at fhcrc.org  Mon Sep  4 20:33:47 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 04 Sep 2006 11:33:47 -0700
+Subject: [Bioc-devel] [Rd] Unexpected source() behavior in R-devel
+In-Reply-To: <59d7961d0609032114x43665bc0r8bf1a72e22541a9@mail.gmail.com>
+	(Henrik Bengtsson's message of "Sun, 3 Sep 2006 21:14:57 -0700")
+References: <200609031625.57963.sdavis2@mail.nih.gov>
+	<x21wqsmzie.fsf@turmalin.kubism.ku.dk>
+	<59d7961d0609031427v6239ac5bp16c7b2af679e996c@mail.gmail.com>
+	<x2wt8klj76.fsf@turmalin.kubism.ku.dk> <m264g4cw9w.fsf@ziti.fhcrc.org>
+	<44FC1DED.4010500@mail.nih.gov>
+	<59d7961d0609032114x43665bc0r8bf1a72e22541a9@mail.gmail.com>
+Message-ID: <m2d5ab8os4.fsf@ziti.fhcrc.org>
+
+"Henrik Bengtsson" <hb at stat.berkeley.edu> writes:
+> Yes, there's been some problems with the Bioconductor server the last
+> few days, e.g. http://bioconductor.org/biocLite.R is not working
+> either.  It was down on Monday night too and then it was not possible
+> to install any packages from them.  I think they are aware of this
+> problem, but maybe not that it is down in this very minute.  I've
+> cross-posted this reply to the bioc-devel to make sure the right
+> person gets it.
+
+The website issue should be fixed.  bioconductor.org and
+www.bioconductor.org should be serving the same content.  Please let
+us know of any difficulties you encounter.
+
+Bw,
+
++ seth
+
+
+From sfalcon at fhcrc.org  Tue Sep  5 19:31:18 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 05 Sep 2006 10:31:18 -0700
+Subject: [Bioc-devel] New package: pkgDepTools
+Message-ID: <m2u03m2pax.fsf@ziti.fhcrc.org>
+
+Hi all,
+
+I'd like to announce a new package 'pkgDepTools' in the BioC devel
+repository.
+
+    Package Dependency Tools
+    
+    This package provides tools for computing and analyzing dependency
+    relationships among R packages. It provides tools for building a
+    graph-based representation of the dependencies among all packages
+    in a list of CRAN-style package repositories. There are also
+    utilities for computing installation order of a given package. If
+    the RCurl package is available, an estimate of the download size
+    required to install a given package and its dependencies can be
+    obtained.
+
+
+http://www.bioconductor.org/packages/1.9/bioc/html/pkgDepTools.html
+
+The vignette gives some example uses.
+
+
+Best Wishes,
+
++ seth
+
+
+From ellis at stat.harvard.edu  Tue Sep  5 19:33:44 2006
+From: ellis at stat.harvard.edu (Byron Ellis)
+Date: Tue, 5 Sep 2006 10:33:44 -0700
+Subject: [Bioc-devel] FCS3.0 DiVa files?
+In-Reply-To: <44FBE797.8090808@dkfz-heidelberg.de>
+References: <7098abec0609011242r65aed89byf3895ba4cf602ab2@mail.gmail.com>
+	<44FBE797.8090808@dkfz-heidelberg.de>
+Message-ID: <7098abec0609051033g6d20b442mb55e45e5fa79c5eb@mail.gmail.com>
+
+The latest readFCS unfortunately doesn't produce sensible results
+except for the first parameter (generally forward scatter), the other
+parameters have weird sorts of systematic errors that almost look like
+alignment problems. At least two other people in my lab here have Java
+importers for these sorts of files that I'm considering to be
+"correct" and working from there.
+
+On 9/4/06, Florian Hahne <f.hahne at dkfz-heidelberg.de> wrote:
+> Hi Byron,
+> As far as I know these files don't seem to adhere to the specifications
+> in the FCS 3.0 format. I had one example file which I read in using a
+> number of different software tools and almost all of them produced
+> different results.
+> readFCS could read the file without errors and the plots of the data
+> looked ok. The only problem is that the absolute values are not the same
+> for the different software, but the measurement relations are the same,
+> i.e. the data is on different scales. And since I don't know what the
+> correct values are (and are there "correct" values at all? In the end
+> these are just arbitrary dimensionless numbers that somehow reflect the
+> fluorescence intensities...) I didn't know how to proceed.
+> Please feel free to take a stab at the import if you think that is a
+> problem or send me one or two of your files along with some info about
+> the expected range so I can give it another try.
+> Cheers,
+> Florian
+>
+> Byron Ellis schrieb:
+> > Hi all,
+> >
+> > I remember a couple of months ago there was a brief discussion about
+> > FCS3.0 files, in particular DiVA files recorded in floating point. Was
+> > there ever any progress made on reading those in? I took a look
+> > through the logs, but I may have missed something. I suddenly find
+> > myself working with an LSR2 using DiVa that generates a lot of these
+> > files. :-)
+> >
+> > If not, I'll take a stab at it since I need to read these files sooner
+> > rather than later.
+> >
+> >
+>
+>
+> --
+> Florian Hahne
+> Abt. Molekulare Genomanalyse (B050)
+> Deutsches Krebsforschungszentrum (DKFZ)
+> Im Neuenheimer Feld 580
+> D-69120 Heidelberg
+> phone: 0049 6221 424764
+> fax: 0049 6221 423454
+> web: www.dkfz.de/mga
+>
+>
+
+
+-- 
+Byron Ellis (byron.ellis at gmail.com)
+"Oook" -- The Librarian
+
+
+From huber at ebi.ac.uk  Tue Sep  5 19:56:46 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Tue, 05 Sep 2006 10:56:46 -0700
+Subject: [Bioc-devel] FCS3.0 DiVa files?
+In-Reply-To: <7098abec0609051033g6d20b442mb55e45e5fa79c5eb@mail.gmail.com>
+References: <7098abec0609011242r65aed89byf3895ba4cf602ab2@mail.gmail.com>	<44FBE797.8090808@dkfz-heidelberg.de>
+	<7098abec0609051033g6d20b442mb55e45e5fa79c5eb@mail.gmail.com>
+Message-ID: <44FDBA5E.1000904@ebi.ac.uk>
+
+
+Hi Byron,
+
+would it be possible to be more specific than "weird sorts of systematic 
+errors", and for instance give some example files together with what you 
+consider correct results?
+
+   Best wishes
+   Wolfgang
+
+
+
+Byron Ellis wrote:
+> The latest readFCS unfortunately doesn't produce sensible results
+> except for the first parameter (generally forward scatter), the other
+> parameters have weird sorts of systematic errors that almost look like
+> alignment problems. At least two other people in my lab here have Java
+> importers for these sorts of files that I'm considering to be
+> "correct" and working from there.
+> 
+> On 9/4/06, Florian Hahne <f.hahne at dkfz-heidelberg.de> wrote:
+>> Hi Byron,
+>> As far as I know these files don't seem to adhere to the specifications
+>> in the FCS 3.0 format. I had one example file which I read in using a
+>> number of different software tools and almost all of them produced
+>> different results.
+>> readFCS could read the file without errors and the plots of the data
+>> looked ok. The only problem is that the absolute values are not the same
+>> for the different software, but the measurement relations are the same,
+>> i.e. the data is on different scales. And since I don't know what the
+>> correct values are (and are there "correct" values at all? In the end
+>> these are just arbitrary dimensionless numbers that somehow reflect the
+>> fluorescence intensities...) I didn't know how to proceed.
+>> Please feel free to take a stab at the import if you think that is a
+>> problem or send me one or two of your files along with some info about
+>> the expected range so I can give it another try.
+>> Cheers,
+>> Florian
+>>
+>> Byron Ellis schrieb:
+>>> Hi all,
+>>>
+>>> I remember a couple of months ago there was a brief discussion about
+>>> FCS3.0 files, in particular DiVA files recorded in floating point. Was
+>>> there ever any progress made on reading those in? I took a look
+>>> through the logs, but I may have missed something. I suddenly find
+>>> myself working with an LSR2 using DiVa that generates a lot of these
+>>> files. :-)
+>>>
+>>> If not, I'll take a stab at it since I need to read these files sooner
+>>> rather than later.
+>>>
+>>>
+>>
+>> --
+>> Florian Hahne
+>> Abt. Molekulare Genomanalyse (B050)
+>> Deutsches Krebsforschungszentrum (DKFZ)
+>> Im Neuenheimer Feld 580
+>> D-69120 Heidelberg
+>> phone: 0049 6221 424764
+>> fax: 0049 6221 423454
+>> web: www.dkfz.de/mga
+>>
+>>
+> 
+>
+
+
+From ellis at stat.harvard.edu  Wed Sep  6 04:46:22 2006
+From: ellis at stat.harvard.edu (Byron Ellis)
+Date: Tue, 5 Sep 2006 19:46:22 -0700
+Subject: [Bioc-devel] FCS3.0 DiVa files?
+In-Reply-To: <44FDBA5E.1000904@ebi.ac.uk>
+References: <7098abec0609011242r65aed89byf3895ba4cf602ab2@mail.gmail.com>
+	<44FBE797.8090808@dkfz-heidelberg.de>
+	<7098abec0609051033g6d20b442mb55e45e5fa79c5eb@mail.gmail.com>
+	<44FDBA5E.1000904@ebi.ac.uk>
+Message-ID: <7098abec0609051946g1f5de6b5jbf7c1573eba774a@mail.gmail.com>
+
+Actually, I stand corrected---I was looking at untransformed data and
+comparing to transformed data (the Forward Scatter is usually viewed
+linearly for whatever reason so it looked as it should). It looks like
+the SVN version (as of today) reads the FACSDiVa files correctly.
+Hooray. For the longest time it looked like there was an alignment
+problem or something, but apparently not.
+
+ Of course there are negative entries for values that are,
+theoretically, photon counts but that's more the fault of the
+equipment manufacturers who thought that hardware background
+correction was a good idea. :-)
+
+P.S. Turning off a dump of the data matrix by default was a fantastic
+idea. My test data is 13x~520K  and that just kills Aqua R.
+
+On 9/5/06, Wolfgang Huber <huber at ebi.ac.uk> wrote:
+>
+> Hi Byron,
+>
+> would it be possible to be more specific than "weird sorts of systematic
+> errors", and for instance give some example files together with what you
+> consider correct results?
+>
+>    Best wishes
+>    Wolfgang
+>
+>
+>
+> Byron Ellis wrote:
+> > The latest readFCS unfortunately doesn't produce sensible results
+> > except for the first parameter (generally forward scatter), the other
+> > parameters have weird sorts of systematic errors that almost look like
+> > alignment problems. At least two other people in my lab here have Java
+> > importers for these sorts of files that I'm considering to be
+> > "correct" and working from there.
+> >
+> > On 9/4/06, Florian Hahne <f.hahne at dkfz-heidelberg.de> wrote:
+> >> Hi Byron,
+> >> As far as I know these files don't seem to adhere to the specifications
+> >> in the FCS 3.0 format. I had one example file which I read in using a
+> >> number of different software tools and almost all of them produced
+> >> different results.
+> >> readFCS could read the file without errors and the plots of the data
+> >> looked ok. The only problem is that the absolute values are not the same
+> >> for the different software, but the measurement relations are the same,
+> >> i.e. the data is on different scales. And since I don't know what the
+> >> correct values are (and are there "correct" values at all? In the end
+> >> these are just arbitrary dimensionless numbers that somehow reflect the
+> >> fluorescence intensities...) I didn't know how to proceed.
+> >> Please feel free to take a stab at the import if you think that is a
+> >> problem or send me one or two of your files along with some info about
+> >> the expected range so I can give it another try.
+> >> Cheers,
+> >> Florian
+> >>
+> >> Byron Ellis schrieb:
+> >>> Hi all,
+> >>>
+> >>> I remember a couple of months ago there was a brief discussion about
+> >>> FCS3.0 files, in particular DiVA files recorded in floating point. Was
+> >>> there ever any progress made on reading those in? I took a look
+> >>> through the logs, but I may have missed something. I suddenly find
+> >>> myself working with an LSR2 using DiVa that generates a lot of these
+> >>> files. :-)
+> >>>
+> >>> If not, I'll take a stab at it since I need to read these files sooner
+> >>> rather than later.
+> >>>
+> >>>
+> >>
+> >> --
+> >> Florian Hahne
+> >> Abt. Molekulare Genomanalyse (B050)
+> >> Deutsches Krebsforschungszentrum (DKFZ)
+> >> Im Neuenheimer Feld 580
+> >> D-69120 Heidelberg
+> >> phone: 0049 6221 424764
+> >> fax: 0049 6221 423454
+> >> web: www.dkfz.de/mga
+> >>
+> >>
+> >
+> >
+>
+>
+
+
+-- 
+Byron Ellis (byron.ellis at gmail.com)
+"Oook" -- The Librarian
+
+
+From f.hahne at dkfz-heidelberg.de  Wed Sep  6 11:03:05 2006
+From: f.hahne at dkfz-heidelberg.de (Florian Hahne)
+Date: Wed, 06 Sep 2006 11:03:05 +0200
+Subject: [Bioc-devel] FCS3.0 DiVa files?
+In-Reply-To: <7098abec0609051946g1f5de6b5jbf7c1573eba774a@mail.gmail.com>
+References: <7098abec0609011242r65aed89byf3895ba4cf602ab2@mail.gmail.com>	
+	<44FBE797.8090808@dkfz-heidelberg.de>	
+	<7098abec0609051033g6d20b442mb55e45e5fa79c5eb@mail.gmail.com>	
+	<44FDBA5E.1000904@ebi.ac.uk>
+	<7098abec0609051946g1f5de6b5jbf7c1573eba774a@mail.gmail.com>
+Message-ID: <44FE8EC9.5040000@dkfz-heidelberg.de>
+
+Hi Byron,
+do you think you could send me one of the diva files for testing
+purposes. I like to test against as many different file types as
+possible whenever I do changes to the import function and my supply is
+somehow limited to FACS Array and FACS Calibur files. By the way, FSC
+and SSC (and sometimes also other parameters) are viewed linearly
+because the amplification of the measured signals by the instrument is
+either linear or logarithmic, this can be set by the user. You can get
+the type of amplification for each parameter n from the $PnE keyword in
+the FCS file.
+Cheers,
+Florian
+
+Byron Ellis schrieb:
+> Actually, I stand corrected---I was looking at untransformed data and
+> comparing to transformed data (the Forward Scatter is usually viewed
+> linearly for whatever reason so it looked as it should). It looks like
+> the SVN version (as of today) reads the FACSDiVa files correctly.
+> Hooray. For the longest time it looked like there was an alignment
+> problem or something, but apparently not.
+>
+> Of course there are negative entries for values that are,
+> theoretically, photon counts but that's more the fault of the
+> equipment manufacturers who thought that hardware background
+> correction was a good idea. :-)
+>
+> P.S. Turning off a dump of the data matrix by default was a fantastic
+> idea. My test data is 13x~520K  and that just kills Aqua R.
+>
+> On 9/5/06, Wolfgang Huber <huber at ebi.ac.uk> wrote:
+>>
+>> Hi Byron,
+>>
+>> would it be possible to be more specific than "weird sorts of systematic
+>> errors", and for instance give some example files together with what you
+>> consider correct results?
+>>
+>>    Best wishes
+>>    Wolfgang
+>>
+>>
+>>
+>> Byron Ellis wrote:
+>> > The latest readFCS unfortunately doesn't produce sensible results
+>> > except for the first parameter (generally forward scatter), the other
+>> > parameters have weird sorts of systematic errors that almost look like
+>> > alignment problems. At least two other people in my lab here have Java
+>> > importers for these sorts of files that I'm considering to be
+>> > "correct" and working from there.
+>> >
+>> > On 9/4/06, Florian Hahne <f.hahne at dkfz-heidelberg.de> wrote:
+>> >> Hi Byron,
+>> >> As far as I know these files don't seem to adhere to the
+>> specifications
+>> >> in the FCS 3.0 format. I had one example file which I read in using a
+>> >> number of different software tools and almost all of them produced
+>> >> different results.
+>> >> readFCS could read the file without errors and the plots of the data
+>> >> looked ok. The only problem is that the absolute values are not
+>> the same
+>> >> for the different software, but the measurement relations are the
+>> same,
+>> >> i.e. the data is on different scales. And since I don't know what the
+>> >> correct values are (and are there "correct" values at all? In the end
+>> >> these are just arbitrary dimensionless numbers that somehow
+>> reflect the
+>> >> fluorescence intensities...) I didn't know how to proceed.
+>> >> Please feel free to take a stab at the import if you think that is a
+>> >> problem or send me one or two of your files along with some info
+>> about
+>> >> the expected range so I can give it another try.
+>> >> Cheers,
+>> >> Florian
+>> >>
+>> >> Byron Ellis schrieb:
+>> >>> Hi all,
+>> >>>
+>> >>> I remember a couple of months ago there was a brief discussion about
+>> >>> FCS3.0 files, in particular DiVA files recorded in floating
+>> point. Was
+>> >>> there ever any progress made on reading those in? I took a look
+>> >>> through the logs, but I may have missed something. I suddenly find
+>> >>> myself working with an LSR2 using DiVa that generates a lot of these
+>> >>> files. :-)
+>> >>>
+>> >>> If not, I'll take a stab at it since I need to read these files
+>> sooner
+>> >>> rather than later.
+>> >>>
+>> >>>
+>> >>
+>> >> --
+>> >> Florian Hahne
+>> >> Abt. Molekulare Genomanalyse (B050)
+>> >> Deutsches Krebsforschungszentrum (DKFZ)
+>> >> Im Neuenheimer Feld 580
+>> >> D-69120 Heidelberg
+>> >> phone: 0049 6221 424764
+>> >> fax: 0049 6221 423454
+>> >> web: www.dkfz.de/mga
+>> >>
+>> >>
+>> >
+>> >
+>>
+>>
+>
+>
+
+
+-- 
+Florian Hahne
+Abt. Molekulare Genomanalyse (B050)
+Deutsches Krebsforschungszentrum (DKFZ)
+Im Neuenheimer Feld 580
+D-69120 Heidelberg
+phone: 0049 6221 424764
+fax: 0049 6221 423454
+web: www.dkfz.de/mga
+
+
+From ellis at stat.harvard.edu  Thu Sep  7 08:56:36 2006
+From: ellis at stat.harvard.edu (Byron Ellis)
+Date: Wed, 6 Sep 2006 23:56:36 -0700
+Subject: [Bioc-devel] FCS3.0 DiVa files?
+In-Reply-To: <44FE8EC9.5040000@dkfz-heidelberg.de>
+References: <7098abec0609011242r65aed89byf3895ba4cf602ab2@mail.gmail.com>
+	<44FBE797.8090808@dkfz-heidelberg.de>
+	<7098abec0609051033g6d20b442mb55e45e5fa79c5eb@mail.gmail.com>
+	<44FDBA5E.1000904@ebi.ac.uk>
+	<7098abec0609051946g1f5de6b5jbf7c1573eba774a@mail.gmail.com>
+	<44FE8EC9.5040000@dkfz-heidelberg.de>
+Message-ID: <7098abec0609062356j2ee66eefn7120556c85296063@mail.gmail.com>
+
+The data isn't mine so I'll have to ask. It's actually primarily for
+quality control so it probably won't be a problem. Otherwise we'll
+wait until I get to run my own data on the LSRII. :-)
+
+On 9/6/06, Florian Hahne <f.hahne at dkfz-heidelberg.de> wrote:
+> Hi Byron,
+> do you think you could send me one of the diva files for testing
+> purposes. I like to test against as many different file types as
+> possible whenever I do changes to the import function and my supply is
+> somehow limited to FACS Array and FACS Calibur files. By the way, FSC
+> and SSC (and sometimes also other parameters) are viewed linearly
+> because the amplification of the measured signals by the instrument is
+> either linear or logarithmic, this can be set by the user. You can get
+> the type of amplification for each parameter n from the $PnE keyword in
+> the FCS file.
+> Cheers,
+> Florian
+>
+> Byron Ellis schrieb:
+> > Actually, I stand corrected---I was looking at untransformed data and
+> > comparing to transformed data (the Forward Scatter is usually viewed
+> > linearly for whatever reason so it looked as it should). It looks like
+> > the SVN version (as of today) reads the FACSDiVa files correctly.
+> > Hooray. For the longest time it looked like there was an alignment
+> > problem or something, but apparently not.
+> >
+> > Of course there are negative entries for values that are,
+> > theoretically, photon counts but that's more the fault of the
+> > equipment manufacturers who thought that hardware background
+> > correction was a good idea. :-)
+> >
+> > P.S. Turning off a dump of the data matrix by default was a fantastic
+> > idea. My test data is 13x~520K  and that just kills Aqua R.
+> >
+> > On 9/5/06, Wolfgang Huber <huber at ebi.ac.uk> wrote:
+> >>
+> >> Hi Byron,
+> >>
+> >> would it be possible to be more specific than "weird sorts of systematic
+> >> errors", and for instance give some example files together with what you
+> >> consider correct results?
+> >>
+> >>    Best wishes
+> >>    Wolfgang
+> >>
+> >>
+> >>
+> >> Byron Ellis wrote:
+> >> > The latest readFCS unfortunately doesn't produce sensible results
+> >> > except for the first parameter (generally forward scatter), the other
+> >> > parameters have weird sorts of systematic errors that almost look like
+> >> > alignment problems. At least two other people in my lab here have Java
+> >> > importers for these sorts of files that I'm considering to be
+> >> > "correct" and working from there.
+> >> >
+> >> > On 9/4/06, Florian Hahne <f.hahne at dkfz-heidelberg.de> wrote:
+> >> >> Hi Byron,
+> >> >> As far as I know these files don't seem to adhere to the
+> >> specifications
+> >> >> in the FCS 3.0 format. I had one example file which I read in using a
+> >> >> number of different software tools and almost all of them produced
+> >> >> different results.
+> >> >> readFCS could read the file without errors and the plots of the data
+> >> >> looked ok. The only problem is that the absolute values are not
+> >> the same
+> >> >> for the different software, but the measurement relations are the
+> >> same,
+> >> >> i.e. the data is on different scales. And since I don't know what the
+> >> >> correct values are (and are there "correct" values at all? In the end
+> >> >> these are just arbitrary dimensionless numbers that somehow
+> >> reflect the
+> >> >> fluorescence intensities...) I didn't know how to proceed.
+> >> >> Please feel free to take a stab at the import if you think that is a
+> >> >> problem or send me one or two of your files along with some info
+> >> about
+> >> >> the expected range so I can give it another try.
+> >> >> Cheers,
+> >> >> Florian
+> >> >>
+> >> >> Byron Ellis schrieb:
+> >> >>> Hi all,
+> >> >>>
+> >> >>> I remember a couple of months ago there was a brief discussion about
+> >> >>> FCS3.0 files, in particular DiVA files recorded in floating
+> >> point. Was
+> >> >>> there ever any progress made on reading those in? I took a look
+> >> >>> through the logs, but I may have missed something. I suddenly find
+> >> >>> myself working with an LSR2 using DiVa that generates a lot of these
+> >> >>> files. :-)
+> >> >>>
+> >> >>> If not, I'll take a stab at it since I need to read these files
+> >> sooner
+> >> >>> rather than later.
+> >> >>>
+> >> >>>
+> >> >>
+> >> >> --
+> >> >> Florian Hahne
+> >> >> Abt. Molekulare Genomanalyse (B050)
+> >> >> Deutsches Krebsforschungszentrum (DKFZ)
+> >> >> Im Neuenheimer Feld 580
+> >> >> D-69120 Heidelberg
+> >> >> phone: 0049 6221 424764
+> >> >> fax: 0049 6221 423454
+> >> >> web: www.dkfz.de/mga
+> >> >>
+> >> >>
+> >> >
+> >> >
+> >>
+> >>
+> >
+> >
+>
+>
+> --
+> Florian Hahne
+> Abt. Molekulare Genomanalyse (B050)
+> Deutsches Krebsforschungszentrum (DKFZ)
+> Im Neuenheimer Feld 580
+> D-69120 Heidelberg
+> phone: 0049 6221 424764
+> fax: 0049 6221 423454
+> web: www.dkfz.de/mga
+>
+>
+
+
+-- 
+Byron Ellis (byron.ellis at gmail.com)
+"Oook" -- The Librarian
+
+
+From J.Oosting at lumc.nl  Fri Sep  8 15:27:45 2006
+From: J.Oosting at lumc.nl (Oosting, J. (PATH))
+Date: Fri, 8 Sep 2006 15:27:45 +0200
+Subject: [Bioc-devel] Problem loading Biobase in newest R2.4 for windows
+References: <6phodtv912q.fsf@gopher4.fhcrc.org>
+Message-ID: <40964D91251A18469CB08B6E96FB30BA0EF811@mailc.lumcnet.prod.intern>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+Url: https://stat.ethz.ch/mailman/private/bioc-devel/attachments/20060908/8f41668f/attachment.pl 
+
+From jmacdon at med.umich.edu  Fri Sep  8 15:43:37 2006
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Fri, 08 Sep 2006 09:43:37 -0400
+Subject: [Bioc-devel] Problem loading Biobase in newest R2.4 for windows
+In-Reply-To: <40964D91251A18469CB08B6E96FB30BA0EF811@mailc.lumcnet.prod.intern>
+References: <6phodtv912q.fsf@gopher4.fhcrc.org>
+	<40964D91251A18469CB08B6E96FB30BA0EF811@mailc.lumcnet.prod.intern>
+Message-ID: <45017389.2040409@med.umich.edu>
+
+Oosting, J. (PATH) wrote:
+> When I try to load Biobase 1.11.32 in the latest versions of R (from
+> about 3 sep onwards) I get the following error message. I'm not sure
+> whether this is a R problem or a Biobase problem. This doesn't happen
+> to a july version of R2.4, and looking at the check page for 1.9 it
+> doesn't happen with the aug 31 version either. I have now tried it on
+> different systems and a few versions (even compiled R for windows on
+> the latest src snapshot). It does not happen on a linux system with
+> the latest R.
+
+This is because of some changes in S4 objects in R-devel. You can't just 
+use the win32 binaries from BioC right now (the release 1.9 binaries 
+that is) because they have to be rebuilt using a newer version of 
+R-devel that has the changes (which are still being made AFAIK). If you 
+can build source packages on your windows box, you can always use
+
+biocLite("packagename", type = "source")
+
+which will download and install the source packages, which will then 
+work. Unfortunately this doesn't work for certain packages because they 
+need special babying on windows (XML, RCurl, RMySQL, maybe some others). 
+These have to be installed by hand.
+
+HTH,
+
+Jim
+
+
+> 
+> 
+> 
+>> library(Biobase)
+> 
+> Loading required package: tools Error in loadNamespace(package,
+> c(which.lib.loc, lib.loc), keep.source = keep.source) : in 'Biobase'
+> methods for export not found: [, [[, $, abstract,
+> addVarMetadataEntry, aggenv, aggfun, annotatedDataFrameFrom,
+> annotation, coerce, combine, content, convertVarLabels, description,
+> dims, eList, experimentData, expinfo, exprs, exprs2excel,
+> featureNames, featureData, featureData<-, geneNames, getExpData,
+> getUnits, getVarMetadata, hybridizations, initfun, iter, length,
+> locked, normControls, ncol, notes, otherInfo, pData, phenoData,
+> preproc, sampleNames, samples, se.exprs, split, storageMode,
+> update2MIAME, varLabels, varMetadata, reporterInfo, annotation<-,
+> description<-, eList<-, experimentData<-, exprs<-, featureNames<-,
+> geneNames<-, notes<-, pData<-, phenoData<-, sampleNames<-,
+> varLabels<-, varMetadata<-, assayData<-, reporterInfo<-, se.exprs<-,
+> storageMode<-, write.exprs, as.data.frame.exprSet, dim, dimLabels,
+> assayData, reporterNames, pubMedIds, pubMedIds<-, isVersioned,
+> isCurrent, c Error: package/namespace load failed for 'Biobase'
+> 
+>> library(Biobase)
+> 
+> Error in formals(contents) : object "contents" not found Error:
+> .onLoad failed in 'loadNamespace' for 'Biobase' Error:
+> package/namespace load failed for 'Biobase'
+> 
+>> sessionInfo()
+> 
+> R version 2.4.0 alpha (2006-09-05 r39134) i386-pc-mingw32
+> 
+> locale: LC_COLLATE=English_United States.1252;LC_CTYPE=English_United
+> States.1252;LC_MONETARY=English_United
+> States.1252;LC_NUMERIC=C;LC_TIME=English_United States.1252
+> 
+> attached base packages: [1] "tools"     "methods"   "stats"
+> "graphics"  "grDevices" "utils" [7] "datasets"  "base"
+> 
+> 
+> 
+> [[alternative HTML version deleted]]
+> 
+> _______________________________________________ 
+> Bioc-devel at stat.math.ethz.ch mailing list 
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Affymetrix and cDNA Microarray Core
+University of Michigan Cancer Center
+1500 E. Medical Center Drive
+7410 CCGC
+Ann Arbor MI 48109
+734-647-5623
+
+
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.
+
+
+From sfalcon at fhcrc.org  Fri Sep  8 16:51:43 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 08 Sep 2006 07:51:43 -0700
+Subject: [Bioc-devel] Problem loading Biobase in newest R2.4 for windows
+In-Reply-To: <45017389.2040409@med.umich.edu> (James W. MacDonald's message of
+	"Fri, 08 Sep 2006 09:43:37 -0400")
+References: <6phodtv912q.fsf@gopher4.fhcrc.org>
+	<40964D91251A18469CB08B6E96FB30BA0EF811@mailc.lumcnet.prod.intern>
+	<45017389.2040409@med.umich.edu>
+Message-ID: <m2zmdae7i8.fsf@ziti.fhcrc.org>
+
+"James W. MacDonald" <jmacdon at med.umich.edu> writes:
+
+> Oosting, J. (PATH) wrote:
+>> When I try to load Biobase 1.11.32 in the latest versions of R (from
+>> about 3 sep onwards) I get the following error message. I'm not sure
+>> whether this is a R problem or a Biobase problem. This doesn't happen
+>> to a july version of R2.4, and looking at the check page for 1.9 it
+>> doesn't happen with the aug 31 version either. I have now tried it on
+>> different systems and a few versions (even compiled R for windows on
+>> the latest src snapshot). It does not happen on a linux system with
+>> the latest R.
+>
+> This is because of some changes in S4 objects in R-devel. You can't just 
+> use the win32 binaries from BioC right now (the release 1.9 binaries 
+> that is) because they have to be rebuilt using a newer version of 
+> R-devel that has the changes (which are still being made AFAIK). If you 
+> can build source packages on your windows box, you can always use
+>
+> biocLite("packagename", type = "source")
+>
+> which will download and install the source packages, which will then 
+> work. Unfortunately this doesn't work for certain packages because they 
+> need special babying on windows (XML, RCurl, RMySQL, maybe some others). 
+> These have to be installed by hand.
+
+Yes, what Jim said.  We plan to update (most of) our build systems
+today to the most recent R 2.4.0 alpha.  By Monday, we should have
+updated Windows binaries.
+
++ seth
+
+
+From nli at fhcrc.org  Fri Sep  8 20:27:51 2006
+From: nli at fhcrc.org (Nianhua Li)
+Date: Fri, 08 Sep 2006 11:27:51 -0700
+Subject: [Bioc-devel] some data packages available for testing
+In-Reply-To: <40964D91251A18469CB08B6E96FB30BA0EF811@mailc.lumcnet.prod.intern>
+References: <6phodtv912q.fsf@gopher4.fhcrc.org>
+	<40964D91251A18469CB08B6E96FB30BA0EF811@mailc.lumcnet.prod.intern>
+Message-ID: <4501B627.6040505@fhcrc.org>
+
+Hi,
+
+Some data packages are available at
+http://www.bioconductor.org/packages/1.9/data/annotation/ for testing.
+Version number is 1.13.0. Both source and windows binaries are there.
+They were built by using R 2.4.0 alpha, AnnBuilder 1.11.11 and GO
+1.13.0. Annotation data was downloaded from public databases on Aug 25
+and from chip manufactures on Aug 29:
+
+ag           ggahomology  hgug4110b    mgu74b       ncrhomology  rtu34
+agahomology  gmahomology  hgug4112a    mgu74bv2     omyhomology  scehomology
+ath1121501   GO           hsahomology  mgu74c       osahomology  spohomology
+athhomology  hcg110       hu35ksuba    mgu74cv2     pfahomology  sschomology
+btahomology  hgfocus      hu35ksubb    mmuhomology  PFAM         taehomology
+canine2      hgu133a      hu35ksubc    moe430a      ptrhomology  u133x3p
+celegans     hgu133a2     hu35ksubd    moe430b      rae230a      vvihomology
+celhomology  hgu133b      hu6800       mouse4302    rae230b     
+xenopuslaevis
+cfahomology  hgu133plus2  humanCHRLOC  mouse430a2   rat2302      xlahomology
+cinhomology  hgu95a       hvuhomology  mouseCHRLOC  ratCHRLOC    xtrhomology
+dmehomology  hgu95av2     KEGG         mu11ksuba    rgu34a       YEAST
+drehomology  hgu95b       klahomology  mu11ksubb    rgu34b       yeast2
+drosgenome1  hgu95c       mgrhomology  mu19ksuba    rgu34c       ygs98
+drosophila2  hgu95d       mgu74a       mu19ksubb    rnohomology  zebrafish
+egohomology  hgu95e       mgu74av2     mu19ksubc    rnu34        zmahomology
+
+The following packages will be updated soon:
+
+indac    humanLLMappings    mouseLLMappings    ratLLMappings    cMAP   
+hgug4100a   hgug4101a   hgug4111a   hgug4410a   hgug4410b   mgug4104a
+mgug4120a   mgug4121a   mgug4122a   rgug4105a   rgug4130a   rgug4131a
+
+Bug reports are highly appreciated. Thanks.
+
+nianhua
+
+
+From sfalcon at fhcrc.org  Fri Sep  8 20:57:49 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 08 Sep 2006 11:57:49 -0700
+Subject: [Bioc-devel] some data packages available for testing
+In-Reply-To: <4501B627.6040505@fhcrc.org> (Nianhua Li's message of "Fri,
+	08 Sep 2006 11:27:51 -0700")
+References: <6phodtv912q.fsf@gopher4.fhcrc.org>
+	<40964D91251A18469CB08B6E96FB30BA0EF811@mailc.lumcnet.prod.intern>
+	<4501B627.6040505@fhcrc.org>
+Message-ID: <m23bb2chjm.fsf@ziti.fhcrc.org>
+
+Nianhua Li <nli at fhcrc.org> writes:
+
+> Hi,
+>
+> Some data packages are available at
+> http://www.bioconductor.org/packages/1.9/data/annotation/ for testing.
+> Version number is 1.13.0. Both source and windows binaries are there.
+> They were built by using R 2.4.0 alpha, AnnBuilder 1.11.11 and GO
+> 1.13.0. Annotation data was downloaded from public databases on Aug 25
+> and from chip manufactures on Aug 29:
+
+Aside from updated source data, the annotation packages have a new
+environment:
+
+     <chip>ENTREZID
+
+And the <chip>LOCUSID environment is now deprecated and gives a
+warning message.
+
++ seth
+
+
+From sfalcon at fhcrc.org  Sun Sep 10 00:11:59 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Sat, 09 Sep 2006 15:11:59 -0700
+Subject: [Bioc-devel] Update on upcoming BioC 1.9 release
+Message-ID: <m24pvgn100.fsf@ziti.fhcrc.org>
+
+Hi all,
+
+A few updates regarding the upcoming release:
+
+1. R 2.4.0 alpha is now available and you should start using it to
+   test your packages (see notes below).
+
+2. The nightly builds have switched to R 2.4.0 alpha.  Results are in
+   the usual location: http://www.bioconductor.org/checkResults/1.9/
+   If you have questions about error or warning messages, please post
+   them to this list.
+
+3. Updated annotation data packages are available for testing.  One
+   major change is that the <chip>LOCUSID env is now deprecated in favor
+   of <chip>ENTREZID env.
+
+4. The eSet superclass in Biobase has a new featureData slot as was
+   requested at the developer meeting at BioC2006.  This will have an
+   impact on all subclasses of eSet.  In particular, serialized
+   instances will need to be updated.  The updateObject method in
+   Biobase should help with this.
+
+
+Notes on R 2.4.0 alpha
+======================
+
+R 2.4.0 alpha contains many improvement to the S4 class system.
+Unfortunately, the improvements require that:
+
+1. All packages that use S4 (have a dependency on the methods
+   packages) need to be reinstalled.  Building from source will be
+   most reliable until the binary builds stabilize.  We have just
+   begun building Windows binaries for 2.4.0 alpha, but won't have a
+   clean collection of binary packages until later next week.
+
+2. All serialized S4 instances be recreated using the new code.  The
+   updateObject method in Biobase may be useful, but in the end you
+   may need to address this by hand.
+
+3. As a result of (2), we need to rebuild all experiment data
+   packages.  Our plan is to update these packages on Monday along
+   with as many of the packages maintained by the Biocore Team as
+   possible.  This will address some of the current errors being
+   reported in yesterday's build report.
+
+
+
++ seth
+
+
+From sdavis2 at mail.nih.gov  Tue Sep 12 15:57:56 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Tue, 12 Sep 2006 09:57:56 -0400
+Subject: [Bioc-devel] permanent address for packages
+Message-ID: <200609120957.56910.sdavis2@mail.nih.gov>
+
+Is there a way in the current website scheme to link to a permanent URL for 
+released packages that would give a page like:
+
+http://bioconductor.org/packages/1.8/bioc/html/Biobase.html
+
+but is not tagged to the 1.8 release?   Something like:
+
+http://bioconductor.org/packages/CURRENT/bioc/html/Biobase.html
+
+It is a minor point, but it does make citing somewhat simpler. 
+
+Thanks,
+Sean
+
+
+From sfalcon at fhcrc.org  Tue Sep 12 16:16:09 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 12 Sep 2006 07:16:09 -0700
+Subject: [Bioc-devel] permanent address for packages
+In-Reply-To: <200609120957.56910.sdavis2@mail.nih.gov> (Sean Davis's message
+	of "Tue, 12 Sep 2006 09:57:56 -0400")
+References: <200609120957.56910.sdavis2@mail.nih.gov>
+Message-ID: <m2lkop891y.fsf@ziti.fhcrc.org>
+
+Hi Sean,
+
+This is actually a tiny bit more complicated than one might imagine...
+
+Sean Davis <sdavis2 at mail.nih.gov> writes:
+> Is there a way in the current website scheme to link to a permanent URL for 
+> released packages that would give a page like:
+>
+> http://bioconductor.org/packages/1.8/bioc/html/Biobase.html
+>
+> but is not tagged to the 1.8 release?   Something like:
+>
+> http://bioconductor.org/packages/CURRENT/bioc/html/Biobase.html
+
+The following URL, implemented as a symlink to the current release is
+already available:
+
+http://www.bioconductor.org/packages/release/BiocViews.html
+http://bioconductor.org/packages/release/bioc/html/Biobase.html
+
+> It is a minor point, but it does make citing somewhat simpler. 
+
+It seems important that the version number of a package be part of
+what gets cited.  The problem with the 'release' symlink is that a
+given package may not make it into a particular release in the
+future.  Or perhaps a package will merge with another.  So it may
+not be permanent.
+
+I would discourage the use of such URLs going directly to the package
+because of these reasons.  
+
++ seth
+
+
+From pshannon at systemsbiology.org  Wed Sep 13 02:45:36 2006
+From: pshannon at systemsbiology.org (Paul Shannon)
+Date: Tue, 12 Sep 2006 17:45:36 -0700
+Subject: [Bioc-devel] NAMESPACE woes [was Re: Update on upcoming BioC 1.9
+	release]
+In-Reply-To: <m24pvgn100.fsf@ziti.fhcrc.org> (message from Seth Falcon on Sat, 
+	09 Sep 2006 15:11:59 -0700)
+References: <m24pvgn100.fsf@ziti.fhcrc.org>
+Message-ID: <200609130045.k8D0ja6i030268@atlas.systemsbiology.net>
+
+I'm trying to fix the 'check' errors in my 1.9 bioc gaggle package.
+Perhaps someone can help with me with my confusion.
+
+   - I installed R 2.4.0.alpha on linux
+   - I install the gaggle's prerequisites (Ruuid 1.10.0, graph 1.10.6, rJava 0.4-9)
+   - I run R CMD check gaggle_1.1.6.tar.gz, and got the following warning:
+
+       * checking whether the package can be loaded with stated dependencies ... OK
+       * checking whether the name space can be loaded with stated dependencies ... WARNING
+
+   >>>   Error in eval(expr, envir, enclos) : could not find function "setClass"
+   >>>   Error: unable to load R code in package 'Ruuid'
+         Execution halted
+
+         A namespace must be able to be loaded with just the base namespace loaded:
+         otherwise if the namespace gets loaded by a saved object, the session will
+         be unable to start.
+
+         Probably some imports need to be declared in the NAMESPACE file.
+
+My NAMESPACE file looks like this:
+   import(Ruuid, graph)
+   export(gaggleInit,
+          getNameList,
+          getCluster,
+          ...
+
+Since Ruuid has no prerequisites of its own, I am puzzled by the check failure, and the
+(possibly misleading) error message:
+
+      unable to load R code in package 'Ruuid'
+
+For what it's worth, I have had problems (and proably will -still- have them) with
+NAMESPACE and rJava.   rJava doesn't use NAMESPACES itself, and the new R seems
+to require NAMESPACES all the way down.
+
+I'll be very grateful if anyone can help me out.
+
+Thanks -
+
+ - Paul
+
+
+From sfalcon at fhcrc.org  Wed Sep 13 03:14:05 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 12 Sep 2006 18:14:05 -0700
+Subject: [Bioc-devel] NAMESPACE woes
+In-Reply-To: <200609130045.k8D0ja6i030268@atlas.systemsbiology.net> (Paul
+	Shannon's message of "Tue, 12 Sep 2006 17:45:36 -0700")
+References: <m24pvgn100.fsf@ziti.fhcrc.org>
+	<200609130045.k8D0ja6i030268@atlas.systemsbiology.net>
+Message-ID: <m2wt88r2jm.fsf@ziti.fhcrc.org>
+
+Hi Paul,
+
+Paul Shannon <pshannon at systemsbiology.org> writes:
+> * checking whether the name space can be loaded with stated dependencies ... WARNING
+>
+>    >>>   Error in eval(expr, envir, enclos) : could not find function
+>    >>> "setClass" Error: unable to load R code in package 'Ruuid'
+>          Execution halted
+>
+>          A namespace must be able to be loaded with just the base
+> namespace loaded: otherwise if the namespace gets loaded by a saved
+> object, the session will be unable to start.
+>
+>          Probably some imports need to be declared in the NAMESPACE
+> file.
+
+For now for _this_ particular warning message related to Ruuid, I
+think the thing to do is to ignore it for now.  
+
+AFAICT, the warning is coming from Ruuid and will appear in any
+package that has a (possibly indirect) dependency on Ruuid.  The issue
+is related to creating S4 instances in C code and how this plays with
+one of the checks where the package is loaded with the default set of
+packages set to NULL. 
+
+This is a rather bogus test for just about any BioC package in the
+sense that if you do not have methods loaded, not much good will
+happen.
+
+> My NAMESPACE file looks like this: import(Ruuid, graph)
+
+Do you actually use Ruuid or just graph?  I'm hoping to remove graph's
+dependence on Ruuid tomorrow which should make things better...
+
+Bw,
+
++ seth
+
+
+From sfalcon at fhcrc.org  Wed Sep 13 06:04:41 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 12 Sep 2006 21:04:41 -0700
+Subject: [Bioc-devel] ANN: big change in graph package
+Message-ID: <m2d5a0quna.fsf@ziti.fhcrc.org>
+
+Hi all,
+
+I've just committed a patch to the graph package that removes the
+dependency on Ruuid.  
+
+In order to remove the Ruuid dependency, I removed a number of classes
+and methods that to my knowledge are not being used by anyone.  If you
+or your code relies on the graph package, please help me test this
+change by installing graph_1.11.15 or newer (in svn or on the website
+by Thurs).
+
+We decided to remmove this code because the Ruuid dependency was
+causing installation difficulty (Ruuid depends on glib at present) and
+because it provided an opportunity to remove stale code which will
+make the package easier to maintain.
+
+Best Wishes,
+
++ seth
+
+
+From huber at ebi.ac.uk  Wed Sep 13 10:02:04 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Wed, 13 Sep 2006 09:02:04 +0100
+Subject: [Bioc-devel] ANN: big change in graph package
+In-Reply-To: <m2d5a0quna.fsf@ziti.fhcrc.org>
+References: <m2d5a0quna.fsf@ziti.fhcrc.org>
+Message-ID: <4507BAFC.9080105@ebi.ac.uk>
+
+Dear Seth,
+
+great - thanks for cleaning up!
+
+ Wolfgang
+
+
+> Hi all,
+> 
+> I've just committed a patch to the graph package that removes the
+> dependency on Ruuid.  
+> 
+> In order to remove the Ruuid dependency, I removed a number of classes
+> and methods that to my knowledge are not being used by anyone.  If you
+> or your code relies on the graph package, please help me test this
+> change by installing graph_1.11.15 or newer (in svn or on the website
+> by Thurs).
+> 
+> We decided to remmove this code because the Ruuid dependency was
+> causing installation difficulty (Ruuid depends on glib at present) and
+> because it provided an opportunity to remove stale code which will
+> make the package easier to maintain.
+> 
+> Best Wishes,
+> 
+> + seth
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+------------------------------------------------------------------
+Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber
+
+
+From osklyar at ebi.ac.uk  Wed Sep 13 16:32:31 2006
+From: osklyar at ebi.ac.uk (Oleg Sklyar)
+Date: Wed, 13 Sep 2006 15:32:31 +0100
+Subject: [Bioc-devel] splots -- new package announcement
+Message-ID: <4508167F.9070804@ebi.ac.uk>
+
+Hi all,
+
+a couple of weeks ago I submitted a yet tiny new package, splots, that 
+aims to deliver different plotting routines for high-throughput screens 
+independently of analysis packages. The idea is too have a separate 
+plotting package with a minimum dependencies that would allow for nice 
+plots of screen-like data (what is currently done by parts of cellHTS, 
+prada etc).
+
+The package has now passed through build/check and therefore I am 
+announcing it.
+
+At the moment, the package contains one single function, plotScreen, 
+which is a grid-graphics implementation of a similar function from 
+cellHTS (credit to Ligia Breas for the idea!), and it stays this way for 
+the release. However I will add a couple of functions in the later devel 
+version as time allows.
+
+I would be really happy if the package attract not only users but 
+developers as well. Feel free to participate in package development, 
+adding new functions, or simply using it.
+
+Best,
+Oleg
+
+-- 
+Dr. Oleg Sklyar | EBI, Cambridge CB10 1SD, England | +44-1223-494466
+
+
+From md392 at cam.ac.uk  Wed Sep 13 17:21:49 2006
+From: md392 at cam.ac.uk (Mark Dunning)
+Date: Wed, 13 Sep 2006 16:21:49 +0100
+Subject: [Bioc-devel] .First.lib error in beadarray
+Message-ID: <CAAE573F-2D87-4B1A-A3CE-225A2672B050@cam.ac.uk>
+
+Hi all,
+
+Apologies if this is a basic question, but I am seeing the following  
+error in the 1.9 Check  report for beadarray on Solaris
+
+Error: .First.lib failed for 'beadarray'
+Call sequence:
+2: stop(gettextf(".First.lib failed for '%s'", libraryPkgName(package)),
+        domain = NA)
+1: library(package, lib.loc = lib.loc, character.only = TRUE, verbose  
+= FALSE)
+Execution halted
+See section 'Generic functions and methods' of the 'Writing R  
+Extensions'
+manual.
+
+Full details are here:
+http://bioconductor.org/checkResults/1.9/churchill-beadarray- 
+checksrc.html
+
+I'm quite new to development, so unfortunately this message means  
+little to me and it's quite puzzling that it appears on Solaris and  
+no other machines? Would someone be able to give some pointers how to  
+go about fixing the error?
+
+Thanks in advance for any help
+
+Regards,
+
+Mark
+----------
+Mark Dunning
+PhD Student
+Computational Biology Group
+Hutchison / MRC Research Centre
+Department of Oncology
+University of Cambridge
+Hills Rd, Cambridge CB2 2XZ
+
+Email  : md392 at cam.ac.uk
+Phone : +44 (0) 1223 763380
+
+
+From smckinney at bccrc.ca  Wed Sep 13 21:21:01 2006
+From: smckinney at bccrc.ca (Steven McKinney)
+Date: Wed, 13 Sep 2006 12:21:01 -0700
+Subject: [Bioc-devel] splots -- new package announcement
+References: <4508167F.9070804@ebi.ac.uk>
+Message-ID: <0BE438149FF2254DB4199E2682C8DFEB01D55562@crcmail1.BCCRC.CA>
+
+Hi Oleg,
+
+As I have some 96 well plate data to look at
+right now, I downloaded your package.
+
+Unfortunately I am having trouble on 
+Mac OS X 10.4.7 and Rapp 2.3.1
+
+If I run your example,
+
+> data(splots.screen)
+> plotScreen(screen, 3)
+
+I get a Quartz screen with 12 grey
+rectangles, subtitled 'datasetnn', 
+(nn = 1, 2, ... 12)
+all white otherwise.
+
+If I resize the screen, I briefly see coloured
+rectangles within the grey borders, but then white
+returns and all is blank.
+
+I also tried printing to a PDF file, which worked
+properly, so I can at least do that.
+
+Anyone have similar problems with other plots?
+Is this an Rapp/Quartz issue only?  Have I set up
+something inappropriately?
+
+Any insights appreciated.
+
+
+
+
+
+
+> version
+               _                         
+platform       powerpc-apple-darwin8.6.0 
+arch           powerpc                   
+os             darwin8.6.0               
+system         powerpc, darwin8.6.0      
+status                                   
+major          2                         
+minor          3.1                       
+year           2006                      
+month          06                        
+day            01                        
+svn rev        38247                     
+language       R                         
+version.string Version 2.3.1 (2006-06-01)
+
+
+
+
+
+
+
+Steven McKinney
+
+Statistician
+Molecular Oncology and Breast Cancer Program
+British Columbia Cancer Research Centre
+
+email: smckinney at bccrc.ca
+
+tel: 604-675-8000 x7561
+
+BCCRC
+Molecular Oncology
+675 West 10th Ave, Floor 4
+Vancouver B.C. 
+V5Z 1L3
+Canada
+
+
+
+
+-----Original Message-----
+From: bioc-devel-bounces at stat.math.ethz.ch on behalf of Oleg Sklyar
+Sent: Wed 9/13/2006 7:32 AM
+To: bioc-devel at stat.math.ethz.ch
+Subject: [Bioc-devel] splots -- new package announcement
+ 
+Hi all,
+
+a couple of weeks ago I submitted a yet tiny new package, splots, that 
+aims to deliver different plotting routines for high-throughput screens 
+independently of analysis packages. The idea is too have a separate 
+plotting package with a minimum dependencies that would allow for nice 
+plots of screen-like data (what is currently done by parts of cellHTS, 
+prada etc).
+
+The package has now passed through build/check and therefore I am 
+announcing it.
+
+At the moment, the package contains one single function, plotScreen, 
+which is a grid-graphics implementation of a similar function from 
+cellHTS (credit to Ligia Breas for the idea!), and it stays this way for 
+the release. However I will add a couple of functions in the later devel 
+version as time allows.
+
+I would be really happy if the package attract not only users but 
+developers as well. Feel free to participate in package development, 
+adding new functions, or simply using it.
+
+Best,
+Oleg
+
+-- 
+Dr. Oleg Sklyar | EBI, Cambridge CB10 1SD, England | +44-1223-494466
+
+_______________________________________________
+Bioc-devel at stat.math.ethz.ch mailing list
+https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From osklyar at ebi.ac.uk  Thu Sep 14 12:03:22 2006
+From: osklyar at ebi.ac.uk (Oleg Sklyar)
+Date: Thu, 14 Sep 2006 11:03:22 +0100
+Subject: [Bioc-devel] splots -- new package announcement
+In-Reply-To: <0BE438149FF2254DB4199E2682C8DFEB01D55562@crcmail1.BCCRC.CA>
+References: <4508167F.9070804@ebi.ac.uk>
+	<0BE438149FF2254DB4199E2682C8DFEB01D55562@crcmail1.BCCRC.CA>
+Message-ID: <450928EA.2020406@ebi.ac.uk>
+
+Hi Steven,
+
+a colleague of mine has just checked it on her powerpc-apple-darwin8.7.0 
+with R2.3.1 -- it worked fine, all coloured.
+
+As I can see it the cause of the problem could only be either in 'grid' 
+package that 'splots' uses or in R graphics internally, but not in 
+'splots'. The function is quite simple in sense of technical 
+implementation, it does not fork R-graphics and simply uses a couple of 
+things from 'grid'. Considering also that PDF works fine, the cause 
+cannot be in colorRamp as well.
+
+I wish I could help more, but I am afraid it's a 'grid' bug and I cannot 
+reproduce the bug on another Mac, which means it is more likely a 
+machine-specific issue rather than platform-specific.
+
+How about R2.4 when it comes out, maybe give it a try.
+
+Best regards,
+Oleg
+
+Steven McKinney wrote:
+> Hi Oleg,
+> 
+> As I have some 96 well plate data to look at
+> right now, I downloaded your package.
+> 
+> Unfortunately I am having trouble on 
+> Mac OS X 10.4.7 and Rapp 2.3.1
+> 
+> If I run your example,
+> 
+>> data(splots.screen)
+>> plotScreen(screen, 3)
+> 
+> I get a Quartz screen with 12 grey
+> rectangles, subtitled 'datasetnn', 
+> (nn = 1, 2, ... 12)
+> all white otherwise.
+> 
+> If I resize the screen, I briefly see coloured
+> rectangles within the grey borders, but then white
+> returns and all is blank.
+> 
+> I also tried printing to a PDF file, which worked
+> properly, so I can at least do that.
+> 
+> Anyone have similar problems with other plots?
+> Is this an Rapp/Quartz issue only?  Have I set up
+> something inappropriately?
+> 
+> Any insights appreciated.
+> 
+> 
+> 
+> 
+> 
+> 
+>> version
+>                _                         
+> platform       powerpc-apple-darwin8.6.0 
+> arch           powerpc                   
+> os             darwin8.6.0               
+> system         powerpc, darwin8.6.0      
+> status                                   
+> major          2                         
+> minor          3.1                       
+> year           2006                      
+> month          06                        
+> day            01                        
+> svn rev        38247                     
+> language       R                         
+> version.string Version 2.3.1 (2006-06-01)
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> Steven McKinney
+> 
+> Statistician
+> Molecular Oncology and Breast Cancer Program
+> British Columbia Cancer Research Centre
+> 
+> email: smckinney at bccrc.ca
+> 
+> tel: 604-675-8000 x7561
+> 
+> BCCRC
+> Molecular Oncology
+> 675 West 10th Ave, Floor 4
+> Vancouver B.C. 
+> V5Z 1L3
+> Canada
+> 
+> 
+> 
+> 
+> -----Original Message-----
+> From: bioc-devel-bounces at stat.math.ethz.ch on behalf of Oleg Sklyar
+> Sent: Wed 9/13/2006 7:32 AM
+> To: bioc-devel at stat.math.ethz.ch
+> Subject: [Bioc-devel] splots -- new package announcement
+>  
+> Hi all,
+> 
+> a couple of weeks ago I submitted a yet tiny new package, splots, that 
+> aims to deliver different plotting routines for high-throughput screens 
+> independently of analysis packages. The idea is too have a separate 
+> plotting package with a minimum dependencies that would allow for nice 
+> plots of screen-like data (what is currently done by parts of cellHTS, 
+> prada etc).
+> 
+> The package has now passed through build/check and therefore I am 
+> announcing it.
+> 
+> At the moment, the package contains one single function, plotScreen, 
+> which is a grid-graphics implementation of a similar function from 
+> cellHTS (credit to Ligia Breas for the idea!), and it stays this way for 
+> the release. However I will add a couple of functions in the later devel 
+> version as time allows.
+> 
+> I would be really happy if the package attract not only users but 
+> developers as well. Feel free to participate in package development, 
+> adding new functions, or simply using it.
+> 
+> Best,
+> Oleg
+> 
+
+-- 
+Dr. Oleg Sklyar | EBI, Cambridge CB10 1SD, England | +44-1223-494466
+
+
+From osklyar at ebi.ac.uk  Thu Sep 14 17:23:33 2006
+From: osklyar at ebi.ac.uk (Oleg Sklyar)
+Date: Thu, 14 Sep 2006 16:23:33 +0100
+Subject: [Bioc-devel] EBImage information resource
+Message-ID: <450973F5.2050205@ebi.ac.uk>
+
+To all package users and developers,
+
+in sight of the upcoming Bioconductor release, EBImage's got its new 
+information home:
+
+http://ebimage.wordpress.com
+
+(this will also appear as URL on the package page). This is generally a 
+blog-site, but the page is intended more for package users to leave 
+comments, bug reports, feature requests as addressed mainly to the 
+developer/maintainer but not to the community. No registration required 
+to leave your comment. This method is generally preferred over emailing 
+since I will be informed about the post and he comment will remain 
+on-site until it can be fixed and other users could see it instead of 
+being lost in email heap.
+
+The page will also be used to announce stable package updates between 
+the Bioconductor releases, known bugs and known feature requests and 
+provide additional help information on installation issues, use cases etc.
+
+At the same time, if you have a more general question than the one that 
+a package developer must address -- the use of community mailing lists 
+is recommended.
+
+PS. The latest SVN version corrects a bug that prevented using the 
+display() function on MacOS and X tunnelling over SSH.
+
+Best regards,
+Oleg
+
+-- 
+Dr. Oleg Sklyar | EBI, Cambridge CB10 1SD, England | +44-1223-494466
+
+
+From garey at biostat.ucsf.edu  Thu Sep 14 21:23:50 2006
+From: garey at biostat.ucsf.edu (mark garey)
+Date: Thu, 14 Sep 2006 12:23:50 -0700
+Subject: [Bioc-devel] OSX 10.3.9, R, and Bioconductor universal binaries
+Message-ID: <6BBFAA8F-B108-44E4-90FA-5210C9DB81C3@biostat.ucsf.edu>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+Url: https://stat.ethz.ch/mailman/private/bioc-devel/attachments/20060914/697e105a/attachment.pl 
+
+From stvjc at channing.harvard.edu  Thu Sep 14 21:28:34 2006
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Thu, 14 Sep 2006 15:28:34 -0400 (EDT)
+Subject: [Bioc-devel] OSX 10.3.9, R, and Bioconductor universal binaries
+In-Reply-To: <6BBFAA8F-B108-44E4-90FA-5210C9DB81C3@biostat.ucsf.edu>
+References: <6BBFAA8F-B108-44E4-90FA-5210C9DB81C3@biostat.ucsf.edu>
+Message-ID: <Pine.GSO.4.58.0609141526510.8430@capecod.bwh.harvard.edu>
+
+>
+> can i tell getBioC to install source packages instead?
+
+yes, use the parameter type="source" in your call.
+
+
+From pshannon at systemsbiology.org  Fri Sep 15 00:18:19 2006
+From: pshannon at systemsbiology.org (Paul Shannon)
+Date: Thu, 14 Sep 2006 15:18:19 -0700
+Subject: [Bioc-devel] check failure: prerequisit package does not use
+	NAMESPACE (was NAMESPACE woes)
+In-Reply-To: <m2wt88r2jm.fsf@ziti.fhcrc.org> (message from Seth Falcon on Tue, 
+	12 Sep 2006 18:14:05 -0700)
+References: <m24pvgn100.fsf@ziti.fhcrc.org>
+	<200609130045.k8D0ja6i030268@atlas.systemsbiology.net>
+	<m2wt88r2jm.fsf@ziti.fhcrc.org>
+Message-ID: <200609142218.k8EMIJQP009734@atlas.systemsbiology.net>
+
+Hi Seth,
+
+I removed Ruuid from my dependencies, install your new graph package, but got
+stuck on 
+
+  R CMD check ~/tmp/gaggle_1.1.7.tar.gz
+
+with this message:
+
+  * checking R files for non-ASCII characters ... OK
+  * checking whether the package can be loaded ... ERROR
+  Loading required package: rJava
+  Loading required package: graph
+  Error: package 'rJava' does not have a name space
+  Error: package/namespace load failed for 'gaggle'
+  Execution halted
+
+I'll write Simon again, ask him to use NAMESPACEs, but if you have any 
+clout with him, perhaps you could use your wiles :} as well.
+
+Cheers,
+
+ - Paul
+
+
+From sfalcon at fhcrc.org  Fri Sep 15 00:35:05 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 14 Sep 2006 15:35:05 -0700
+Subject: [Bioc-devel] check failure: prerequisit package does not use
+	NAMESPACE
+In-Reply-To: <200609142218.k8EMIJQP009734@atlas.systemsbiology.net> (Paul
+	Shannon's message of "Thu, 14 Sep 2006 15:18:19 -0700")
+References: <m24pvgn100.fsf@ziti.fhcrc.org>
+	<200609130045.k8D0ja6i030268@atlas.systemsbiology.net>
+	<m2wt88r2jm.fsf@ziti.fhcrc.org>
+	<200609142218.k8EMIJQP009734@atlas.systemsbiology.net>
+Message-ID: <m2odti5b6u.fsf@ziti.fhcrc.org>
+
+Paul Shannon <pshannon at systemsbiology.org> writes:
+> I removed Ruuid from my dependencies, install your new graph package, but got
+> stuck on 
+>
+>   R CMD check ~/tmp/gaggle_1.1.7.tar.gz
+>
+> with this message:
+>
+>   * checking R files for non-ASCII characters ... OK
+>   * checking whether the package can be loaded ... ERROR
+>   Loading required package: rJava
+>   Loading required package: graph
+>   Error: package 'rJava' does not have a name space
+>   Error: package/namespace load failed for 'gaggle'
+>   Execution halted
+>
+> I'll write Simon again, ask him to use NAMESPACEs, but if you have any 
+> clout with him, perhaps you could use your wiles :} as well.
+
+I admint to being pro-NAMESPACE, but are you sure you can't work
+around this?
+
+You should have rJava in Depends and not mention it in your NAMESPACE
+file.
+
+
+From smckinney at bccrc.ca  Fri Sep 15 00:38:40 2006
+From: smckinney at bccrc.ca (Steven McKinney)
+Date: Thu, 14 Sep 2006 15:38:40 -0700
+Subject: [Bioc-devel] [R-SIG-Mac] splots -- new package announcement
+References: <4508167F.9070804@ebi.ac.uk>
+	<0BE438149FF2254DB4199E2682C8DFEB01D55562@crcmail1.BCCRC.CA>
+	<0BE438149FF2254DB4199E2682C8DFEB01D5556C@crcmail1.BCCRC.CA>
+	<A26E677C-E525-4E4F-9796-97D78746AFF6@r-project.org>
+	<45F1475C-1EBD-4D31-8EF9-6045103B45DF@r-project.org>
+Message-ID: <0BE438149FF2254DB4199E2682C8DFEB01D55576@crcmail1.BCCRC.CA>
+
+Thanks very much Simon,
+
+Your suggested fix works for my situation.
+
+After changing
+
+grid.rect(0.5, 0.5, 1, 1, gp = gpar(col = abris))
+
+to
+
+grid.rect(0.5, 0.5, 1, 1, gp = gpar(col = abris, fill="transparent"))
+
+in plotScreen(), I get a proper rendering of the
+demo graphic in the Quartz window using R.app.
+
+
+
+Best regards
+
+Steven McKinney
+
+Statistician
+Molecular Oncology and Breast Cancer Program
+British Columbia Cancer Research Centre
+
+email: smckinney at bccrc.ca
+
+tel: 604-675-8000 x7561
+
+BCCRC
+Molecular Oncology
+675 West 10th Ave, Floor 4
+Vancouver B.C. 
+V5Z 1L3
+Canada
+
+
+
+
+-----Original Message-----
+From: Simon Urbanek [mailto:simon.urbanek at r-project.org]
+Sent: Thu 9/14/2006 1:31 PM
+To: Steven McKinney; Paul Murrell
+Cc: Bioc-devel at stat.math.ethz.ch; R SIG Mac List
+Subject: Re: [R-SIG-Mac] splots -- new package announcement
+ 
+
+On Sep 14, 2006, at 4:20 PM, Simon Urbanek wrote:
+
+>
+> On Sep 14, 2006, at 3:23 PM, Steven McKinney wrote:
+>
+>>
+>> Forwarding to r-sig-mac
+>>
+>> Anyone else have problems with the Quartz graphics display
+>> generated from R.app, running the example from new package 'splots' ?
+>>
+>
+> IMHO it's a bug in splots:
+>
+> grid.rect(0.5, 0.5, 1, 1, gp = gpar(col = abris))
+> ^-- this will fill the whole area with the default fill color which
+> is white:
+>> get.gpar()$fill
+> [1] "white"
+>
+> I guess it should read
+> grid.rect(0.5, 0.5, 1, 1, gp = gpar(col = abris, fill=NULL))
+>
+
+Actually it should be fill="transparent" I presume [gpar(fill=NULL)  
+returns an empty list despite the docs indicating otherwise .. hmm...  
+an issue with grid as well?].
+
+Cheers,
+Simon
+
+>> -----Original Message-----
+>> From: bioc-devel-bounces at stat.math.ethz.ch on behalf of Steven
+>> McKinney
+>> Sent: Wed 9/13/2006 12:21 PM
+>> To: Oleg Sklyar; bioc-devel at stat.math.ethz.ch
+>> Subject: Re: [Bioc-devel] splots -- new package announcement
+>>
+>> Hi Oleg,
+>>
+>> As I have some 96 well plate data to look at
+>> right now, I downloaded your package.
+>>
+>> Unfortunately I am having trouble on
+>> Mac OS X 10.4.7 and Rapp 2.3.1
+>>
+>> If I run your example,
+>>
+>>> data(splots.screen)
+>>> plotScreen(screen, 3)
+>>
+>> I get a Quartz screen with 12 grey
+>> rectangles, subtitled 'datasetnn',
+>> (nn = 1, 2, ... 12)
+>> all white otherwise.
+>>
+>> If I resize the screen, I briefly see coloured
+>> rectangles within the grey borders, but then white
+>> returns and all is blank.
+>>
+>> I also tried printing to a PDF file, which worked
+>> properly, so I can at least do that.
+>>
+>> Anyone have similar problems with other plots?
+>> Is this an Rapp/Quartz issue only?  Have I set up
+>> something inappropriately?
+>>
+>> Any insights appreciated.
+>>
+>>
+>>
+>>
+>>
+>>
+>>> version
+>>                _
+>> platform       powerpc-apple-darwin8.6.0
+>> arch           powerpc
+>> os             darwin8.6.0
+>> system         powerpc, darwin8.6.0
+>> status
+>> major          2
+>> minor          3.1
+>> year           2006
+>> month          06
+>> day            01
+>> svn rev        38247
+>> language       R
+>> version.string Version 2.3.1 (2006-06-01)
+>>
+>>
+>>
+>>
+>>
+>>
+>>
+>> Steven McKinney
+>>
+>> Statistician
+>> Molecular Oncology and Breast Cancer Program
+>> British Columbia Cancer Research Centre
+>>
+>> email: smckinney at bccrc.ca
+>>
+>> tel: 604-675-8000 x7561
+>>
+>> BCCRC
+>> Molecular Oncology
+>> 675 West 10th Ave, Floor 4
+>> Vancouver B.C.
+>> V5Z 1L3
+>> Canada
+>>
+>>
+>>
+>>
+>> -----Original Message-----
+>> From: bioc-devel-bounces at stat.math.ethz.ch on behalf of Oleg Sklyar
+>> Sent: Wed 9/13/2006 7:32 AM
+>> To: bioc-devel at stat.math.ethz.ch
+>> Subject: [Bioc-devel] splots -- new package announcement
+>>
+>> Hi all,
+>>
+>> a couple of weeks ago I submitted a yet tiny new package, splots,  
+>> that
+>> aims to deliver different plotting routines for high-throughput
+>> screens
+>> independently of analysis packages. The idea is too have a separate
+>> plotting package with a minimum dependencies that would allow for  
+>> nice
+>> plots of screen-like data (what is currently done by parts of  
+>> cellHTS,
+>> prada etc).
+>>
+>> The package has now passed through build/check and therefore I am
+>> announcing it.
+>>
+>> At the moment, the package contains one single function, plotScreen,
+>> which is a grid-graphics implementation of a similar function from
+>> cellHTS (credit to Ligia Breas for the idea!), and it stays this
+>> way for
+>> the release. However I will add a couple of functions in the later
+>> devel
+>> version as time allows.
+>>
+>> I would be really happy if the package attract not only users but
+>> developers as well. Feel free to participate in package development,
+>> adding new functions, or simply using it.
+>>
+>> Best,
+>> Oleg
+>>
+>> -- 
+>> Dr. Oleg Sklyar | EBI, Cambridge CB10 1SD, England | +44-1223-494466
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>> _______________________________________________
+>> R-SIG-Mac mailing list
+>> R-SIG-Mac at stat.math.ethz.ch
+>> https://stat.ethz.ch/mailman/listinfo/r-sig-mac
+>>
+>>
+>
+> _______________________________________________
+> R-SIG-Mac mailing list
+> R-SIG-Mac at stat.math.ethz.ch
+> https://stat.ethz.ch/mailman/listinfo/r-sig-mac
+>
+>
+
+
+From pshannon at systemsbiology.org  Fri Sep 15 00:52:55 2006
+From: pshannon at systemsbiology.org (Paul Shannon)
+Date: Thu, 14 Sep 2006 15:52:55 -0700
+Subject: [Bioc-devel] check failure: prerequisit package does not
+	use	NAMESPACE
+In-Reply-To: <m2odti5b6u.fsf@ziti.fhcrc.org> (message from Seth Falcon on Thu, 
+	14 Sep 2006 15:35:05 -0700)
+References: <m24pvgn100.fsf@ziti.fhcrc.org>
+	<200609130045.k8D0ja6i030268@atlas.systemsbiology.net>
+	<m2wt88r2jm.fsf@ziti.fhcrc.org>
+	<200609142218.k8EMIJQP009734@atlas.systemsbiology.net>
+	<m2odti5b6u.fsf@ziti.fhcrc.org>
+Message-ID: <200609142252.k8EMqtSs011532@atlas.systemsbiology.net>
+
+Hi Seth,
+
+  > I admint to being pro-NAMESPACE, but are you sure you can't work
+  > around this?  You should have rJava in Depends and not mention it
+  > in your NAMESPACE file.
+
+If there's a way to work around it, I haven't been able to find it.
+Here's what happens if rJava is in the DESCRIPTION 
+
+  Depends: R (>= 2.4.0), rJava (>= 0.4), graph (>= 1.11.5)
+
+but not in the NAMESPACE
+
+   import(graph)
+
+   * checking whether the name space can be loaded with stated dependencies ... WARNING
+   Loading required package: methods
+   
+   First.lib -- libname: /users/pshannon/tmp/r/2006-09-14/gaggle.Rcheck pkgname: gaggle
+   initializing gaggle package 1.1.7
+   path to jar: /users/pshannon/tmp/r/2006-09-14/gaggle.Rcheck/gaggle/jars/gaggleRShell.jar
+         script:  gaggle.R $Revision: 882 $   $Date: 2006-08-30 14:57:21 -0700 (Wed, 30 Aug 2006) $
+   Error in fun(...) : could not find function ".jinit"
+   Error: .onLoad failed in 'loadNamespace' for 'gaggle'
+   Execution halted
+   
+   A namespace must be able to be loaded with just the base namespace loaded:
+   otherwise if the namespace gets loaded by a saved object, the session will
+   be unable to start.
+   
+   Probably some imports need to be declared in the NAMESPACE file.
+
+Sorry for all this fuss...
+
+ - Paul
+
+
+From garey at biostat.ucsf.edu  Fri Sep 15 00:56:00 2006
+From: garey at biostat.ucsf.edu (mark garey)
+Date: Thu, 14 Sep 2006 15:56:00 -0700
+Subject: [Bioc-devel] OSX 10.3.9, R, and Bioconductor universal binaries
+In-Reply-To: <Pine.GSO.4.58.0609141526510.8430@capecod.bwh.harvard.edu>
+References: <6BBFAA8F-B108-44E4-90FA-5210C9DB81C3@biostat.ucsf.edu>
+	<Pine.GSO.4.58.0609141526510.8430@capecod.bwh.harvard.edu>
+Message-ID: <68350452-B594-4AB4-B135-E8DEDB291C7F@biostat.ucsf.edu>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+Url: https://stat.ethz.ch/mailman/private/bioc-devel/attachments/20060914/7a320345/attachment.pl 
+
+From osklyar at ebi.ac.uk  Fri Sep 15 01:09:01 2006
+From: osklyar at ebi.ac.uk (Oleg Sklyar)
+Date: Fri, 15 Sep 2006 00:09:01 +0100
+Subject: [Bioc-devel] [R-SIG-Mac] splots -- svn commit plotScreen.R -
+	CORRECTED
+In-Reply-To: <0BE438149FF2254DB4199E2682C8DFEB01D55576@crcmail1.BCCRC.CA>
+References: <4508167F.9070804@ebi.ac.uk>
+	<0BE438149FF2254DB4199E2682C8DFEB01D55562@crcmail1.BCCRC.CA>
+	<0BE438149FF2254DB4199E2682C8DFEB01D5556C@crcmail1.BCCRC.CA>
+	<A26E677C-E525-4E4F-9796-97D78746AFF6@r-project.org>
+	<45F1475C-1EBD-4D31-8EF9-6045103B45DF@r-project.org>
+	<0BE438149FF2254DB4199E2682C8DFEB01D55576@crcmail1.BCCRC.CA>
+Message-ID: <4509E10D.7080204@ebi.ac.uk>
+
+The following modification has been introduced. The code committed to 
+BioC svn as revision 19830, please update. The tarball will take several 
+days until the build system runs through. Thanks all for pointing out to 
+the solution:
+
+80: grid.rect(0.5, 0.5, 1, 1, gp = gpar(col = abris, fill = "transparent"))
+
+Best,
+Oleg
+
+Steven McKinney wrote:
+> Thanks very much Simon,
+> 
+> Your suggested fix works for my situation.
+> 
+> After changing
+> 
+> grid.rect(0.5, 0.5, 1, 1, gp = gpar(col = abris))
+> 
+> to
+> 
+> grid.rect(0.5, 0.5, 1, 1, gp = gpar(col = abris, fill="transparent"))
+> 
+> in plotScreen(), I get a proper rendering of the
+> demo graphic in the Quartz window using R.app.
+> 
+> 
+> 
+> Best regards
+> 
+> Steven McKinney
+> 
+> Statistician
+> Molecular Oncology and Breast Cancer Program
+> British Columbia Cancer Research Centre
+> 
+> email: smckinney at bccrc.ca
+> 
+> tel: 604-675-8000 x7561
+> 
+> BCCRC
+> Molecular Oncology
+> 675 West 10th Ave, Floor 4
+> Vancouver B.C. 
+> V5Z 1L3
+> Canada
+> 
+> 
+> 
+> 
+> -----Original Message-----
+> From: Simon Urbanek [mailto:simon.urbanek at r-project.org]
+> Sent: Thu 9/14/2006 1:31 PM
+> To: Steven McKinney; Paul Murrell
+> Cc: Bioc-devel at stat.math.ethz.ch; R SIG Mac List
+> Subject: Re: [R-SIG-Mac] splots -- new package announcement
+>  
+> 
+> On Sep 14, 2006, at 4:20 PM, Simon Urbanek wrote:
+> 
+>> On Sep 14, 2006, at 3:23 PM, Steven McKinney wrote:
+>>
+>>> Forwarding to r-sig-mac
+>>>
+>>> Anyone else have problems with the Quartz graphics display
+>>> generated from R.app, running the example from new package 'splots' ?
+>>>
+>> IMHO it's a bug in splots:
+>>
+>> grid.rect(0.5, 0.5, 1, 1, gp = gpar(col = abris))
+>> ^-- this will fill the whole area with the default fill color which
+>> is white:
+>>> get.gpar()$fill
+>> [1] "white"
+>>
+>> I guess it should read
+>> grid.rect(0.5, 0.5, 1, 1, gp = gpar(col = abris, fill=NULL))
+>>
+> 
+> Actually it should be fill="transparent" I presume [gpar(fill=NULL)  
+> returns an empty list despite the docs indicating otherwise .. hmm...  
+> an issue with grid as well?].
+> 
+> Cheers,
+> Simon
+> 
+>>> -----Original Message-----
+>>> From: bioc-devel-bounces at stat.math.ethz.ch on behalf of Steven
+>>> McKinney
+>>> Sent: Wed 9/13/2006 12:21 PM
+>>> To: Oleg Sklyar; bioc-devel at stat.math.ethz.ch
+>>> Subject: Re: [Bioc-devel] splots -- new package announcement
+>>>
+>>> Hi Oleg,
+>>>
+>>> As I have some 96 well plate data to look at
+>>> right now, I downloaded your package.
+>>>
+>>> Unfortunately I am having trouble on
+>>> Mac OS X 10.4.7 and Rapp 2.3.1
+>>>
+>>> If I run your example,
+>>>
+>>>> data(splots.screen)
+>>>> plotScreen(screen, 3)
+>>> I get a Quartz screen with 12 grey
+>>> rectangles, subtitled 'datasetnn',
+>>> (nn = 1, 2, ... 12)
+>>> all white otherwise.
+>>>
+>>> If I resize the screen, I briefly see coloured
+>>> rectangles within the grey borders, but then white
+>>> returns and all is blank.
+>>>
+>>> I also tried printing to a PDF file, which worked
+>>> properly, so I can at least do that.
+>>>
+>>> Anyone have similar problems with other plots?
+>>> Is this an Rapp/Quartz issue only?  Have I set up
+>>> something inappropriately?
+>>>
+>>> Any insights appreciated.
+>>>
+>>>
+>>>
+>>>
+>>>
+>>>
+>>>> version
+>>>                _
+>>> platform       powerpc-apple-darwin8.6.0
+>>> arch           powerpc
+>>> os             darwin8.6.0
+>>> system         powerpc, darwin8.6.0
+>>> status
+>>> major          2
+>>> minor          3.1
+>>> year           2006
+>>> month          06
+>>> day            01
+>>> svn rev        38247
+>>> language       R
+>>> version.string Version 2.3.1 (2006-06-01)
+>>>
+>>>
+>>>
+>>>
+>>>
+>>>
+>>>
+>>> Steven McKinney
+>>>
+>>> Statistician
+>>> Molecular Oncology and Breast Cancer Program
+>>> British Columbia Cancer Research Centre
+>>>
+>>> email: smckinney at bccrc.ca
+>>>
+>>> tel: 604-675-8000 x7561
+>>>
+>>> BCCRC
+>>> Molecular Oncology
+>>> 675 West 10th Ave, Floor 4
+>>> Vancouver B.C.
+>>> V5Z 1L3
+>>> Canada
+>>>
+>>>
+>>>
+>>>
+>>> -----Original Message-----
+>>> From: bioc-devel-bounces at stat.math.ethz.ch on behalf of Oleg Sklyar
+>>> Sent: Wed 9/13/2006 7:32 AM
+>>> To: bioc-devel at stat.math.ethz.ch
+>>> Subject: [Bioc-devel] splots -- new package announcement
+>>>
+>>> Hi all,
+>>>
+>>> a couple of weeks ago I submitted a yet tiny new package, splots,  
+>>> that
+>>> aims to deliver different plotting routines for high-throughput
+>>> screens
+>>> independently of analysis packages. The idea is too have a separate
+>>> plotting package with a minimum dependencies that would allow for  
+>>> nice
+>>> plots of screen-like data (what is currently done by parts of  
+>>> cellHTS,
+>>> prada etc).
+>>>
+>>> The package has now passed through build/check and therefore I am
+>>> announcing it.
+>>>
+>>> At the moment, the package contains one single function, plotScreen,
+>>> which is a grid-graphics implementation of a similar function from
+>>> cellHTS (credit to Ligia Breas for the idea!), and it stays this
+>>> way for
+>>> the release. However I will add a couple of functions in the later
+>>> devel
+>>> version as time allows.
+>>>
+>>> I would be really happy if the package attract not only users but
+>>> developers as well. Feel free to participate in package development,
+>>> adding new functions, or simply using it.
+>>>
+>>> Best,
+>>> Oleg
+>>>
+>>> -- 
+>>> Dr. Oleg Sklyar | EBI, Cambridge CB10 1SD, England | +44-1223-494466
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>> _______________________________________________
+>>> R-SIG-Mac mailing list
+>>> R-SIG-Mac at stat.math.ethz.ch
+>>> https://stat.ethz.ch/mailman/listinfo/r-sig-mac
+>>>
+>>>
+>> _______________________________________________
+>> R-SIG-Mac mailing list
+>> R-SIG-Mac at stat.math.ethz.ch
+>> https://stat.ethz.ch/mailman/listinfo/r-sig-mac
+>>
+>>
+> 
+> 
+> 
+
+-- 
+Dr. Oleg Sklyar
+European Bioinformatics Institute
+Wellcome Trust Genome Campus
+Hinxton
+Cambridge CB10 1SD
+England
+
+Tel   +44-1223-494466
+Fax   +44-1223-494468
+email osklyar at ebi.ac.uk
+
+
+From hpages at fhcrc.org  Fri Sep 15 01:32:03 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Thu, 14 Sep 2006 16:32:03 -0700
+Subject: [Bioc-devel] [R-SIG-Mac] splots -- svn commit plotScreen.R -
+ CORRECTED
+In-Reply-To: <4509E10D.7080204@ebi.ac.uk>
+References: <4508167F.9070804@ebi.ac.uk>	<0BE438149FF2254DB4199E2682C8DFEB01D55562@crcmail1.BCCRC.CA>	<0BE438149FF2254DB4199E2682C8DFEB01D5556C@crcmail1.BCCRC.CA>	<A26E677C-E525-4E4F-9796-97D78746AFF6@r-project.org>	<45F1475C-1EBD-4D31-8EF9-6045103B45DF@r-project.org>	<0BE438149FF2254DB4199E2682C8DFEB01D55576@crcmail1.BCCRC.CA>
+	<4509E10D.7080204@ebi.ac.uk>
+Message-ID: <4509E673.5070104@fhcrc.org>
+
+Oleg Sklyar wrote:
+> The following modification has been introduced. The code committed to 
+> BioC svn as revision 19830, please update. The tarball will take several 
+> days until the build system runs through.
+2 days!
+splots 0.9.2 should be here
+  http://bioconductor.org/packages/1.9/bioc/html/splots.html
+on Saturday morning around 10am.
+
+Best,
+H.
+
+
+From toedling at ebi.ac.uk  Fri Sep 15 13:37:15 2006
+From: toedling at ebi.ac.uk (Joern Toedling)
+Date: Fri, 15 Sep 2006 12:37:15 +0100
+Subject: [Bioc-devel] help with package dependencies on packages in remote
+	repositories
+Message-ID: <450A906B.5030704@ebi.ac.uk>
+
+Hi all,
+
+I would very much appreciate if anyone of you could help me to get rid
+of two totally unnecessary warning messages regarding dependencies on
+remote data packages.
+
+The situations is as follows:
+
+In its vignette, my package "macat" requires a large data package,
+called "stjudem", that I keep in a local repository. I wrote a small
+function that checks if that data package is installed, if not it
+retrieves it from the repository, and then loads the data package. This
+function is only used in the package's vignette, but seems to work
+nicely. However, I get the following two warnings:
+
+1.)
+* checking package dependencies ... WARNING
+'library' or 'require' calls not declared from:
+  mydatapkg
+
+"mydatapkg" is actually the name of the argument in that small function
+that I use to retrieve and/or to load the data package. There is no
+package named "mydatapkg".
+
+2.)
+* checking package vignettes in 'inst/doc' ... WARNING
+* Installing *source* package 'stjudem' ...
+
+So the function recognized that the data package was not installed,
+retrieved and installed it as I intended it to do. Unfortunately, it
+still feels the need to report this as a warning message.
+
+I believe both of these warning message are totally unnecessary. Listing
+the data package "stjudem" under Suggests does not work, since it is
+kept in local repository and therefore not found, resulting in a check
+error. Using "suppressWarnings" when using the retrieval function does
+also not do the trick.
+
+I could easily get rid of these two messages by not using the data
+package and the installation function in the vignette, but I feel that
+would be a suboptimal solution.
+
+Any thoughts and suggestions on this subject are welcome.
+
+Thank you and best regards,
+Joern
+
+
+From huber at ebi.ac.uk  Fri Sep 15 14:44:30 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Fri, 15 Sep 2006 13:44:30 +0100
+Subject: [Bioc-devel] help with package dependencies on packages in
+ remote repositories
+In-Reply-To: <450A906B.5030704@ebi.ac.uk>
+References: <450A906B.5030704@ebi.ac.uk>
+Message-ID: <450AA02E.6080500@ebi.ac.uk>
+
+
+Hi Joern,
+
+re 1., replace "library" by "require" in your code in loaddatapkg.R.
+This is recommended by the man page of the 'library' and 'require'
+functions.
+
+re 2., I am also not sure why there needs to be a warning.
+
+  Best wishes
+  Wolfgang
+
+Joern Toedling wrote:
+> Hi all,
+> 
+> I would very much appreciate if anyone of you could help me to get rid
+> of two totally unnecessary warning messages regarding dependencies on
+> remote data packages.
+> 
+> The situations is as follows:
+> 
+> In its vignette, my package "macat" requires a large data package,
+> called "stjudem", that I keep in a local repository. I wrote a small
+> function that checks if that data package is installed, if not it
+> retrieves it from the repository, and then loads the data package. This
+> function is only used in the package's vignette, but seems to work
+> nicely. However, I get the following two warnings:
+> 
+> 1.)
+> * checking package dependencies ... WARNING
+> 'library' or 'require' calls not declared from:
+>   mydatapkg
+> 
+> "mydatapkg" is actually the name of the argument in that small function
+> that I use to retrieve and/or to load the data package. There is no
+> package named "mydatapkg".
+> 
+> 2.)
+> * checking package vignettes in 'inst/doc' ... WARNING
+> * Installing *source* package 'stjudem' ...
+> 
+> So the function recognized that the data package was not installed,
+> retrieved and installed it as I intended it to do. Unfortunately, it
+> still feels the need to report this as a warning message.
+> 
+> I believe both of these warning message are totally unnecessary. Listing
+> the data package "stjudem" under Suggests does not work, since it is
+> kept in local repository and therefore not found, resulting in a check
+> error. Using "suppressWarnings" when using the retrieval function does
+> also not do the trick.
+> 
+> I could easily get rid of these two messages by not using the data
+> package and the installation function in the vignette, but I feel that
+> would be a suboptimal solution.
+> 
+> Any thoughts and suggestions on this subject are welcome.
+> 
+> Thank you and best regards,
+> Joern
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+------------------------------------------------------------------
+Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber
+
+
+From sfalcon at fhcrc.org  Fri Sep 15 16:46:45 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 15 Sep 2006 07:46:45 -0700
+Subject: [Bioc-devel] help with package dependencies on packages in
+	remote repositories
+In-Reply-To: <450A906B.5030704@ebi.ac.uk> (Joern Toedling's message of "Fri,
+	15 Sep 2006 12:37:15 +0100")
+References: <450A906B.5030704@ebi.ac.uk>
+Message-ID: <m27j052nmy.fsf@ziti.fhcrc.org>
+
+Hi Joern,
+
+Joern Toedling <toedling at ebi.ac.uk> writes:
+> In its vignette, my package "macat" requires a large data package,
+> called "stjudem", that I keep in a local repository. I wrote a small
+> function that checks if that data package is installed, if not it
+> retrieves it from the repository, and then loads the data package. This
+> function is only used in the package's vignette, but seems to work
+> nicely. However, I get the following two warnings:
+>
+> 1.)
+> * checking package dependencies ... WARNING
+> 'library' or 'require' calls not declared from:
+>   mydatapkg
+
+Not sure.  If it is the case that R CMD check gives a warning for any
+call to library or require in package code, then there may be nothing
+we can do other than making noise on R-devel and asking for that to be
+changed.
+
+> 2.)
+> * checking package vignettes in 'inst/doc' ... WARNING
+> * Installing *source* package 'stjudem' ...
+
+You may be able to prevent this warning if you can muffle the output
+caused by installing the package.  IIRC, this is hard to do.  But you
+may be able to do it with capture.output.
+
+That said, we have a new facility for handling experiment data
+packages.  If you are willing to have the data package hosted here:
+http://bioconductor.org/packages/1.9/data/experiment/
+
+Then you can solve both problems by putting the data package in
+Suggests.  The build system will install it.  An advantage is that it
+will be easier for end users to install what is needed to work through
+the vignette.
+
+If this is of interest, please send Herve an email (hpages at fhcrc).
+
+> I believe both of these warning message are totally unnecessary. Listing
+> the data package "stjudem" under Suggests does not work, since it is
+> kept in local repository and therefore not found, resulting in a check
+> error. Using "suppressWarnings" when using the retrieval function does
+> also not do the trick.
+
+I tend to agree that these messages are not all that helpful :-\
+
+Bw,
+
++ seth
+
+
+From sfalcon at fhcrc.org  Fri Sep 15 17:10:04 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 15 Sep 2006 08:10:04 -0700
+Subject: [Bioc-devel] check failure: prerequisit package does not use
+	NAMESPACE
+In-Reply-To: <200609142252.k8EMqtSs011532@atlas.systemsbiology.net> (Paul
+	Shannon's message of "Thu, 14 Sep 2006 15:52:55 -0700")
+References: <m24pvgn100.fsf@ziti.fhcrc.org>
+	<200609130045.k8D0ja6i030268@atlas.systemsbiology.net>
+	<m2wt88r2jm.fsf@ziti.fhcrc.org>
+	<200609142218.k8EMIJQP009734@atlas.systemsbiology.net>
+	<m2odti5b6u.fsf@ziti.fhcrc.org>
+	<200609142252.k8EMqtSs011532@atlas.systemsbiology.net>
+Message-ID: <m23bat2mk3.fsf@ziti.fhcrc.org>
+
+Hi Paul,
+
+Paul Shannon <pshannon at systemsbiology.org> writes:
+> If there's a way to work around it, I haven't been able to find it.
+> Here's what happens if rJava is in the DESCRIPTION 
+
+The truth is, we haven't figured out all of the intricacies of recent
+changes to R and R CMD check related to these warnings.  I'm not even
+convinced of the utility of checking that Bioconductor packages can be
+loaded without default packages.  Yes, it _should_ work, but this is a
+rare use case AFAICT.
+
+And now after responding to one developer that they should avoid calls
+to require() in their code, I'm going to send you a patch that does
+just this :-\
+
+Anyhow, for me the following patch seems to fix the warnings and more
+or less make sense to me.  While I'm at it, I have two comments:
+
+1. The status message from .onLoad that prints out 'First.lib' is
+   confusing.
+
+2. <code_police=ON> You are among a fairly small crowd writing func
+   (args) instead of func(args).  Just because you can be different,
+   doesn't mean you should be</code_police=OFF> -- its your package,
+   suite yourself, but it hurts my eyes [I'm sure my code is equally
+   painful for you to look at] ;-)
+
+Here's the patch:
+
+Index: R/gaggle.R
+===================================================================
+--- R/gaggle.R	(revision 19853)
++++ R/gaggle.R	(working copy)
+@@ -2,6 +2,8 @@
+ #---------------------------------------------------------------------------------
+ .onLoad <- function (libname, pkgname)
+ {
++    require("methods")
++    require("rJava")
+   cat (paste ('\nFirst.lib -- libname:', libname, 'pkgname:', pkgname, '\n'))
+ 
+     # All Bioconductor packages should use an x.y.z version scheme. The following rules apply:
+Index: DESCRIPTION
+===================================================================
+--- DESCRIPTION	(revision 19853)
++++ DESCRIPTION	(working copy)
+@@ -4,7 +4,7 @@
+ Title: R Goose functions
+ Author: Paul Shannon <pshannon at systemsbiology.org>
+ Maintainer: Paul Shannon <pshannon at systemsbiology.org>
+-Depends: R (>= 2.3.0), rJava (>= 0.4), Ruuid (>= 1.10.0), graph (>= 1.10.2)
++Depends: R (>= 2.3.0), methods, rJava (>= 0.4), Ruuid (>= 1.10.0), graph (>= 1.10.2)
+ Description: this package contains functions connecting R with the Gaggle
+ License: GPL version 2 or newer
+ URL: http://gaggle.systemsbiology.org
+Index: NAMESPACE
+===================================================================
+--- NAMESPACE	(revision 19853)
++++ NAMESPACE	(working copy)
+@@ -1,3 +1,4 @@
++import(methods)
+ import(graph)
+ 
+ export(
+
+
+From sfalcon at fhcrc.org  Fri Sep 15 17:12:08 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 15 Sep 2006 08:12:08 -0700
+Subject: [Bioc-devel] .First.lib error in beadarray
+In-Reply-To: <CAAE573F-2D87-4B1A-A3CE-225A2672B050@cam.ac.uk> (Mark Dunning's
+	message of "Wed, 13 Sep 2006 16:21:49 +0100")
+References: <CAAE573F-2D87-4B1A-A3CE-225A2672B050@cam.ac.uk>
+Message-ID: <m2wt8517w7.fsf@ziti.fhcrc.org>
+
+Hi Mark,
+
+Sorry for the delay in response.
+
+Mark Dunning <md392 at cam.ac.uk> writes:
+
+> Hi all,
+>
+> Apologies if this is a basic question, but I am seeing the following  
+> error in the 1.9 Check  report for beadarray on Solaris
+>
+> Error: .First.lib failed for 'beadarray'
+> Call sequence:
+> 2: stop(gettextf(".First.lib failed for '%s'", libraryPkgName(package)),
+>         domain = NA)
+> 1: library(package, lib.loc = lib.loc, character.only = TRUE, verbose  
+> = FALSE)
+> Execution halted
+> See section 'Generic functions and methods' of the 'Writing R  
+> Extensions'
+> manual.
+>
+> Full details are here:
+> http://bioconductor.org/checkResults/1.9/churchill-beadarray- 
+> checksrc.html
+>
+> I'm quite new to development, so unfortunately this message means  
+> little to me and it's quite puzzling that it appears on Solaris and  
+> no other machines? Would someone be able to give some pointers how to  
+> go about fixing the error?
+
+The Solaris machine does not yet have up-to-date version of R alpha.
+Let's ignore this until it does and go from there.
+
+But thank you for keeping an eye on the check report of your package
+and posting questions.  
+
+
++ seth
+
+
+From huber at ebi.ac.uk  Fri Sep 15 17:38:55 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Fri, 15 Sep 2006 16:38:55 +0100
+Subject: [Bioc-devel] library and require with variable arguments in package
+	code
+In-Reply-To: <m23bat2mk3.fsf@ziti.fhcrc.org>
+References: <m24pvgn100.fsf@ziti.fhcrc.org>	<200609130045.k8D0ja6i030268@atlas.systemsbiology.net>	<m2wt88r2jm.fsf@ziti.fhcrc.org>	<200609142218.k8EMIJQP009734@atlas.systemsbiology.net>	<m2odti5b6u.fsf@ziti.fhcrc.org>	<200609142252.k8EMqtSs011532@atlas.systemsbiology.net>
+	<m23bat2mk3.fsf@ziti.fhcrc.org>
+Message-ID: <450AC90F.1000908@ebi.ac.uk>
+
+Hi Seth,
+
+> And now after responding to one developer that they should avoid calls
+> to require() in their code, I'm going to send you a patch that does
+> just this :-\
+
+to clarify: yesterday I had seen that same warning message that Joern
+reported earlier today from matchprobes, where in the function
+combineAffyBatch there was also a call to "library" with a variable
+argument. The warning went away when I replaced "library" by "require"...
+
+ Cheers
+  Wolfgang
+
+PS Of course Joern could have found this out by just coming across the
+corridor, but then on the other side all you other guys on this list
+wouldn't have learn about it.
+
+
+From sfalcon at fhcrc.org  Fri Sep 15 19:31:21 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 15 Sep 2006 10:31:21 -0700
+Subject: [Bioc-devel] check failure: prerequisit package does not use
+	NAMESPACE
+In-Reply-To: <m23bat2mk3.fsf@ziti.fhcrc.org> (Seth Falcon's message of "Fri,
+	15 Sep 2006 08:10:04 -0700")
+References: <m24pvgn100.fsf@ziti.fhcrc.org>
+	<200609130045.k8D0ja6i030268@atlas.systemsbiology.net>
+	<m2wt88r2jm.fsf@ziti.fhcrc.org>
+	<200609142218.k8EMIJQP009734@atlas.systemsbiology.net>
+	<m2odti5b6u.fsf@ziti.fhcrc.org>
+	<200609142252.k8EMqtSs011532@atlas.systemsbiology.net>
+	<m23bat2mk3.fsf@ziti.fhcrc.org>
+Message-ID: <m2lkolyr2u.fsf@ziti.fhcrc.org>
+
+A minor correction:
+
+Seth Falcon <sfalcon at fhcrc.org> writes:
+>
+> Index: R/gaggle.R
+> ===================================================================
+> --- R/gaggle.R	(revision 19853)
+> +++ R/gaggle.R	(working copy)
+> @@ -2,6 +2,8 @@
+>  #---------------------------------------------------------------------------------
+>  .onLoad <- function (libname, pkgname)
+>  {
+> +    require("methods")
+> +    require("rJava")
+
+Much better to check the return value and give a clear error message.
+Something like:
+
+  require("methods") || stop("The methods package is missing, your R is broken")
+  require("rJava") || stop("unable to load package 'rJava'")
+
+
+From sfalcon at fhcrc.org  Sat Sep 16 00:34:34 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 15 Sep 2006 15:34:34 -0700
+Subject: [Bioc-devel] Change in BioC 1.9 release schedule
+Message-ID: <m2hcz8u5c5.fsf@ziti.fhcrc.org>
+
+Hi all,
+
+The build reports are starting to look better, but there are still 21
+packages that fail to build and 13 that do not pass check... And many
+many warning messages to address.
+
+Package Maintainers: please check the status of your packages [*1*],
+and send fixes.  We've decided to allow a few more days for fixing
+these issues.
+
+The new deadline for passing R CMD check without ERRORs is 25
+September.  Packages that show red on this date will _not_ be included
+in the release.
+
+The deadline for removing all possible WARNINGs is unchanged: 29
+September.  See the release schedule for details [*2*]
+
+Best Wishes,
+
++ seth
+
+
+[*1*] http://bioconductor.org/checkResults/1.9/
+
+[*2*] http://wiki.fhcrc.org/bioc/BioC_1.9_Release_Schedule
+
+
+From md392 at cam.ac.uk  Sun Sep 17 21:17:37 2006
+From: md392 at cam.ac.uk (Mark Dunning)
+Date: Sun, 17 Sep 2006 20:17:37 +0100
+Subject: [Bioc-devel] .First.lib error in beadarray
+In-Reply-To: <m2wt8517w7.fsf@ziti.fhcrc.org>
+References: <CAAE573F-2D87-4B1A-A3CE-225A2672B050@cam.ac.uk>
+	<m2wt8517w7.fsf@ziti.fhcrc.org>
+Message-ID: <7E84DC3E-1FAD-49FF-AA4F-3273BA72CB94@cam.ac.uk>
+
+Oleg and Seth,
+
+Thanks for the advice. I changed the call to .First.Lib as suggested,  
+which seems to have made the error go away (although there are other  
+errors to contend with now...). I'm adding a namespace to the package  
+anyways as that seems to be the way forward.
+
+Cheers,
+
+Mark
+On 15 Sep 2006, at 16:12, Seth Falcon wrote:
+
+> Hi Mark,
+>
+> Sorry for the delay in response.
+>
+> Mark Dunning <md392 at cam.ac.uk> writes:
+>
+>> Hi all,
+>>
+>> Apologies if this is a basic question, but I am seeing the following
+>> error in the 1.9 Check  report for beadarray on Solaris
+>>
+>> Error: .First.lib failed for 'beadarray'
+>> Call sequence:
+>> 2: stop(gettextf(".First.lib failed for '%s'", libraryPkgName 
+>> (package)),
+>>         domain = NA)
+>> 1: library(package, lib.loc = lib.loc, character.only = TRUE, verbose
+>> = FALSE)
+>> Execution halted
+>> See section 'Generic functions and methods' of the 'Writing R
+>> Extensions'
+>> manual.
+>>
+>> Full details are here:
+>> http://bioconductor.org/checkResults/1.9/churchill-beadarray-
+>> checksrc.html
+>>
+>> I'm quite new to development, so unfortunately this message means
+>> little to me and it's quite puzzling that it appears on Solaris and
+>> no other machines? Would someone be able to give some pointers how to
+>> go about fixing the error?
+>
+> The Solaris machine does not yet have up-to-date version of R alpha.
+> Let's ignore this until it does and go from there.
+>
+> But thank you for keeping an eye on the check report of your package
+> and posting questions.
+>
+>
+> + seth
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From huber at ebi.ac.uk  Mon Sep 18 16:24:02 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Mon, 18 Sep 2006 15:24:02 +0100
+Subject: [Bioc-devel] daily package check - namespace or shadowing problems
+Message-ID: <450EAC02.40108@ebi.ac.uk>
+
+Hi all,
+
+I am broadcasting this to bioc-devel because I suspect that several
+package maintainers currently are puzzled by similar problems, and as
+the saying goes, "shared pain is half the pain" :)
+
+1.) The bioc daily check results for 'vsn' say sth like:
+
+* creating vignettes ... ERROR
+Error:  chunk 16 (label=affy1)
+Error in update.default(pbt) : need an object with call component
+Error in buildVignettes(dir = ".") : Error:  chunk 16 (label=affy1)
+Error in update.default(pbt) : need an object with call component
+Execution halted
+
+I suspect that the "update.default" which is complaining here is from
+namespace:stats, while the intention of the line
+   update(pbt)
+in affy::AffyBatch.R is apparently to call an "update" method for the
+ProgressBarText method defined in that package.
+
+2.) When I am doing "R CMD check vsn" on my local machine, the
+compilation of the vignette fails apparently because the function "vsn"
+is called on non-sensical data in the chunk "affy1" (the intention there
+is to use the Dilution data from "affydata").
+
+3.) When I run "Sweave" on the package vignette in an interactive
+session, everything is fine.
+
+So I suspect that some weird problems are going on R with functions e.g.
+from the affy package (or others) due to recent changes with namespaces
+and S4 methods, which I still am struggling to learn to understand.
+
+ Cheers
+  Wolfgang
+
+
+
+-- 
+------------------------------------------------------------------
+Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber
+
+
+From sfalcon at fhcrc.org  Wed Sep 20 18:01:27 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 20 Sep 2006 09:01:27 -0700
+Subject: [Bioc-devel] reposTools DEFUNCT in upcoming BioC 1.9 release
+Message-ID: <m27izy7ciw.fsf@ziti.local>
+
+Hello package developers,
+
+As announced in late 2005 [*1*], the reposTools package is going
+away and will _not_ be included in the BioC 1.9 release.
+
+Improvements in the package handling tools that come with R allow us
+to use standard CRAN-style package repositories for BioC.  Advantages
+include a common interface to package installation for users
+(install.packages) and easier repository maintenance for us.
+
+Please remove any depedence on reposTools asap (the only ones present
+are hidden ones, AFAICT).
+
+Here is one approach for auto-package installation to use in place of
+reposTools:
+
+http://wiki.fhcrc.org/bioc/HowTo/Automagic_Package_Installation
+
+And, of course, there is biocLite.
+
+Questions?  Concerns?  Please let us know.
+
+Best Wishes,
+
++ seth
+
+
+
+[*1*] https://stat.ethz.ch/pipermail/bioc-devel/2005-December/000344.html
+
+
+From sfalcon at fhcrc.org  Wed Sep 20 18:03:18 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 20 Sep 2006 09:03:18 -0700
+Subject: [Bioc-devel] daily package check - namespace or shadowing
+	problems
+In-Reply-To: <450EAC02.40108@ebi.ac.uk> (Wolfgang Huber's message of "Mon,
+	18 Sep 2006 15:24:02 +0100")
+References: <450EAC02.40108@ebi.ac.uk>
+Message-ID: <m23bam7cft.fsf@ziti.local>
+
+Wolfgang Huber <huber at ebi.ac.uk> writes:
+
+> Hi all,
+>
+> I am broadcasting this to bioc-devel because I suspect that several
+> package maintainers currently are puzzled by similar problems, and as
+> the saying goes, "shared pain is half the pain" :)
+>
+> 1.) The bioc daily check results for 'vsn' say sth like:
+>
+> * creating vignettes ... ERROR
+> Error:  chunk 16 (label=affy1)
+> Error in update.default(pbt) : need an object with call component
+> Error in buildVignettes(dir = ".") : Error:  chunk 16 (label=affy1)
+> Error in update.default(pbt) : need an object with call component
+> Execution halted
+
+Based on recent check results for vsn, things are looking better.  Did
+you uncover anything w.r.t. to name spaces, etc that would be useful
+for others?
+
++ seth
+
+
+From sfalcon at fhcrc.org  Wed Sep 20 20:46:27 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 20 Sep 2006 11:46:27 -0700
+Subject: [Bioc-devel] BioC Package Search ALPHA
+Message-ID: <m28xke2x6k.fsf@ziti.local>
+
+Hi all,
+
+As demo'd at BioC2006, we have an alpha version of a search tool for
+BioC packages.  It is rough around the edges, but some feedback at
+this point would be helpful.
+
+If you give it a try, please let me know what you (dis)like, etc.
+
+http://mamba41.fhcrc.org/apptest/biocPackageSearch/
+
+Known issues:
+
+* Package information not yet automatically updated
+
+* Package function/symbol index very incomplete
+
+* Depends/Suggests/Imports only searches Depends
+
++ seth
+
+
+From mtmorgan at fhcrc.org  Thu Sep 21 01:12:16 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 20 Sep 2006 16:12:16 -0700
+Subject: [Bioc-devel] [biocpkgs] Bug? in AssayData
+In-Reply-To: <40964D91251A18469CB08B6E96FB30BA0EF828@mailc.lumcnet.prod.intern>
+	(J. Oosting's message of "Wed, 20 Sep 2006 23:02:14 +0200")
+References: <40964D91251A18469CB08B6E96FB30BA0EF828@mailc.lumcnet.prod.intern>
+Message-ID: <6phslimp1yn.fsf@gopher4.fhcrc.org>
+
+Hi Jan --
+
+Probably these issues belong on bioc-devel (rather than biocpkgs,
+where originally posted). Here are some responses:
+
+1. AssayData is a uniquely R class. It is a class union, meaning that
+it can contain different types (specifically, 'list' and
+'environment'). Even though the slot is defined to contain an
+'AssayData' element, in any particular instance the class of the
+object in the slot is actually what the occupant of the slot is:
+
+> class(new("ExpressionSet")@assayData)
+[1] "environment"
+> class(new("ExpressionSet", storage.mode="list")@assayData)
+[1] "list"
+
+(Those should be assayData(new("ExpressionSet")), but I'm trying to
+avoid any opacity). The role of assayDataElement is to encapsulate an
+operation like [[. Doing this in the 'obvious' way does not work:
+
+> setMethod("[[", signature(x="AssayData"), function(x, i, j, ...) 'here')
+[1] "[["
+> assayData(new("ExpressionSet"))[["exprs"]]
+<0 x 0 matrix> # why not 'here'??
+
+this is because 'list' and 'environment' are subclasses of AssayData
+
+> getClass("AssayData")
+Extended class definition ( "ClassUnionRepresentation" )
+Virtual Class
+
+No Slots, prototype of class "NULL"
+
+Known Subclasses: "list", "environment"
+
+and the methods [[ for list or environment are 'seen' in method
+dispatch before the [[ method for AssayData.
+
+I guess there's a philosophical question about when an AssayData
+object is really an AssayData object (only when contained in eSet?),
+but the functional intention of assayDataElement is to provide
+information about AssayData, not about eSet, and hence its residence
+in methods-AssayData.R.
+
+2. Notice that the definition of "storageMode" for AssayData is:
+
+setMethod("storageMode", "AssayData", assayDataStorageMode)
+
+i.e., a simple alias for assayDataStorageMode. Using
+assayDataStorageMode internally avoids method dispatch, which can
+(still) be quite expensive: in assayDataElementNames, obj is an
+ExpressionSet, so there would be additional calls to the generic
+storageMode, and then to storageMode for eSet, and then storageMode
+for assayData, before finally calling assayDataStorageMode.
+
+3. The functions you mention are not exposed (i.e., not exported in
+the NAMESPACE file) so should not be considered for 'safe' use by
+individuals other than the package developers.
+
+4. Organization of functions in files is not enforced in any way by R,
+so this sort of issue is a question of style. Obviously core
+Bioconductor packages should provide a style for emulation, and the
+use of a class union (also, arguably, method dispatch on more than one
+argument, and the use of the class Versioned in the prototype for eSet
+[which requires that an 'initialize" method for Versioned be defined
+before eSet is defined, and hence that Versioned classes and methods
+are defined before DataClasses]) stretch our current conventions about
+the 'right' way to do things.
+
+5. If you're still with me, I wonder what the original practical issue
+was that lead you to assayDataElement? The intention is that these
+details are transparent to the end user, and indeed to most package
+developers using Biobase.
+
+Hope that helps,
+
+Martin
+
+
+"Oosting, J. (PATH)" <J.Oosting at lumc.nl> writes:
+
+> =+=+=+=+=+=+=+=+=+ biocpkgs mailing list +=+=+=+=+=+=+=+=+=
+>
+> There are 2 functions in methods-AssyData.R from the Biobase package that
+> probably belong in methods-eSet, or are not properly implemented.
+>
+> Both seem to take an eSet as an argument, since assayData is not an AssayData
+> method, but assayDataStorageMode is a function for AssayData instances.
+>
+> I think the assayDataStorageMode() should be replaced by storageMode(), and
+> both functions should be moved to methods-eSet.R, because they act on eSets
+>
+> ?
+>
+> Kind regards,
+>
+> ?
+>
+> Jan Oosting
+>
+> ?
+>
+> ?
+>
+> ?
+>
+> current implementation:
+>
+> ?
+>
+> assayDataElementNames <- function(obj)
+> ? if (assayDataStorageMode(obj) == "list") names(assayData(obj)) else
+> ls(assayData(obj))
+>
+> ?
+>
+> ?
+>
+> assayDataElement <- function(obj, elt) assayData(obj)[[elt]]
+>
+> ?
+> __________________________________________________________________
+> biocpkgs mailing list
+> To unsubscribe from this mailing list send a blank email to
+> biocpkgs-leave at lists.fhcrc.org
+> You can also unsubscribe or change your personal options at
+> http://lists.fhcrc.org/mailman/listinfo/biocpkgs
+
+-- 
+Martin T. Morgan
+Bioconductor / Computational Biology
+http://bioconductor.org
+
+
+From diez at kuicr.kyoto-u.ac.jp  Thu Sep 21 03:51:57 2006
+From: diez at kuicr.kyoto-u.ac.jp (Diego Diez)
+Date: Thu, 21 Sep 2006 10:51:57 +0900
+Subject: [Bioc-devel] BioC Package Search ALPHA
+In-Reply-To: <m28xke2x6k.fsf@ziti.local>
+References: <m28xke2x6k.fsf@ziti.local>
+Message-ID: <CA07E324-9800-40C1-A7C9-5A65A8571F78@kuicr.kyoto-u.ac.jp>
+
+Hi Seth,
+
+it is a very nice tool, that may help to search for the needed  
+package now that bioc is growing so much. I think I would like to  
+have a way to short the selection of biocViews and Maintainer, using  
+a letter index for example. And a "first" and "last" link could be  
+great also. Now you have to navigate 38 pages to get the last  
+biocViews :)
+
+It is a very promising tool.
+
+D.
+
+
+On Sep 21, 2006, at 3:46 AM, Seth Falcon wrote:
+
+> Hi all,
+>
+> As demo'd at BioC2006, we have an alpha version of a search tool for
+> BioC packages.  It is rough around the edges, but some feedback at
+> this point would be helpful.
+>
+> If you give it a try, please let me know what you (dis)like, etc.
+>
+> http://mamba41.fhcrc.org/apptest/biocPackageSearch/
+>
+> Known issues:
+>
+> * Package information not yet automatically updated
+>
+> * Package function/symbol index very incomplete
+>
+> * Depends/Suggests/Imports only searches Depends
+>
+> + seth
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From J.Oosting at lumc.nl  Thu Sep 21 10:26:43 2006
+From: J.Oosting at lumc.nl (Oosting, J. (PATH))
+Date: Thu, 21 Sep 2006 10:26:43 +0200
+Subject: [Bioc-devel] [biocpkgs] Bug? in AssayData
+In-Reply-To: <6phslimp1yn.fsf@gopher4.fhcrc.org>
+Message-ID: <40964D91251A18469CB08B6E96FB30BABAD8E8@mailc.lumcnet.prod.intern>
+
+Hi Morgan,
+
+My issue is with  assayDataElementNames(), I just stumbled across assayDataElement when I checked an error that popped up recently.
+
+I have an eSet subclass that has optional elements in assayData
+
+I use something like
+if ( !("intensity" %in% assayDataElementNames(object))) object<-CalculateIntensity(object)
+
+
+When the object has storageMode=="list" I get an error, because the function assayDataStorageMode tests this assuming the argument is an AssyData instance, but the following commands in the function assume this is an eSet instance.
+
+> assayDataElementNames <- function(obj)
+> ? if (assayDataStorageMode(obj) == "list") names(assayData(obj)) else
+> ls(assayData(obj))
+
+This should either be:
+if (assayDataStorageMode(assayData(obj)) == "list")
+or
+if (storageMode(obj) == "list")
+
+
+>2. Notice that the definition of "storageMode" for AssayData is:
+>
+>setMethod("storageMode", "AssayData", assayDataStorageMode)
+>
+>i.e., a simple alias for assayDataStorageMode. Using assayDataStorageMode internally avoids method dispatch, which can
+>(still) be quite expensive: in assayDataElementNames, obj is an ExpressionSet, so there would be additional calls to the generic storageMode, and then to storageMode for eSet, and then storageMode for assayData, before finally calling assayDataStorageMode.
+>
+As I argue above there is ambiguity abouth the class of object that assayDataElementNames expects, and in the past it worked well with eSet-descendants
+
+>3. The functions you mention are not exposed (i.e., not exported in the NAMESPACE file) so should not be considered for 'safe' use by individuals other than the package developers.
+>
+They are exposed in the export() part of the NAMESPACE
+
+>4. Organization of functions in files is not enforced in any way by R, so this sort of issue is a question of style. Obviously core Bioconductor packages should provide a style for emulation, and the use of a class union (also, arguably, method dispatch on more than one argument, and the use of the class Versioned in the prototype for eSet [which requires that an 'initialize" method for Versioned be defined before eSet is defined, and hence that Versioned classes and methods are defined before DataClasses]) stretch our current conventions about the 'right' way to do things.
+
+I realize that the placement of functions in sourcefiles is arbitrary, but these two functions act on eSets, their placement in the AssayData source file induced in someone the conclusion that the reasoning in your point 2 is valid, so the dispatch could be circumvented.
+
+>
+>5. If you're still with me, I wonder what the original practical issue was that lead you to assayDataElement? The intention is that these details are transparent to the end user, and indeed to most package developers using Biobase.
+
+
+
+
+Martin
+
+
+"Oosting, J. (PATH)" <J.Oosting at lumc.nl> writes:
+
+> =+=+=+=+=+=+=+=+=+ biocpkgs mailing list +=+=+=+=+=+=+=+=+=
+>
+> There are 2 functions in methods-AssyData.R from the Biobase package 
+> that probably belong in methods-eSet, or are not properly implemented.
+>
+> Both seem to take an eSet as an argument, since assayData is not an 
+> AssayData method, but assayDataStorageMode is a function for AssayData instances.
+>
+> I think the assayDataStorageMode() should be replaced by 
+> storageMode(), and both functions should be moved to methods-eSet.R, 
+> because they act on eSets
+>
+> ?
+>
+> Kind regards,
+>
+> ?
+>
+> Jan Oosting
+>
+> ?
+>
+> ?
+>
+> ?
+>
+> current implementation:
+>
+> ?
+>
+> assayDataElementNames <- function(obj)
+> ? if (assayDataStorageMode(obj) == "list") names(assayData(obj)) else
+> ls(assayData(obj))
+>
+> ?
+>
+> ?
+>
+> assayDataElement <- function(obj, elt) assayData(obj)[[elt]]
+>
+> ?
+> __________________________________________________________________
+> biocpkgs mailing list
+> To unsubscribe from this mailing list send a blank email to 
+> biocpkgs-leave at lists.fhcrc.org You can also unsubscribe or change your 
+> personal options at http://lists.fhcrc.org/mailman/listinfo/biocpkgs
+
+--
+Martin T. Morgan
+Bioconductor / Computational Biology
+http://bioconductor.org
+
+
+From sdavis2 at mail.nih.gov  Thu Sep 21 15:48:51 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Thu, 21 Sep 2006 09:48:51 -0400
+Subject: [Bioc-devel] Rdbi namespace issue
+Message-ID: <200609210948.51362.sdavis2@mail.nih.gov>
+
+Jianhua,
+
+I just tried loading RbdiPgSQL and then Rdbi and found these errors with Rdbi 
+from the devel repository.  Any ideas on how to fix this?  I'm cc'ing the 
+bioc-devel list in case there is something interesting to be learned from the 
+discussion, given the state of namespaces.
+
+Thanks,
+Sean
+
+> library(Rdbi)
+Loading required package: Rdbi
+Error in loadNamespace(package, c(which.lib.loc, lib.loc), keep.source = 
+keep.source) : 
+	cyclic name space dependencies are not supported
+Error: package 'Rdbi' could not be loaded
+Error: .onLoad failed in 'loadNamespace' for 'Rdbi'
+Error: package/namespace load failed for 'Rdbi'
+> sessionInfo()
+R version 2.4.0 alpha (2006-09-13 r39286) 
+x86_64-unknown-linux-gnu 
+
+locale:
+LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8;LC_COLLATE=en_US.UTF-8;LC_MONETARY=en_US.UTF-8;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C
+
+attached base packages:
+[1] "methods"   "stats"     "graphics"  "grDevices" "utils"     "datasets" 
+[7] "base"     
+>
+
+
+From sdavis2 at mail.nih.gov  Thu Sep 21 15:59:03 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Thu, 21 Sep 2006 09:59:03 -0400
+Subject: [Bioc-devel] Rdbi namespace issue
+In-Reply-To: <200609210948.51362.sdavis2@mail.nih.gov>
+References: <200609210948.51362.sdavis2@mail.nih.gov>
+Message-ID: <200609210959.03609.sdavis2@mail.nih.gov>
+
+On Thursday 21 September 2006 09:48, Sean Davis wrote:
+> Jianhua,
+>
+> I just tried loading RbdiPgSQL and then Rdbi and found these errors with
+> Rdbi from the devel repository.  Any ideas on how to fix this?  I'm cc'ing
+> the bioc-devel list in case there is something interesting to be learned
+> from the discussion, given the state of namespaces.
+
+Just looking a bit, it seems that Rdbi has this statement in 'zzz.R':
+.onLoad <- function(lib, pkg) {
+  # Changed by JZ from Rdbi.PgSQL to RdbiPgSQL
+  autoload("PgSQL", "RdbiPgSQL")
+# autoload("MySQL", "Rdbi.MySQL")
+.....
+
+And in RdbiPgSQL NAMESPACE:
+import(Rdbi)
+
+Is this causing the circular dependency?
+
+
+> > > library(Rdbi) 
+>
+> Loading required package: Rdbi
+> Error in loadNamespace(package, c(which.lib.loc, lib.loc), keep.source =
+> keep.source) :
+> 	cyclic name space dependencies are not supported
+> Error: package 'Rdbi' could not be loaded
+> Error: .onLoad failed in 'loadNamespace' for 'Rdbi'
+> Error: package/namespace load failed for 'Rdbi'
+>
+> > sessionInfo()
+>
+> R version 2.4.0 alpha (2006-09-13 r39286)
+> x86_64-unknown-linux-gnu
+>
+> locale:
+> LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8;LC_COLLATE=en_US.UTF-
+>8;LC_MONETARY=en_US.UTF-8;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NA
+>ME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATIO
+>N=C
+>
+> attached base packages:
+> [1] "methods"   "stats"     "graphics"  "grDevices" "utils"     "datasets"
+> [7] "base"
+>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From jzhang at jimmy.harvard.edu  Thu Sep 21 16:11:43 2006
+From: jzhang at jimmy.harvard.edu (John Zhang)
+Date: Thu, 21 Sep 2006 10:11:43 -0400 (EDT)
+Subject: [Bioc-devel] Rdbi namespace issue
+Message-ID: <20060921141143.92B2D4CF66@pascal.dfci.harvard.edu>
+
+
+>>
+>> I just tried loading RbdiPgSQL and then Rdbi and found these errors with
+>> Rdbi from the devel repository.  Any ideas on how to fix this?  I'm cc'ing
+>> the bioc-devel list in case there is something interesting to be learned
+>> from the discussion, given the state of namespaces.
+
+It was fine on my machine but my R is a few days older than yours. I will update 
+my R and try again.
+
+
+
+>
+>Just looking a bit, it seems that Rdbi has this statement in 'zzz.R':
+>.onLoad <- function(lib, pkg) {
+>  # Changed by JZ from Rdbi.PgSQL to RdbiPgSQL
+>  autoload("PgSQL", "RdbiPgSQL")
+># autoload("MySQL", "Rdbi.MySQL")
+>.....
+>
+>And in RdbiPgSQL NAMESPACE:
+>import(Rdbi)
+>
+>Is this causing the circular dependency?
+>
+>
+>> > > library(Rdbi) 
+>>
+>> Loading required package: Rdbi
+>> Error in loadNamespace(package, c(which.lib.loc, lib.loc), keep.source =
+>> keep.source) :
+>> 	cyclic name space dependencies are not supported
+>> Error: package 'Rdbi' could not be loaded
+>> Error: .onLoad failed in 'loadNamespace' for 'Rdbi'
+>> Error: package/namespace load failed for 'Rdbi'
+>>
+>> > sessionInfo()
+>>
+>> R version 2.4.0 alpha (2006-09-13 r39286)
+>> x86_64-unknown-linux-gnu
+>>
+>> locale:
+>> LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8;LC_COLLATE=en_US.UTF-
+>>8;LC_MONETARY=en_US.UTF-8;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NA
+>>ME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATIO
+>>N=C
+>>
+>> attached base packages:
+>> [1] "methods"   "stats"     "graphics"  "grDevices" "utils"     "datasets"
+>> [7] "base"
+>>
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+Jianhua Zhang
+Department of Medical Oncology
+Dana-Farber Cancer Institute
+44 Binney Street
+Boston, MA 02115-6084
+
+
+From sfalcon at fhcrc.org  Thu Sep 21 16:39:22 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 21 Sep 2006 07:39:22 -0700
+Subject: [Bioc-devel] Rdbi namespace issue
+In-Reply-To: <20060921141143.92B2D4CF66@pascal.dfci.harvard.edu> (John Zhang's
+	message of "Thu, 21 Sep 2006 10:11:43 -0400 (EDT)")
+References: <20060921141143.92B2D4CF66@pascal.dfci.harvard.edu>
+Message-ID: <m2lkodqo6d.fsf@ziti.local>
+
+John Zhang <jzhang at jimmy.harvard.edu> writes:
+
+>>>
+>>> I just tried loading RbdiPgSQL and then Rdbi and found these errors with
+>>> Rdbi from the devel repository.  Any ideas on how to fix this?  I'm cc'ing
+>>> the bioc-devel list in case there is something interesting to be learned
+>>> from the discussion, given the state of namespaces.
+>
+> It was fine on my machine but my R is a few days older than yours. I will update 
+> my R and try again.
+
+I think the zzz file needs to change.  I'm not following why Rdbi is
+trying to load symbols from RdbiPgSQL it seems backwards to me.
+
+
+From jzhang at jimmy.harvard.edu  Thu Sep 21 17:08:51 2006
+From: jzhang at jimmy.harvard.edu (John Zhang)
+Date: Thu, 21 Sep 2006 11:08:51 -0400 (EDT)
+Subject: [Bioc-devel] Rdbi namespace issue
+Message-ID: <20060921150851.E696E4CFEE@pascal.dfci.harvard.edu>
+
+
+>
+>I think the zzz file needs to change.  I'm not following why Rdbi is
+>trying to load symbols from RdbiPgSQL it seems backwards to me.
+
+You are right. I will change that. Thanks.
+
+
+>
+>_______________________________________________
+>Bioc-devel at stat.math.ethz.ch mailing list
+>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+Jianhua Zhang
+Department of Medical Oncology
+Dana-Farber Cancer Institute
+44 Binney Street
+Boston, MA 02115-6084
+
+
+From sfalcon at fhcrc.org  Thu Sep 21 17:34:41 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 21 Sep 2006 08:34:41 -0700
+Subject: [Bioc-devel] [biocpkgs] Bug? in AssayData
+In-Reply-To: <40964D91251A18469CB08B6E96FB30BABAD8E8@mailc.lumcnet.prod.intern>
+	(J. Oosting's message of "Thu, 21 Sep 2006 10:26:43 +0200")
+References: <40964D91251A18469CB08B6E96FB30BABAD8E8@mailc.lumcnet.prod.intern>
+Message-ID: <m2venhp71q.fsf@ziti.local>
+
+"Oosting, J. (PATH)" <J.Oosting at lumc.nl> writes:
+> My issue is with assayDataElementNames(), I just stumbled across
+> assayDataElement when I checked an error that popped up recently.
+>
+> I have an eSet subclass that has optional elements in assayData
+>
+> I use something like if ( !("intensity" %in%
+> assayDataElementNames(object))) object<-CalculateIntensity(object)
+>
+>
+> When the object has storageMode=="list" I get an error, because the
+> function assayDataStorageMode tests this assuming the argument is an
+> AssyData instance, but the following commands in the function assume
+> this is an eSet instance.
+>
+>> assayDataElementNames <- function(obj) ? if
+>> (assayDataStorageMode(obj) == "list") names(assayData(obj)) else
+>> ls(assayData(obj))
+>
+> This should either be: if (assayDataStorageMode(assayData(obj)) ==
+> "list") or if (storageMode(obj) == "list")
+
+I agree there is ambiguity here that needs fixing.  Thanks for
+clarifying the issues you encountered.
+
+We will have some discussion among the developers here and have some
+sort of a fix posted asap.
+
+My initial feeling is that much of this code would be less confusing
+if these were methods and not functions.  
+
+Best,
+
++ seth
+
+
+From sdavis2 at mail.nih.gov  Thu Sep 21 21:13:07 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Thu, 21 Sep 2006 15:13:07 -0400
+Subject: [Bioc-devel] Rdbi namespace issue
+In-Reply-To: <20060921174029.E69114CFF0@pascal.dfci.harvard.edu>
+References: <20060921174029.E69114CFF0@pascal.dfci.harvard.edu>
+Message-ID: <200609211513.07824.sdavis2@mail.nih.gov>
+
+On Thursday 21 September 2006 13:40, John Zhang wrote:
+> >Thanks, Jianhua.  If you get something that works for you, can you let me
+> >know?  Simply commenting out the autoload leaves me with the same error,
+> > it seems.  Do you see otherwise?
+>
+> I actually do not have any problem with Rdbi 1.7.0 or 1.7.1 (loading of
+> RdbiPgSQL removed) using a fresh installation of R 2.4.0 beta (2006-09-20).
+> I have also tried with an older version of R. Has anyone else encountered
+> the same problem?
+
+Jianhua,
+
+I moved to R-beta (which I should have done before mailing in the first place) 
+also and the problem disappeared, even with the autoload line still in.  
+Figure that....
+
+Thanks again,
+Sean
+
+
+From mtmorgan at fhcrc.org  Thu Sep 21 21:34:52 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 21 Sep 2006 12:34:52 -0700
+Subject: [Bioc-devel] [biocpkgs] Bug? in AssayData
+In-Reply-To: <m2venhp71q.fsf@ziti.local> (Seth Falcon's message of "Thu, 21
+	Sep 2006 08:34:41 -0700")
+References: <40964D91251A18469CB08B6E96FB30BABAD8E8@mailc.lumcnet.prod.intern>
+	<m2venhp71q.fsf@ziti.local>
+Message-ID: <6phr6y5nhcz.fsf@gopher4.fhcrc.org>
+
+Most of my last email was incorrect to one degree or another, so
+thanks for your patience. I changed assayDataElementNames to use
+storageMode(obj) == "list", moved the assayDataElement* functions to
+methods-eSet, and changed the documentation to reflect the correct way
+these functions should be used. All available in Biobase 1.11.42.
+
+There are benefits to making these functions generics, and I'll make
+changes in that direction shortly. Different options we are assessing
+include (1) making 'names' generic,(2) making existing functions
+assayDataElementNames etc generic, or (3) introducing new generics
+e.g., assayNames and deprecating existing functions (not for the 2.4.0
+release, though). Each of these has pros and cons, so input welcome.
+
+Martin
+
+Seth Falcon <sfalcon at fhcrc.org> writes:
+
+> "Oosting, J. (PATH)" <J.Oosting at lumc.nl> writes:
+>> My issue is with assayDataElementNames(), I just stumbled across
+>> assayDataElement when I checked an error that popped up recently.
+>>
+>> I have an eSet subclass that has optional elements in assayData
+>>
+>> I use something like if ( !("intensity" %in%
+>> assayDataElementNames(object))) object<-CalculateIntensity(object)
+>>
+>>
+>> When the object has storageMode=="list" I get an error, because the
+>> function assayDataStorageMode tests this assuming the argument is an
+>> AssyData instance, but the following commands in the function assume
+>> this is an eSet instance.
+>>
+>>> assayDataElementNames <- function(obj) ? if
+>>> (assayDataStorageMode(obj) == "list") names(assayData(obj)) else
+>>> ls(assayData(obj))
+>>
+>> This should either be: if (assayDataStorageMode(assayData(obj)) ==
+>> "list") or if (storageMode(obj) == "list")
+>
+> I agree there is ambiguity here that needs fixing.  Thanks for
+> clarifying the issues you encountered.
+>
+> We will have some discussion among the developers here and have some
+> sort of a fix posted asap.
+>
+> My initial feeling is that much of this code would be less confusing
+> if these were methods and not functions.  
+>
+> Best,
+>
+> + seth
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Martin T. Morgan
+Bioconductor / Computational Biology
+http://bioconductor.org
+
+
+From jmacdon at med.umich.edu  Thu Sep 21 21:43:24 2006
+From: jmacdon at med.umich.edu (James MacDonald)
+Date: Thu, 21 Sep 2006 15:43:24 -0400
+Subject: [Bioc-devel] Build/check questions
+Message-ID: <4512B32F.47B0.00EE.0@med.umich.edu>
+
+Hi!
+
+I have two questions about results on the build/check page for release
+1.9.
+
+First, for my affycoretools package, the build on Solaris says OK, but
+in the output I see this line:
+
+ creating vignettes ...Segmentation Fault - core dumped
+ OK
+
+I suppose the build page *should* say OK, since this step returned an
+OK. However, I am pretty sure a segfault is A Bad Thing. Maybe I should
+ask on R-devel why this returns an OK? Should I expect that the build
+page would be able to return something other than OK in this situation?
+
+Second, on all three Linux boxes (and on mine as well, but not on
+windows), there is a cryptic warning that I don't understand:
+
+* checking whether the name space can be loaded with stated
+dependencies ... WARNING
+Loading required package: methods
+Error in if (mustFind) stop(gettextf("no generic function found for
+\"%s\"",  : 
+	argument is not interpretable as logical
+In addition: Warning message:
+the condition has length > 1 and only the first element will be used
+in: if (mustFind) stop(gettextf("no generic function found for \"%s\"", 
+
+Execution halted
+
+A namespace must be able to be loaded with just the base namespace
+loaded:
+otherwise if the namespace gets loaded by a saved object, the session
+will
+be unable to start.
+
+Probably some imports need to be declared in the NAMESPACE file.
+
+Is there a reasonable way to track down what imports are missing?
+
+Best,
+
+Jim
+
+
+
+
+
+James W. MacDonald, M.S.
+Biostatistician
+Affymetrix and cDNA Microarray Core
+University of Michigan Cancer Center
+1500 E. Medical Center Drive
+7410 CCGC
+Ann Arbor MI 48109
+734-647-5623
+
+
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.
+
+
+From hpages at fhcrc.org  Fri Sep 22 02:08:03 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Thu, 21 Sep 2006 17:08:03 -0700
+Subject: [Bioc-devel] Build/check questions
+In-Reply-To: <4512B32F.47B0.00EE.0@med.umich.edu>
+References: <4512B32F.47B0.00EE.0@med.umich.edu>
+Message-ID: <45132963.90301@fhcrc.org>
+
+James MacDonald wrote:
+> Hi!
+>
+> I have two questions about results on the build/check page for release
+> 1.9.
+>
+> First, for my affycoretools package, the build on Solaris says OK, but
+> in the output I see this line:
+>
+>  creating vignettes ...Segmentation Fault - core dumped
+>  OK
+>
+> I suppose the build page *should* say OK, since this step returned an
+> OK. However, I am pretty sure a segfault is A Bad Thing. Maybe I should
+> ask on R-devel why this returns an OK? Should I expect that the build
+> page would be able to return something other than OK in this situation?
+>   
+
+Hi Jim,
+
+Since this is a bug in 'R CMD build', IMHO yes, it would be worth
+reporting the problem on R-devel. I've already reported it
+back in May and never got an answer but may be you'll be more
+lucky than I was. A workaround for now could be to add some code
+to our build system to parse the output returned by 'R CMD build'
+but I never really took the time to implement this :-/
+
+> Second, on all three Linux boxes (and on mine as well, but not on
+> windows), there is a cryptic warning that I don't understand:
+>
+> * checking whether the name space can be loaded with stated
+> dependencies ... WARNING
+> Loading required package: methods
+> Error in if (mustFind) stop(gettextf("no generic function found for
+> \"%s\"",  : 
+> 	argument is not interpretable as logical
+> In addition: Warning message:
+> the condition has length > 1 and only the first element will be used
+> in: if (mustFind) stop(gettextf("no generic function found for \"%s\"", 
+>
+> Execution halted
+>
+> A namespace must be able to be loaded with just the base namespace
+> loaded:
+> otherwise if the namespace gets loaded by a saved object, the session
+> will
+> be unable to start.
+>
+> Probably some imports need to be declared in the NAMESPACE file.
+>
+> Is there a reasonable way to track down what imports are missing?
+>   
+
+I agree that this kind of message could be more usefull.
+The problem seems to occur when the GOstats NAMESPACE
+is imported into your NAMESPACE (I've tried to remove GOstats
+from import(annaffy, GOstats, biomaRt) in your NAMESPACE and
+didn't get the warning anymore).
+The check result for the GOstats package itself shows the
+same error.
+I've done been further and don't know what's wrong with the
+GOstats NAMESPACE. Are there some imports that need to be
+declared here?
+
+BTW, something that could be reported on R-devel too is that
+the "checking whether the name space can be loaded with stated
+dependencies" at least says for which NAMESPACE loading
+the warning is currently issued. Imagine a situation where we
+have to track down 20 levels of nested NAMESPACE importation :-/
+
+Best,
+H.
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+ Phone: (206) 667-5791
+   Fax: (206) 667-1319
+
+
+From sfalcon at fhcrc.org  Fri Sep 22 18:43:41 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 22 Sep 2006 09:43:41 -0700
+Subject: [Bioc-devel] Build/check questions
+In-Reply-To: <4512B32F.47B0.00EE.0@med.umich.edu> (James MacDonald's message
+	of "Thu, 21 Sep 2006 15:43:24 -0400")
+References: <4512B32F.47B0.00EE.0@med.umich.edu>
+Message-ID: <m21wq3kg1u.fsf@ziti.local>
+
+"James MacDonald" <jmacdon at med.umich.edu> writes:
+> Second, on all three Linux boxes (and on mine as well, but not on
+> windows), there is a cryptic warning that I don't understand:
+>
+> * checking whether the name space can be loaded with stated
+> dependencies ... WARNING
+> Loading required package: methods
+> Error in if (mustFind) stop(gettextf("no generic function found for
+> \"%s\"",  : 
+> 	argument is not interpretable as logical
+> In addition: Warning message:
+> the condition has length > 1 and only the first element will be used
+> in: if (mustFind) stop(gettextf("no generic function found for \"%s\"", 
+>
+> Execution halted
+
+The error was a bug in R and is fixed in the latest beta.  The warning
+message is still there and is coming from GOstats AFAICT.
+
+More details follow, but for now, the upshot is that it isn't a
+problem in your package.
+
+I think it is related to the graph package calling require("Biobase")
+in its .onAttach function.  But I'm having trouble reproducing it in
+my debugging efforts.
+
+Best,
+
++ seth
+
+
+From rgentlem at fhcrc.org  Sat Sep 23 00:36:10 2006
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Fri, 22 Sep 2006 15:36:10 -0700
+Subject: [Bioc-devel] affyQA/QC
+Message-ID: <4514655A.7090905@fhcrc.org>
+
+Hi,
+   I am trying to put together a set of, what one might regard, as 
+standard plots and summary statistics that should be collected on any 
+set of Affymetrix microarrays (at least ones for gene expression). The 
+first pass is attached, I would appreciate any comments on it, 
+especially with regard to things that I have missed, or things I have 
+suggested that don't seem to be quite correct, or could be improved.
+
+  On an implementation note - I will be making use of existing software 
+and intend to work with Craig Parman to put this into the existing 
+affyQCReport package - users of that might want to let me know what 
+functionality they are relying on, but this should be strict additions.
+
+
+  thanks
+    Robert
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+From khansen at stat.Berkeley.EDU  Sat Sep 23 01:33:12 2006
+From: khansen at stat.Berkeley.EDU (Kasper Daniel Hansen)
+Date: Fri, 22 Sep 2006 16:33:12 -0700
+Subject: [Bioc-devel] affyQA/QC
+In-Reply-To: <4514655A.7090905@fhcrc.org>
+References: <4514655A.7090905@fhcrc.org>
+Message-ID: <EB5227E6-51BB-4EAD-8E00-751C204FFDCF@stat.berkeley.edu>
+
+The attachment is lost, at least on my side.
+
+Kasper
+
+On Sep 22, 2006, at 3:36 PM, Robert Gentleman wrote:
+
+> Hi,
+>   I am trying to put together a set of, what one might regard, as  
+> standard plots and summary statistics that should be collected on  
+> any set of Affymetrix microarrays (at least ones for gene  
+> expression). The first pass is attached, I would appreciate any  
+> comments on it, especially with regard to things that I have  
+> missed, or things I have suggested that don't seem to be quite  
+> correct, or could be improved.
+>
+>  On an implementation note - I will be making use of existing  
+> software and intend to work with Craig Parman to put this into the  
+> existing affyQCReport package - users of that might want to let me  
+> know what functionality they are relying on, but this should be  
+> strict additions.
+>
+>
+>  thanks
+>    Robert
+>
+> -- 
+> Robert Gentleman, PhD
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M2-B876
+> PO Box 19024
+> Seattle, Washington 98109-1024
+> 206-667-7700
+> rgentlem at fhcrc.org
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From rgentlem at fhcrc.org  Sat Sep 23 01:48:53 2006
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Fri, 22 Sep 2006 16:48:53 -0700
+Subject: [Bioc-devel] QC - again
+Message-ID: <45147665.3010704@fhcrc.org>
+
+Seems my attachment went away - lets see if it makes it on the second 
+try...sorry for the noise
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+From rgentlem at fhcrc.org  Sat Sep 23 01:58:46 2006
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Fri, 22 Sep 2006 16:58:46 -0700
+Subject: [Bioc-devel] third time lucky
+Message-ID: <451478B6.4000205@fhcrc.org>
+
+so that doesn't work - well you can pick it up here,
+http://gentleman.fhcrc.org/AffyQA/
+
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From DNADave at insightful.com  Sat Sep 23 02:02:52 2006
+From: DNADave at insightful.com (David Henderson)
+Date: Fri, 22 Sep 2006 17:02:52 -0700
+Subject: [Bioc-devel] affyQA/QC
+In-Reply-To: <EB5227E6-51BB-4EAD-8E00-751C204FFDCF@stat.berkeley.edu>
+References: <4514655A.7090905@fhcrc.org>
+	<EB5227E6-51BB-4EAD-8E00-751C204FFDCF@stat.berkeley.edu>
+Message-ID: <1158969772.9327.25.camel@minime.insightful.com>
+
+Hello Kaspar and Robert:
+
+> The attachment is lost, at least on my side.
+
+My e-mail client, Evolution 2.6 on LINUX, shows that there is supposed
+to be an attachment to Robert's message (both this one and the one that
+followed), but there was nothing in the attachment bar for either
+message.
+
+Any chance you could put the document up on a web page and just e-mail
+us the link?
+
+Thanks!!
+
+Dave H
+-- 
+David A. Henderson, Ph.D. 
+Research Scientist 
+Insightful Corporation 
+1700 Westlake Avenue North, Suite 500 
+Seattle, WA 98109-3044 
+Tel: 206-802-2307 
+Fax: 206-283-8691 
+DNADave at Insightful.Com 
+http://www.insightful.com
+
+
+From smyth at wehi.EDU.AU  Sat Sep 23 13:02:57 2006
+From: smyth at wehi.EDU.AU (Gordon K Smyth)
+Date: Sat, 23 Sep 2006 21:02:57 +1000 (EST)
+Subject: [Bioc-devel]  affyQA/QC
+In-Reply-To: <mailman.1.1159005603.12390.bioc-devel@stat.math.ethz.ch>
+References: <mailman.1.1159005603.12390.bioc-devel@stat.math.ethz.ch>
+Message-ID: <1990.58.106.100.252.1159009377.squirrel@homebase.wehi.edu.au>
+
+> Date: Fri, 22 Sep 2006 15:36:10 -0700
+> From: Robert Gentleman <rgentlem at fhcrc.org>
+> Subject: [Bioc-devel] affyQA/QC
+> To: bioc-devel at stat.math.ethz.ch
+>
+> Hi,
+>    I am trying to put together a set of, what one might regard, as
+> standard plots and summary statistics that should be collected on any
+> set of Affymetrix microarrays (at least ones for gene expression). The
+> first pass is attached, I would appreciate any comments on it,
+> especially with regard to things that I have missed, or things I have
+> suggested that don't seem to be quite correct, or could be improved.
+>
+>   On an implementation note - I will be making use of existing software
+> and intend to work with Craig Parman to put this into the existing
+> affyQCReport package - users of that might want to let me know what
+> functionality they are relying on, but this should be strict additions.
+>
+>
+>   thanks
+>     Robert
+>
+> --
+> Robert Gentleman, PhD
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M2-B876
+> PO Box 19024
+> Seattle, Washington 98109-1024
+> 206-667-7700
+> rgentlem at fhcrc.org
+
+
+I'd also be interested in reactions on a standard set of plots and summaries.  Below is the set of
+tests I've been using recently (based on advice from Ken Simpson).  Keith Satterley is
+implementing something close to this in the affylmGUI package for the BioC 1.9 release.
+
+Best wishes
+Gordon
+
+-------------------
+Set of affy QA plots and summaries:
+
+Boxplots of chip-wise intensities:
+\begin{Sinput}
+> library(gcrma)
+> x <- ReadAffy(filenames=targets$FileName,celfile.path="cel")
+> narrays <- ncol(exprs(x))
+> boxplot(x,names=targets$Target,las=2)
+\end{Sinput}
+
+Empirical distributions of chip-wise intensities:
+\begin{Sinput}
+> hist(x)
+\end{Sinput}
+
+RNA digestion plot:
+\begin{Sinput}
+> deg <- AffyRNAdeg(x)
+> plotAffyRNAdeg(deg,col=1:narrays)
+> legend("topleft",legend=1:narrays,col=1:narrrays,lty=1)
+\end{Sinput}
+
+Affy QC parameters:
+The bioB spike-ins should be present.
+All the other measures should be consistent across chips.
+\begin{Sinput}
+> library(simpleaffy)
+> qc <- qc.affy(x)
+> qc.tab <- rbind(
++      Percent.present=qc at percent.present,
++      Scale.factor=qc at scale.factors,
++      Average.background=qc at average.background,
++      bioBCalls=qc at bioBCalls=="P",
++      t(qc at spikes),
++      t(qc at qc.probes))
+> colnames(qc.tab) <- paste("Chip",1:narrays)
+> options(digits=2)
+> qc.tab
+\end{Sinput}
+
+Image plots of probe level robust residuals.
+Larger residuals are darker and indicate deviations from the additive model used to summarise
+probes within each probe-set.
+\begin{Sinput}
+> library(affyPLM)
+> pset <- fitPLM(x)
+> oldpar <- par(mfrow=c(4,2),mar=c(1,1,2,1))
+> image(pset, type="resids") # red=positive resids, blue=negative
+> par(oldpar)
+\end{Sinput}
+
+Normalized Unscaled Standard Errors (NUSE) plot.
+The standard error estimates obtained for each gene on each array from fitPLM
+are standardized across arrays so that the median standard error for that
+genes is 1 across all arrays.
+An array with elevated SEs relative to other arrays is typically of
+lower quality.
+\begin{Sinput}
+> NUSE(pset)
+\end{Sinput}
+
+Relative Log Expression (RLE) values.
+RLE values are computed for each probeset by comparing the expression value
+on each array against the median expression value for that probeset across all arrays.
+Assuming that most genes are not changing in expression across arrays means ideally
+most of these RLE values will be near 0.
+When examining this plot focus should be
+on the shape and position of each of the boxes.
+Typically arrays with poorer quality
+show up with boxes that are not centered about 0 and/or are more spread out.
+\begin{Sinput}
+> RLE(pset)
+\end{Sinput}
+
+
+From jmacdon at med.umich.edu  Sat Sep 23 15:28:53 2006
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Sat, 23 Sep 2006 09:28:53 -0400
+Subject: [Bioc-devel] affyQA/QC
+In-Reply-To: <4514655A.7090905@fhcrc.org>
+References: <4514655A.7090905@fhcrc.org>
+Message-ID: <45153695.60007@med.umich.edu>
+
+Robert Gentleman wrote:
+> Hi,
+>   I am trying to put together a set of, what one might regard, as 
+> standard plots and summary statistics that should be collected on any 
+> set of Affymetrix microarrays (at least ones for gene expression). The 
+> first pass is attached, I would appreciate any comments on it, 
+> especially with regard to things that I have missed, or things I have 
+> suggested that don't seem to be quite correct, or could be improved.
+> 
+>  On an implementation note - I will be making use of existing software 
+> and intend to work with Craig Parman to put this into the existing 
+> affyQCReport package - users of that might want to let me know what 
+> functionality they are relying on, but this should be strict additions.
+
+Hi Robert,
+
+For 5, I usually rely on a plot of the first two principal components 
+rather than something like a heatmap. Although a PCA plot is less 
+familiar to Biologists, it is certainly less expensive to make, and IMO, 
+easier to interpret.
+
+Best,
+
+Jim
+
+
+> 
+> 
+>  thanks
+>    Robert
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+James W. MacDonald
+University of Michigan
+Affymetrix and cDNA Microarray Core
+1500 E Medical Center Drive
+Ann Arbor MI 48109
+734-647-5623
+
+
+
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.
+
+
+From md392 at cam.ac.uk  Mon Sep 25 16:30:08 2006
+From: md392 at cam.ac.uk (Mark Dunning)
+Date: Mon, 25 Sep 2006 15:30:08 +0100
+Subject: [Bioc-devel] .First.lib error in beadarray
+In-Reply-To: <m2wt8517w7.fsf@ziti.fhcrc.org>
+References: <CAAE573F-2D87-4B1A-A3CE-225A2672B050@cam.ac.uk>
+	<m2wt8517w7.fsf@ziti.fhcrc.org>
+Message-ID: <2F634109-04E0-4079-B023-C180D1FBD56D@cam.ac.uk>
+
+Seth,
+
+I'm still seeing this error in the solaris check report for  
+beadarray. Is it related to the bug in namespaceImportFrom that you  
+posted on the R-devel mailing list?
+
+Will the version of R on the solaris machine be updated before  
+today's deadline for packages to pass R CMD check without error?  
+Otherwise I fear that the error might not be fixed in time
+
+Thanks,
+
+Mark
+
+
+On 15 Sep 2006, at 16:12, Seth Falcon wrote:
+
+> Hi Mark,
+>
+> Sorry for the delay in response.
+>
+> Mark Dunning <md392 at cam.ac.uk> writes:
+>
+>> Hi all,
+>>
+>> Apologies if this is a basic question, but I am seeing the following
+>> error in the 1.9 Check  report for beadarray on Solaris
+>>
+>> Error: .First.lib failed for 'beadarray'
+>> Call sequence:
+>> 2: stop(gettextf(".First.lib failed for '%s'", libraryPkgName 
+>> (package)),
+>>         domain = NA)
+>> 1: library(package, lib.loc = lib.loc, character.only = TRUE, verbose
+>> = FALSE)
+>> Execution halted
+>> See section 'Generic functions and methods' of the 'Writing R
+>> Extensions'
+>> manual.
+>>
+>> Full details are here:
+>> http://bioconductor.org/checkResults/1.9/churchill-beadarray-
+>> checksrc.html
+>>
+>> I'm quite new to development, so unfortunately this message means
+>> little to me and it's quite puzzling that it appears on Solaris and
+>> no other machines? Would someone be able to give some pointers how to
+>> go about fixing the error?
+>
+> The Solaris machine does not yet have up-to-date version of R alpha.
+> Let's ignore this until it does and go from there.
+>
+> But thank you for keeping an eye on the check report of your package
+> and posting questions.
+>
+>
+> + seth
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From sfalcon at fhcrc.org  Mon Sep 25 19:33:49 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 25 Sep 2006 10:33:49 -0700
+Subject: [Bioc-devel] BioC webserver rebooted
+Message-ID: <m2ac4nyhoi.fsf@ziti.local>
+
+Hi all,
+
+A system upgrade for our webserver required a reboot.  This will
+result in a short outage.  If you experience problems after 11:00am
+PDT, please let me know.
+
++ seth
+
+
+From sfalcon at fhcrc.org  Mon Sep 25 23:11:14 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 25 Sep 2006 14:11:14 -0700
+Subject: [Bioc-devel] BioC Package Search ALPHA
+In-Reply-To: <CA07E324-9800-40C1-A7C9-5A65A8571F78@kuicr.kyoto-u.ac.jp> (Diego
+	Diez's message of "Thu, 21 Sep 2006 10:51:57 +0900")
+References: <m28xke2x6k.fsf@ziti.local>
+	<CA07E324-9800-40C1-A7C9-5A65A8571F78@kuicr.kyoto-u.ac.jp>
+Message-ID: <m2fyefveh9.fsf@ziti.local>
+
+Hi Diego,
+
+Diego Diez <diez at kuicr.kyoto-u.ac.jp> writes:
+> it is a very nice tool, that may help to search for the needed
+> package now that bioc is growing so much. I think I would like to
+> have a way to short the selection of biocViews and Maintainer, using
+> a letter index for example. And a "first" and "last" link could be
+> great also. Now you have to navigate 38 pages to get the last
+> biocViews :)
+>
+> It is a very promising tool.
+
+Thanks very much for the feedback.  
+
+I've added a "first" and "last" link to the TODO list and will also
+consider a letter or separate search box for maintainers and views.
+
+For the views, I have some ideas on using the relationship among the
+terms for a more hierarchical presentation, but have not yet had time
+to play with it.
+
+Anyhow, I'm going to collect more feedback for a few more days before
+trying to attempt some improvements. [so if anyone else wants to speak
+up, now is a good time].
+
+Best,
+
++ seth
+
+
+From jmacdon at med.umich.edu  Tue Sep 26 17:14:45 2006
+From: jmacdon at med.umich.edu (James MacDonald)
+Date: Tue, 26 Sep 2006 11:14:45 -0400
+Subject: [Bioc-devel] BioC 1.9 release schedule
+Message-ID: <45190BA1.47B0.00EE.0@med.umich.edu>
+
+I was attempting to look at the release schedule this morning, and it
+seems to have disappeared. My university does a lot of caching, so it
+might just be me. Is it really gone?
+
+Best,
+
+Jim
+
+
+
+James W. MacDonald, M.S.
+Biostatistician
+Affymetrix and cDNA Microarray Core
+University of Michigan Cancer Center
+1500 E. Medical Center Drive
+7410 CCGC
+Ann Arbor MI 48109
+734-647-5623
+
+
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.
+
+
+From rgentlem at fhcrc.org  Tue Sep 26 19:34:34 2006
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Tue, 26 Sep 2006 10:34:34 -0700
+Subject: [Bioc-devel] affyQA/QC
+In-Reply-To: <1990.58.106.100.252.1159009377.squirrel@homebase.wehi.edu.au>
+References: <mailman.1.1159005603.12390.bioc-devel@stat.math.ethz.ch>
+	<1990.58.106.100.252.1159009377.squirrel@homebase.wehi.edu.au>
+Message-ID: <451964AA.9010206@fhcrc.org>
+
+Hi Gordon,
+   Not much to say - a few notes, but this seems very similar to what I 
+have proposed - so I like it.  The differences don't seem to be that 
+substantive.
+
+
+Gordon K Smyth wrote:
+>> Date: Fri, 22 Sep 2006 15:36:10 -0700
+>> From: Robert Gentleman <rgentlem at fhcrc.org>
+>> Subject: [Bioc-devel] affyQA/QC
+>> To: bioc-devel at stat.math.ethz.ch
+>>
+>> Hi,
+>>    I am trying to put together a set of, what one might regard, as
+>> standard plots and summary statistics that should be collected on any
+>> set of Affymetrix microarrays (at least ones for gene expression). The
+>> first pass is attached, I would appreciate any comments on it,
+>> especially with regard to things that I have missed, or things I have
+>> suggested that don't seem to be quite correct, or could be improved.
+>>
+>>   On an implementation note - I will be making use of existing software
+>> and intend to work with Craig Parman to put this into the existing
+>> affyQCReport package - users of that might want to let me know what
+>> functionality they are relying on, but this should be strict additions.
+>>
+>>
+>>   thanks
+>>     Robert
+>>
+>> --
+>> Robert Gentleman, PhD
+>> Program in Computational Biology
+>> Division of Public Health Sciences
+>> Fred Hutchinson Cancer Research Center
+>> 1100 Fairview Ave. N, M2-B876
+>> PO Box 19024
+>> Seattle, Washington 98109-1024
+>> 206-667-7700
+>> rgentlem at fhcrc.org
+> 
+> 
+> I'd also be interested in reactions on a standard set of plots and summaries.  Below is the set of
+> tests I've been using recently (based on advice from Ken Simpson).  Keith Satterley is
+> implementing something close to this in the affylmGUI package for the BioC 1.9 release.
+> 
+> Best wishes
+> Gordon
+> 
+> -------------------
+> Set of affy QA plots and summaries:
+> 
+> Boxplots of chip-wise intensities:
+> \begin{Sinput}
+>> library(gcrma)
+>> x <- ReadAffy(filenames=targets$FileName,celfile.path="cel")
+>> narrays <- ncol(exprs(x))
+>> boxplot(x,names=targets$Target,las=2)
+> \end{Sinput}
+> 
+> Empirical distributions of chip-wise intensities:
+> \begin{Sinput}
+>> hist(x)
+> \end{Sinput}
+> 
+> RNA digestion plot:
+> \begin{Sinput}
+>> deg <- AffyRNAdeg(x)
+>> plotAffyRNAdeg(deg,col=1:narrays)
+>> legend("topleft",legend=1:narrays,col=1:narrrays,lty=1)
+> \end{Sinput}
+> 
+> Affy QC parameters:
+> The bioB spike-ins should be present.
+> All the other measures should be consistent across chips.
+> \begin{Sinput}
+>> library(simpleaffy)
+>> qc <- qc.affy(x)
+>> qc.tab <- rbind(
+> +      Percent.present=qc at percent.present,
+> +      Scale.factor=qc at scale.factors,
+> +      Average.background=qc at average.background,
+> +      bioBCalls=qc at bioBCalls=="P",
+> +      t(qc at spikes),
+> +      t(qc at qc.probes))
+>> colnames(qc.tab) <- paste("Chip",1:narrays)
+>> options(digits=2)
+>> qc.tab
+> \end{Sinput}
+> 
+> Image plots of probe level robust residuals.
+> Larger residuals are darker and indicate deviations from the additive model used to summarise
+> probes within each probe-set.
+> \begin{Sinput}
+>> library(affyPLM)
+>> pset <- fitPLM(x)
+>> oldpar <- par(mfrow=c(4,2),mar=c(1,1,2,1))
+>> image(pset, type="resids") # red=positive resids, blue=negative
+>> par(oldpar)
+> \end{Sinput}
+
+   I thought about this, but for a lot of arrays it seems like it would 
+be better to come back and concentrate on those that were indicated for 
+other reasons.
+
+> 
+> Normalized Unscaled Standard Errors (NUSE) plot.
+> The standard error estimates obtained for each gene on each array from fitPLM
+> are standardized across arrays so that the median standard error for that
+> genes is 1 across all arrays.
+> An array with elevated SEs relative to other arrays is typically of
+> lower quality.
+> \begin{Sinput}
+>> NUSE(pset)
+> \end{Sinput}
+> 
+> Relative Log Expression (RLE) values.
+> RLE values are computed for each probeset by comparing the expression value
+> on each array against the median expression value for that probeset across all arrays.
+> Assuming that most genes are not changing in expression across arrays means ideally
+> most of these RLE values will be near 0.
+> When examining this plot focus should be
+> on the shape and position of each of the boxes.
+> Typically arrays with poorer quality
+> show up with boxes that are not centered about 0 and/or are more spread out.
+> \begin{Sinput}
+>> RLE(pset)
+> \end{Sinput}
+> 
+> 
+
+
+   Seems very similar -
+> 
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From hpages at fhcrc.org  Wed Sep 27 00:57:19 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Tue, 26 Sep 2006 15:57:19 -0700
+Subject: [Bioc-devel] .First.lib error in beadarray
+In-Reply-To: <2F634109-04E0-4079-B023-C180D1FBD56D@cam.ac.uk>
+References: <CAAE573F-2D87-4B1A-A3CE-225A2672B050@cam.ac.uk>	<m2wt8517w7.fsf@ziti.fhcrc.org>
+	<2F634109-04E0-4079-B023-C180D1FBD56D@cam.ac.uk>
+Message-ID: <4519B04F.4080201@fhcrc.org>
+
+Mark Dunning wrote:
+> Will the version of R on the solaris machine be updated before  
+> today's deadline for packages to pass R CMD check without error?  
+> Otherwise I fear that the error might not be fixed in time
+>   
+Hi Mark,
+
+You can safely ignore this error in the Solaris check report for now.
+Best,
+
+H.
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+ Phone: (206) 667-5791
+   Fax: (206) 667-1319
+
+
+From sfalcon at fhcrc.org  Wed Sep 27 01:49:34 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 26 Sep 2006 16:49:34 -0700
+Subject: [Bioc-devel] BioC 1.9 release schedule
+In-Reply-To: <45190BA1.47B0.00EE.0@med.umich.edu> (James MacDonald's message
+	of "Tue, 26 Sep 2006 11:14:45 -0400")
+References: <45190BA1.47B0.00EE.0@med.umich.edu>
+Message-ID: <m2lko6qjch.fsf@ziti.local>
+
+Hi,
+
+I thought that I had replied early in the day, but I must have sent a
+private reply.  Sorry about that folks.
+
+"James MacDonald" <jmacdon at med.umich.edu> writes:
+> I was attempting to look at the release schedule this morning, and it
+> seems to have disappeared. My university does a lot of caching, so it
+> might just be me. Is it really gone?
+
+The recent system upgrade on our webserver caused an issue with the
+Wiki which is now fixed.
+
+The release schedule is here:
+http://wiki.fhcrc.org/bioc/BioC_1.9_Release_Schedule
+
+And since these deadlines are rather important right about now, here
+is the text version of the schedule:
+
+===================================
+ Bioconductor 1.9 Release Schedule
+===================================
+
+01 September
+============
+
+  * No new packages added to release roster.
+
+
+05 September
+============
+
+**R**:
+
+  * Grand feature freeze for R-2.4.0. Alpha versions available daily.
+
+  * Begin daily building of R-2.4.0 for nightly build and recommend
+    same for all project developers.
+
+
+08 September
+============
+
+* Use R-2.4.0 to test your packages.
+
+* First release candidate of annotation packages built and posted to
+  devel annotation data repository
+
+* Nightly build switches to the R-2-4-patches branch.
+
+
+19 September
+============
+
+**R**:
+
+  * Beta release of R-2.4.0 available.
+
+
+25 September
+============
+
+**Bioc**:
+
+  * Stage I Code Freeze: no API changes, no new features.
+
+  * Deadline for packages passing R CMD check without error.
+
+
+29 September
+============
+
+**Bioc**:
+
+  * Deadline for packages passing R CMD check without warning.
+
+  * Stage II Code Freeze.  We will be building release repositories
+    and testing. *Only* "show-stopper" bugs will be fixed where
+    show-stopper is defined by the release team (not package
+    maintainer).
+
+  * Annotation data packages finalized.
+
+
+03 October
+==========
+
+**R**:
+
+  * R 2.4.0 is released
+
+**Bioc**:
+
+  * Build final release repositories
+
+  * Testing install scripts, GUI installation
+
+
+04 October
+==========
+
+* Release of Bioconductor 1.9
+
+
+From johnston at biochemistry.ucl.ac.uk  Wed Sep 27 11:23:33 2006
+From: johnston at biochemistry.ucl.ac.uk (Caroline Johnston)
+Date: Wed, 27 Sep 2006 10:23:33 +0100 (BST)
+Subject: [Bioc-devel] affyQA/QC
+In-Reply-To: <451964AA.9010206@fhcrc.org>
+References: <mailman.1.1159005603.12390.bioc-devel@stat.math.ethz.ch>
+	<1990.58.106.100.252.1159009377.squirrel@homebase.wehi.edu.au>
+	<451964AA.9010206@fhcrc.org>
+Message-ID: <Pine.LNX.4.58.0609270954420.21082@localhost.localdomain>
+
+Hi,
+
+I don't know whether this would be of any use, but I've been trying to
+develop a web front-end to some of the bioconductor tools, which so far
+does a lot of the affy quality assessment stuff. The biologists we work
+with aren't comfortable with the command line. I've tried to design it to
+make it as easy as possible to add new components (I added the simple affy
+qc stuff in about half an hour. It uses the perl Catalyst web framework
+and templating to generate web pages and R scripts). It's only running on
+the server at the moment, so it can be pretty slow, but we're planning on
+sending the R jobs off to other machines soon.
+
+If you want to have a look it's at http://bioinformatics.essex.ac.uk/ROME
+(and trac/svn from http://rome.devjavu.com/ , though I wouldn't advise
+trying to install it just yet). Upload of data is disabled during testing,
+but if you register you'll get some demo data to play with. There's also a
+lack of documentation, but if you log in as 'thing' with password 'thing'
+and go to session->datafiles you can have a look at some datafiles and
+image files I've already created.
+
+If anyone fancies helping out with development, give me a shout.
+
+Cheers,
+
+Cass.
+
+
+
+On Tue, 26 Sep 2006, Robert Gentleman wrote:
+
+> Hi Gordon,
+>    Not much to say - a few notes, but this seems very similar to what I
+> have proposed - so I like it.  The differences don't seem to be that
+> substantive.
+>
+>
+> Gordon K Smyth wrote:
+> >> Date: Fri, 22 Sep 2006 15:36:10 -0700
+> >> From: Robert Gentleman <rgentlem at fhcrc.org>
+> >> Subject: [Bioc-devel] affyQA/QC
+> >> To: bioc-devel at stat.math.ethz.ch
+> >>
+> >> Hi,
+> >>    I am trying to put together a set of, what one might regard, as
+> >> standard plots and summary statistics that should be collected on any
+> >> set of Affymetrix microarrays (at least ones for gene expression). The
+> >> first pass is attached, I would appreciate any comments on it,
+> >> especially with regard to things that I have missed, or things I have
+> >> suggested that don't seem to be quite correct, or could be improved.
+> >>
+> >>   On an implementation note - I will be making use of existing software
+> >> and intend to work with Craig Parman to put this into the existing
+> >> affyQCReport package - users of that might want to let me know what
+> >> functionality they are relying on, but this should be strict additions.
+> >>
+> >>
+> >>   thanks
+> >>     Robert
+> >>
+> >> --
+> >> Robert Gentleman, PhD
+> >> Program in Computational Biology
+> >> Division of Public Health Sciences
+> >> Fred Hutchinson Cancer Research Center
+> >> 1100 Fairview Ave. N, M2-B876
+> >> PO Box 19024
+> >> Seattle, Washington 98109-1024
+> >> 206-667-7700
+> >> rgentlem at fhcrc.org
+> >
+> >
+> > I'd also be interested in reactions on a standard set of plots and summaries.  Below is the set of
+> > tests I've been using recently (based on advice from Ken Simpson).  Keith Satterley is
+> > implementing something close to this in the affylmGUI package for the BioC 1.9 release.
+> >
+> > Best wishes
+> > Gordon
+> >
+> > -------------------
+> > Set of affy QA plots and summaries:
+> >
+> > Boxplots of chip-wise intensities:
+> > \begin{Sinput}
+> >> library(gcrma)
+> >> x <- ReadAffy(filenames=targets$FileName,celfile.path="cel")
+> >> narrays <- ncol(exprs(x))
+> >> boxplot(x,names=targets$Target,las=2)
+> > \end{Sinput}
+> >
+> > Empirical distributions of chip-wise intensities:
+> > \begin{Sinput}
+> >> hist(x)
+> > \end{Sinput}
+> >
+> > RNA digestion plot:
+> > \begin{Sinput}
+> >> deg <- AffyRNAdeg(x)
+> >> plotAffyRNAdeg(deg,col=1:narrays)
+> >> legend("topleft",legend=1:narrays,col=1:narrrays,lty=1)
+> > \end{Sinput}
+> >
+> > Affy QC parameters:
+> > The bioB spike-ins should be present.
+> > All the other measures should be consistent across chips.
+> > \begin{Sinput}
+> >> library(simpleaffy)
+> >> qc <- qc.affy(x)
+> >> qc.tab <- rbind(
+> > +      Percent.present=qc at percent.present,
+> > +      Scale.factor=qc at scale.factors,
+> > +      Average.background=qc at average.background,
+> > +      bioBCalls=qc at bioBCalls=="P",
+> > +      t(qc at spikes),
+> > +      t(qc at qc.probes))
+> >> colnames(qc.tab) <- paste("Chip",1:narrays)
+> >> options(digits=2)
+> >> qc.tab
+> > \end{Sinput}
+> >
+> > Image plots of probe level robust residuals.
+> > Larger residuals are darker and indicate deviations from the additive model used to summarise
+> > probes within each probe-set.
+> > \begin{Sinput}
+> >> library(affyPLM)
+> >> pset <- fitPLM(x)
+> >> oldpar <- par(mfrow=c(4,2),mar=c(1,1,2,1))
+> >> image(pset, type="resids") # red=positive resids, blue=negative
+> >> par(oldpar)
+> > \end{Sinput}
+>
+>    I thought about this, but for a lot of arrays it seems like it would
+> be better to come back and concentrate on those that were indicated for
+> other reasons.
+>
+> >
+> > Normalized Unscaled Standard Errors (NUSE) plot.
+> > The standard error estimates obtained for each gene on each array from fitPLM
+> > are standardized across arrays so that the median standard error for that
+> > genes is 1 across all arrays.
+> > An array with elevated SEs relative to other arrays is typically of
+> > lower quality.
+> > \begin{Sinput}
+> >> NUSE(pset)
+> > \end{Sinput}
+> >
+> > Relative Log Expression (RLE) values.
+> > RLE values are computed for each probeset by comparing the expression value
+> > on each array against the median expression value for that probeset across all arrays.
+> > Assuming that most genes are not changing in expression across arrays means ideally
+> > most of these RLE values will be near 0.
+> > When examining this plot focus should be
+> > on the shape and position of each of the boxes.
+> > Typically arrays with poorer quality
+> > show up with boxes that are not centered about 0 and/or are more spread out.
+> > \begin{Sinput}
+> >> RLE(pset)
+> > \end{Sinput}
+> >
+> >
+>
+>
+>    Seems very similar -
+> >
+>
+>
+
+
+From hpages at fhcrc.org  Thu Sep 28 00:56:08 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Wed, 27 Sep 2006 15:56:08 -0700
+Subject: [Bioc-devel] New BioC 2.0 daily builds + packages removed from the
+	BioC 1.9 builds
+Message-ID: <451B0188.9000209@fhcrc.org>
+
+Hi all,
+
+We've started to build and check all devel packages with R-2.5.
+The results are published on the BioC 2.0 daily build/check report
+page:
+
+  http://bioconductor.org/checkResults/2.0/
+
+Today, you'll find the same packages on this page than on the
+BioC 1.9 daily build/check report page:
+
+  http://bioconductor.org/checkResults/1.9/
+
+However, starting on tomorrow, the following 15 packages will be
+removed from the BioC 1.9 daily build/check report:
+  - arji
+  - exprDB
+  - GeneRfold
+  - gtkWidgets
+  - lapmix
+  - LPEP
+  - msbase
+  - mscalib
+  - prism
+  - rhdf5
+  - RLMM
+  - RPostgreSQL
+  - splots
+  - SNPscan
+  - TypeInfo
+
+This means that they will not be part of the Bioconductor 1.9 release.
+
+The 189 remaining packages are still candidates for inclusion in the
+release. If you maintain one of them, please remember to remove all
+possible warnings before the end of the week. Thanks!
+
+Cheers,
+H.
+
+
+From sfalcon at fhcrc.org  Thu Sep 28 23:09:15 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 28 Sep 2006 14:09:15 -0700
+Subject: [Bioc-devel] Reminder: BioC 1.9 release deadline TOMORROW
+Message-ID: <m2psdfy9z8.fsf@ziti.local>
+
+Hi all,
+
+A few quick reminders:
+
+Deadline for passing check
+==========================
+
+The deadline for packages to pass 'R CMD check' without any WARNING
+messages is TOMORROW, 29 Sept.
+
+We are now in code freeze (since Monday): NO API changes, bug fixes
+only.
+
+
+Release branch and version bumping
+==================================
+
+Tomorrow, 29 Sept, at 11:00 am PDT, we will create the 1.9 release
+branch in svn and make an announcement on this list.  
+
+We will increment the version numbers of all packages that are part of
+the 1.9 release.  The version scheme/policy is described here:
+http://wiki.fhcrc.org/bioc/Version_Numbering_Standards
+
+IMPORTANT: Further bug fixes for the 1.9 release need to be made on or
+ported to this branch in svn.  Once the release branch is announced,
+regular (non-release) development can resume on svn trunk.  When we
+announce the branch, we will include instructions for creating a
+checkout and committing.
+
+
+Other Notes
+===========
+
+Please review your packages:
+  http://www.bioconductor.org/checkResults/1.9/
+
+A number of helpers in our group have made a pass over the repository
+making small fixes to a number of packages to remove warnings.
+
+There may be some warnings that are unavoidable.  Please post a
+question if you are unsure.
+
+
+Best Wishes,
+
++ seth
+
+Seth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center
+http://bioconductor.org
+
+
+From md392 at cam.ac.uk  Fri Sep 29 12:44:07 2006
+From: md392 at cam.ac.uk (Mark Dunning)
+Date: 29 Sep 2006 11:44:07 +0100
+Subject: [Bioc-devel] .First.lib error in beadarray
+In-Reply-To: <m2wt8517w7.fsf@ziti.fhcrc.org>
+References: <CAAE573F-2D87-4B1A-A3CE-225A2672B050@cam.ac.uk>
+	<m2wt8517w7.fsf@ziti.fhcrc.org>
+Message-ID: <Prayer.1.0.18.0609291144070.6008@hermes-2.csi.cam.ac.uk>
+
+Hi all,
+
+My package does not seem to like Solaris at all :( Now I am getting the 
+following build ERROR
+
+"Error in dyn.load(x, as.logical(local), as.logical(now)) : 
+         unable to load shared library 
+'/loc/biocbuild/1.9d/Rpacks/beadarray.Rcheck/beadarray/libs/beadarray.so':
+  ld.so.1: R: fatal: relocation error: file 
+/loc/biocbuild/1.9d/Rpacks/beadarray.Rcheck/beadarray/libs/beadarray.so: 
+symbol log2: referenced symbol not found Error: package/namespace load 
+failed for 'beadarray'"
+
+Can anyone advise on this please? Is it another problem with the version of 
+R on Solaris?
+
+Thanks in advance,
+
+Mark
+
+On Sep 15 2006, Seth Falcon wrote:
+
+>Hi Mark,
+>
+>Sorry for the delay in response.
+>
+>Mark Dunning <md392 at cam.ac.uk> writes:
+>
+>> Hi all,
+>>
+>> Apologies if this is a basic question, but I am seeing the following  
+>> error in the 1.9 Check  report for beadarray on Solaris
+>>
+>> Error: .First.lib failed for 'beadarray'
+>> Call sequence:
+>> 2: stop(gettextf(".First.lib failed for '%s'", libraryPkgName(package)),
+>>         domain = NA)
+>> 1: library(package, lib.loc = lib.loc, character.only = TRUE, verbose  
+>> = FALSE)
+>> Execution halted
+>> See section 'Generic functions and methods' of the 'Writing R  
+>> Extensions'
+>> manual.
+>>
+>> Full details are here:
+>> http://bioconductor.org/checkResults/1.9/churchill-beadarray- 
+>> checksrc.html
+>>
+>> I'm quite new to development, so unfortunately this message means  
+>> little to me and it's quite puzzling that it appears on Solaris and  
+>> no other machines? Would someone be able to give some pointers how to  
+>> go about fixing the error?
+>
+>The Solaris machine does not yet have up-to-date version of R alpha.
+>Let's ignore this until it does and go from there.
+>
+>But thank you for keeping an eye on the check report of your package
+>and posting questions.  
+>
+>
+>+ seth
+>
+>_______________________________________________
+>Bioc-devel at stat.math.ethz.ch mailing list
+>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+--
+
+
+From sfalcon at fhcrc.org  Fri Sep 29 21:50:41 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 29 Sep 2006 12:50:41 -0700
+Subject: [Bioc-devel] BioC 1.9 release branch CREATED
+Message-ID: <m2ven6ih9q.fsf@ziti.local>
+
+Hi all,
+
+The BioC 1.9 release branch has been created in rev20294 in svn.
+
+Making Changes to Your Package in the Release Branch
+====================================================
+
+If you have bug fixes, and _only_ bug fixes, you can update your
+package in the release branch as follows...
+
+In the instructions below, replace $URL with:
+https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_1_9/madman/Rpacks/YOURPACKAGE
+
+  1. Create a working copy of your package from the release branch:
+
+         svn co $URL
+
+  2. Edit, run R CMD check, and commit
+
+  3. If the change is appropriate for the devel version of your
+     package, make the same changes to a working copy based on trunk
+     and commit there.
+
+WARNING: changes are NOT automatically synchronized between the trunk
+(devel) and the release branch.  You MUST port changes manually.
+
+There is a way to use svn to help you do this and there notes under
+"Committing changes to the release branches" here:
+http://wiki.fhcrc.org/bioc/SvnHowTo
+
+
+Resuming Development in trunk
+=============================
+
+We have incremented the version numbers of packages in trunk that are
+part of the BioC 1.9 release.  For details on the version bumping
+policy, please see:
+http://wiki.fhcrc.org/bioc/Version_Numbering_Standards
+
+At this point in time you may resume development on the trunk branch
+working towards the BioC 2.0 release.
+
+We will wait a day or so to bump the version numbers on the 1.9
+release branch for the trivial asthetic of having packages in the
+release start out with x.y.0.
+
+
+Please post questions to this list.
+
+
+Best Wishes,
+
++ seth
+
+--
+Seth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center
+http://bioconductor.org
+
+
+From hpages at fhcrc.org  Fri Sep 29 23:02:36 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Fri, 29 Sep 2006 14:02:36 -0700
+Subject: [Bioc-devel] .First.lib error in beadarray
+In-Reply-To: <Prayer.1.0.18.0609291144070.6008@hermes-2.csi.cam.ac.uk>
+References: <CAAE573F-2D87-4B1A-A3CE-225A2672B050@cam.ac.uk>	<m2wt8517w7.fsf@ziti.fhcrc.org>
+	<Prayer.1.0.18.0609291144070.6008@hermes-2.csi.cam.ac.uk>
+Message-ID: <451D89EC.2090508@fhcrc.org>
+
+Mark Dunning wrote:
+> Hi all,
+>
+> My package does not seem to like Solaris at all :( Now I am getting the 
+> following build ERROR
+>
+> "Error in dyn.load(x, as.logical(local), as.logical(now)) : 
+>          unable to load shared library 
+> '/loc/biocbuild/1.9d/Rpacks/beadarray.Rcheck/beadarray/libs/beadarray.so':
+>   ld.so.1: R: fatal: relocation error: file 
+> /loc/biocbuild/1.9d/Rpacks/beadarray.Rcheck/beadarray/libs/beadarray.so: 
+> symbol log2: referenced symbol not found Error: package/namespace load 
+> failed for 'beadarray'"
+>
+> Can anyone advise on this please? Is it another problem with the version of 
+> R on Solaris?
+>   
+
+Hi Mark,
+
+log2 is not part of the standard C library hence using it leads to
+portability
+issues like the one you are experiencing on Solaris (log2 is not
+available on
+this OS). You can replace log2(x) by log(x)/log(2.00) to work around this.
+
+Best,
+H.
+
+

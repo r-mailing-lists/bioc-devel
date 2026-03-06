@@ -1,0 +1,3000 @@
+From delhomme at embl.de  Tue May  1 14:28:29 2012
+From: delhomme at embl.de (Nicolas Delhomme)
+Date: Tue, 1 May 2012 14:28:29 +0200
+Subject: [Bioc-devel] Changes in the %in% function for DNAStringSet?
+Message-ID: <06B18C11-D3F8-41E5-B526-A14C30AD7A78@embl.de>
+
+Hi all,
+
+In R 2.15.0, Bioc 2.10, the following works:
+
+library(Biostrings)
+c("TTGCGA","ATGGCT","ACACTG") %in% DNAStringSet(c("TTGCGA","ATGRCT","ACASTG"))
+[1]  TRUE FALSE FALSE
+> sessionInfo()R version 2.15.0 (2012-03-30)
+Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+
+locale:
+[1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] Biostrings_2.24.1  IRanges_1.14.2     BiocGenerics_0.2.0
+
+loaded via a namespace (and not attached):
+[1] stats4_2.15.0
+
+
+While in Bioc 2.11 it fails:
+
+Error in match(x, table, nomatch = 0L) : 
+  'match' requires vector arguments
+> sessionInfo()
+R version 2.15.0 (2012-03-30)
+Platform: x86_64-apple-darwin10.8.0 (64-bit)
+
+locale:
+[1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] Biostrings_2.25.3  IRanges_1.15.7     BiocGenerics_0.3.0
+
+loaded via a namespace (and not attached):
+[1] stats4_2.15.0
+
+
+
+I'd just like to know if that is that a change of API or not. If yes, I'd need to adapt my code that currently fails building.
+
+Cheers,
+
+Nico
+
+---------------------------------------------------------------
+Nicolas Delhomme
+
+Genome Biology Computational Support
+
+European Molecular Biology Laboratory
+
+Tel: +49 6221 387 8310
+Email: nicolas.delhomme at embl.de
+Meyerhofstrasse 1 - Postfach 10.2209
+69102 Heidelberg, Germany
+
+
+From delhomme at embl.de  Wed May  2 10:52:19 2012
+From: delhomme at embl.de (Nicolas Delhomme)
+Date: Wed, 2 May 2012 10:52:19 +0200
+Subject: [Bioc-devel] biomaRt cannot list marts when going through a mirror
+	web site
+Message-ID: <295F35D4-084E-4735-B405-9F1F8135182E@embl.de>
+
+Hi Steffen, hi Wolfgang,
+
+When trying to list the marts available from an ensembl mirror, I get the following:
+
+listMarts(host="uswest.ensembl.org")
+Space required after the Public Identifier
+SystemLiteral " or ' expected
+SYSTEM or PUBLIC, the URI is missing
+Error: 1: Space required after the Public Identifier
+2: SystemLiteral " or ' expected
+3: SYSTEM or PUBLIC, the URI is missing
+
+This is triggered by this line: 
+
+registry = bmRequest(request = request, ssl.verifypeer = ssl.verifypeer, verbose = verbose)
+
+in the listMarts function. 
+
+Looking at the bmRequest function, it uses the getURL function of the RCurl package. This function is the culprit:
+
+## the request as computed by listMarts
+request = "http://uswest.ensembl.org:80/biomart/martservice?type=registry&requestid=biomaRt"
+getURL(request, ssl.verifypeer = TRUE) 
+[1] "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>302 Found</title>\n</head><body>\n<h1>Found</h1>\n<p>The document has moved <a href=\"http://www.ensembl.org/biomart/martservice?type=registry&amp;requestid=biomaRt;redirect=mirror;source=uswest.ensembl.org\">here</a>.</p>\n</body></html>\n"
+
+As you  an see it returns a 302 relocation page, i.e. the website is mirrored to "www.ensembl.org" in my case.
+
+Adding a followlocation=TRUE argument to that command solves the problem:
+
+getURL(request, ssl.verifypeer = TRUE, followlocation=TRUE)
+[1] "\n<MartRegistry>\n  <MartURLLocation database=\"ensembl_mart_66\" default=\"1\" displayName=\"Ensembl Genes 66\" host=\"www.ensembl.org\" includeDatasets=\"\" martUser=\"\" name=\"ENSEMBL_MART_ENSEMBL\" path=\"/biomart/martservice\" port=\"80\" serverVirtualSchema=\"default\" visible=\"1\" />\n  <MartURLLocation database=\"sequence_mart_66\" default=\"\" displayName=\"Sequence\" host=\"www.ensembl.org\" includeDatasets=\"\" martUser=\"\" name=\"ENSEMBL_MART_SEQUENCE\" path=\"/biomart/martservice\" port=\"80\" serverVirtualSchema=\"default\" visible=\"\" />\n  <MartURLLocation database=\"ontology_mart_66\"
+
+... truncated
+
+Can you please add that additional parameter to the getURL call?
+
+Steffen, if you're in a location that uses "uswest.ensembl.org" as a mirror (i.e. US west coast I guess, Seattle for sure :-)), you can use "www.ensembl.org" as a host to reproduce that error instead.
+
+I have only tumbled onto that one, but there might be more occurrence in the code that need adapting. I'll try to figure that out.
+
+My session info (R 2.15.0 with useDevel(TRUE)):
+
+R version 2.15.0 (2012-03-30)
+Platform: x86_64-apple-darwin10.8.0 (64-bit)
+
+locale:
+[1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] customCDF_0.99.3      XML_3.9-4             RSQLite_0.11.1       
+ [4] RCurl_1.91-1          bitops_1.0-4.1        Rsamtools_1.9.8      
+ [7] GEOquery_2.23.1       GenomicFeatures_1.9.6 GenomicRanges_1.9.9  
+[10] DBI_0.2-5             Biostrings_2.25.3     IRanges_1.15.7       
+[13] AnnotationDbi_1.19.4  vsn_3.25.0            makecdfenv_1.35.0    
+[16] gcrma_2.29.0          BiocInstaller_1.5.7   biomaRt_2.13.0       
+[19] affy_1.35.1           Biobase_2.17.5        BiocGenerics_0.3.0   
+
+loaded via a namespace (and not attached):
+ [1] affyio_1.25.0         BSgenome_1.25.1       grid_2.15.0          
+ [4] lattice_0.20-6        limma_3.13.1          preprocessCore_1.19.0
+ [7] rtracklayer_1.17.0    splines_2.15.0        stats4_2.15.0        
+[10] tools_2.15.0          zlibbioc_1.3.0
+
+
+Cheers,
+
+Nico
+
+---------------------------------------------------------------
+Nicolas Delhomme
+
+Genome Biology Computational Support
+
+European Molecular Biology Laboratory
+
+Tel: +49 6221 387 8310
+Email: nicolas.delhomme at embl.de
+Meyerhofstrasse 1 - Postfach 10.2209
+69102 Heidelberg, Germany
+
+
+From durinck.steffen at gene.com  Wed May  2 17:58:51 2012
+From: durinck.steffen at gene.com (Steffen Durinck)
+Date: Wed, 2 May 2012 08:58:51 -0700
+Subject: [Bioc-devel] biomaRt cannot list marts when going through a
+ mirror web site
+In-Reply-To: <295F35D4-084E-4735-B405-9F1F8135182E@embl.de>
+References: <295F35D4-084E-4735-B405-9F1F8135182E@embl.de>
+Message-ID: <CAPb0=VmCqWvR7LSP=fVF5v3qZYpzsLGvQ=7dBTMTT0j0Q77JxA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120502/9c01e23f/attachment.pl>
+
+From hpages at fhcrc.org  Fri May  4 03:56:13 2012
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Thu, 03 May 2012 18:56:13 -0700
+Subject: [Bioc-devel] Changes in the %in% function for DNAStringSet?
+In-Reply-To: <06B18C11-D3F8-41E5-B526-A14C30AD7A78@embl.de>
+References: <06B18C11-D3F8-41E5-B526-A14C30AD7A78@embl.de>
+Message-ID: <4FA3373D.4070304@fhcrc.org>
+
+Hi Nico,
+
+Last week I did some improvements/reorganization of the match(),
+%in%, duplicated(), and unique() stuff in 
+IRanges/GenomicRanges/Biostrings, and apparently forgot to define the 
+"%in%" method
+for ANY,Vector. Thanks for the catch!
+
+This is fixed in IRanges 1.15.8. FWIW I also added an "%in%" method
+for Vector,ANY so now this works too:
+
+   > DNAStringSet(c("TTGCGA","ATGRCT","ACASTG")) %in% 
+c("TTGCGA","ATGGCT","ACACTG")
+   [1]  TRUE FALSE FALSE
+
+<rant mode>
+
+It is so sad that we have to redefine "%in%" methods that do exactly
+the same thing as base::`%in%`:
+
+   > base::`%in%`
+   function (x, table)
+   match(x, table, nomatch = 0L) > 0L
+   <environment: namespace:base>
+
+just because base::`%in%` cannot dispatch on the appropriate
+"match" method. A well-known issue of the way generics, methods
+and NAMESPACE interact with each other... but still an unfortunate
+one.
+
+</rant mode>
+
+The good news is that we have on our TODO list to explicitly define
+the match() and %in% generics in BiocGenerics so there will be an
+opportunity to overwrite the "%in%" default method:
+
+   setMethod("%in%", c("ANY", "ANY"), function (x, table) match(x, 
+table, nomatch = 0L) > 0L)
+
+(I'm still hesitant about this though. What could be the drawbacks
+of overwriting the default method?)
+
+Also last week at the same time I did the changes on match() and
+family, I also reimplemented the "match" method for DNAStringSet
+objects (which is called when either 'x' or 'table' or both are
+DNAStringSet). The new implementation is in Biostrings 2.25.3.
+It uses a hash-based algorithm instead of the quicksort-based algo
+that was used so far. The resulting speedup varies a lot depending
+on the sizes of 'x' and 'table', and will typically be important
+(10x or more) for big (i.e. > 1M elements) DNAStringSet objects.
+
+This benefits directly %in%, duplicated() and unique() on
+DNAStringSet objects.
+
+With Biostrings 2.25.3 (Bioc 2.11):
+
+   > library(Biostrings)
+   > probes <- DNAStringSet(hgu133aprobe)
+   > system.time(isdup <- duplicated(probes))
+      user  system elapsed
+     0.048   0.000   0.050
+
+With Bioc <= 2.10:
+
+   > system.time(isdup <- duplicated(probes))
+      user  system elapsed
+     0.232   0.000   0.233
+
+Finally I should mention that, even though the hash function I use
+for DNAStringSet (and RNAStringSet, AAStringSet, BStringSet) is the
+same as the function used in base R for hashing the strings of a
+standard character vector, calling match(), %in%, duplicated() or
+unique() on a standard character vector is still slightly faster
+(2x) than on a DNAStringSet. This can probably be explained by the
+fact that all the strings in all the character vectors defined in
+a session are pre-hashed i.e. hashed the 1st time the string is
+created and the result of the hash stored in the "global CHARSXP
+hash table".
+
+Cheers,
+H.
+
+On 05/01/2012 05:28 AM, Nicolas Delhomme wrote:
+> Hi all,
+>
+> In R 2.15.0, Bioc 2.10, the following works:
+>
+> library(Biostrings)
+> c("TTGCGA","ATGGCT","ACACTG") %in% DNAStringSet(c("TTGCGA","ATGRCT","ACASTG"))
+> [1]  TRUE FALSE FALSE
+>> sessionInfo()R version 2.15.0 (2012-03-30)
+> Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+>
+> locale:
+> [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> other attached packages:
+> [1] Biostrings_2.24.1  IRanges_1.14.2     BiocGenerics_0.2.0
+>
+> loaded via a namespace (and not attached):
+> [1] stats4_2.15.0
+>
+>
+> While in Bioc 2.11 it fails:
+>
+> Error in match(x, table, nomatch = 0L) :
+>    'match' requires vector arguments
+>> sessionInfo()
+> R version 2.15.0 (2012-03-30)
+> Platform: x86_64-apple-darwin10.8.0 (64-bit)
+>
+> locale:
+> [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> other attached packages:
+> [1] Biostrings_2.25.3  IRanges_1.15.7     BiocGenerics_0.3.0
+>
+> loaded via a namespace (and not attached):
+> [1] stats4_2.15.0
+>
+>
+>
+> I'd just like to know if that is that a change of API or not. If yes, I'd need to adapt my code that currently fails building.
+>
+> Cheers,
+>
+> Nico
+>
+> ---------------------------------------------------------------
+> Nicolas Delhomme
+>
+> Genome Biology Computational Support
+>
+> European Molecular Biology Laboratory
+>
+> Tel: +49 6221 387 8310
+> Email: nicolas.delhomme at embl.de
+> Meyerhofstrasse 1 - Postfach 10.2209
+> 69102 Heidelberg, Germany
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M1-B514
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From delhomme at embl.de  Fri May  4 09:31:40 2012
+From: delhomme at embl.de (Nicolas Delhomme)
+Date: Fri, 4 May 2012 09:31:40 +0200
+Subject: [Bioc-devel] Changes in the %in% function for DNAStringSet?
+In-Reply-To: <4FA3373D.4070304@fhcrc.org>
+References: <06B18C11-D3F8-41E5-B526-A14C30AD7A78@embl.de>
+	<4FA3373D.4070304@fhcrc.org>
+Message-ID: <237F59AA-B33D-492C-AE9A-A5C007EF79FA@embl.de>
+
+Hi Herv?,
+
+Thanks a lot for fixing it and for the super detailed description! Learned a lot :-) And thanks for the benchmarking, that's really useful as well!
+
+I can't really think of any drawbacks there, but my %in% usage is certainly limited. What do the R developer guys say about it? Wouldn't it make sense to have it that way in base R?
+
+Cheers,
+
+Nico
+
+
+On May 4, 2012, at 3:56 AM, Herv? Pag?s wrote:
+
+> Hi Nico,
+> 
+> Last week I did some improvements/reorganization of the match(),
+> %in%, duplicated(), and unique() stuff in IRanges/GenomicRanges/Biostrings, and apparently forgot to define the "%in%" method
+> for ANY,Vector. Thanks for the catch!
+> 
+> This is fixed in IRanges 1.15.8. FWIW I also added an "%in%" method
+> for Vector,ANY so now this works too:
+> 
+>  > DNAStringSet(c("TTGCGA","ATGRCT","ACASTG")) %in% c("TTGCGA","ATGGCT","ACACTG")
+>  [1]  TRUE FALSE FALSE
+> 
+> <rant mode>
+> 
+> It is so sad that we have to redefine "%in%" methods that do exactly
+> the same thing as base::`%in%`:
+> 
+>  > base::`%in%`
+>  function (x, table)
+>  match(x, table, nomatch = 0L) > 0L
+>  <environment: namespace:base>
+> 
+> just because base::`%in%` cannot dispatch on the appropriate
+> "match" method. A well-known issue of the way generics, methods
+> and NAMESPACE interact with each other... but still an unfortunate
+> one.
+> 
+> </rant mode>
+> 
+> The good news is that we have on our TODO list to explicitly define
+> the match() and %in% generics in BiocGenerics so there will be an
+> opportunity to overwrite the "%in%" default method:
+> 
+>  setMethod("%in%", c("ANY", "ANY"), function (x, table) match(x, table, nomatch = 0L) > 0L)
+> 
+> (I'm still hesitant about this though. What could be the drawbacks
+> of overwriting the default method?)
+> 
+> Also last week at the same time I did the changes on match() and
+> family, I also reimplemented the "match" method for DNAStringSet
+> objects (which is called when either 'x' or 'table' or both are
+> DNAStringSet). The new implementation is in Biostrings 2.25.3.
+> It uses a hash-based algorithm instead of the quicksort-based algo
+> that was used so far. The resulting speedup varies a lot depending
+> on the sizes of 'x' and 'table', and will typically be important
+> (10x or more) for big (i.e. > 1M elements) DNAStringSet objects.
+> 
+> This benefits directly %in%, duplicated() and unique() on
+> DNAStringSet objects.
+> 
+> With Biostrings 2.25.3 (Bioc 2.11):
+> 
+>  > library(Biostrings)
+>  > probes <- DNAStringSet(hgu133aprobe)
+>  > system.time(isdup <- duplicated(probes))
+>     user  system elapsed
+>    0.048   0.000   0.050
+> 
+> With Bioc <= 2.10:
+> 
+>  > system.time(isdup <- duplicated(probes))
+>     user  system elapsed
+>    0.232   0.000   0.233
+> 
+> Finally I should mention that, even though the hash function I use
+> for DNAStringSet (and RNAStringSet, AAStringSet, BStringSet) is the
+> same as the function used in base R for hashing the strings of a
+> standard character vector, calling match(), %in%, duplicated() or
+> unique() on a standard character vector is still slightly faster
+> (2x) than on a DNAStringSet. This can probably be explained by the
+> fact that all the strings in all the character vectors defined in
+> a session are pre-hashed i.e. hashed the 1st time the string is
+> created and the result of the hash stored in the "global CHARSXP
+> hash table".
+> 
+> Cheers,
+> H.
+> 
+> On 05/01/2012 05:28 AM, Nicolas Delhomme wrote:
+>> Hi all,
+>> 
+>> In R 2.15.0, Bioc 2.10, the following works:
+>> 
+>> library(Biostrings)
+>> c("TTGCGA","ATGGCT","ACACTG") %in% DNAStringSet(c("TTGCGA","ATGRCT","ACASTG"))
+>> [1]  TRUE FALSE FALSE
+>>> sessionInfo()R version 2.15.0 (2012-03-30)
+>> Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+>> 
+>> locale:
+>> [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
+>> 
+>> attached base packages:
+>> [1] stats     graphics  grDevices utils     datasets  methods   base
+>> 
+>> other attached packages:
+>> [1] Biostrings_2.24.1  IRanges_1.14.2     BiocGenerics_0.2.0
+>> 
+>> loaded via a namespace (and not attached):
+>> [1] stats4_2.15.0
+>> 
+>> 
+>> While in Bioc 2.11 it fails:
+>> 
+>> Error in match(x, table, nomatch = 0L) :
+>>   'match' requires vector arguments
+>>> sessionInfo()
+>> R version 2.15.0 (2012-03-30)
+>> Platform: x86_64-apple-darwin10.8.0 (64-bit)
+>> 
+>> locale:
+>> [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
+>> 
+>> attached base packages:
+>> [1] stats     graphics  grDevices utils     datasets  methods   base
+>> 
+>> other attached packages:
+>> [1] Biostrings_2.25.3  IRanges_1.15.7     BiocGenerics_0.3.0
+>> 
+>> loaded via a namespace (and not attached):
+>> [1] stats4_2.15.0
+>> 
+>> 
+>> 
+>> I'd just like to know if that is that a change of API or not. If yes, I'd need to adapt my code that currently fails building.
+>> 
+>> Cheers,
+>> 
+>> Nico
+>> 
+>> ---------------------------------------------------------------
+>> Nicolas Delhomme
+>> 
+>> Genome Biology Computational Support
+>> 
+>> European Molecular Biology Laboratory
+>> 
+>> Tel: +49 6221 387 8310
+>> Email: nicolas.delhomme at embl.de
+>> Meyerhofstrasse 1 - Postfach 10.2209
+>> 69102 Heidelberg, Germany
+>> 
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> 
+> -- 
+> Herv? Pag?s
+> 
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M1-B514
+> P.O. Box 19024
+> Seattle, WA 98109-1024
+> 
+> E-mail: hpages at fhcrc.org
+> Phone:  (206) 667-5791
+> Fax:    (206) 667-1319
+
+---------------------------------------------------------------
+Nicolas Delhomme
+
+Genome Biology Computational Support
+
+European Molecular Biology Laboratory
+
+Tel: +49 6221 387 8310
+Email: nicolas.delhomme at embl.de
+Meyerhofstrasse 1 - Postfach 10.2209
+69102 Heidelberg, Germany
+
+
+From rflight79 at gmail.com  Fri May  4 18:09:02 2012
+From: rflight79 at gmail.com (Robert M. Flight)
+Date: Fri, 4 May 2012 12:09:02 -0400
+Subject: [Bioc-devel] add sessionInfo() option to "save"
+Message-ID: <CAJLyBTUXmqrC8Adu4gb_aFbNaMCWfPYnJAZfby2YaprXxaXoLQ@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120504/40877b8a/attachment.pl>
+
+From D.Strbenac at garvan.org.au  Mon May  7 07:00:05 2012
+From: D.Strbenac at garvan.org.au (Dario Strbenac)
+Date: Mon,  7 May 2012 15:00:05 +1000 (EST)
+Subject: [Bioc-devel] GenomicFeatures FeatureDB EST Table Error
+Message-ID: <20120507150005.BWX83078@gimr.garvan.unsw.edu.au>
+
+Hi,
+
+It seems some data has been added to the EST data table in UCSC that GenomicFeatures cannot parse.
+
+> ESTs <- makeFeatureDbFromUCSC(genome = "hg19", track = "est", tablename = "all_est")
+Download the all_est table ... Error in scan(file, what, nmax, sep, dec, quote, skip, nlines, na.strings,  : 
+  line 4587019 did not have 22 elements
+
+The relevant lines of the session information are :
+
+R version 2.15.0 (2012-03-30)
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+other attached packages:
+[1] GenomicFeatures_1.8.1
+
+- Dario.
+
+
+From tim.triche at gmail.com  Mon May  7 07:36:53 2012
+From: tim.triche at gmail.com (Tim Triche, Jr.)
+Date: Sun, 6 May 2012 22:36:53 -0700
+Subject: [Bioc-devel] GenomicFeatures FeatureDB EST Table Error
+In-Reply-To: <20120507150005.BWX83078@gimr.garvan.unsw.edu.au>
+References: <20120507150005.BWX83078@gimr.garvan.unsw.edu.au>
+Message-ID: <CAC+N9BU7j2LdP+YNs31eEyP0UDiO595upiwcwtoauUsTd0yA8A@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120506/8031e62a/attachment.pl>
+
+From setia.pramana at ki.se  Mon May  7 09:30:43 2012
+From: setia.pramana at ki.se (Setia Pramana)
+Date: Mon, 7 May 2012 07:30:43 +0000
+Subject: [Bioc-devel]  KEGG.db
+Message-ID: <517A5DC08F772349AB76C48A25FC0B61C8F140@KIMSX01.user.ki.se>
+
+Hi All,
+
+I am developing a new package using the info from KEGG.db. I used the following command to map  KEGG pathway identifiers to Entrez Gene:
+
+  mapped.genes <-as.list(KEGGPATHID2EXTID)  
+
+When I run the function  as an R package, I have the following error msg:
+
+Error in as.list.default(KEGGPATHID2EXTID) : 
+  no method for coercing this S4 class to a vector
+
+However when I run not as a package (like normal R function), the function works well.
+
+Please help me to find out what may be the problem.
+Thank you in advance for your help.
+
+Best,
+Setia 
+MEB KI Stockholm
+
+
+From willem.ligtenberg at openanalytics.eu  Mon May  7 09:38:19 2012
+From: willem.ligtenberg at openanalytics.eu (Willem Ligtenberg)
+Date: Mon, 7 May 2012 09:38:19 +0200
+Subject: [Bioc-devel] KEGG.db
+In-Reply-To: <517A5DC08F772349AB76C48A25FC0B61C8F140@KIMSX01.user.ki.se>
+References: <517A5DC08F772349AB76C48A25FC0B61C8F140@KIMSX01.user.ki.se>
+Message-ID: <CAK0yx2cCn8mkssHytvt0QOFAYRdxOLBoK5s38VfPhnRY5Eo4EQ@mail.gmail.com>
+
+Hi,
+
+Although I am not sure if you should be using the KEGG.db package any
+more, since it is deprecated.
+See the following message when you load the KEGG.db package:
+KEGG.db contains mappings based on older data because the original
+  resource was removed from the the public domain before the most
+  recent update was produced. This package should now be considered
+  deprecated and future versions of Bioconductor may not have it
+  available.  One possible alternative to consider is to look at the
+  reactome.db package
+
+You should make sure, your package uses the right as.list method. You
+can do this by using:
+AnnotationDbi::as.list instead of just as.list. (This specifies the
+package from which it should load the function.)
+
+Kind regards,
+
+Willem
+
+On Mon, May 7, 2012 at 9:30 AM, Setia Pramana <setia.pramana at ki.se> wrote:
+> Hi All,
+>
+> I am developing a new package using the info from KEGG.db. I used the following command to map ?KEGG pathway identifiers to Entrez Gene:
+>
+> ?mapped.genes <-as.list(KEGGPATHID2EXTID)
+>
+> When I run the function ?as an R package, I have the following error msg:
+>
+> Error in as.list.default(KEGGPATHID2EXTID) :
+> ?no method for coercing this S4 class to a vector
+>
+> However when I run not as a package (like normal R function), the function works well.
+>
+> Please help me to find out what may be the problem.
+> Thank you in advance for your help.
+>
+> Best,
+> Setia
+> MEB KI Stockholm
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From D.Strbenac at garvan.org.au  Tue May  8 02:00:09 2012
+From: D.Strbenac at garvan.org.au (Dario Strbenac)
+Date: Tue,  8 May 2012 10:00:09 +1000 (EST)
+Subject: [Bioc-devel] GenomicFeatures FeatureDB EST Table Error
+In-Reply-To: <CAC+N9BU7j2LdP+YNs31eEyP0UDiO595upiwcwtoauUsTd0yA8A@mail.gmail.com>
+References: <20120507150005.BWX83078@gimr.garvan.unsw.edu.au>
+	<CAC+N9BU7j2LdP+YNs31eEyP0UDiO595upiwcwtoauUsTd0yA8A@mail.gmail.com>
+Message-ID: <20120508100009.BWX96593@gimr.garvan.unsw.edu.au>
+
+I e-mailed UCSC and they said the preferred way is to download by FTP. Which means more lines of code to parse the text file into columns, then split the exons and widths columns up to be able to make GRanges.
+
+---- Original message ----
+>Date: Sun, 6 May 2012 22:36:53 -0700
+>From: "Tim Triche, Jr." <tim.triche at gmail.com>  
+>Subject: Re: [Bioc-devel] GenomicFeatures FeatureDB EST Table Error  
+>To: D.Strbenac at garvan.org.au
+>Cc: bioc-devel at r-project.org
+>
+>   Actually, try downloading the same thing from the
+>   Table Browser and see if there isn't something like
+>   the following at the tail of the file:
+>   843  chr11  33910774  33910775  rs4756078  0  +  CC 
+>   C/G/T  genomic  single 
+>   by-cluster,by-frequency,by-2hit-2allele,by-hapmap,by-1000genomes
+>   0.361204  0.223906  intron  exact  1 
+>   SingleClassTriA---------------------------------------------------------------------------
+>   procedures have exceeded timeout: 1200 seconds,
+>   function has ended.
+>   ---------------------------------------------------------------------------
+>   (this is from my attempted download of the
+>   snp135common track, but it appears to be happening
+>   to you as well)
+>   It would appear that we're being throttled.
+>   On Sun, May 6, 2012 at 10:00 PM, Dario Strbenac
+>   <D.Strbenac at garvan.org.au> wrote:
+>
+>     Hi,
+>
+>     It seems some data has been added to the EST data
+>     table in UCSC that GenomicFeatures cannot parse.
+>
+>     > ESTs <- makeFeatureDbFromUCSC(genome = "hg19",
+>     track = "est", tablename = "all_est")
+>     Download the all_est table ... Error in scan(file,
+>     what, nmax, sep, dec, quote, skip, nlines,
+>     na.strings, ?:
+>     ?line 4587019 did not have 22 elements
+>
+>     The relevant lines of the session information are
+>     :
+>
+>     R version 2.15.0 (2012-03-30)
+>     Platform: x86_64-unknown-linux-gnu (64-bit)
+>
+>     other attached packages:
+>     [1] GenomicFeatures_1.8.1
+>
+>     - Dario.
+>
+>     _______________________________________________
+>     Bioc-devel at r-project.org mailing list
+>     https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>   --
+>   A model is a lie that helps you see the truth.
+>   Howard Skipper
+
+
+--------------------------------------
+Dario Strbenac
+Research Assistant
+Cancer Epigenetics
+Garvan Institute of Medical Research
+Darlinghurst NSW 2010
+Australia
+
+
+From tim.triche at gmail.com  Tue May  8 03:28:21 2012
+From: tim.triche at gmail.com (Tim Triche, Jr.)
+Date: Mon, 7 May 2012 18:28:21 -0700
+Subject: [Bioc-devel] GenomicFeatures FeatureDB EST Table Error
+In-Reply-To: <20120508100009.BWX96593@gimr.garvan.unsw.edu.au>
+References: <20120507150005.BWX83078@gimr.garvan.unsw.edu.au>
+	<CAC+N9BU7j2LdP+YNs31eEyP0UDiO595upiwcwtoauUsTd0yA8A@mail.gmail.com>
+	<20120508100009.BWX96593@gimr.garvan.unsw.edu.au>
+Message-ID: <CAC+N9BVR7bBh4eim_4JeQavCpYBncNwrYAbTDpcCr8isxrayeQ@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120507/cae2541e/attachment.pl>
+
+From sgado at science.unitn.it  Tue May  8 16:02:12 2012
+From: sgado at science.unitn.it (=?iso-8859-1?Q?Paola_Sgad=F2?=)
+Date: Tue, 8 May 2012 16:02:12 +0200
+Subject: [Bioc-devel] technical and biological replicates in the same
+	Exprset - Agi4x44
+Message-ID: <21AABEF5-AB40-4296-9EB7-C3FB573D3EAF@science.unitn.it>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120508/22b90855/attachment.pl>
+
+From mcarlson at fhcrc.org  Tue May  8 20:24:56 2012
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Tue, 08 May 2012 11:24:56 -0700
+Subject: [Bioc-devel] KEGG.db
+In-Reply-To: <CAK0yx2cCn8mkssHytvt0QOFAYRdxOLBoK5s38VfPhnRY5Eo4EQ@mail.gmail.com>
+References: <517A5DC08F772349AB76C48A25FC0B61C8F140@KIMSX01.user.ki.se>
+	<CAK0yx2cCn8mkssHytvt0QOFAYRdxOLBoK5s38VfPhnRY5Eo4EQ@mail.gmail.com>
+Message-ID: <4FA964F8.8030305@fhcrc.org>
+
+Willem is right.  The as.list() method you want is the one from 
+AnnotationDbi.  Other as.list methods will not know what to do with the 
+bimap object in question.  So in the usage context you are dexcribing, 
+you may need to import that method in your NAMESPACE file so that your 
+package knows about it.
+
+Also, the KEGG.db package has not been able to be updated for over a 
+year now.  The reactome.db package is probably a good alternative.
+
+
+   Marc
+
+
+
+On 05/07/2012 12:38 AM, Willem Ligtenberg wrote:
+> Hi,
+>
+> Although I am not sure if you should be using the KEGG.db package any
+> more, since it is deprecated.
+> See the following message when you load the KEGG.db package:
+> KEGG.db contains mappings based on older data because the original
+>    resource was removed from the the public domain before the most
+>    recent update was produced. This package should now be considered
+>    deprecated and future versions of Bioconductor may not have it
+>    available.  One possible alternative to consider is to look at the
+>    reactome.db package
+>
+> You should make sure, your package uses the right as.list method. You
+> can do this by using:
+> AnnotationDbi::as.list instead of just as.list. (This specifies the
+> package from which it should load the function.)
+>
+> Kind regards,
+>
+> Willem
+>
+> On Mon, May 7, 2012 at 9:30 AM, Setia Pramana<setia.pramana at ki.se>  wrote:
+>> Hi All,
+>>
+>> I am developing a new package using the info from KEGG.db. I used the following command to map  KEGG pathway identifiers to Entrez Gene:
+>>
+>>   mapped.genes<-as.list(KEGGPATHID2EXTID)
+>>
+>> When I run the function  as an R package, I have the following error msg:
+>>
+>> Error in as.list.default(KEGGPATHID2EXTID) :
+>>   no method for coercing this S4 class to a vector
+>>
+>> However when I run not as a package (like normal R function), the function works well.
+>>
+>> Please help me to find out what may be the problem.
+>> Thank you in advance for your help.
+>>
+>> Best,
+>> Setia
+>> MEB KI Stockholm
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From thomas.girke at ucr.edu  Thu May 10 06:53:22 2012
+From: thomas.girke at ucr.edu (Thomas Girke)
+Date: Wed, 9 May 2012 21:53:22 -0700
+Subject: [Bioc-devel] FastqStreamer error in function context
+Message-ID: <20120510045322.GA4102@Thomas-Girkes-MacBook-Pro.local>
+
+When FastqStreamer or FastqSampler are called within another function in
+combination with a writeFastq step then this usually returns an error.
+However, the same code runs just fine outside of a function.  Below is
+an example to reproduce this error. 
+
+A small feature request for FastqStreamer would be an option to return 
+the total number of reads stored in a fastq file as well as an option
+for accessing specific records by passing on an index vector. 
+
+Best,
+
+Thomas
+
+
+Here is an example:
+
+library(ShortRead)
+sp <- SolexaPath(system.file('extdata', package='ShortRead'))
+fl <- file.path(analysisPath(sp), "s_1_sequence.txt")
+
+## Some function using FastqStreamer
+test <- function(x=fl) {
+        f <- FastqStreamer(x, 5)
+        while (length(fq <- yield(f))) {
+                fqsub <- fq[1:2]
+                writeFastq(fqsub, "test.fastq", mode="a")
+        }
+        close(f)
+}
+test(x=fl)
+
+Error in .IRanges.checkAndTranslateSingleBracketSubscript(x, i) : 
+  subscript contains NAs or out of bounds indices
+
+
+sessionInfo()
+R version 2.15.0 alpha (2012-03-05 r58604)
+Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] ShortRead_1.14.3    latticeExtra_0.6-19 RColorBrewer_1.0-5 
+[4] Rsamtools_1.8.4     lattice_0.20-6      Biostrings_2.24.1  
+[7] GenomicRanges_1.8.4 IRanges_1.14.2      BiocGenerics_0.2.0 
+
+loaded via a namespace (and not attached):
+[1] Biobase_2.16.0 bitops_1.0-4.1 grid_2.15.0    hwriter_1.3    stats4_2.15.0 
+[6] tools_2.15.0   zlibbioc_1.2.0
+
+
+From mtmorgan at fhcrc.org  Thu May 10 07:32:58 2012
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 09 May 2012 22:32:58 -0700
+Subject: [Bioc-devel] FastqStreamer error in function context
+In-Reply-To: <20120510045322.GA4102@Thomas-Girkes-MacBook-Pro.local>
+References: <20120510045322.GA4102@Thomas-Girkes-MacBook-Pro.local>
+Message-ID: <4FAB530A.5040407@fhcrc.org>
+
+On 05/09/2012 09:53 PM, Thomas Girke wrote:
+> When FastqStreamer or FastqSampler are called within another function in
+> combination with a writeFastq step then this usually returns an error.
+> However, the same code runs just fine outside of a function.  Below is
+> an example to reproduce this error.
+
+Hi Thomas --
+
+The example below fails because there are 256 records in the file, so 
+for me the 52nd yield() returns length(fq) == 1 and the subset '2' is 
+out of bounds. But maybe there is another example?
+
+> A small feature request for FastqStreamer would be an option to return
+> the total number of reads stored in a fastq file as well as an option
+> for accessing specific records by passing on an index vector.
+
+For the first part, after the fact we have
+
+ > f
+class: FastqStreamer
+file: s_1_sequence.txt
+status: n=5 current=1 added=256 total=256
+
+with 'total=256' indicating that the streamer iterated over (i.e., the 
+file had) 256 records. This is actually accessible in the reference 
+class using the not-really-public (see the last lines of 
+example(FastqStreamer)) accessor
+
+ > f$status()
+       n current   added   total
+       5       1     256     256
+
+which is a named integer vector. Is this what you were looking for?
+
+I'll give the idea about selecting specific records some thought; I see 
+how it could be useful.
+
+Martin
+
+>
+> Best,
+>
+> Thomas
+>
+>
+> Here is an example:
+>
+> library(ShortRead)
+> sp<- SolexaPath(system.file('extdata', package='ShortRead'))
+> fl<- file.path(analysisPath(sp), "s_1_sequence.txt")
+>
+> ## Some function using FastqStreamer
+> test<- function(x=fl) {
+>          f<- FastqStreamer(x, 5)
+>          while (length(fq<- yield(f))) {
+>                  fqsub<- fq[1:2]
+>                  writeFastq(fqsub, "test.fastq", mode="a")
+>          }
+>          close(f)
+> }
+> test(x=fl)
+>
+> Error in .IRanges.checkAndTranslateSingleBracketSubscript(x, i) :
+>    subscript contains NAs or out of bounds indices
+>
+>
+> sessionInfo()
+> R version 2.15.0 alpha (2012-03-05 r58604)
+> Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+>
+> locale:
+> [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> other attached packages:
+> [1] ShortRead_1.14.3    latticeExtra_0.6-19 RColorBrewer_1.0-5
+> [4] Rsamtools_1.8.4     lattice_0.20-6      Biostrings_2.24.1
+> [7] GenomicRanges_1.8.4 IRanges_1.14.2      BiocGenerics_0.2.0
+>
+> loaded via a namespace (and not attached):
+> [1] Biobase_2.16.0 bitops_1.0-4.1 grid_2.15.0    hwriter_1.3    stats4_2.15.0
+> [6] tools_2.15.0   zlibbioc_1.2.0
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From liqigang at gmail.com  Thu May 10 08:08:21 2012
+From: liqigang at gmail.com (li)
+Date: Thu, 10 May 2012 14:08:21 +0800
+Subject: [Bioc-devel] GenomicFeatures FeatureDB EST Table Error
+Message-ID: <rj4q6o3dnbe607ce59a3n3ga.1336630101552@email.android.com>
+
+
+
+Dario Strbenac <D.Strbenac at garvan.org.au>???
+
+>I e-mailed UCSC and they said the preferred way is to download by FTP. Which means more lines of code to parse the text file into columns, then split the exons and widths columns up to be able to make GRanges.
+>
+>---- Original message ----
+>>Date: Sun, 6 May 2012 22:36:53 -0700
+>>From: "Tim Triche, Jr." <tim.triche at gmail.com>  
+>>Subject: Re: [Bioc-devel] GenomicFeatures FeatureDB EST Table Error  
+>>To: D.Strbenac at garvan.org.au
+>>Cc: bioc-devel at r-project.org
+>>
+>>   Actually, try downloading the same thing from the
+>>   Table Browser and see if there isn't something like
+>>   the following at the tail of the file:
+>>   843  chr11  33910774  33910775  rs4756078  0  +  CC 
+>>   C/G/T  genomic  single 
+>>   by-cluster,by-frequency,by-2hit-2allele,by-hapmap,by-1000genomes
+>>   0.361204  0.223906  intron  exact  1 
+>>   SingleClassTriA---------------------------------------------------------------------------
+>>   procedures have exceeded timeout: 1200 seconds,
+>>   function has ended.
+>>   ---------------------------------------------------------------------------
+>>   (this is from my attempted download of the
+>>   snp135common track, but it appears to be happening
+>>   to you as well)
+>>   It would appear that we're being throttled.
+>>   On Sun, May 6, 2012 at 10:00 PM, Dario Strbenac
+>>   <D.Strbenac at garvan.org.au> wrote:
+>>
+>>     Hi,
+>>
+>>     It seems some data has been added to the EST data
+>>     table in UCSC that GenomicFeatures cannot parse.
+>>
+>>     > ESTs <- makeFeatureDbFromUCSC(genome = "hg19",
+>>     track = "est", tablename = "all_est")
+>>     Download the all_est table ... Error in scan(file,
+>>     what, nmax, sep, dec, quote, skip, nlines,
+>>     na.strings, ?:
+>>     ?line 4587019 did not have 22 elements
+>>
+>>     The relevant lines of the session information are
+>>     :
+>>
+>>     R version 2.15.0 (2012-03-30)
+>>     Platform: x86_64-unknown-linux-gnu (64-bit)
+>>
+>>     other attached packages:
+>>     [1] GenomicFeatures_1.8.1
+>>
+>>     - Dario.
+>>
+>>     _______________________________________________
+>>     Bioc-devel at r-project.org mailing list
+>>     https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>   --
+>>   A model is a lie that helps you see the truth.
+>>   Howard Skipper
+>
+>
+>--------------------------------------
+>Dario Strbenac
+>Research Assistant
+>Cancer Epigenetics
+>Garvan Institute of Medical Research
+>Darlinghurst NSW 2010
+>Australia
+>
+>_______________________________________________
+>Bioc-devel at r-project.org mailing list
+>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+From w.vanwieringen at vumc.nl  Thu May 10 11:15:20 2012
+From: w.vanwieringen at vumc.nl (Wieringen, W.N. van)
+Date: Thu, 10 May 2012 09:15:20 +0000
+Subject: [Bioc-devel] build
+Message-ID: <DE369CD49C8BB040A24186DA195D79F509059721@SP-MX-MBX4.vumc.nl>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120510/7f16f2d5/attachment.pl>
+
+From beniltoncarvalho at gmail.com  Thu May 10 12:38:19 2012
+From: beniltoncarvalho at gmail.com (Benilton Carvalho)
+Date: Thu, 10 May 2012 11:38:19 +0100
+Subject: [Bioc-devel] build
+In-Reply-To: <DE369CD49C8BB040A24186DA195D79F509059721@SP-MX-MBX4.vumc.nl>
+References: <DE369CD49C8BB040A24186DA195D79F509059721@SP-MX-MBX4.vumc.nl>
+Message-ID: <CAO-arWMXRkYr-m0o1tmZaGFw1LR0pOFC2W_zTe-ka7-mX-2ozA@mail.gmail.com>
+
+Your release version is in sync with the svn copy (release branch)...
+so everything is fine there:
+
+http://bioconductor.org/packages/2.10/bioc/html/sigaR.html
+
+Similarly, your devel version is in sync with the svn (devel
+branch)... everything is fine there as well:
+
+http://bioconductor.org/packages/2.11/bioc/html/sigaR.html
+
+The changes you've made to your package that resulted in version 1.1.0
+will appear in the release branch on the next BioC release.
+
+b
+
+On 10 May 2012 10:15, Wieringen, W.N. van <w.vanwieringen at vumc.nl> wrote:
+> Dear all,
+>
+>
+> A week ago I extended the functionality of my package (sigaR). This was done by addition of some new files in the R directory of the package and modifications in related files. The new files did indeed arrive at the Bioconductor. Also the new version of the package builds without error. However, the new build on Bioconductor does not include the new functionality, whereas on my computer the new version builds (and checks) without error and yields the new functionality. ?Does anyone have a clue what could be the problem? Thanks in advance for any help.
+>
+> Best wishes,
+>
+>
+> Wessel
+>
+>
+> ? ? ? ?[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From thomas.girke at ucr.edu  Fri May 11 05:05:03 2012
+From: thomas.girke at ucr.edu (Thomas Girke)
+Date: Thu, 10 May 2012 20:05:03 -0700
+Subject: [Bioc-devel] FastqStreamer error in function context
+In-Reply-To: <c97075d2c63d4e7a890d265f7c169695@EXCH-NODE02.exch.ucr.edu>
+References: <20120510045322.GA4102@Thomas-Girkes-MacBook-Pro.local>
+	<c97075d2c63d4e7a890d265f7c169695@EXCH-NODE02.exch.ucr.edu>
+Message-ID: <20120511030503.GA18342@biocluster.ucr.edu>
+
+Martin,
+
+There is indeed no problem with those functions, I just had a typo in 
+my code. I guess I shouldn't send out bug reports when it is well past 
+my bed time. Sorry for the false alarm. 
+
+I love the streaming functionality. It really brings NGS analysis back
+to low memory systems, such as laptops or outdated cluster nodes, without
+the inconviences of constantly splitting large files. 
+
+Best,
+
+Thomas
+
+On Thu, May 10, 2012 at 05:32:58AM +0000, Martin Morgan wrote:
+> On 05/09/2012 09:53 PM, Thomas Girke wrote:
+> > When FastqStreamer or FastqSampler are called within another function in
+> > combination with a writeFastq step then this usually returns an error.
+> > However, the same code runs just fine outside of a function.  Below is
+> > an example to reproduce this error.
+> 
+> Hi Thomas --
+> 
+> The example below fails because there are 256 records in the file, so 
+> for me the 52nd yield() returns length(fq) == 1 and the subset '2' is 
+> out of bounds. But maybe there is another example?
+> 
+> > A small feature request for FastqStreamer would be an option to return
+> > the total number of reads stored in a fastq file as well as an option
+> > for accessing specific records by passing on an index vector.
+> 
+> For the first part, after the fact we have
+> 
+>  > f
+> class: FastqStreamer
+> file: s_1_sequence.txt
+> status: n=5 current=1 added=256 total=256
+> 
+> with 'total=256' indicating that the streamer iterated over (i.e., the 
+> file had) 256 records. This is actually accessible in the reference 
+> class using the not-really-public (see the last lines of 
+> example(FastqStreamer)) accessor
+> 
+>  > f$status()
+>        n current   added   total
+>        5       1     256     256
+> 
+> which is a named integer vector. Is this what you were looking for?
+> 
+> I'll give the idea about selecting specific records some thought; I see 
+> how it could be useful.
+> 
+> Martin
+> 
+> >
+> > Best,
+> >
+> > Thomas
+> >
+> >
+> > Here is an example:
+> >
+> > library(ShortRead)
+> > sp<- SolexaPath(system.file('extdata', package='ShortRead'))
+> > fl<- file.path(analysisPath(sp), "s_1_sequence.txt")
+> >
+> > ## Some function using FastqStreamer
+> > test<- function(x=fl) {
+> >          f<- FastqStreamer(x, 5)
+> >          while (length(fq<- yield(f))) {
+> >                  fqsub<- fq[1:2]
+> >                  writeFastq(fqsub, "test.fastq", mode="a")
+> >          }
+> >          close(f)
+> > }
+> > test(x=fl)
+> >
+> > Error in .IRanges.checkAndTranslateSingleBracketSubscript(x, i) :
+> >    subscript contains NAs or out of bounds indices
+> >
+> >
+> > sessionInfo()
+> > R version 2.15.0 alpha (2012-03-05 r58604)
+> > Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+> >
+> > locale:
+> > [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+> >
+> > attached base packages:
+> > [1] stats     graphics  grDevices utils     datasets  methods   base
+> >
+> > other attached packages:
+> > [1] ShortRead_1.14.3    latticeExtra_0.6-19 RColorBrewer_1.0-5
+> > [4] Rsamtools_1.8.4     lattice_0.20-6      Biostrings_2.24.1
+> > [7] GenomicRanges_1.8.4 IRanges_1.14.2      BiocGenerics_0.2.0
+> >
+> > loaded via a namespace (and not attached):
+> > [1] Biobase_2.16.0 bitops_1.0-4.1 grid_2.15.0    hwriter_1.3    stats4_2.15.0
+> > [6] tools_2.15.0   zlibbioc_1.2.0
+> >
+> > _______________________________________________
+> > Bioc-devel at r-project.org mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> 
+> -- 
+> Computational Biology
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+> 
+> Location: M1-B861
+> Telephone: 206 667-2793
+
+
+From tag at granular.com  Tue May 15 03:44:26 2012
+From: tag at granular.com (Y-h. Taguchi)
+Date: Tue, 15 May 2012 10:44:26 +0900
+Subject: [Bioc-devel] New Package: MiRaGE + miRNATarget,
+Message-ID: <CAJgr72nR+U=EnrsNe0MFgLf0jhxLvOTd_QZMeYy0cRTEd9uaAA@mail.gmail.com>
+
+Dear Sirs,
+
+Here, I would like to announce that my package, MiRaGE, was added to
+development slot.
+http://www.bioconductor.org/packages/devel/bioc/html/MiRaGE.html
+
+This is a localized version of Web server, MiRaGE Server,
+http://www.granular.com/MiRaGE/, which intends to
+infer target gene regulation via miRNA using only target gene
+expression profile.
+I am glad if some one can comment about it such that I can improve it
+as much as possible.
+
+I do not think that there are so many Japanese here :-)
+I am glad if you can help me  since we Japanese do not have so many
+friends to talk about the development on Bioconductor, face to face.
+
+yours, tag.
+
+PS MiRaGE needs to install miRNATager experimental package
+http://www.bioconductor.org/packages/release/data/experiment/html/miRNATarget.html
+together to execute, although I have provided other option to download
+data set from MiRaGE server directly.
+
+-- 
+Y-h. Taguchi, Dept. Phys., Chuo Univ., Kasuga, Bunkyo-ku, Tokyo 112-8551,Japan
+Tel./Fax.? +81-3-3817-1791/1792? http://www.granular.com/tag/index-j.html
+
+
+From Inostroza at mpimp-golm.mpg.de  Tue May 15 09:34:03 2012
+From: Inostroza at mpimp-golm.mpg.de (Alvaro Cuadros Inostroza)
+Date: Tue, 15 May 2012 07:34:03 +0000
+Subject: [Bioc-devel] mzR compilation error gcc 4.70 arch linux (and a patch)
+Message-ID: <4C0888DEB044FB4DA79C41688FA8C7390416D6@MPPMAIL01.mpimp-golm.mpg.de>
+
+Hello,
+
+I got the following compilation error while installing the package 'mzR' (devel version 1.3.6) in arch linux (fully updated) (my package, TargetSearch, depends on mzR). Here is the relevant part.
+	
+> biocLite("mzR")
+BioC_mirror: http://bioconductor.org
+Using R version 2.15, BiocInstaller version 1.5.7.
+Installing package(s) 'mzR'
+
+[...]
+
+g++ -I/opt/R/R-2.15.0/include -DNDEBUG -D_LARGEFILE_SOURCE -I./boost_aux/ -I. -DHAVE_PWIZ_MZML_LIB -I/usr/local/include -I"/opt/R/R-2.15.0/library/Rcpp/include"   -fpic  -g -O2  -c boost/thread/src/pthread/once.cpp -o boost/thread/src/pthread/once.o
+In file included from ./boost/thread/detail/platform.hpp:17:0,
+                 from ./boost/thread/once.hpp:12,
+                 from boost/thread/src/pthread/once.cpp:7:
+./boost/config/requires_threads.hpp:29:4: error: #error "Threading support unavaliable: it has been explicitly disabled with BOOST_DISABLE_THREADS"
+In file included from ./boost/thread/once.hpp:12:0,
+                 from boost/thread/src/pthread/once.cpp:7:
+./boost/thread/detail/platform.hpp:67:9: error: #error "Sorry, no boost threads are available for this platform."
+
+[...]
+
+The full error log is here [1].
+
+I also got the same error with the release version of mzR (1.2.1). With an older gcc I do *not* get this error.
+
+Since it seemed a problem with the boost libraries, I searched the web and found a bug report [2] in which they explain it's a configuration error due to a change in gcc 4.70 (or something like that). Also, in that page a fix and patch is provided (see link at the bottom) which I adapted and pasted here [3] for mzR. It works for both release and devel versions. At least it fixed the compilation error for me. Maybe it needs more testing...
+
+[1] http://pastebin.com/T2tSEWPM
+[2] https://svn.boost.org/trac/boost/ticket/6165
+[3] http://pastebin.com/gYBAr2Td
+
+[alvaro at home ~]$ gcc --version
+gcc (GCC) 4.7.0 20120505 (prerelease)
+Copyright (C) 2012 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+> sessionInfo()
+R version 2.15.0 (2012-03-30)
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8
+ [7] LC_PAPER=C                 LC_NAME=C
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] BiocInstaller_1.5.7
+
+loaded via a namespace (and not attached):
+[1] tools_2.15.0
+
+Best regards.
+[ CC: to the mainteners ]
+
+-- 
+Alvaro 
+
+
+From sneumann at ipb-halle.de  Tue May 15 10:09:23 2012
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Tue, 15 May 2012 10:09:23 +0200
+Subject: [Bioc-devel] mzR compilation error gcc 4.70 arch linux (and a
+	patch)
+In-Reply-To: <4C0888DEB044FB4DA79C41688FA8C7390416D6@MPPMAIL01.mpimp-golm.mpg.de>
+References: <4C0888DEB044FB4DA79C41688FA8C7390416D6@MPPMAIL01.mpimp-golm.mpg.de>
+Message-ID: <assp.04822bc4eb.1337069363.4910.24.camel@localhost>
+
+Hi Alvaro,
+
+On Tue, 2012-05-15 at 07:34 +0000, Alvaro Cuadros Inostroza wrote:
+> I got the following compilation error while installing the package
+> 'mzR' (devel version 1.3.6) in arch linux (fully updated) (my package,
+> TargetSearch, depends on mzR). Here is the relevant part.
+
+Thanks for the notice and the patch. I applied it to the devel version,
+it compiles and check fine on my gcc-4.6 and mzR-1.3.7 
+should be out soon. Please report if there's anything missing.
+
+Yours,
+Steffen
+
+
+
+> 	
+> > biocLite("mzR")
+> BioC_mirror: http://bioconductor.org
+> Using R version 2.15, BiocInstaller version 1.5.7.
+> Installing package(s) 'mzR'
+> 
+> [...]
+> 
+> g++ -I/opt/R/R-2.15.0/include -DNDEBUG -D_LARGEFILE_SOURCE -I./boost_aux/ -I. -DHAVE_PWIZ_MZML_LIB -I/usr/local/include -I"/opt/R/R-2.15.0/library/Rcpp/include"   -fpic  -g -O2  -c boost/thread/src/pthread/once.cpp -o boost/thread/src/pthread/once.o
+> In file included from ./boost/thread/detail/platform.hpp:17:0,
+>                  from ./boost/thread/once.hpp:12,
+>                  from boost/thread/src/pthread/once.cpp:7:
+> ./boost/config/requires_threads.hpp:29:4: error: #error "Threading support unavaliable: it has been explicitly disabled with BOOST_DISABLE_THREADS"
+> In file included from ./boost/thread/once.hpp:12:0,
+>                  from boost/thread/src/pthread/once.cpp:7:
+> ./boost/thread/detail/platform.hpp:67:9: error: #error "Sorry, no boost threads are available for this platform."
+> 
+> [...]
+> 
+> The full error log is here [1].
+> 
+> I also got the same error with the release version of mzR (1.2.1). With an older gcc I do *not* get this error.
+> 
+> Since it seemed a problem with the boost libraries, I searched the web and found a bug report [2] in which they explain it's a configuration error due to a change in gcc 4.70 (or something like that). Also, in that page a fix and patch is provided (see link at the bottom) which I adapted and pasted here [3] for mzR. It works for both release and devel versions. At least it fixed the compilation error for me. Maybe it needs more testing...
+> 
+> [1] http://pastebin.com/T2tSEWPM
+> [2] https://svn.boost.org/trac/boost/ticket/6165
+> [3] http://pastebin.com/gYBAr2Td
+> 
+> [alvaro at home ~]$ gcc --version
+> gcc (GCC) 4.7.0 20120505 (prerelease)
+> Copyright (C) 2012 Free Software Foundation, Inc.
+> This is free software; see the source for copying conditions.  There is NO
+> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> 
+> 
+> > sessionInfo()
+> R version 2.15.0 (2012-03-30)
+> Platform: x86_64-unknown-linux-gnu (64-bit)
+> 
+> locale:
+>  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+>  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+>  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8
+>  [7] LC_PAPER=C                 LC_NAME=C
+>  [9] LC_ADDRESS=C               LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+> 
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+> 
+> other attached packages:
+> [1] BiocInstaller_1.5.7
+> 
+> loaded via a namespace (and not attached):
+> [1] tools_2.15.0
+> 
+> Best regards.
+> [ CC: to the mainteners ]
+> 
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From D.Strbenac at garvan.org.au  Wed May 16 07:00:21 2012
+From: D.Strbenac at garvan.org.au (Dario Strbenac)
+Date: Wed, 16 May 2012 15:00:21 +1000 (EST)
+Subject: [Bioc-devel] makeFeatureDbFromUCSC Column Checking
+Message-ID: <20120516150021.BXA20991@gimr.garvan.unsw.edu.au>
+
+Hello,
+
+I thought I'd suggest reordering the steps that are taken when makeFeatureDbFromUCSC is called. It would be better if the column name checking step was done before an entire table of data was downloaded and then an error was thrown.
+
+--------------------------------------
+Dario Strbenac
+Research Assistant
+Cancer Epigenetics
+Garvan Institute of Medical Research
+Darlinghurst NSW 2010
+Australia
+
+
+From tim.triche at gmail.com  Wed May 16 07:12:07 2012
+From: tim.triche at gmail.com (Tim Triche, Jr.)
+Date: Tue, 15 May 2012 22:12:07 -0700
+Subject: [Bioc-devel] makeFeatureDbFromUCSC Column Checking
+In-Reply-To: <20120516150021.BXA20991@gimr.garvan.unsw.edu.au>
+References: <20120516150021.BXA20991@gimr.garvan.unsw.edu.au>
+Message-ID: <CAC+N9BVyMRe6Xmb=LR262zrgjPuDJg2cpeTOYLkvqOu6ze-7Vg@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120515/e699ba8d/attachment.pl>
+
+From hpages at fhcrc.org  Wed May 16 07:21:56 2012
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Tue, 15 May 2012 22:21:56 -0700
+Subject: [Bioc-devel] makeFeatureDbFromUCSC Column Checking
+In-Reply-To: <CAC+N9BVyMRe6Xmb=LR262zrgjPuDJg2cpeTOYLkvqOu6ze-7Vg@mail.gmail.com>
+References: <20120516150021.BXA20991@gimr.garvan.unsw.edu.au>
+	<CAC+N9BVyMRe6Xmb=LR262zrgjPuDJg2cpeTOYLkvqOu6ze-7Vg@mail.gmail.com>
+Message-ID: <4FB33974.1080000@fhcrc.org>
+
+Hi Dario, Tim,
+
+Can you guys show an example so we know exactly what you mean. Sorry if
+it's obvious. Thanks!
+
+H.
+
+
+On 05/15/2012 10:12 PM, Tim Triche, Jr. wrote:
+> seconding this!
+>
+>
+> On Tue, May 15, 2012 at 10:00 PM, Dario Strbenac
+> <D.Strbenac at garvan.org.au>wrote:
+>
+>> Hello,
+>>
+>> I thought I'd suggest reordering the steps that are taken when
+>> makeFeatureDbFromUCSC is called. It would be better if the column name
+>> checking step was done before an entire table of data was downloaded and
+>> then an error was thrown.
+>>
+>> --------------------------------------
+>> Dario Strbenac
+>> Research Assistant
+>> Cancer Epigenetics
+>> Garvan Institute of Medical Research
+>> Darlinghurst NSW 2010
+>> Australia
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+>
+>
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M1-B514
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From D.Strbenac at garvan.org.au  Wed May 16 08:00:12 2012
+From: D.Strbenac at garvan.org.au (Dario Strbenac)
+Date: Wed, 16 May 2012 16:00:12 +1000 (EST)
+Subject: [Bioc-devel] makeFeatureDbFromUCSC Column Checking
+Message-ID: <20120516160012.BXA22455@gimr.garvan.unsw.edu.au>
+
+> repeatDB <- makeFeatureDbFromUCSC("hg18", "RepeatMasker", "rmsk")
+Download the rmsk table ... OK    # Takes a few minutes
+Checking that required Columns are present ... 
+Error in makeFeatureDbFromUCSC("hg18", "RepeatMasker", "rmsk") : 
+  GenomicFeatures internal error: rmsk table doesn't contain a 'chrom', 'chromStart', or 'chromEnd' column and no reasonable substitute has been designated via the 'chromCol''chromStartCol' or 'chromEndCol' arguments.
+
+---- Original message ----
+>Date: Tue, 15 May 2012 22:21:56 -0700
+>From: Herv? Pag?s <hpages at fhcrc.org>  
+>Subject: Re: [Bioc-devel] makeFeatureDbFromUCSC Column Checking  
+>To: ttriche at usc.edu
+>Cc: "Tim Triche, Jr." <tim.triche at gmail.com>, D.Strbenac at garvan.org.au, bioc-devel at r-project.org
+>
+>Hi Dario, Tim,
+>
+>Can you guys show an example so we know exactly what you mean. Sorry if
+>it's obvious. Thanks!
+>
+>H.
+>
+>
+>On 05/15/2012 10:12 PM, Tim Triche, Jr. wrote:
+>> seconding this!
+>>
+>>
+>> On Tue, May 15, 2012 at 10:00 PM, Dario Strbenac
+>> <D.Strbenac at garvan.org.au>wrote:
+>>
+>>> Hello,
+>>>
+>>> I thought I'd suggest reordering the steps that are taken when
+>>> makeFeatureDbFromUCSC is called. It would be better if the column name
+>>> checking step was done before an entire table of data was downloaded and
+>>> then an error was thrown.
+>>>
+>>> --------------------------------------
+>>> Dario Strbenac
+>>> Research Assistant
+>>> Cancer Epigenetics
+>>> Garvan Institute of Medical Research
+>>> Darlinghurst NSW 2010
+>>> Australia
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>>
+>>
+>
+>
+>-- 
+>Herv? Pag?s
+>
+>Program in Computational Biology
+>Division of Public Health Sciences
+>Fred Hutchinson Cancer Research Center
+>1100 Fairview Ave. N, M1-B514
+>P.O. Box 19024
+>Seattle, WA 98109-1024
+>
+>E-mail: hpages at fhcrc.org
+>Phone:  (206) 667-5791
+>Fax:    (206) 667-1319
+
+From hpages at fhcrc.org  Wed May 16 18:24:21 2012
+From: hpages at fhcrc.org (=?UTF-8?B?SGVydsOpIFBhZ8Oocw==?=)
+Date: Wed, 16 May 2012 09:24:21 -0700
+Subject: [Bioc-devel] makeFeatureDbFromUCSC Column Checking
+In-Reply-To: <20120516160012.BXA22455@gimr.garvan.unsw.edu.au>
+References: <20120516160012.BXA22455@gimr.garvan.unsw.edu.au>
+Message-ID: <4FB3D4B5.1070000@fhcrc.org>
+
+On 05/15/2012 11:00 PM, Dario Strbenac wrote:
+>> repeatDB<- makeFeatureDbFromUCSC("hg18", "RepeatMasker", "rmsk")
+> Download the rmsk table ... OK    # Takes a few minutes
+> Checking that required Columns are present ...
+> Error in makeFeatureDbFromUCSC("hg18", "RepeatMasker", "rmsk") :
+>    GenomicFeatures internal error: rmsk table doesn't contain a 'chrom', 'chromStart', or 'chromEnd' column and no reasonable substitute has been designated via the 'chromCol''chromStartCol' or 'chromEndCol' arguments.
+
+Yes it was obvious (if I had read "makeFeatureDbFromUCSC" instead of
+"makeTranscriptDbFromUCSC"). Makes a lot of sense and should be an easy
+change. Thanks!
+
+H.
+
+
+>
+> ---- Original message ----
+>> Date: Tue, 15 May 2012 22:21:56 -0700
+>> From: Herv? Pag?s<hpages at fhcrc.org>
+>> Subject: Re: [Bioc-devel] makeFeatureDbFromUCSC Column Checking
+>> To: ttriche at usc.edu
+>> Cc: "Tim Triche, Jr."<tim.triche at gmail.com>, D.Strbenac at garvan.org.au, bioc-devel at r-project.org
+>>
+>> Hi Dario, Tim,
+>>
+>> Can you guys show an example so we know exactly what you mean. Sorry if
+>> it's obvious. Thanks!
+>>
+>> H.
+>>
+>>
+>> On 05/15/2012 10:12 PM, Tim Triche, Jr. wrote:
+>>> seconding this!
+>>>
+>>>
+>>> On Tue, May 15, 2012 at 10:00 PM, Dario Strbenac
+>>> <D.Strbenac at garvan.org.au>wrote:
+>>>
+>>>> Hello,
+>>>>
+>>>> I thought I'd suggest reordering the steps that are taken when
+>>>> makeFeatureDbFromUCSC is called. It would be better if the column name
+>>>> checking step was done before an entire table of data was downloaded and
+>>>> then an error was thrown.
+>>>>
+>>>> --------------------------------------
+>>>> Dario Strbenac
+>>>> Research Assistant
+>>>> Cancer Epigenetics
+>>>> Garvan Institute of Medical Research
+>>>> Darlinghurst NSW 2010
+>>>> Australia
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at r-project.org mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>>
+>>>
+>>>
+>>
+>>
+>> --
+>> Herv? Pag?s
+>>
+>> Program in Computational Biology
+>> Division of Public Health Sciences
+>> Fred Hutchinson Cancer Research Center
+>> 1100 Fairview Ave. N, M1-B514
+>> P.O. Box 19024
+>> Seattle, WA 98109-1024
+>>
+>> E-mail: hpages at fhcrc.org
+>> Phone:  (206) 667-5791
+>> Fax:    (206) 667-1319
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M1-B514
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From sdmorris at u.washington.edu  Thu May 17 00:39:32 2012
+From: sdmorris at u.washington.edu (Stephanie M. Gogarten)
+Date: Wed, 16 May 2012 15:39:32 -0700
+Subject: [Bioc-devel] linking to suggested package in documentation
+Message-ID: <4FB42CA4.4000907@u.washington.edu>
+
+Is is possible to include a link to a package/function/class in the 
+documentation if that package is only listed in "Suggests" rather than 
+"Depends" or "Imports"?  I tried to do this, but I got a warning for a 
+missing link during R CMD check.
+
+Stephanie
+
+
+From tag at granular.com  Thu May 17 01:30:45 2012
+From: tag at granular.com (Y-h. Taguchi)
+Date: Thu, 17 May 2012 08:30:45 +0900
+Subject: [Bioc-devel] linking to suggested package in documentation
+In-Reply-To: <4FB42CA4.4000907@u.washington.edu>
+References: <4FB42CA4.4000907@u.washington.edu>
+Message-ID: <CAJgr72=p9-13BBseFNwGR_nDGv0-2QSvhcbH+4oWwHb9R42Dtw@mail.gmail.com>
+
+Dear Steohanie,
+
+2012/5/17 Stephanie M. Gogarten <sdmorris at u.washington.edu>:
+> Is is possible to include a link to a package/function/class in the
+> documentation if that package is only listed in "Suggests" rather than
+> "Depends" or "Imports"?
+
+Yes, you can, but....
+
+>I tried to do this, but I got a warning for a
+> missing link during R CMD check.
+
+In order to run "R CMD check" properly, you need to install everything
+in  Suggests","Depends" or "Imports" in your ssytem, since it tries to
+execute every example in vignette.
+
+Have you tried it?
+
+yours, tag.
+
+>
+> Stephanie
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+
+-- 
+Y-h. Taguchi, Dept. Phys., Chuo Univ., Kasuga, Bunkyo-ku, Tokyo 112-8551,Japan
+Tel./Fax.  +81-3-3817-1791/1792  http://www.granular.com/tag/index-j.html
+?112-8551 ???????? ???? ???? ??/FAX 03-3817-1791/1792
+
+
+From D.Strbenac at garvan.org.au  Thu May 17 08:00:15 2012
+From: D.Strbenac at garvan.org.au (Dario Strbenac)
+Date: Thu, 17 May 2012 16:00:15 +1000 (EST)
+Subject: [Bioc-devel] Rsamtools filterBam Functionality
+Message-ID: <20120517160015.BXA45216@gimr.garvan.unsw.edu.au>
+
+Hello,
+
+I'm interested in filtering a BAM file by read ID. I've read in two BAM files of two different mappings of the same FASTQ file, found which IDs are unique to one of them, and want to create a BAM file of these. This doesn't look possible from the options available to filterBam. Could that be extended in a future release ?
+
+--------------------------------------
+Dario Strbenac
+Research Assistant
+Cancer Epigenetics
+Garvan Institute of Medical Research
+Darlinghurst NSW 2010
+Australia
+
+
+From sneumann at ipb-halle.de  Thu May 17 13:57:00 2012
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Thu, 17 May 2012 13:57:00 +0200
+Subject: [Bioc-devel] Happy Birthday Bioconductor !
+Message-ID: <assp.548489dc7b.1337255820.4910.130.camel@localhost>
+
+Hi,
+
+did I miss it, or has nobody celebrated that 
+the Bioconductor project had released BioC 1.0 
+back on May 1st, 2002 TEN YEARS AGO ? 
+
+In any case: happy Birthday to Bioconductor, 
+congratulations to ten years of healthy growth,
+and may the next ten years bring new and more 
+awesomeness to the project !
+
+Thanks to the whole core team and all contributors 
+for making this happen! Let's open a virtual (or real)
+bottle of champagne !
+
+Yours,
+Steffen 
+
+(who just created a slide on what BioC is,
+ and looked on Wikipedia for the project's history ;-)
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From sdmorris at u.washington.edu  Thu May 17 17:16:16 2012
+From: sdmorris at u.washington.edu (Stephanie M. Gogarten)
+Date: Thu, 17 May 2012 08:16:16 -0700
+Subject: [Bioc-devel] linking to suggested package in documentation
+In-Reply-To: <mailman.25.1337248808.23610.bioc-devel@r-project.org>
+References: <mailman.25.1337248808.23610.bioc-devel@r-project.org>
+Message-ID: <4FB51640.5010800@u.washington.edu>
+
+The package is installed on my system.  If it is listed in the 
+"Suggests" field, I get the warning
+
+* checking Rd cross-references ... WARNING
+Missing link(s) in documentation object 
+?/Volumes/geneva_sata/stephanie/Bioconductor/GWASTools/man/snpStats.Rd?:
+   ?SnpMatrix-class?
+
+If I move the "snpStats" package from "Suggests" to "Imports," that 
+warning goes away.
+
+I can see why R would warn about documentation links to packages in 
+"Suggests", because if the package is not installed the link would be 
+broken.  But I was wondering if there was a clever way to convince R CMD 
+check that packages in "Suggests" should be considered valid for 
+documentation links.
+
+thanks,
+Stephanie
+
+On 5/17/12 3:00 AM, bioc-devel-request at r-project.org wrote:
+> Date: Thu, 17 May 2012 08:30:45 +0900 From: "Y-h. Taguchi"
+> <tag at granular.com> To: bioc-devel at r-project.org Subject: Re:
+> [Bioc-devel] linking to suggested package in documentation Message-ID:
+> <CAJgr72=p9-13BBseFNwGR_nDGv0-2QSvhcbH+4oWwHb9R42Dtw at mail.gmail.com>
+> Content-Type: text/plain; charset=ISO-2022-JP Dear Steohanie, 2012/5/17
+> Stephanie M. Gogarten <sdmorris at u.washington.edu>:
+>> >  Is is possible to include a link to a package/function/class in the
+>> >  documentation if that package is only listed in "Suggests" rather than
+>> >  "Depends" or "Imports"?
+> Yes, you can, but....
+>
+>> >I tried to do this, but I got a warning for a
+>> >  missing link during R CMD check.
+> In order to run "R CMD check" properly, you need to install everything
+> in  Suggests","Depends" or "Imports" in your ssytem, since it tries to
+> execute every example in vignette.
+>
+> Have you tried it?
+>
+> yours, tag.
+>
+>> >
+>> >  Stephanie
+>> >
+>> >  _______________________________________________
+>> >  Bioc-devel at r-project.org  mailing list
+>> >  https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+> -- Y-h. Taguchi, Dept. Phys., Chuo Univ., Kasuga, Bunkyo-ku, Tokyo
+> 112-8551,Japan Tel./Fax. +81-3-3817-1791/1792
+> http://www.granular.com/tag/index-j.html ?112-8551 ???????? ???? ????
+> ??/FAX 03-3817-1791/1792
+
+
+From mtmorgan at fhcrc.org  Thu May 17 22:03:02 2012
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 17 May 2012 13:03:02 -0700
+Subject: [Bioc-devel] linking to suggested package in documentation
+In-Reply-To: <4FB51640.5010800@u.washington.edu>
+References: <mailman.25.1337248808.23610.bioc-devel@r-project.org>
+	<4FB51640.5010800@u.washington.edu>
+Message-ID: <4FB55976.1080302@fhcrc.org>
+
+On 05/17/2012 08:16 AM, Stephanie M. Gogarten wrote:
+> The package is installed on my system. If it is listed in the "Suggests"
+> field, I get the warning
+>
+> * checking Rd cross-references ... WARNING
+> Missing link(s) in documentation object
+> ?/Volumes/geneva_sata/stephanie/Bioconductor/GWASTools/man/snpStats.Rd?:
+> ?SnpMatrix-class?
+>
+> If I move the "snpStats" package from "Suggests" to "Imports," that
+> warning goes away.
+>
+> I can see why R would warn about documentation links to packages in
+> "Suggests", because if the package is not installed the link would be
+> broken. But I was wondering if there was a clever way to convince R CMD
+> check that packages in "Suggests" should be considered valid for
+> documentation links.
+
+Hi Stephanie --
+
+I think you're looking for sectin 2.5 of Writing R Extensions -- Cross 
+references, along the lines of
+
+   \link[pkg]{foo}
+
+where 'foo' is the name of the _html_ file foo is documented in, or
+
+   \link[pkg:bar]{foo}
+
+to find documentation on foo in html page bar.html.
+
+Martin
+
+>
+> thanks,
+> Stephanie
+>
+> On 5/17/12 3:00 AM, bioc-devel-request at r-project.org wrote:
+>> Date: Thu, 17 May 2012 08:30:45 +0900 From: "Y-h. Taguchi"
+>> <tag at granular.com> To: bioc-devel at r-project.org Subject: Re:
+>> [Bioc-devel] linking to suggested package in documentation Message-ID:
+>> <CAJgr72=p9-13BBseFNwGR_nDGv0-2QSvhcbH+4oWwHb9R42Dtw at mail.gmail.com>
+>> Content-Type: text/plain; charset=ISO-2022-JP Dear Steohanie, 2012/5/17
+>> Stephanie M. Gogarten <sdmorris at u.washington.edu>:
+>>> > Is is possible to include a link to a package/function/class in the
+>>> > documentation if that package is only listed in "Suggests" rather than
+>>> > "Depends" or "Imports"?
+>> Yes, you can, but....
+>>
+>>> >I tried to do this, but I got a warning for a
+>>> > missing link during R CMD check.
+>> In order to run "R CMD check" properly, you need to install everything
+>> in Suggests","Depends" or "Imports" in your ssytem, since it tries to
+>> execute every example in vignette.
+>>
+>> Have you tried it?
+>>
+>> yours, tag.
+>>
+>>> >
+>>> > Stephanie
+>>> >
+>>> > _______________________________________________
+>>> > Bioc-devel at r-project.org mailing list
+>>> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>
+>> -- Y-h. Taguchi, Dept. Phys., Chuo Univ., Kasuga, Bunkyo-ku, Tokyo
+>> 112-8551,Japan Tel./Fax. +81-3-3817-1791/1792
+>> http://www.granular.com/tag/index-j.html ?112-8551 ???????? ???? ????
+>> ??/FAX 03-3817-1791/1792
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From mtmorgan at fhcrc.org  Fri May 18 18:29:30 2012
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Fri, 18 May 2012 09:29:30 -0700
+Subject: [Bioc-devel] Happy Birthday Bioconductor !
+In-Reply-To: <assp.548489dc7b.1337255820.4910.130.camel@localhost>
+References: <assp.548489dc7b.1337255820.4910.130.camel@localhost>
+Message-ID: <4FB678EA.6000303@fhcrc.org>
+
+On 05/17/2012 04:57 AM, Steffen Neumann wrote:
+> Hi,
+>
+> did I miss it, or has nobody celebrated that
+> the Bioconductor project had released BioC 1.0
+> back on May 1st, 2002 TEN YEARS AGO ?
+>
+> In any case: happy Birthday to Bioconductor,
+> congratulations to ten years of healthy growth,
+> and may the next ten years bring new and more
+> awesomeness to the project !
+>
+> Thanks to the whole core team and all contributors
+> for making this happen! Let's open a virtual (or real)
+> bottle of champagne !
+
+And especially to the far-sighted individuals who contributed to the 
+original iterations!
+
+Martin
+
+>
+> Yours,
+> Steffen
+>
+> (who just created a slide on what BioC is,
+>   and looked on Wikipedia for the project's history ;-)
+>
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From vobencha at fhcrc.org  Sat May 19 20:01:05 2012
+From: vobencha at fhcrc.org (Valerie Obenchain)
+Date: Sat, 19 May 2012 11:01:05 -0700
+Subject: [Bioc-devel] BioC 2012
+Message-ID: <4FB7DFE1.7040208@fhcrc.org>
+
+Hello Bioconductors!
+
+BioC2012 is fast approaching. We have a diverse line up of morning talks
+and afternoon practicals. Check them out at
+
+    https://secure.bioconductor.org/BioC2012/
+
+If you are interested in giving an afternoon practical (aka lab session)
+you can submit your proposal here
+
+    https://secure.bioconductor.org/BioC2012/labs.php
+
+There is a  poster session Tuesday night 5:30 - 7:00. This is a great
+way to share your work or get feedback on in-progress ideas. Poster
+abstracts are due by July 1.
+
+Please direct questions or comments to biocworkshop at fhcrc.org
+
+Valerie
+
+
+From slzhao at sibs.ac.cn  Tue May 22 15:14:18 2012
+From: slzhao at sibs.ac.cn (slzhao)
+Date: Tue, 22 May 2012 21:14:18 +0800
+Subject: [Bioc-devel] A question about using proxy when developing R package
+Message-ID: <CAGdx+5jaDPdN1PcTxoeS5DKwqeLihALekmJF1+EHfKECOKxWsw@mail.gmail.com>
+
+Hello,
+
+         I am developing a R package. As I have to use a proxy to
+access the internet, so I used the function "setInternet2()" in R to
+download CRAN packages. But now I am writing a sweave based help file
+in Lyx software. In this help file, the "download.file" function was
+used in a example code. So I just used "setInternet2()" in this help
+file. Of course it is not good as the end user need not a proxy. Does
+anyone know how to resolve this problem?
+         Thanks for the reply.
+
+-- 
+              Shilin Zhao
+Key Laboratory of Systems Biology
+Shanghai Institute for Biological Sciences
+Chinese Academy of Sciences
+320 Yue-Yang Road
+Shanghai,China,200031
+Tel?86-21-54920083
+
+
+From mtmorgan at fhcrc.org  Tue May 22 15:51:35 2012
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Tue, 22 May 2012 06:51:35 -0700
+Subject: [Bioc-devel] A question about using proxy when developing R
+	package
+In-Reply-To: <CAGdx+5jaDPdN1PcTxoeS5DKwqeLihALekmJF1+EHfKECOKxWsw@mail.gmail.com>
+References: <CAGdx+5jaDPdN1PcTxoeS5DKwqeLihALekmJF1+EHfKECOKxWsw@mail.gmail.com>
+Message-ID: <4FBB99E7.2050903@fhcrc.org>
+
+On 05/22/2012 06:14 AM, slzhao wrote:
+> Hello,
+> 
+>           I am developing a R package. As I have to use a proxy to
+> access the internet, so I used the function "setInternet2()" in R to
+> download CRAN packages. But now I am writing a sweave based help file
+> in Lyx software. In this help file, the "download.file" function was
+> used in a example code. So I just used "setInternet2()" in this help
+> file. Of course it is not good as the end user need not a proxy. Does
+> anyone know how to resolve this problem?
+
+I think you want to use a different approach to configuring your own
+computer to use the proxy. Arrange to start R with the --internet2
+option, or (perhaps only R-devel?) set the environment variable
+R_WIN_INTERNET2 on your system. See the R windows FAQ
+
+http://cran.r-project.org/bin/windows/base/rw-FAQ.html
+
+Martin
+
+>           Thanks for the reply.
+> 
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From thomas.girke at ucr.edu  Tue May 22 19:58:47 2012
+From: thomas.girke at ucr.edu (Thomas Girke)
+Date: Tue, 22 May 2012 10:58:47 -0700
+Subject: [Bioc-devel] read.XStringSet with spaces in or at end of sequence
+Message-ID: <20120522175847.GA730@genomics-59-108.bulk.ucr.edu>
+
+Currently, spaces in sequences are handled inconsistently by the FASTA
+read functions in Biostrings. This applies to spaces in or at the end of
+sequence strings. Because of this users often think Biostrings cannot
+handle their sequence data and give up using it which I find
+unfortunate.
+
+For instance, given this sequence stored in "test.fasta":
+>123
+AATTTAAA GGGG
+
+read.DNAStringSet fails to import this sequence which is the
+least desirable outcome.
+
+> read.DNAStringSet("test.fasta")
+Error in .Call2("read_fasta_in_XStringSet", efp_list, nrec, skip, use.names,  : 
+  key 32 (char ' ') not in lookup table
+
+however, read.AAStringSet imports it but maintains the space 
+
+> read.AAStringSet("test.fasta")                                                                                                                                                                                                                                                                                              
+  A AAStringSet instance of length 1
+      width seq                                               names               
+      [1]    13 AATTTAAA GGGG                                     123
+
+Wouldn't it make most sense to remove/ignore spaces during the import?
+
+Thomas
+
+> sessionInfo()
+R version 2.15.0 (2012-03-30)
+Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] Biostrings_2.24.1  IRanges_1.14.2     BiocGenerics_0.2.0
+
+loaded via a namespace (and not attached):
+[1] stats4_2.15.0 tools_2.15.0
+
+
+From hpages at fhcrc.org  Tue May 22 21:39:14 2012
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Tue, 22 May 2012 12:39:14 -0700
+Subject: [Bioc-devel] read.XStringSet with spaces in or at end of
+	sequence
+In-Reply-To: <20120522175847.GA730@genomics-59-108.bulk.ucr.edu>
+References: <20120522175847.GA730@genomics-59-108.bulk.ucr.edu>
+Message-ID: <4FBBEB62.1050102@fhcrc.org>
+
+Hi Thomas,
+
+On 05/22/2012 10:58 AM, Thomas Girke wrote:
+> Currently, spaces in sequences are handled inconsistently by the FASTA
+> read functions in Biostrings. This applies to spaces in or at the end of
+> sequence strings. Because of this users often think Biostrings cannot
+> handle their sequence data and give up using it which I find
+> unfortunate.
+>
+> For instance, given this sequence stored in "test.fasta":
+>> 123
+> AATTTAAA GGGG
+>
+> read.DNAStringSet fails to import this sequence which is the
+> least desirable outcome.
+>
+>> read.DNAStringSet("test.fasta")
+> Error in .Call2("read_fasta_in_XStringSet", efp_list, nrec, skip, use.names,  :
+>    key 32 (char ' ') not in lookup table
+>
+> however, read.AAStringSet imports it but maintains the space
+>
+>> read.AAStringSet("test.fasta")
+>    A AAStringSet instance of length 1
+>        width seq                                               names
+>        [1]    13 AATTTAAA GGGG                                     123
+
+Note that this doesn't fail because the letters in an AAStringSet
+object can be anything right now, but it's on my TODO list to change
+this i.e. it will become an error to try to store a letter in an
+AAStringSet that doesn't belong to the Amino Acid alphabet (stored
+in predefined constant AA_ALPHABET).
+
+So the import function to use when one doesn't want to enforce a
+particular alphabet is read.BStringSet():
+
+   > read.BStringSet("test.fasta")
+     A BStringSet instance of length 1
+       width seq                                               names 
+
+   [1]    13 AATTTAAA GGGG                                      123
+
+The other functions in the family (i.e. read.DNAStringSet,
+read.RNAStringSet, and read.AAStringSet) will fail if the FASTA file
+contains letters that are not in DNA_ALPHABET, RNA_ALPHABET, or
+AA_ALPHABET, respectively.
+
+>
+> Wouldn't it make most sense to remove/ignore spaces during the import?
+
+According to Wikipeddia
+
+   http://en.wikipedia.org/wiki/FASTA_format
+
+yes the spaces and any other invalid code should be ignored. My concern
+with this behavior though is that removing/ignoring letters in the input 
+will shift the positions of all the remaining letters, which for
+some use cases is not desirable (maybe everything is fine because all
+the letters end up at the right position anyway, but maybe not, hard
+to tell without knowing why a space was inserted in the file in the
+first place).
+
+Note that we have special letters in the DNA/RNA/AA alphabets that
+could be used as a replacement for invalid chars:
+
+   > DNA_ALPHABET
+    [1] "A" "C" "G" "T" "M" "R" "W" "S" "Y" "K" "V" "H" "D" "B" "N" "-" "+"
+   > RNA_ALPHABET
+    [1] "A" "C" "G" "U" "M" "R" "W" "S" "Y" "K" "V" "H" "D" "B" "N" "-" "+"
+   > AA_ALPHABET
+    [1] "A" "R" "N" "D" "C" "Q" "E" "G" "H" "I" "L" "K" "M" "F" "P" "S" 
+"T" "W" "Y"
+   [20] "V" "U" "B" "Z" "X" "*" "-" "+"
+
+"-" stands for "gap" and "+" is used for hard masking. IMO they are
+both reasonable candidates. I propose to add an extra arg (e.g.
+if.invalid.char) to read.DNAStringSet, read.RNAStringSet, and
+read.AAStringSet to let the user choose what the substitution letter
+should be, e.g. if.invalid.char="+", or if.invalid.char="" (for
+removing the invalid letters).
+
+Now should we set its default to "" (and strictly follow the FASTA
+spec), or should we set it to NA so by default an error would still
+be raised if the file contains invalid chars? I prefer the latter
+because I think it's good to let the user know that there is something
+uncommon (at best) or potentially wrong with the file.
+
+Thanks for your feedback,
+H.
+
+
+>
+> Thomas
+>
+>> sessionInfo()
+> R version 2.15.0 (2012-03-30)
+> Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+>
+> locale:
+> [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> other attached packages:
+> [1] Biostrings_2.24.1  IRanges_1.14.2     BiocGenerics_0.2.0
+>
+> loaded via a namespace (and not attached):
+> [1] stats4_2.15.0 tools_2.15.0
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M1-B514
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From thomas.girke at ucr.edu  Tue May 22 22:35:41 2012
+From: thomas.girke at ucr.edu (Thomas Girke)
+Date: Tue, 22 May 2012 13:35:41 -0700
+Subject: [Bioc-devel] read.XStringSet with spaces in or at end of
+ sequence
+In-Reply-To: <486d7f5ce8ed4931aaf8d6319acae968@EXCH-HT-2.exch.ucr.edu>
+References: <20120522175847.GA730@genomics-59-108.bulk.ucr.edu>
+	<486d7f5ce8ed4931aaf8d6319acae968@EXCH-HT-2.exch.ucr.edu>
+Message-ID: <20120522203541.GA1069@genomics-59-108.bulk.ucr.edu>
+
+Herv?,
+
+I agree, an argument where the user has to explicitly decide how to handle 
+unusual characters (e.g. if.invalid.char="") would solve this in the most
+sensible manner.
+
+Thomas
+
+On Tue, May 22, 2012 at 07:39:14PM +0000, Herv? Pag?s wrote:
+> Hi Thomas,
+> 
+> On 05/22/2012 10:58 AM, Thomas Girke wrote:
+> > Currently, spaces in sequences are handled inconsistently by the FASTA
+> > read functions in Biostrings. This applies to spaces in or at the end of
+> > sequence strings. Because of this users often think Biostrings cannot
+> > handle their sequence data and give up using it which I find
+> > unfortunate.
+> >
+> > For instance, given this sequence stored in "test.fasta":
+> >> 123
+> > AATTTAAA GGGG
+> >
+> > read.DNAStringSet fails to import this sequence which is the
+> > least desirable outcome.
+> >
+> >> read.DNAStringSet("test.fasta")
+> > Error in .Call2("read_fasta_in_XStringSet", efp_list, nrec, skip, use.names,  :
+> >    key 32 (char ' ') not in lookup table
+> >
+> > however, read.AAStringSet imports it but maintains the space
+> >
+> >> read.AAStringSet("test.fasta")
+> >    A AAStringSet instance of length 1
+> >        width seq                                               names
+> >        [1]    13 AATTTAAA GGGG                                     123
+> 
+> Note that this doesn't fail because the letters in an AAStringSet
+> object can be anything right now, but it's on my TODO list to change
+> this i.e. it will become an error to try to store a letter in an
+> AAStringSet that doesn't belong to the Amino Acid alphabet (stored
+> in predefined constant AA_ALPHABET).
+> 
+> So the import function to use when one doesn't want to enforce a
+> particular alphabet is read.BStringSet():
+> 
+>    > read.BStringSet("test.fasta")
+>      A BStringSet instance of length 1
+>        width seq                                               names 
+> 
+>    [1]    13 AATTTAAA GGGG                                      123
+> 
+> The other functions in the family (i.e. read.DNAStringSet,
+> read.RNAStringSet, and read.AAStringSet) will fail if the FASTA file
+> contains letters that are not in DNA_ALPHABET, RNA_ALPHABET, or
+> AA_ALPHABET, respectively.
+> 
+> >
+> > Wouldn't it make most sense to remove/ignore spaces during the import?
+> 
+> According to Wikipeddia
+> 
+>    http://en.wikipedia.org/wiki/FASTA_format
+> 
+> yes the spaces and any other invalid code should be ignored. My concern
+> with this behavior though is that removing/ignoring letters in the input 
+> will shift the positions of all the remaining letters, which for
+> some use cases is not desirable (maybe everything is fine because all
+> the letters end up at the right position anyway, but maybe not, hard
+> to tell without knowing why a space was inserted in the file in the
+> first place).
+> 
+> Note that we have special letters in the DNA/RNA/AA alphabets that
+> could be used as a replacement for invalid chars:
+> 
+>    > DNA_ALPHABET
+>     [1] "A" "C" "G" "T" "M" "R" "W" "S" "Y" "K" "V" "H" "D" "B" "N" "-" "+"
+>    > RNA_ALPHABET
+>     [1] "A" "C" "G" "U" "M" "R" "W" "S" "Y" "K" "V" "H" "D" "B" "N" "-" "+"
+>    > AA_ALPHABET
+>     [1] "A" "R" "N" "D" "C" "Q" "E" "G" "H" "I" "L" "K" "M" "F" "P" "S" 
+> "T" "W" "Y"
+>    [20] "V" "U" "B" "Z" "X" "*" "-" "+"
+> 
+> "-" stands for "gap" and "+" is used for hard masking. IMO they are
+> both reasonable candidates. I propose to add an extra arg (e.g.
+> if.invalid.char) to read.DNAStringSet, read.RNAStringSet, and
+> read.AAStringSet to let the user choose what the substitution letter
+> should be, e.g. if.invalid.char="+", or if.invalid.char="" (for
+> removing the invalid letters).
+> 
+> Now should we set its default to "" (and strictly follow the FASTA
+> spec), or should we set it to NA so by default an error would still
+> be raised if the file contains invalid chars? I prefer the latter
+> because I think it's good to let the user know that there is something
+> uncommon (at best) or potentially wrong with the file.
+> 
+> Thanks for your feedback,
+> H.
+> 
+> 
+> >
+> > Thomas
+> >
+> >> sessionInfo()
+> > R version 2.15.0 (2012-03-30)
+> > Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+> >
+> > locale:
+> > [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+> >
+> > attached base packages:
+> > [1] stats     graphics  grDevices utils     datasets  methods   base
+> >
+> > other attached packages:
+> > [1] Biostrings_2.24.1  IRanges_1.14.2     BiocGenerics_0.2.0
+> >
+> > loaded via a namespace (and not attached):
+> > [1] stats4_2.15.0 tools_2.15.0
+> >
+> > _______________________________________________
+> > Bioc-devel at r-project.org mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> 
+> -- 
+> Herv? Pag?s
+> 
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M1-B514
+> P.O. Box 19024
+> Seattle, WA 98109-1024
+> 
+> E-mail: hpages at fhcrc.org
+> Phone:  (206) 667-5791
+> Fax:    (206) 667-1319
+
+
+From lgoff at csail.mit.edu  Wed May 23 23:54:13 2012
+From: lgoff at csail.mit.edu (lgoff at csail.mit.edu)
+Date: Wed, 23 May 2012 17:54:13 -0400
+Subject: [Bioc-devel] Package download stats inflated? (specifically
+	cummeRbund)
+Message-ID: <20120523175413.15365d9suiqna64l@webmail.csail.mit.edu>
+
+Hi Bioc-devel,
+I am the package maintainer for the cummeRbund package and since I'm  
+not exactly sure to whom I should ask this question, I decided to post  
+to the bioc-devel list.
+
+Since this is my first Bioc package I have been keenly interested in  
+the download stats that are tracked and visible on the Bioconductor  
+website, here:
+
+http://bioconductor.org/packages/stats/index.html
+
+Specifically, I'm noticing that the number of downloads for the  
+cummeRbund package seems to far outpace the number of unique IP  
+addresses downloading the package:
+
+http://bioconductor.org/packages/stats/bioc/cummeRbund.html
+
+For a few months there was a mean of between 10-20 downloads per  
+unique IP address, and for the current month this is on track to be  
+about 36 downloads/IP (and looks to be about 8.7% of the total BioC  
+packages downloaded this month so far).  Looking around at several  
+other packages, this does not seem to be the case as most of the  
+packages in the top 30 list have a ratio of about 1.8-3 downloads / IP.
+
+As ecstatic as these numbers make me, I'm certain that there is some  
+underlying reason for this inflation that is not being appropriately  
+represented here, but without anything else to go on, I'm not really  
+sure where this is coming from.  I would obviously like to have an  
+honest representation of the number of downloads for my package, and I  
+was hoping that someone with access to these data could help me track  
+down the cause of this download inflation (unless these numbers are a  
+true representation of the downloads, and then I would also very much  
+like to find out more demographics if possible as well).
+
+Any and all advice or information is appreciated!  Thanks to all, and  
+a special thanks to everyone that helps to keep BioC such an amazing  
+project.  I have enjoyed the benefits of bioconductor for the past 5+  
+years and I'm very happy that I can finally start to contribute back  
+to this wonderful project.  (Also, I look forward to meeting some of  
+you at BioC 2012 this year!)
+
+Thanks in advance!
+
+Cheers,
+
+Loyal Goff
+
+(lgoff at csail.mit.edu)
+NSF Postdoctoral Fellow
+Computer Science and Artificial Intelligence Laboratory, MIT &
+Stem Cells and Regenerative Biology Department, Harvard University &
+The Broad Institute
+
+
+From julian.gehring at embl.de  Thu May 24 14:32:44 2012
+From: julian.gehring at embl.de (Julian Gehring)
+Date: Thu, 24 May 2012 14:32:44 +0200
+Subject: [Bioc-devel] ShortRead: 'qa' fails for single read alignments
+Message-ID: <4FBE2A6C.7080700@embl.de>
+
+Hi,
+
+while using the 'ShortRead' package for some quality assessment of 
+aligned reads (see example below), I observed the following behavior:
+
+## Example code ##
+
+library(ShortRead)
+qa1 <- qa(dirPath="tmp/", pattern="*sub.bam", type="BAM")
+report_html(qa1, dest="out")
+
+##
+
+1. For R-2.14.0, the report is built as expected (see 
+http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/perCycleBaseCall-R-2.14.0.pdf 
+for a comparison).
+
+2. For R-2.15.0, the cycle-specific base calls and read quality plot 
+looks mixed up (see 
+http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/perCycleBaseCall-R-2.15.0.pdf).
+
+3. For R-2.16.0devel (2012-05-24 r59439), the 'qa' command fails with 
+the error message:
+""
+Error: ValueUnavailable
+   0 elements returned; expected >=1
+In addition: Warning message:
+UnspecifiedWarning
+   elements: 1 2 3 4
+   UnspecifiedError: bamFlagTest(flag, "isValidVendorRead")
+  'is' must be character(1) in 'isPaired' 'isProperPair' 
+'isUnmappedQuery' 'hasUnmappedMate' 'isMinusStrand' 'isMateMinusStrand' 
+'isFirstMateRead' 'isSecondMateRead' 'isNotPrimaryRead' 
+'isNotPassingQualityControls' 'isDuplicate'
+   UnspecifiedError: bamFlagTest(flag, "isValidVendorRead")
+  'is' must be character(1) in 'isPaired' 'isProperPair' 
+'isUnmappedQuery' 'hasUnmappedMate' 'isMinusStrand' 'isMateMinusStrand' 
+'isFirstMateRead' 'isSecondMateRead' 'isNotPrimaryRead' 
+'isNotPassingQualityControls' 'isDuplicate'
+   UnspecifiedError: bamFlagTest(flag, "isValidVendorRead")
+  'is' must be character(1) in 'isPaired' 'isProperPair' 
+'isUnmappedQuery' 'hasUnmappedMate' 'isMinusStrand' 'isMateMinusStrand' 
+'isFirstMateRead' 'isSecondMateRead' 'isNotPrimaryRead' 
+'isNotPassingQualityControls' 'isDuplicate'
+   UnspecifiedError: bamFlagTest(flag, "isValidVendorRead")
+  'is' must be character(1) in 'isPaired'  [... truncated]
+""
+
+See also
+- http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/session-info-2.14.txt
+- http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/session-info-2.15.txt
+- http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/session-info-2.16.txt
+for the corresponding session infos.
+
+Can this be caused by having BAM files with single-read alignments? 
+Also, I'm not sure if the different behavior for R-2.15 and R-2.16 is 
+directly related.
+
+
+Best
+Julian
+
+
+From mtmorgan at fhcrc.org  Thu May 24 17:30:22 2012
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 24 May 2012 08:30:22 -0700
+Subject: [Bioc-devel] ShortRead: 'qa' fails for single read alignments
+In-Reply-To: <4FBE2A6C.7080700@embl.de>
+References: <4FBE2A6C.7080700@embl.de>
+Message-ID: <4FBE540E.1020900@fhcrc.org>
+
+Thanks Julian -- these were separate issues (3 was from a recent change 
+in Rsamtools, the other is more long-standing). Corrected in svn and 
+1.14.4 / 1.15.6 when these become available.
+
+Martin
+
+On 05/24/2012 05:32 AM, Julian Gehring wrote:
+> Hi,
+>
+> while using the 'ShortRead' package for some quality assessment of
+> aligned reads (see example below), I observed the following behavior:
+>
+> ## Example code ##
+>
+> library(ShortRead)
+> qa1 <- qa(dirPath="tmp/", pattern="*sub.bam", type="BAM")
+> report_html(qa1, dest="out")
+>
+> ##
+>
+> 1. For R-2.14.0, the report is built as expected (see
+> http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/perCycleBaseCall-R-2.14.0.pdf
+> for a comparison).
+>
+> 2. For R-2.15.0, the cycle-specific base calls and read quality plot
+> looks mixed up (see
+> http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/perCycleBaseCall-R-2.15.0.pdf).
+>
+>
+> 3. For R-2.16.0devel (2012-05-24 r59439), the 'qa' command fails with
+> the error message:
+> ""
+> Error: ValueUnavailable
+> 0 elements returned; expected >=1
+> In addition: Warning message:
+> UnspecifiedWarning
+> elements: 1 2 3 4
+> UnspecifiedError: bamFlagTest(flag, "isValidVendorRead")
+> 'is' must be character(1) in 'isPaired' 'isProperPair' 'isUnmappedQuery'
+> 'hasUnmappedMate' 'isMinusStrand' 'isMateMinusStrand' 'isFirstMateRead'
+> 'isSecondMateRead' 'isNotPrimaryRead' 'isNotPassingQualityControls'
+> 'isDuplicate'
+> UnspecifiedError: bamFlagTest(flag, "isValidVendorRead")
+> 'is' must be character(1) in 'isPaired' 'isProperPair' 'isUnmappedQuery'
+> 'hasUnmappedMate' 'isMinusStrand' 'isMateMinusStrand' 'isFirstMateRead'
+> 'isSecondMateRead' 'isNotPrimaryRead' 'isNotPassingQualityControls'
+> 'isDuplicate'
+> UnspecifiedError: bamFlagTest(flag, "isValidVendorRead")
+> 'is' must be character(1) in 'isPaired' 'isProperPair' 'isUnmappedQuery'
+> 'hasUnmappedMate' 'isMinusStrand' 'isMateMinusStrand' 'isFirstMateRead'
+> 'isSecondMateRead' 'isNotPrimaryRead' 'isNotPassingQualityControls'
+> 'isDuplicate'
+> UnspecifiedError: bamFlagTest(flag, "isValidVendorRead")
+> 'is' must be character(1) in 'isPaired' [... truncated]
+> ""
+>
+> See also
+> - http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/session-info-2.14.txt
+> - http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/session-info-2.15.txt
+> - http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/session-info-2.16.txt
+> for the corresponding session infos.
+>
+> Can this be caused by having BAM files with single-read alignments?
+> Also, I'm not sure if the different behavior for R-2.15 and R-2.16 is
+> directly related.
+>
+>
+> Best
+> Julian
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From hpages at fhcrc.org  Thu May 24 22:15:56 2012
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Thu, 24 May 2012 13:15:56 -0700
+Subject: [Bioc-devel] Package download stats inflated? (specifically
+	cummeRbund)
+In-Reply-To: <20120523175413.15365d9suiqna64l@webmail.csail.mit.edu>
+References: <20120523175413.15365d9suiqna64l@webmail.csail.mit.edu>
+Message-ID: <4FBE96FC.103@fhcrc.org>
+
+Hi Loyal,
+
+The high ratio between nb of downloads and nb of unique IPs should
+not be a reason to doubt that these numbers are a true representation
+of the downloads. We've already seen this before. See for example the
+stats for the ChIPpeakAnno package:
+
+   http://bioconductor.org/packages/stats/bioc/ChIPpeakAnno.html
+
+The package got downloaded 67k times in Oct/Nov 2011 from only 573
+distinct IPs, so here the ratio is 117 downloads / IP.
+
+The first time we saw this kind of massive repetitive downloads was
+for the biomaRt package more than 1 year ago. We investigated it and
+discovered that most downloads (> 95%) were coming from a single IP
+(the IP itself was from a University somewhere in the US). We don't
+know for sure why they needed to download the same package again and
+again thousands of times every day for more than 20 days in a row, but
+one explanation could be that they were using some kind of dumb script
+to install biomaRt on each node of a big cluster. What's strange though
+is that we saw the deluge of downloads for a single package (biomaRt)
+and not for a subset of Bioconductor packages (it sounds to me that
+the people in charge of a cluster would typically install more than
+1 BioC package). But maybe they were testing a script on 1 package,
+then realized they could improve it (to download each package only
+once), and then used the improved script to actually deploy Bioconductor
+on their cluster. Hard to know...
+
+Anyway, because those massive repetitive downloads are possible, maybe
+we should put more emphasis on the nb of distinct IPs. This number is
+probably more representative of the number of users and therefore is
+a better indicator of how much a package is actually used.
+
+Cheers,
+H.
+
+
+On 05/23/2012 02:54 PM, lgoff at csail.mit.edu wrote:
+> Hi Bioc-devel,
+> I am the package maintainer for the cummeRbund package and since I'm not
+> exactly sure to whom I should ask this question, I decided to post to
+> the bioc-devel list.
+>
+> Since this is my first Bioc package I have been keenly interested in the
+> download stats that are tracked and visible on the Bioconductor website,
+> here:
+>
+> http://bioconductor.org/packages/stats/index.html
+>
+> Specifically, I'm noticing that the number of downloads for the
+> cummeRbund package seems to far outpace the number of unique IP
+> addresses downloading the package:
+>
+> http://bioconductor.org/packages/stats/bioc/cummeRbund.html
+>
+> For a few months there was a mean of between 10-20 downloads per unique
+> IP address, and for the current month this is on track to be about 36
+> downloads/IP (and looks to be about 8.7% of the total BioC packages
+> downloaded this month so far). Looking around at several other packages,
+> this does not seem to be the case as most of the packages in the top 30
+> list have a ratio of about 1.8-3 downloads / IP.
+>
+> As ecstatic as these numbers make me, I'm certain that there is some
+> underlying reason for this inflation that is not being appropriately
+> represented here, but without anything else to go on, I'm not really
+> sure where this is coming from. I would obviously like to have an honest
+> representation of the number of downloads for my package, and I was
+> hoping that someone with access to these data could help me track down
+> the cause of this download inflation (unless these numbers are a true
+> representation of the downloads, and then I would also very much like to
+> find out more demographics if possible as well).
+>
+> Any and all advice or information is appreciated! Thanks to all, and a
+> special thanks to everyone that helps to keep BioC such an amazing
+> project. I have enjoyed the benefits of bioconductor for the past 5+
+> years and I'm very happy that I can finally start to contribute back to
+> this wonderful project. (Also, I look forward to meeting some of you at
+> BioC 2012 this year!)
+>
+> Thanks in advance!
+>
+> Cheers,
+>
+> Loyal Goff
+>
+> (lgoff at csail.mit.edu)
+> NSF Postdoctoral Fellow
+> Computer Science and Artificial Intelligence Laboratory, MIT &
+> Stem Cells and Regenerative Biology Department, Harvard University &
+> The Broad Institute
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M1-B514
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From julian.gehring at embl.de  Mon May 28 00:39:46 2012
+From: julian.gehring at embl.de (Julian Gehring)
+Date: Mon, 28 May 2012 00:39:46 +0200
+Subject: [Bioc-devel] ShortRead: 'qa' fails for single read alignments
+In-Reply-To: <4FBE540E.1020900@fhcrc.org>
+References: <4FBE2A6C.7080700@embl.de> <4FBE540E.1020900@fhcrc.org>
+Message-ID: <4FC2AD32.3010600@embl.de>
+
+Hi Martin,
+
+thanks for fixing these issues so quickly - the reports are now built 
+without problems.
+
+
+Best
+Julian
+
+
+On 05/24/2012 05:30 PM, Martin Morgan wrote:
+> Thanks Julian -- these were separate issues (3 was from a recent change
+> in Rsamtools, the other is more long-standing). Corrected in svn and
+> 1.14.4 / 1.15.6 when these become available.
+>
+> Martin
+>
+> On 05/24/2012 05:32 AM, Julian Gehring wrote:
+>> Hi,
+>>
+>> while using the 'ShortRead' package for some quality assessment of
+>> aligned reads (see example below), I observed the following behavior:
+>>
+>> ## Example code ##
+>>
+>> library(ShortRead)
+>> qa1 <- qa(dirPath="tmp/", pattern="*sub.bam", type="BAM")
+>> report_html(qa1, dest="out")
+>>
+>> ##
+>>
+>> 1. For R-2.14.0, the report is built as expected (see
+>> http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/perCycleBaseCall-R-2.14.0.pdf
+>>
+>> for a comparison).
+>>
+>> 2. For R-2.15.0, the cycle-specific base calls and read quality plot
+>> looks mixed up (see
+>> http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/perCycleBaseCall-R-2.15.0.pdf).
+>>
+>>
+>>
+>> 3. For R-2.16.0devel (2012-05-24 r59439), the 'qa' command fails with
+>> the error message:
+>> ""
+>> Error: ValueUnavailable
+>> 0 elements returned; expected >=1
+>> In addition: Warning message:
+>> UnspecifiedWarning
+>> elements: 1 2 3 4
+>> UnspecifiedError: bamFlagTest(flag, "isValidVendorRead")
+>> 'is' must be character(1) in 'isPaired' 'isProperPair' 'isUnmappedQuery'
+>> 'hasUnmappedMate' 'isMinusStrand' 'isMateMinusStrand' 'isFirstMateRead'
+>> 'isSecondMateRead' 'isNotPrimaryRead' 'isNotPassingQualityControls'
+>> 'isDuplicate'
+>> UnspecifiedError: bamFlagTest(flag, "isValidVendorRead")
+>> 'is' must be character(1) in 'isPaired' 'isProperPair' 'isUnmappedQuery'
+>> 'hasUnmappedMate' 'isMinusStrand' 'isMateMinusStrand' 'isFirstMateRead'
+>> 'isSecondMateRead' 'isNotPrimaryRead' 'isNotPassingQualityControls'
+>> 'isDuplicate'
+>> UnspecifiedError: bamFlagTest(flag, "isValidVendorRead")
+>> 'is' must be character(1) in 'isPaired' 'isProperPair' 'isUnmappedQuery'
+>> 'hasUnmappedMate' 'isMinusStrand' 'isMateMinusStrand' 'isFirstMateRead'
+>> 'isSecondMateRead' 'isNotPrimaryRead' 'isNotPassingQualityControls'
+>> 'isDuplicate'
+>> UnspecifiedError: bamFlagTest(flag, "isValidVendorRead")
+>> 'is' must be character(1) in 'isPaired' [... truncated]
+>> ""
+>>
+>> See also
+>> -
+>> http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/session-info-2.14.txt
+>> -
+>> http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/session-info-2.15.txt
+>> -
+>> http://www.ebi.ac.uk/~jgehring/share/shortRead-pkg/session-info-2.16.txt
+>> for the corresponding session infos.
+>>
+>> Can this be caused by having BAM files with single-read alignments?
+>> Also, I'm not sure if the different behavior for R-2.15 and R-2.16 is
+>> directly related.
+>>
+>>
+>> Best
+>> Julian
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+From michael.d.linderman at gmail.com  Mon May 28 17:52:11 2012
+From: michael.d.linderman at gmail.com (Michael Linderman)
+Date: Mon, 28 May 2012 11:52:11 -0400
+Subject: [Bioc-devel] Differences in packages installed on Windows vs. other
+	build system hosts?
+Message-ID: <898829A0-3867-4865-A59F-73AC7E67198A@gmail.com>
+
+Hi BioC,
+
+A package of mine, Spade, is failing to build in the development release on Windows due to missing dependency (recently released igraph0 package), but building without issue on Linux and OSX. Are there different packages installed on the different hosts? The package of interest is available for Windows from CRAN. How often are the package sets on the build machines updated?
+
+Thanks,
+
+Michael Linderman 
+
+From dtenenba at fhcrc.org  Mon May 28 19:27:54 2012
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Mon, 28 May 2012 10:27:54 -0700
+Subject: [Bioc-devel] Differences in packages installed on Windows vs.
+ other build system hosts?
+In-Reply-To: <15913_1338220365_4FC39F4D_15913_3124_1_898829A0-3867-4865-A59F-73AC7E67198A@gmail.com>
+References: <15913_1338220365_4FC39F4D_15913_3124_1_898829A0-3867-4865-A59F-73AC7E67198A@gmail.com>
+Message-ID: <CAF42j237S0EBHcUMDHtNkKVDJsJ1pjLzBx+TFD7dfuw=vhu_uw@mail.gmail.com>
+
+Hi Michael,
+
+On Mon, May 28, 2012 at 8:52 AM, Michael Linderman
+<michael.d.linderman at gmail.com> wrote:
+> Hi BioC,
+>
+> A package of mine, Spade, is failing to build in the development release on Windows due to missing dependency (recently released igraph0 package), but building without issue on Linux and OSX. Are there different packages installed on the different hosts? The package of interest is available for Windows from CRAN. How often are the package sets on the build machines updated?
+>
+
+This problem should be solved in the next build cycle (tomorrow
+morning shortly after 9AM Seattle time).
+
+Dependencies are updated on every build system prior to each build.
+There was an issue building igraph0 from source on Windows (as there
+was with igraph). I've instructed the build system to install a binary
+version instead.
+
+You can see which packages are installed on a given build system by
+clicking on the link under "Installed pkgs" for that system. For
+example:
+http://bioconductor.org/checkResults/devel/bioc-LATEST/moscato1-R-instpkgs.html
+Tells you what is installed on moscato1 (windows system). It doesn't
+show igraph0 yet but it will after the next build cycle.
+
+Thanks,
+Dan
+
+
+
+
+> Thanks,
+>
+> Michael Linderman
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+

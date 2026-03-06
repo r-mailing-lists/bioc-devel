@@ -1,0 +1,1027 @@
+{
+  "list": "bioc-devel",
+  "description": "",
+  "month": "2007-07",
+  "messages": [
+    {
+      "id": "msg-8a557d92ba3c",
+      "message_id": "<6.1.1.1.2.20070705145915.0a541d68@lulu.it.northwestern.edu>",
+      "from_name": "Denise Scholtens",
+      "from_email_hash": "26bc687a9d2e7e7a49efb53202f0877ee45e0587a3b9b5d5d1bc760d8373f087",
+      "date": "2007-07-05T15:00:53-05:00",
+      "subject": "[Bioc-devel] Bioconductor Chicago 2007",
+      "subject_clean": "[Bioc-devel] Bioconductor Chicago 2007",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "ANNOUNCING:  BIOCONDUCTOR CHICAGO 2007\n\nThis 3-day course (1-3 Oct 2007) on Northwestern University Medical \nSchool's downtown Chicago campus will cover advanced topics in genomics and \nproteomics data analysis. Morning lectures and afternoon lab sessions will \naddress a range of topics including microarray data quality assessment, \nIllumina microarray data, gene set enrichment analysis, inference on graphs \nand networks, and RWebServices.  Visit the following link for registration \nand more information.\n\nhttp://daisy.prevmed.northwestern.edu/~denise/BiocChicago2007\n\n\n\n\n\n*****************************************************\nDenise Scholtens, Ph.D.\nAssistant Professor, Department of Preventive Medicine\nNorthwestern University Medical School\ndscholtens at northwestern.edu",
+      "body_snippet": "ANNOUNCING:  BIOCONDUCTOR CHICAGO 2007\n\nThis 3-day course (1-3 Oct 2007) on Northwestern University Medical \nSchool's downtown Chicago campus will cover advanced topics in genomics and \nproteomics dat",
+      "thread_id": "thread-8a557d92ba3c",
+      "thread_depth": 0,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-d3f373cb5972",
+      "message_id": "<m2y7hn594v.fsf@ziti.fhcrc.org>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2007-07-11T07:04:48-07:00",
+      "subject": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles (in affy, preprocessCore) if there are NA data",
+      "subject_clean": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles (in affy, preprocessCore) if there are NA data",
+      "in_reply_to": "<1184111309.3925.30.camel@localhost.localdomain> (Ben Bolstad's message of \"Tue, 10 Jul 2007 16:48:28 -0700\")",
+      "references": [
+        "<4693C350.9060101@ebi.ac.uk>",
+        "<1184111309.3925.30.camel@localhost.localdomain>"
+      ],
+      "body_plain": "[moved to bioc-devel, where this should have started I think]\n\nBen Bolstad <bmb at bmbolstad.com> writes:\n\n> Wolfgang,\n>\n> The code in preprocessCore for quantile normalization shows its legacy\n> being that it was developed around probe-level Affymetrix data straight\n> from CEL files where NA values are not to be expected. There may or may\n> not be comments to that effect in the C code documentation (actually\n> there is further down in the qnorm.c file for a slight variation on the\n> implementation).\n>\n> If you are willing to make the assumption that the missing data\n> mechanism is \"missing at random\" then I think the fix is fairly trivial,\n> just estimate the distribution using the non-missing data. If it is\n> instead driven by say a truncation mechanism a different fix would be\n> needed.\n>\n> In either case I don't think the current situation is desirable and\n> should be fixed.\n\nHow about:\n\n1. Let's add code to check for and raise an error if any NA's are\n   found.  This should be easy and can be done quickly.\n\n2. Then we could consider adding an argument that allows NA's and\n   handles things under the missing at random assumption, along with\n   documentation.\n\n+ seth\n\n\n\n>\n> Best,\n>\n> Ben\n>\n>\n>\n>\n>\n> On Tue, 2007-07-10 at 18:35 +0100, Wolfgang Huber wrote:\n>> Hi all,\n>> \n>> I noted a peculiar result from using quantile normalisation on a data\n>> matrix that contained NA values. It creates a rather artifactual-looking\n>> distribution of the resulting data, and I wonder whether:\n>> - this is desired,\n>> - if not, how it can be fixed,\n>> - in either case, whether this is a point of general interest for people\n>> that interpret distributions of their e.g. microarray data.\n>> \n>> Here is some example code to reproduce:\n>> \n>> \n>> \n>> library(\"geneplotter\")\n>> library(\"preprocessCore\")\n>> \n>> set.seed(0xbeef)\n>> \n>> x = matrix(as.numeric(NA), nrow=20000, ncol=2)\n>> for(i in 1:ncol(x))\n>>  x[,i] = c(rnorm(10000), runif(10000)*10)\n>> x[ sample(nrow(x), 1000), ncol(x)] = NA\n>> \n>> qx = normalize.quantiles(x)\n>> \n>> par(mfrow=c(2,2))\n>> \n>> for(what in c(\"x\", \"qx\"))\n>>   for(i in 1:2)\n>>     hist(get(what)[,i], breaks=seq(-5,10, length=75),\n>>          main=sprintf(\"%s[,%d]\", what, i),\n>>          col=\"orange\", xlab=\"\")\n>> \n>> \n>> \n>> \n>> \n>> The resulting plot is here\n>> http://www.ebi.ac.uk/~huber/quantilenormalisation/normalize.quantiles.png\n>> \n>> I noted in the implementation in preprocessCore/src/qnorm.c that no\n>> special consideration is made for NA values, maybe does this confuse the\n>> algorithm?\n>> \n>> \n>> R version 2.6.0 Under development (unstable) (2007-07-10 r42165)\n>> x86_64-unknown-linux-gnu\n>> \n>> locale:\n>> LC_CTYPE=en_GB.UTF-8;LC_NUMERIC=C;LC_TIME=en_GB.UTF-8;LC_COLLATE=en_GB.UTF-8;LC_MONETARY=en_GB.UTF-8;LC_MESSAGES=en_GB.UTF-8;LC_PAPER=en_GB.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_GB.UTF-8;LC_IDENTIFICATION=C\n>> \n>> attached base packages:\n>> [1] tools     stats     graphics  grDevices datasets  utils     methods\n>> [8] base\n>> \n>> other attached packages:\n>> [1] preprocessCore_0.99.8 geneplotter_1.15.1    lattice_0.16-1\n>> [4] annotate_1.15.2       AnnotationDbi_0.0.78  RSQLite_0.5-4\n>> [7] DBI_0.2-3             Biobase_1.15.17       fortunes_1.3-3\n>> \n>> loaded via a namespace (and not attached):\n>> [1] grid_2.6.0         KernSmooth_2.22-20 RColorBrewer_0.2-3\n>> >\n>> \n>> \n>> Best wishes\n>>  Wolfgang\n>> \n>> ------------------------------------------------------------------\n>> Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber\n>> \n>> _______________________________________________\n>> Bioconductor mailing list\n>> Bioconductor at stat.math.ethz.ch\n>> https://stat.ethz.ch/mailman/listinfo/bioconductor\n>> Search the archives: http://news.gmane.org/gmane.science.biology.informatics.conductor\n>\n> _______________________________________________\n> Bioconductor mailing list\n> Bioconductor at stat.math.ethz.ch\n> https://stat.ethz.ch/mailman/listinfo/bioconductor\n> Search the archives: http://news.gmane.org/gmane.science.biology.informatics.conductor\n>\n\n-- \nSeth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\nhttp://bioconductor.org",
+      "body_snippet": "[moved to bioc-devel, where this should have started I think]\n\nBen Bolstad <bmb at bmbolstad.com> writes:\n\n> Wolfgang,\n>\n> The code in preprocessCore for quantile normalization shows its legacy\n> bein",
+      "thread_id": "thread-d3f373cb5972",
+      "thread_depth": 0,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-e9d03c7c3528",
+      "message_id": "<46950D0C.8050301@ebi.ac.uk>",
+      "from_name": "Wolfgang Huber",
+      "from_email_hash": "8481a5f74e0203c0e279b0cd7f952f11ea65fcad4bf054f5268c275ad236a2d9",
+      "date": "2007-07-11T18:02:04+01:00",
+      "subject": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles (in affy, preprocessCore) if there are NA data",
+      "subject_clean": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles (in affy, preprocessCore) if there are NA data",
+      "in_reply_to": "<m2y7hn594v.fsf@ziti.fhcrc.org>",
+      "references": [
+        "<4693C350.9060101@ebi.ac.uk>",
+        "<1184111309.3925.30.camel@localhost.localdomain>",
+        "<m2y7hn594v.fsf@ziti.fhcrc.org>"
+      ],
+      "body_plain": "Hi Seth & Ben,\n\nthanks for your clarifying comments!\n\n> [moved to bioc-devel, where this should have started I think]\n\nSorry if I have been stepping on feet... the reason for posting to the\nbioc user list was that more than once I have (sadly) seen people\nlooking at histogrammes such as that of qx shown in my previous post,\nand using the suggested \"cutoff\" e.g. to discriminate between expressed\nand un-expressed genes, and the like. I hope that this does not sound to\npresumptuous, but I think it is a good thing to educate users to\ncritically assess such results.\n\nBtw, normalizeQuantiles from the limma package appears to deal with NA\nvalues more gracefully (but it is written in R, hence slower). I think\nit assumes that the missingness mechanism is random.\n\nAn ideal version of Bioconductor, of course, would also minimize the\npotential to confuse users by differences in results and performance of\nlimma:normalizeQuantiles and affy/preprocessCore:normalize.quantiles.\n\n\tBest wishes\n\tWolfgang\n\n\n\n> \n> Ben Bolstad <bmb at bmbolstad.com> writes:\n> \n>> Wolfgang,\n>>\n>> The code in preprocessCore for quantile normalization shows its legacy\n>> being that it was developed around probe-level Affymetrix data straight\n>> from CEL files where NA values are not to be expected. There may or may\n>> not be comments to that effect in the C code documentation (actually\n>> there is further down in the qnorm.c file for a slight variation on the\n>> implementation).\n>>\n>> If you are willing to make the assumption that the missing data\n>> mechanism is \"missing at random\" then I think the fix is fairly trivial,\n>> just estimate the distribution using the non-missing data. If it is\n>> instead driven by say a truncation mechanism a different fix would be\n>> needed.\n>>\n>> In either case I don't think the current situation is desirable and\n>> should be fixed.\n> \n> How about:\n> \n> 1. Let's add code to check for and raise an error if any NA's are\n>    found.  This should be easy and can be done quickly.\n> \n> 2. Then we could consider adding an argument that allows NA's and\n>    handles things under the missing at random assumption, along with\n>    documentation.\n> \n> + seth\n> \n> \n> \n>> Best,\n>>\n>> Ben\n>>\n>>\n>>\n>>\n>>\n>> On Tue, 2007-07-10 at 18:35 +0100, Wolfgang Huber wrote:\n>>> Hi all,\n>>>\n>>> I noted a peculiar result from using quantile normalisation on a data\n>>> matrix that contained NA values. It creates a rather artifactual-looking\n>>> distribution of the resulting data, and I wonder whether:\n>>> - this is desired,\n>>> - if not, how it can be fixed,\n>>> - in either case, whether this is a point of general interest for people\n>>> that interpret distributions of their e.g. microarray data.\n>>>\n>>> Here is some example code to reproduce:\n>>>\n>>>\n>>>\n>>> library(\"geneplotter\")\n>>> library(\"preprocessCore\")\n>>>\n>>> set.seed(0xbeef)\n>>>\n>>> x = matrix(as.numeric(NA), nrow=20000, ncol=2)\n>>> for(i in 1:ncol(x))\n>>>  x[,i] = c(rnorm(10000), runif(10000)*10)\n>>> x[ sample(nrow(x), 1000), ncol(x)] = NA\n>>>\n>>> qx = normalize.quantiles(x)\n>>>\n>>> par(mfrow=c(2,2))\n>>>\n>>> for(what in c(\"x\", \"qx\"))\n>>>   for(i in 1:2)\n>>>     hist(get(what)[,i], breaks=seq(-5,10, length=75),\n>>>          main=sprintf(\"%s[,%d]\", what, i),\n>>>          col=\"orange\", xlab=\"\")\n>>>\n>>>\n>>>\n>>>\n>>>\n>>> The resulting plot is here\n>>> http://www.ebi.ac.uk/~huber/quantilenormalisation/normalize.quantiles.png\n>>>\n>>> I noted in the implementation in preprocessCore/src/qnorm.c that no\n>>> special consideration is made for NA values, maybe does this confuse the\n>>> algorithm?\n>>>\n>>>\n>>> R version 2.6.0 Under development (unstable) (2007-07-10 r42165)\n>>> x86_64-unknown-linux-gnu\n>>>\n>>> locale:\n>>> LC_CTYPE=en_GB.UTF-8;LC_NUMERIC=C;LC_TIME=en_GB.UTF-8;LC_COLLATE=en_GB.UTF-8;LC_MONETARY=en_GB.UTF-8;LC_MESSAGES=en_GB.UTF-8;LC_PAPER=en_GB.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_GB.UTF-8;LC_IDENTIFICATION=C\n>>>\n>>> attached base packages:\n>>> [1] tools     stats     graphics  grDevices datasets  utils     methods\n>>> [8] base\n>>>\n>>> other attached packages:\n>>> [1] preprocessCore_0.99.8 geneplotter_1.15.1    lattice_0.16-1\n>>> [4] annotate_1.15.2       AnnotationDbi_0.0.78  RSQLite_0.5-4\n>>> [7] DBI_0.2-3             Biobase_1.15.17       fortunes_1.3-3\n>>>\n>>> loaded via a namespace (and not attached):\n>>> [1] grid_2.6.0         KernSmooth_2.22-20 RColorBrewer_0.2-3\n>>>\n>>> Best wishes\n>>>  Wolfgang\n>>>\n>>> ------------------------------------------------------------------\n>>> Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber\n>>>\n>>> _______________________________________________\n>>> Bioconductor mailing list\n>>> Bioconductor at stat.math.ethz.ch\n>>> https://stat.ethz.ch/mailman/listinfo/bioconductor\n>>> Search the archives: http://news.gmane.org/gmane.science.biology.informatics.conductor\n>> _______________________________________________\n>> Bioconductor mailing list\n>> Bioconductor at stat.math.ethz.ch\n>> https://stat.ethz.ch/mailman/listinfo/bioconductor\n>> Search the archives: http://news.gmane.org/gmane.science.biology.informatics.conductor\n>>\n> \n\n\n-- \nBest wishes\n Wolfgang\n\n------------------------------------------------------------------\nWolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber",
+      "body_snippet": "Hi Seth & Ben,\n\nthanks for your clarifying comments!\n\n> [moved to bioc-devel, where this should have started I think]\n\nSorry if I have been stepping on feet... the reason for posting to the\nbioc user ",
+      "thread_id": "thread-d3f373cb5972",
+      "thread_depth": 1,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-13dc78ce0d99",
+      "message_id": "<46951EBD.4080103@yahoo.fr>",
+      "from_name": "pingou",
+      "from_email_hash": "f8cc247920d6e32e5cc5a95c54569d12b4aa06dbff169bafe7e0d3aeae53a4d2",
+      "date": "2007-07-11T20:17:33+02:00",
+      "subject": "[Bioc-devel] presentation",
+      "subject_clean": "[Bioc-devel] presentation",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Dear all,\n\nI have just subscribed to this mailing list so I would like to introduce\nmyself, my name is Pierre-Yves. I am a student in bioinformatics\npresently doing his master in Netherlands.\n\nI have recently been involved in a project on which I will have to use R\nand some R packages.\nAs I am running under Fedora, I have start to package some of these\nlibraries for Fedora.\nThe first results are good and have been accepted on the redhat's bugzilla.\n\nI first would like to thanks you all for the great job made here. I have\ntried several package coming from bioconductor and from the cran\nrepository, I have really noticed the difference. You have made a very\nnice job with this.\nThanks again.\n\nI hope that I will be able to give some feedbacks from my point of view,\nand if I can help in a way or another just let me know...\n\nBest regards,\nPierre-Yves\n~pingou",
+      "body_snippet": "Dear all,\n\nI have just subscribed to this mailing list so I would like to introduce\nmyself, my name is Pierre-Yves. I am a student in bioinformatics\npresently doing his master in Netherlands.\n\nI have ",
+      "thread_id": "thread-13dc78ce0d99",
+      "thread_depth": 0,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-e0ea7f0e2ff4",
+      "message_id": "<4006E8CB-6C1E-47E2-9B42-FCC2785A0543@ic.ac.uk>",
+      "from_name": "Ernest Turro",
+      "from_email_hash": "fcda3c958177643585e9f0dda98d5de5e899926b04d173f7af56f28461751150",
+      "date": "2007-07-12T14:31:57+01:00",
+      "subject": "[Bioc-devel] hgu95aprobe missing sequences",
+      "subject_clean": "[Bioc-devel] hgu95aprobe missing sequences",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Dear Biocore Data Team,\n\nThe hgu95aprobe package appears to be missing sequence information  \nfor 172 transcripts, yet this information is available on the  \nAffymetrix web site:\n\n > seqs <- read.delim(\"HG_U95A_probe_tab\") # http:// \nwww.affymetrix.com/analysis/downloads/data/HG-U95A_probe_tab.zip\n > nrow(seqs)\n[1] 201807\n\n > d <- ReadAffy(\"1521a99hpp_av06.CEL\") # http://www.affymetrix.com/ \nanalysis/downloads/data/1521ak.zip\n > length(pm(d))\n[1] 201807\n\n > length(hgu95aprobe$seq) # should be 201807\n[1] 199091\n\n > geneNames(d)[!geneNames(d) %in% hgu95aprobe$Probe.Set.Name]\n   [1] \"1142_at\"   \"1143_s_at\" \"1144_at\"   \"1145_g_at\" \"1146_at\"    \n\"1147_at\"\n   [7] \"1148_s_at\" \"1149_at\"   \"1150_at\"   \"1151_at\"   \"1162_g_at\"  \n\"1163_at\"\n  [13] \"1164_at\"   \"1170_at\"   \"1171_s_at\" \"1172_at\"   \"1173_g_at\"  \n\"1174_at\"\n  [19] \"1175_s_at\" \"1176_at\"   \"1177_at\"   \"1178_at\"   \"1179_at\"    \n\"1180_g_at\"\n  [25] \"1181_at\"   \"1278_at\"   \"1279_s_at\" \"1280_i_at\" \"1281_f_at\"  \n\"1282_s_at\"\n  [31] \"1283_at\"   \"1284_at\"   \"1285_at\"   \"1286_s_at\" \"1428_at\"    \n\"1513_at\"\n  [37] \"1514_g_at\" \"1515_at\"   \"1516_g_at\" \"1608_at\"   \"1609_g_at\"  \n\"1623_s_at\"\n  [43] \"1624_at\"   \"1625_at\"   \"1626_at\"   \"1627_at\"   \"1628_at\"    \n\"1629_s_at\"\n  [49] \"1630_s_at\" \"1631_at\"   \"1632_at\"   \"1661_i_at\" \"1662_r_at\"  \n\"1663_at\"\n  [55] \"1664_at\"   \"1665_s_at\" \"1725_s_at\" \"1726_at\"   \"1743_s_at\"  \n\"1744_at\"\n  [61] \"1745_at\"   \"1746_s_at\" \"1790_s_at\" \"1812_s_at\" \"1813_at\"    \n\"1818_at\"\n  [67] \"1819_at\"   \"1820_g_at\" \"1821_at\"   \"1822_at\"   \"1823_g_at\"  \n\"1837_at\"\n  [73] \"1838_g_at\" \"1839_at\"   \"1840_g_at\" \"1841_s_at\" \"1842_at\"    \n\"1843_at\"\n  [79] \"1876_at\"   \"1877_g_at\" \"1881_at\"   \"1882_g_at\" \"1883_s_at\"  \n\"1892_s_at\"\n  [85] \"1893_s_at\" \"1894_f_at\" \"1903_at\"   \"1905_s_at\" \"1906_at\"    \n\"1921_at\"\n  [91] \"1922_g_at\" \"1936_s_at\" \"1937_at\"   \"292_s_at\"  \"293_at\"     \n\"294_s_at\"\n  [97] \"295_s_at\"  \"296_at\"    \"297_g_at\"  \"298_at\"    \"299_i_at\"   \n\"300_f_at\"\n[103] \"301_at\"    \"302_at\"    \"303_at\"    \"304_at\"    \"305_g_at\"   \n\"311_s_at\"\n[109] \"312_s_at\"  \"313_at\"    \"323_at\"    \"324_f_at\"  \"325_s_at\"   \n\"326_i_at\"\n[115] \"327_f_at\"  \"328_at\"    \"329_s_at\"  \"330_s_at\"  \"331_at\"     \n\"332_at\"\n[121] \"333_s_at\"  \"334_s_at\"  \"335_r_at\"  \"693_g_at\"  \"694_at\"     \n\"695_at\"\n[127] \"696_at\"    \"697_f_at\"  \"698_f_at\"  \"699_s_at\"  \"700_s_at\"   \n\"701_s_at\"\n[133] \"702_f_at\"  \"703_at\"    \"704_at\"    \"705_at\"    \"706_at\"     \n\"707_s_at\"\n[139] \"711_at\"    \"712_s_at\"  \"713_at\"    \"714_at\"    \"723_s_at\"   \n\"724_at\"\n[145] \"725_i_at\"  \"726_f_at\"  \"727_at\"    \"728_at\"    \"729_i_at\"   \n\"730_r_at\"\n[151] \"731_f_at\"  \"732_f_at\"  \"733_at\"    \"734_at\"    \"735_s_at\"   \n\"918_at\"\n[157] \"919_at\"    \"920_at\"    \"921_s_at\"  \"936_s_at\"  \"937_at\"     \n\"938_at\"\n[163] \"939_at\"    \"952_at\"    \"953_g_at\"  \"954_s_at\"  \"955_at\"     \n\"956_at\"\n[169] \"957_at\"    \"958_s_at\"  \"959_at\"    \"960_g_at\"\n\n\nBest,\n\nErnest Turro",
+      "body_snippet": "Dear Biocore Data Team,\n\nThe hgu95aprobe package appears to be missing sequence information  \nfor 172 transcripts, yet this information is available on the  \nAffymetrix web site:\n\n > seqs <- read.deli",
+      "thread_id": "thread-e0ea7f0e2ff4",
+      "thread_depth": 0,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-96fcc42043bc",
+      "message_id": "<m2sl7tybjx.fsf@ziti.fhcrc.org>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2007-07-12T06:52:02-07:00",
+      "subject": "[Bioc-devel] hgu95aprobe missing sequences",
+      "subject_clean": "[Bioc-devel] hgu95aprobe missing sequences",
+      "in_reply_to": "<4006E8CB-6C1E-47E2-9B42-FCC2785A0543@ic.ac.uk> (Ernest Turro's message of \"Thu, 12 Jul 2007 14:31:57 +0100\")",
+      "references": [
+        "<4006E8CB-6C1E-47E2-9B42-FCC2785A0543@ic.ac.uk>"
+      ],
+      "body_plain": "Ernest Turro <ernest.turro at ic.ac.uk> writes:\n\n> Dear Biocore Data Team,\n\nsessionInfo() please?\n\n-- \nSeth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\nhttp://bioconductor.org",
+      "body_snippet": "Ernest Turro <ernest.turro at ic.ac.uk> writes:\n\n> Dear Biocore Data Team,\n\nsessionInfo() please?\n\n-- \nSeth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\nhttp://bioconductor.",
+      "thread_id": "thread-e0ea7f0e2ff4",
+      "thread_depth": 1,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-c1cff42f1c1d",
+      "message_id": "<5DCF948C-7A6C-4847-AF04-5FD7A3F74A8A@ic.ac.uk>",
+      "from_name": "Ernest Turro",
+      "from_email_hash": "fcda3c958177643585e9f0dda98d5de5e899926b04d173f7af56f28461751150",
+      "date": "2007-07-12T15:10:47+01:00",
+      "subject": "[Bioc-devel] hgu95aprobe missing sequences",
+      "subject_clean": "[Bioc-devel] hgu95aprobe missing sequences",
+      "in_reply_to": "<m2sl7tybjx.fsf@ziti.fhcrc.org>",
+      "references": [
+        "<4006E8CB-6C1E-47E2-9B42-FCC2785A0543@ic.ac.uk>",
+        "<m2sl7tybjx.fsf@ziti.fhcrc.org>"
+      ],
+      "body_plain": "On 12 Jul 2007, at 14:52, Seth Falcon wrote:\n\n> sessionInfo() please?\n>\n> --\n\n > sessionInfo()\nR version 2.5.0 (2007-04-23)\ni386-apple-darwin8.9.1\n\nlocale:\nC\n\nattached base packages:\n[1] \"tools\"     \"stats\"     \"graphics\"  \"grDevices\" \"utils\"      \n\"datasets\"\n[7] \"methods\"   \"base\"\n\nother attached packages:\n   hgu95acdf hgu95aprobe matchprobes        affy      affyio     Biobase\n    \"1.16.0\"    \"1.16.2\"     \"1.8.1\"    \"1.14.1\"     \"1.4.0\"     \n\"1.14.0\"",
+      "body_snippet": "On 12 Jul 2007, at 14:52, Seth Falcon wrote:\n\n> sessionInfo() please?\n>\n> --\n\n > sessionInfo()\nR version 2.5.0 (2007-04-23)\ni386-apple-darwin8.9.1\n\nlocale:\nC\n\nattached base packages:\n[1] \"tools\"     \"",
+      "thread_id": "thread-e0ea7f0e2ff4",
+      "thread_depth": 2,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-c8c2e7482476",
+      "message_id": "<46967D49.6070802@med.umich.edu>",
+      "from_name": "James W. MacDonald",
+      "from_email_hash": "51e0486782bd6ed6ad0d8d179dbc9204aca523620b6842837909c743527fce1d",
+      "date": "2007-07-12T15:13:13-04:00",
+      "subject": "[Bioc-devel] hgu95aprobe missing sequences",
+      "subject_clean": "[Bioc-devel] hgu95aprobe missing sequences",
+      "in_reply_to": "<5DCF948C-7A6C-4847-AF04-5FD7A3F74A8A@ic.ac.uk>",
+      "references": [
+        "<4006E8CB-6C1E-47E2-9B42-FCC2785A0543@ic.ac.uk>",
+        "<m2sl7tybjx.fsf@ziti.fhcrc.org>",
+        "<5DCF948C-7A6C-4847-AF04-5FD7A3F74A8A@ic.ac.uk>"
+      ],
+      "body_plain": "Hi Ernest,\n\nThe reason some of the probesets are not found in the probe package is \nbecause they are not available from Affy, and so are not in the probe \ndata file that we use to build the probe package. This is because Affy \ngot these sequences from TIGR, and evidently are not at liberty to \nrelease the sequences. Here is an example from Netaffx showing that they \ndon't give out the sequence, but tell you to get it from TIGR:\n\nhttps://www.affymetrix.com/analysis/netaffx/fullrecord.affx?pk=HG-U95AV2%3A1142_AT\n\nBest,\n\nJim\n\n\n\nErnest Turro wrote:\n> On 12 Jul 2007, at 14:52, Seth Falcon wrote:\n>\n>   \n>> sessionInfo() please?\n>>\n>> --\n>>     \n>\n>  > sessionInfo()\n> R version 2.5.0 (2007-04-23)\n> i386-apple-darwin8.9.1\n>\n> locale:\n> C\n>\n> attached base packages:\n> [1] \"tools\"     \"stats\"     \"graphics\"  \"grDevices\" \"utils\"      \n> \"datasets\"\n> [7] \"methods\"   \"base\"\n>\n> other attached packages:\n>    hgu95acdf hgu95aprobe matchprobes        affy      affyio     Biobase\n>     \"1.16.0\"    \"1.16.2\"     \"1.8.1\"    \"1.14.1\"     \"1.4.0\"     \n> \"1.14.0\"\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>   \n\n\n\n**********************************************************\nElectronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.",
+      "body_snippet": "Hi Ernest,\n\nThe reason some of the probesets are not found in the probe package is \nbecause they are not available from Affy, and so are not in the probe \ndata file that we use to build the probe pack",
+      "thread_id": "thread-e0ea7f0e2ff4",
+      "thread_depth": 3,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-8a5536c3f16f",
+      "message_id": "<46968220.6020308@med.umich.edu>",
+      "from_name": "James W. MacDonald",
+      "from_email_hash": "51e0486782bd6ed6ad0d8d179dbc9204aca523620b6842837909c743527fce1d",
+      "date": "2007-07-12T15:33:52-04:00",
+      "subject": "[Bioc-devel] hgu95aprobe missing sequences",
+      "subject_clean": "[Bioc-devel] hgu95aprobe missing sequences",
+      "in_reply_to": "<46967D49.6070802@med.umich.edu>",
+      "references": [
+        "<4006E8CB-6C1E-47E2-9B42-FCC2785A0543@ic.ac.uk>",
+        "<m2sl7tybjx.fsf@ziti.fhcrc.org>",
+        "<5DCF948C-7A6C-4847-AF04-5FD7A3F74A8A@ic.ac.uk>",
+        "<46967D49.6070802@med.umich.edu>"
+      ],
+      "body_plain": "Actually, I should have checked closer. The probe_tab file you can get \nfrom Affy now does contain these sequences, even if Netaffx still points \nyou to TIGR. We don't as a rule re-download all these probe_tab and cdf \nfiles when we build the annotation files for each release, as they are \nin general static documents. The end result being that when I built the \nprobe packages the last time I used an old version of the probe_tab \nfiles for the hgu95a, hgu95av2, and hg110 probe packages that didn't \ncontain these sequences.\n\nI will download the new probe_tab files and rebuild. The rebuilt \npackages should make it to the release repositories in the near future.\n\nBest,\n\nJim\n\n\n\nJames W. MacDonald wrote:\n> Hi Ernest,\n>\n> The reason some of the probesets are not found in the probe package is \n> because they are not available from Affy, and so are not in the probe \n> data file that we use to build the probe package. This is because Affy \n> got these sequences from TIGR, and evidently are not at liberty to \n> release the sequences. Here is an example from Netaffx showing that \n> they don't give out the sequence, but tell you to get it from TIGR:\n>\n> https://www.affymetrix.com/analysis/netaffx/fullrecord.affx?pk=HG-U95AV2%3A1142_AT \n>\n>\n> Best,\n>\n> Jim\n>\n>\n>\n> Ernest Turro wrote:\n>> On 12 Jul 2007, at 14:52, Seth Falcon wrote:\n>>\n>>  \n>>> sessionInfo() please?\n>>>\n>>> -- \n>>>     \n>>\n>>  > sessionInfo()\n>> R version 2.5.0 (2007-04-23)\n>> i386-apple-darwin8.9.1\n>>\n>> locale:\n>> C\n>>\n>> attached base packages:\n>> [1] \"tools\"     \"stats\"     \"graphics\"  \"grDevices\" \"utils\"      \n>> \"datasets\"\n>> [7] \"methods\"   \"base\"\n>>\n>> other attached packages:\n>>    hgu95acdf hgu95aprobe matchprobes        affy      affyio     Biobase\n>>     \"1.16.0\"    \"1.16.2\"     \"1.8.1\"    \"1.14.1\"     \"1.4.0\"     \n>> \"1.14.0\"\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>   \n>\n>\n\n\n\n**********************************************************\nElectronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.",
+      "body_snippet": "Actually, I should have checked closer. The probe_tab file you can get \nfrom Affy now does contain these sequences, even if Netaffx still points \nyou to TIGR. We don't as a rule re-download all these ",
+      "thread_id": "thread-e0ea7f0e2ff4",
+      "thread_depth": 4,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-c5e24ebd56fb",
+      "message_id": "<6.2.5.6.1.20070713090555.022f8a68@wehi.edu.au>",
+      "from_name": "Gordon Smyth",
+      "from_email_hash": "a978abba6e869c142fda92319a9ab9659112ab762e437af84e6581fe4481f132",
+      "date": "2007-07-13T09:11:10+10:00",
+      "subject": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles in affy, preprocessCore) if there are NA data",
+      "subject_clean": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles in affy, preprocessCore) if there are NA data",
+      "in_reply_to": "<mailman.1.1184234402.20964.bioc-devel@stat.math.ethz.ch>",
+      "references": [
+        "<mailman.1.1184234402.20964.bioc-devel@stat.math.ethz.ch>"
+      ],
+      "body_plain": ">Date: Wed, 11 Jul 2007 07:04:48 -0700\n>From: Seth Falcon <sfalcon at fhcrc.org>\n>Subject: Re: [Bioc-devel] [BioC] Peculiar behaviour of\n>         normalize.quantiles     (in affy, preprocessCore) if there \n> are NA data\n>To: Ben Bolstad <bmb at bmbolstad.com>\n>Cc: bioc-devel <bioc-devel at stat.math.ethz.ch>\n>\n>[moved to bioc-devel, where this should have started I think]\n>\n>Ben Bolstad <bmb at bmbolstad.com> writes:\n>\n> > Wolfgang,\n> >\n> > The code in preprocessCore for quantile normalization shows its legacy\n> > being that it was developed around probe-level Affymetrix data straight\n> > from CEL files where NA values are not to be expected. There may or may\n> > not be comments to that effect in the C code documentation (actually\n> > there is further down in the qnorm.c file for a slight variation on the\n> > implementation).\n> >\n> > If you are willing to make the assumption that the missing data\n> > mechanism is \"missing at random\" then I think the fix is fairly trivial,\n> > just estimate the distribution using the non-missing data. If it is\n> > instead driven by say a truncation mechanism a different fix would be\n> > needed.\n> >\n> > In either case I don't think the current situation is desirable and\n> > should be fixed.\n>\n>How about:\n>\n>1. Let's add code to check for and raise an error if any NA's are\n>    found.  This should be easy and can be done quickly.\n>\n>2. Then we could consider adding an argument that allows NA's and\n>    handles things under the missing at random assumption, along with\n>    documentation.\n>\n>+ seth\n\nAs noted later by Wolfgang, the normalizeQuantiles() function in \nlimma does exactly this.\n\nRegards\nGordon",
+      "body_snippet": ">Date: Wed, 11 Jul 2007 07:04:48 -0700\n>From: Seth Falcon <sfalcon at fhcrc.org>\n>Subject: Re: [Bioc-devel] [BioC] Peculiar behaviour of\n>         normalize.quantiles     (in affy, preprocessCore) if ",
+      "thread_id": "thread-c5e24ebd56fb",
+      "thread_depth": 0,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-05fa5dd74564",
+      "message_id": "<6.2.5.6.1.20070713091804.022de6c8@wehi.edu.au>",
+      "from_name": "Gordon Smyth",
+      "from_email_hash": "a978abba6e869c142fda92319a9ab9659112ab762e437af84e6581fe4481f132",
+      "date": "2007-07-13T09:21:16+10:00",
+      "subject": "[Bioc-devel] Bioc-devel Digest, Vol 40, Issue 3",
+      "subject_clean": "[Bioc-devel] Bioc-devel Digest, Vol 40, Issue 3",
+      "in_reply_to": "<mailman.1.1184234402.20964.bioc-devel@stat.math.ethz.ch>",
+      "references": [
+        "<mailman.1.1184234402.20964.bioc-devel@stat.math.ethz.ch>"
+      ],
+      "body_plain": ">Date: Wed, 11 Jul 2007 18:02:04 +0100\n>From: Wolfgang Huber <huber at ebi.ac.uk>\n>Subject: Re: [Bioc-devel] [BioC] Peculiar behaviour of\n>         normalize.quantiles (in affy, preprocessCore) if there are NA data\n>To: Seth Falcon <sfalcon at fhcrc.org>\n>Cc: bioc-devel <bioc-devel at stat.math.ethz.ch>\n>Message-ID: <46950D0C.8050301 at ebi.ac.uk>\n>Content-Type: text/plain; charset=ISO-8859-1\n>\n>Hi Seth & Ben,\n>\n>thanks for your clarifying comments!\n>\n> > [moved to bioc-devel, where this should have started I think]\n>\n>Sorry if I have been stepping on feet... the reason for posting to the\n>bioc user list was that more than once I have (sadly) seen people\n>looking at histogrammes such as that of qx shown in my previous post,\n>and using the suggested \"cutoff\" e.g. to discriminate between expressed\n>and un-expressed genes, and the like. I hope that this does not sound to\n>presumptuous, but I think it is a good thing to educate users to\n>critically assess such results.\n>\n>Btw, normalizeQuantiles from the limma package appears to deal with NA\n>values more gracefully (but it is written in R, hence slower). I think\n>it assumes that the missingness mechanism is random.\n\nYes it does.\n\nThe reason the R version is a bit slower than C is mainly because of \nthe need to handle NAs and to treat ties carefully. Without these \nconsiderations, the R implementation is nearly as fast. Try \nnormalizeQuantiles(ties=FALSE) for more speed.\n\nRegards\nGordon",
+      "body_snippet": ">Date: Wed, 11 Jul 2007 18:02:04 +0100\n>From: Wolfgang Huber <huber at ebi.ac.uk>\n>Subject: Re: [Bioc-devel] [BioC] Peculiar behaviour of\n>         normalize.quantiles (in affy, preprocessCore) if the",
+      "thread_id": "thread-05fa5dd74564",
+      "thread_depth": 0,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-0bef6d1d3594",
+      "message_id": "<32356.205.217.46.68.1184283360.squirrel@bmbolstad.com>",
+      "from_name": "bmb at bmbolstad.com",
+      "from_email_hash": "dd8cf095eee853081451f30d544429b3bff621cd1c1d0752e714ccb345cd9bec",
+      "date": "2007-07-12T16:36:00-07:00",
+      "subject": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles in affy, preprocessCore) if there are NA data",
+      "subject_clean": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles in affy, preprocessCore) if there are NA data",
+      "in_reply_to": "<6.2.5.6.1.20070713090555.022f8a68@wehi.edu.au>",
+      "references": [
+        "<mailman.1.1184234402.20964.bioc-devel@stat.math.ethz.ch>",
+        "<6.2.5.6.1.20070713090555.022f8a68@wehi.edu.au>"
+      ],
+      "body_plain": "Is there any chance that you'd consider having limma depend on a \"fixed\"\nversion in preprocessCore rather than having your own separate code?\n\nNote, I am not trying to pick on you specifically since I know there are a\nnumber of other quantile normalization implementations in various\npackages. Additionally my personal stance has always been that I am not\ngoing to play policeman on this issue and developers are free to make\nthere own choices.\n\nIn any case, addressing this issue is push to the top of my stack (likely\nthis upcoming weekend).\n\nBest,\n\nBen\n\n\n\n>>\n>>[moved to bioc-devel, where this should have started I think]\n>>\n>>Ben Bolstad <bmb at bmbolstad.com> writes:\n>>\n>> > Wolfgang,\n>> >\n>> > The code in preprocessCore for quantile normalization shows its legacy\n>> > being that it was developed around probe-level Affymetrix data\n>> straight\n>> > from CEL files where NA values are not to be expected. There may or\n>> may\n>> > not be comments to that effect in the C code documentation (actually\n>> > there is further down in the qnorm.c file for a slight variation on\n>> the\n>> > implementation).\n>> >\n>> > If you are willing to make the assumption that the missing data\n>> > mechanism is \"missing at random\" then I think the fix is fairly\n>> trivial,\n>> > just estimate the distribution using the non-missing data. If it is\n>> > instead driven by say a truncation mechanism a different fix would be\n>> > needed.\n>> >\n>> > In either case I don't think the current situation is desirable and\n>> > should be fixed.\n>>\n>>How about:\n>>\n>>1. Let's add code to check for and raise an error if any NA's are\n>>    found.  This should be easy and can be done quickly.\n>>\n>>2. Then we could consider adding an argument that allows NA's and\n>>    handles things under the missing at random assumption, along with\n>>    documentation.\n>>\n>>+ seth\n>\n> As noted later by Wolfgang, the normalizeQuantiles() function in\n> limma does exactly this.\n>\n> Regards\n> Gordon\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "Is there any chance that you'd consider having limma depend on a \"fixed\"\nversion in preprocessCore rather than having your own separate code?\n\nNote, I am not trying to pick on you specifically since I",
+      "thread_id": "thread-c5e24ebd56fb",
+      "thread_depth": 1,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-7abebf64002d",
+      "message_id": "<32522.205.217.46.68.1184284051.squirrel@bmbolstad.com>",
+      "from_name": "bmb at bmbolstad.com",
+      "from_email_hash": "dd8cf095eee853081451f30d544429b3bff621cd1c1d0752e714ccb345cd9bec",
+      "date": "2007-07-12T16:47:31-07:00",
+      "subject": "[Bioc-devel] Bioc-devel Digest, Vol 40, Issue 3",
+      "subject_clean": "[Bioc-devel] Bioc-devel Digest, Vol 40, Issue 3",
+      "in_reply_to": "<6.2.5.6.1.20070713091804.022de6c8@wehi.edu.au>",
+      "references": [
+        "<mailman.1.1184234402.20964.bioc-devel@stat.math.ethz.ch>",
+        "<6.2.5.6.1.20070713091804.022de6c8@wehi.edu.au>"
+      ],
+      "body_plain": "Note that the current C code does appropriately handle ties (depending on\nyour definition of appropriate) and has done so for a long time (over 5\nyears).\n\nCut from code comment:\n\n\" ** Apr 19, 2002 - Update to deal more correctly with ties (equal rank)\"\n\n\nBest,\n\nBen\n\n\n>>Hi Seth & Ben,\n>>\n>>thanks for your clarifying comments!\n>>\n>> > [moved to bioc-devel, where this should have started I think]\n>>\n>>Sorry if I have been stepping on feet... the reason for posting to the\n>>bioc user list was that more than once I have (sadly) seen people\n>>looking at histogrammes such as that of qx shown in my previous post,\n>>and using the suggested \"cutoff\" e.g. to discriminate between expressed\n>>and un-expressed genes, and the like. I hope that this does not sound to\n>>presumptuous, but I think it is a good thing to educate users to\n>>critically assess such results.\n>>\n>>Btw, normalizeQuantiles from the limma package appears to deal with NA\n>>values more gracefully (but it is written in R, hence slower). I think\n>>it assumes that the missingness mechanism is random.\n>\n> Yes it does.\n>\n> The reason the R version is a bit slower than C is mainly because of\n> the need to handle NAs and to treat ties carefully. Without these\n> considerations, the R implementation is nearly as fast. Try\n> normalizeQuantiles(ties=FALSE) for more speed.\n>\n> Regards\n> Gordon\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "Note that the current C code does appropriately handle ties (depending on\nyour definition of appropriate) and has done so for a long time (over 5\nyears).\n\nCut from code comment:\n\n\" ** Apr 19, 2002 - U",
+      "thread_id": "thread-05fa5dd74564",
+      "thread_depth": 1,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-6b84d6a95848",
+      "message_id": "<6.2.5.6.1.20070713110856.023dfd70@wehi.edu.au>",
+      "from_name": "Gordon Smyth",
+      "from_email_hash": "a978abba6e869c142fda92319a9ab9659112ab762e437af84e6581fe4481f132",
+      "date": "2007-07-13T12:20:27+10:00",
+      "subject": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles in affy, preprocessCore) if there are NA data",
+      "subject_clean": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles in affy, preprocessCore) if there are NA data",
+      "in_reply_to": "<32356.205.217.46.68.1184283360.squirrel@bmbolstad.com>",
+      "references": [
+        "<mailman.1.1184234402.20964.bioc-devel@stat.math.ethz.ch>",
+        "<6.2.5.6.1.20070713090555.022f8a68@wehi.edu.au>",
+        "<32356.205.217.46.68.1184283360.squirrel@bmbolstad.com>"
+      ],
+      "body_plain": "Hi Ben,\n\nMmm. You're asking me if I'd consider making limma depend on \npreprocessCore, which I know nothing about yet, to use a function \nhasn't been fixed yet. I think a deep breath might be appropriate here. :)\n\nAll I know about this whole thread is the two emails I saw today from \nSeth and Wolfgang. I have other things to worry about at the moment, \nand trust that you have it in hand.\n\nTo answer your question, of course I'll consider using core tools. My \npolicy has always been to make use of software which works well and \ndoes the job, as for example I make intensive use of your affy \npackage. In my experience, the best way to get your software used is \nto make it useful to people. Attempting to police people's use is \nfutile, and has the whole software development process around the wrong way.\n\nDon't forget that the function normalizeQuantiles() has been around \nfor more than 5 years, and we have corresponded on NAs and ties long ago.\n\nRegards\nGordon\n\nAt 09:36 AM 13/07/2007, bmb at bmbolstad.com wrote:\n>Is there any chance that you'd consider having limma depend on a \"fixed\"\n>version in preprocessCore rather than having your own separate code?\n>\n>Note, I am not trying to pick on you specifically since I know there are a\n>number of other quantile normalization implementations in various\n>packages. Additionally my personal stance has always been that I am not\n>going to play policeman on this issue and developers are free to make\n>there own choices.\n>\n>In any case, addressing this issue is push to the top of my stack (likely\n>this upcoming weekend).\n>\n>Best,\n>\n>Ben\n>\n>\n> >>Ben Bolstad <bmb at bmbolstad.com> writes:\n> >>\n> >> > Wolfgang,\n> >> >\n> >> > The code in preprocessCore for quantile normalization shows its legacy\n> >> > being that it was developed around probe-level Affymetrix data\n> >> straight\n> >> > from CEL files where NA values are not to be expected. There may or\n> >> may\n> >> > not be comments to that effect in the C code documentation (actually\n> >> > there is further down in the qnorm.c file for a slight variation on\n> >> the\n> >> > implementation).\n> >> >\n> >> > If you are willing to make the assumption that the missing data\n> >> > mechanism is \"missing at random\" then I think the fix is fairly\n> >> trivial,\n> >> > just estimate the distribution using the non-missing data. If it is\n> >> > instead driven by say a truncation mechanism a different fix would be\n> >> > needed.\n> >> >\n> >> > In either case I don't think the current situation is desirable and\n> >> > should be fixed.\n> >>\n> >>How about:\n> >>\n> >>1. Let's add code to check for and raise an error if any NA's are\n> >>    found.  This should be easy and can be done quickly.\n> >>\n> >>2. Then we could consider adding an argument that allows NA's and\n> >>    handles things under the missing at random assumption, along with\n> >>    documentation.\n> >>\n> >>+ seth\n> >\n> > As noted later by Wolfgang, the normalizeQuantiles() function in\n> > limma does exactly this.\n> >\n> > Regards\n> > Gordon",
+      "body_snippet": "Hi Ben,\n\nMmm. You're asking me if I'd consider making limma depend on \npreprocessCore, which I know nothing about yet, to use a function \nhasn't been fixed yet. I think a deep breath might be appropri",
+      "thread_id": "thread-c5e24ebd56fb",
+      "thread_depth": 2,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-1e1a58198697",
+      "message_id": "<6.2.5.6.1.20070713122147.023eb008@wehi.edu.au>",
+      "from_name": "Gordon Smyth",
+      "from_email_hash": "a978abba6e869c142fda92319a9ab9659112ab762e437af84e6581fe4481f132",
+      "date": "2007-07-13T12:25:43+10:00",
+      "subject": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles in affy, preprocessCore) if there are NA data",
+      "subject_clean": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles in affy, preprocessCore) if there are NA data",
+      "in_reply_to": "<mailman.257.1184284071.2070.bioc-devel@stat.math.ethz.ch>",
+      "references": [
+        "<mailman.257.1184284071.2070.bioc-devel@stat.math.ethz.ch>"
+      ],
+      "body_plain": "Hi Ben,\n\nMy recollection is that normalize.quantiles() doesn't do quite the \nright think with ties when the number of ties is even, see\n\n   https://stat.ethz.ch/pipermail/bioconductor/2003-June/001602.html\n\nI thought Seth and Wolfgang's concern was more with NAs though.\n\nRegards\nGordon\n\n>Date: Thu, 12 Jul 2007 16:47:31 -0700 (PDT)\n>From: bmb at bmbolstad.com\n>Subject: Re: [Bioc-devel] Bioc-devel Digest, Vol 40, Issue 3\n>To: \"Gordon Smyth\" <smyth at wehi.EDU.AU>\n>Cc: bioc-devel at stat.math.ethz.ch\n>\n>Note that the current C code does appropriately handle ties (depending on\n>your definition of appropriate) and has done so for a long time (over 5\n>years).\n>\n>Cut from code comment:\n>\n>\" ** Apr 19, 2002 - Update to deal more correctly with ties (equal rank)\"\n>\n>\n>Best,\n>\n>Ben\n>\n>\n> >>Hi Seth & Ben,\n> >>\n> >>thanks for your clarifying comments!\n> >>\n> >> > [moved to bioc-devel, where this should have started I think]\n> >>\n> >>Sorry if I have been stepping on feet... the reason for posting to the\n> >>bioc user list was that more than once I have (sadly) seen people\n> >>looking at histogrammes such as that of qx shown in my previous post,\n> >>and using the suggested \"cutoff\" e.g. to discriminate between expressed\n> >>and un-expressed genes, and the like. I hope that this does not sound to\n> >>presumptuous, but I think it is a good thing to educate users to\n> >>critically assess such results.\n> >>\n> >>Btw, normalizeQuantiles from the limma package appears to deal with NA\n> >>values more gracefully (but it is written in R, hence slower). I think\n> >>it assumes that the missingness mechanism is random.\n> >\n> > Yes it does.\n> >\n> > The reason the R version is a bit slower than C is mainly because of\n> > the need to handle NAs and to treat ties carefully. Without these\n> > considerations, the R implementation is nearly as fast. Try\n> > normalizeQuantiles(ties=FALSE) for more speed.\n> >\n> > Regards\n> > Gordon",
+      "body_snippet": "Hi Ben,\n\nMy recollection is that normalize.quantiles() doesn't do quite the \nright think with ties when the number of ties is even, see\n\n   https://stat.ethz.ch/pipermail/bioconductor/2003-June/001602",
+      "thread_id": "thread-1e1a58198697",
+      "thread_depth": 0,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-42c2eb1c8c67",
+      "message_id": "<469D7073.7050902@mail.nih.gov>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "5a8e0e6abee8db2f7eeaea6df4cbae4d8713a79b51ddc5ef74e7c509c4b05f87",
+      "date": "2007-07-17T21:44:19-04:00",
+      "subject": "[Bioc-devel] Extending annotation packages",
+      "subject_clean": "[Bioc-devel] Extending annotation packages",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "I have built an annotation package, but I would like to add a couple of\nmore annotation sources (which I will build by hand).  Is there an\naccepted way of doing this if the ultimate goal is distribution?  In\nparticular, I would like to add a mapping to higher-resolution\nchromosome location information and another mapping to a boolean flag.\n\nThanks,\nSean",
+      "body_snippet": "I have built an annotation package, but I would like to add a couple of\nmore annotation sources (which I will build by hand).  Is there an\naccepted way of doing this if the ultimate goal is distributi",
+      "thread_id": "thread-42c2eb1c8c67",
+      "thread_depth": 0,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-cc68542e4951",
+      "message_id": "<27d1e6020707180512v31966217m27b63425ec3ed81a@mail.gmail.com>",
+      "from_name": "Laurent Gautier",
+      "from_email_hash": "bf804a19bca99afd3e8648a6bb32a7956ed8fcfdac81cf240f84fad273a2991e",
+      "date": "2007-07-18T20:12:54+08:00",
+      "subject": "[Bioc-devel] bug-report for combine",
+      "subject_clean": "[Bioc-devel] bug-report for combine",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\n\nThere appears to be a problem either with the function \"combine\",\nor with my understanding of what it is doing:\n\n## ----\nlibrary(Biobase)\n\ndfA <- data.frame(label=rep(\"x\", 2), row.names=1:2)\ndfB <- data.frame(label=rep(\"x\", 3), row.names=3:5)\ndfC <- data.frame(label=rep(\"x\", 4), row.names=6:9)\n\n\ndfAB <- combine(dfA, dfB) # ok\n\ndfABC <- combine(dfAB, dfC) # ?! error\n\nError in combine(dfAB, dfC) : data.frames contain conflicting data:\n\tnon-conforming colname(s): label\n## ---\n\n\n\n\nLaurent",
+      "body_snippet": "Hi,\n\nThere appears to be a problem either with the function \"combine\",\nor with my understanding of what it is doing:\n\n## ----\nlibrary(Biobase)\n\ndfA <- data.frame(label=rep(\"x\", 2), row.names=1:2)\ndfB ",
+      "thread_id": "thread-cc68542e4951",
+      "thread_depth": 0,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-d59ef216980d",
+      "message_id": "<27d1e6020707180523y869ec12m53c733b1ec30c713@mail.gmail.com>",
+      "from_name": "Laurent Gautier",
+      "from_email_hash": "bf804a19bca99afd3e8648a6bb32a7956ed8fcfdac81cf240f84fad273a2991e",
+      "date": "2007-07-18T20:23:53+08:00",
+      "subject": "[Bioc-devel] bug-report for combine",
+      "subject_clean": "[Bioc-devel] bug-report for combine",
+      "in_reply_to": "<27d1e6020707180512v31966217m27b63425ec3ed81a@mail.gmail.com>",
+      "references": [
+        "<27d1e6020707180512v31966217m27b63425ec3ed81a@mail.gmail.com>"
+      ],
+      "body_plain": "It seems to be a problem with 'identical'.\n\nThe following patched \"combine\" seems to fix the problem\n(workaround for zero-rows data.frames:\nlength(sharedRows) == 0))\n)\n\n## ---\nsetMethod(\"combine\",\n          signature=list(x=\"data.frame\", y=\"data.frame\"),\n          function(x, y, ...) {\n            if (all(dim(x) == 0) && all(dim(y) == 0))\n                return(x)\n            else if (all(dim(x) == 0))\n                return(y)\n            else if (all(dim(y) == 0))\n                return(x)\n            uniqueRows <- unique(c(row.names(x), row.names(y)))\n            uniqueCols <- unique(c(names(x), names(y)))\n            sharedCols <- intersect(names(x), names(y))\n            sharedRows <- intersect(row.names(x), row.names(y))\n            ok <- sapply(sharedCols, function(nm) {\n                if (class(x[[nm]]) != class(y[[nm]]))\n                  return(FALSE)\n                switch(class(x[[nm]])[[1]], factor = {\n                  if (identical(levels(x[[nm]]), levels(y[[nm]])) &&\n                    (identical(x[sharedRows, nm, drop = FALSE],\n                               y[sharedRows, nm, drop = FALSE]) ||\nlength(sharedRows) == 0))\n                    TRUE\n                  else FALSE\n                }, ordered = , identical(x[sharedRows, nm, drop = FALSE],\n                                         y[sharedRows, nm, drop = FALSE]))\n              })\n            if (!all(ok))\n              stop(\"data.frames contain conflicting data:\",\n                   \"\\n\\tnon-conforming colname(s): \", paste(sharedCols[!ok],\n                                                            collapse = \", \"))\n            if (length(uniqueRows) == 0) {\n              x <- x[\"tmp\", , drop = FALSE]\n              y <- y[\"tmp\", , drop = FALSE]\n            }\n            else if (nrow(x) == 0) {\n              x <- x[row.names(y), , drop = FALSE]\n              row.names(x) <- row.names(y)\n            }\n            else if (nrow(y) == 0) {\n              y <- y[row.names(x), , drop = FALSE]\n              row.names(y) <- row.names(x)\n            }\n            if (length(uniqueCols) > 0)\n              extLength <- max(nchar(sub(\".*\\\\.\", \"\", uniqueCols))) +\n                1\n            else extLength <- 1\n            extX <- paste(c(\".\", rep(\"x\", extLength)), collapse = \"\")\n            extY <- paste(c(\".\", rep(\"y\", extLength)), collapse = \"\")\n            z <- merge(x, y, by = \"row.names\", all = TRUE, suffixes = c(extX,\n                                                             extY))\n            for (nm in sharedCols) {\n                nmx <- paste(nm, extX, sep = \"\")\n                nmy <- paste(nm, extY, sep = \"\")\n                z[[nm]] <- switch(class(z[[nmx]]), AsIs =\nI(ifelse(is.na(z[[nmx]]),\n                  z[[nmy]], z[[nmx]])), factor = {\n                  col <- ifelse(is.na(z[[nmx]]), as.character(z[[nmy]]),\n                    as.character(z[[nmx]]))\n                  if (!identical(levels(z[[nmx]]), levels(z[[nmy]])))\n                    factor(col)\n                  else factor(col, levels = levels(z[[nmx]]))\n                }, ifelse(is.na(z[[nmx]]), z[[nmy]], z[[nmx]]))\n            }\n            row.names(z) <- z$Row.names\n            z$Row.names <- NULL\n            z[uniqueRows, uniqueCols, drop = FALSE]\n        }\n)\n\n\n2007/7/18, Laurent Gautier <lgautier at gmail.com>:\n> Hi,\n>\n> There appears to be a problem either with the function \"combine\",\n> or with my understanding of what it is doing:\n>\n> ## ----\n> library(Biobase)\n>\n> dfA <- data.frame(label=rep(\"x\", 2), row.names=1:2)\n> dfB <- data.frame(label=rep(\"x\", 3), row.names=3:5)\n> dfC <- data.frame(label=rep(\"x\", 4), row.names=6:9)\n>\n>\n> dfAB <- combine(dfA, dfB) # ok\n>\n> dfABC <- combine(dfAB, dfC) # ?! error\n>\n> Error in combine(dfAB, dfC) : data.frames contain conflicting data:\n>         non-conforming colname(s): label\n> ## ---\n>\n>\n>\n>\n> Laurent\n>\n\n\n-- \n-----BEGIN PGP SIGNATURE-----\nVersion: GnuPG v1.4.6 (GNU/Linux)\n\niEYEARECAAYFAkYgwJ4ACgkQB/w/MLoyRDeQlgCeMp8v69/Wy24Q4IaBVhoG1M5R\n2h4AoIOTvKbrFpTklRDjV7u8tEOeSQqt\n=JPph\n-----END PGP SIGNATURE-----",
+      "body_snippet": "It seems to be a problem with 'identical'.\n\nThe following patched \"combine\" seems to fix the problem\n(workaround for zero-rows data.frames:\nlength(sharedRows) == 0))\n)\n\n## ---\nsetMethod(\"combine\",\n   ",
+      "thread_id": "thread-cc68542e4951",
+      "thread_depth": 1,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-aff4358dbc2b",
+      "message_id": "<m2tzs1bvhu.fsf@ziti.fhcrc.org>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2007-07-18T08:07:57-07:00",
+      "subject": "[Bioc-devel] bug-report for combine",
+      "subject_clean": "[Bioc-devel] bug-report for combine",
+      "in_reply_to": "<27d1e6020707180523y869ec12m53c733b1ec30c713@mail.gmail.com> (Laurent Gautier's message of \"Wed, 18 Jul 2007 20:23:53 +0800\")",
+      "references": [
+        "<27d1e6020707180512v31966217m27b63425ec3ed81a@mail.gmail.com>",
+        "<27d1e6020707180523y869ec12m53c733b1ec30c713@mail.gmail.com>"
+      ],
+      "body_plain": "Hi Laurent,\n\n\"Laurent Gautier\" <lgautier at gmail.com> writes:\n> It seems to be a problem with 'identical'.\n>\n> The following patched \"combine\" seems to fix the problem\n> (workaround for zero-rows data.frames:\n> length(sharedRows) == 0))\n> )\n\nThanks for the report and the fix.  Would you be willing to resend as\na real patch?  By that I mean:\n   - make the change in an up to date svn working copy of Biobase\n   - send output of 'svn diff'\n\nWe should also add your test case to the unit tests in inst/UnitTests\n\n+ seth\n\n-- \nSeth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\nhttp://bioconductor.org",
+      "body_snippet": "Hi Laurent,\n\n\"Laurent Gautier\" <lgautier at gmail.com> writes:\n> It seems to be a problem with 'identical'.\n>\n> The following patched \"combine\" seems to fix the problem\n> (workaround for zero-rows dat",
+      "thread_id": "thread-cc68542e4951",
+      "thread_depth": 2,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-90b516d4b45c",
+      "message_id": "<27d1e6020707180814g5e0f0a2aq849cbe662cde92a3@mail.gmail.com>",
+      "from_name": "Laurent Gautier",
+      "from_email_hash": "bf804a19bca99afd3e8648a6bb32a7956ed8fcfdac81cf240f84fad273a2991e",
+      "date": "2007-07-18T23:14:54+08:00",
+      "subject": "[Bioc-devel] bug-report for combine",
+      "subject_clean": "[Bioc-devel] bug-report for combine",
+      "in_reply_to": "<m2tzs1bvhu.fsf@ziti.fhcrc.org>",
+      "references": [
+        "<27d1e6020707180512v31966217m27b63425ec3ed81a@mail.gmail.com>",
+        "<27d1e6020707180523y869ec12m53c733b1ec30c713@mail.gmail.com>",
+        "<m2tzs1bvhu.fsf@ziti.fhcrc.org>"
+      ],
+      "body_plain": "2007/7/18, Seth Falcon <sfalcon at fhcrc.org>:\n> Hi Laurent,\n>\n> \"Laurent Gautier\" <lgautier at gmail.com> writes:\n> > It seems to be a problem with 'identical'.\n> >\n> > The following patched \"combine\" seems to fix the problem\n> > (workaround for zero-rows data.frames:\n> > length(sharedRows) == 0))\n> > )\n>\n> Thanks for the report and the fix.  Would you be willing to resend as\n> a real patch?  By that I mean:\n>    - make the change in an up to date svn working copy of Biobase\n>    - send output of 'svn diff'\n\nI would be willing\n(...'just have to find the time to do it ;-) )\n\n(and I also fixed a probable other bug since my last post)\n\n\n> We should also add your test case to the unit tests in inst/UnitTests\n\nI was about to suggest it.\n\n\n> + seth\n>\n> --\n> Seth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\n> http://bioconductor.org\n>",
+      "body_snippet": "2007/7/18, Seth Falcon <sfalcon at fhcrc.org>:\n> Hi Laurent,\n>\n> \"Laurent Gautier\" <lgautier at gmail.com> writes:\n> > It seems to be a problem with 'identical'.\n> >\n> > The following patched \"combine",
+      "thread_id": "thread-cc68542e4951",
+      "thread_depth": 3,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-5552008bc3bb",
+      "message_id": "<m2ps2pbv0q.fsf@ziti.fhcrc.org>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2007-07-18T08:18:13-07:00",
+      "subject": "[Bioc-devel] Extending annotation packages",
+      "subject_clean": "[Bioc-devel] Extending annotation packages",
+      "in_reply_to": "<469D7073.7050902@mail.nih.gov> (Sean Davis's message of \"Tue, 17 Jul 2007 21:44:19 -0400\")",
+      "references": [
+        "<469D7073.7050902@mail.nih.gov>"
+      ],
+      "body_plain": "Hi Sean,\n\nSean Davis <sdavis2 at mail.nih.gov> writes:\n> I have built an annotation package, but I would like to add a couple of\n> more annotation sources (which I will build by hand).  Is there an\n> accepted way of doing this if the ultimate goal is distribution?  In\n> particular, I would like to add a mapping to higher-resolution\n> chromosome location information and another mapping to a boolean\n> flag.\n\nI don't think we have a recommended procedure.  A few ideas:\n\n1. You can contribute the annotation data package to BioC and\n   distribute it there if you like.  In this case, you will be\n   expected to update the release version prior to each BioC release\n   and to build the package against the same annotation source data\n   download that we use for the other packages -- this way things like\n   GO will be in sync across packages.  Marc Carlson is the contact\n   person for this (he is a new member of our group in Seattle;\n   Nianhua is no longer in the group, but still involved in BioC on a\n   volunteer basis).\n\n2. Is the higher-resolution chromosome location information something\n   that could be applied to many existing annotation data packages or\n   just yours?  We hope to have some discussion at the Developer Day\n   at BioC2007 about future directions for the annotation data\n   packages with a focus on what newly available data should be\n   included in future releases of the packages.\n\n3. Don't forget to add documentation for the objects you add to the\n   package :-)\n\n+ seth\n\n-- \nSeth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\nhttp://bioconductor.org",
+      "body_snippet": "Hi Sean,\n\nSean Davis <sdavis2 at mail.nih.gov> writes:\n> I have built an annotation package, but I would like to add a couple of\n> more annotation sources (which I will build by hand).  Is there an\n> ",
+      "thread_id": "thread-42c2eb1c8c67",
+      "thread_depth": 1,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-623df4253b37",
+      "message_id": "<m2sl7laego.fsf@ziti.fhcrc.org>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2007-07-18T09:01:11-07:00",
+      "subject": "[Bioc-devel] bug-report for combine",
+      "subject_clean": "[Bioc-devel] bug-report for combine",
+      "in_reply_to": "<27d1e6020707180814g5e0f0a2aq849cbe662cde92a3@mail.gmail.com> (Laurent Gautier's message of \"Wed, 18 Jul 2007 23:14:54 +0800\")",
+      "references": [
+        "<27d1e6020707180512v31966217m27b63425ec3ed81a@mail.gmail.com>",
+        "<27d1e6020707180523y869ec12m53c733b1ec30c713@mail.gmail.com>",
+        "<m2tzs1bvhu.fsf@ziti.fhcrc.org>",
+        "<27d1e6020707180814g5e0f0a2aq849cbe662cde92a3@mail.gmail.com>"
+      ],
+      "body_plain": "\"Laurent Gautier\" <lgautier at gmail.com> writes:\n\n> 2007/7/18, Seth Falcon <sfalcon at fhcrc.org>:\n>> Hi Laurent,\n>>\n>> \"Laurent Gautier\" <lgautier at gmail.com> writes:\n>> > It seems to be a problem with 'identical'.\n>> >\n>> > The following patched \"combine\" seems to fix the problem\n>> > (workaround for zero-rows data.frames:\n>> > length(sharedRows) == 0))\n>> > )\n>>\n>> Thanks for the report and the fix.  Would you be willing to resend as\n>> a real patch?  By that I mean:\n>>    - make the change in an up to date svn working copy of Biobase\n>>    - send output of 'svn diff'\n>\n> I would be willing\n> (...'just have to find the time to do it ;-) )\n>\n> (and I also fixed a probable other bug since my last post)\n\nYou can run svn diff on just a single file if that helps.  You can,\nwith care, edit hunks out of a patch file to isolate a change.\n\nI know how these things go, but perhaps you can appreciate that it is\na bit funny to have time to send an email along with a fix, but not\nhave time to send a patch and expect others to generate it by hand...\nor maybe you aren't asking and are just saying that you need a spot of\ntime which is quite understandable...\n\nMoving off topic, I've been using git [1] as my local version control\nsystem and it really helps with this sort of problem because it allows\nyou to commit changes locally and then revise those commits prior to\nsending them on to svn using git-svn, of course.  This goes a long way\ntowards preventing patches with random unrelated fixes sprinkled\nthroughout.  And it makes generating patches for picky picky people on\nmailing lists much easier ;-)\n\n>> We should also add your test case to the unit tests in inst/UnitTests\n>\n> I was about to suggest it.\n\nShould be an easy patch :-)\n\n+ seth\n\n[1] http://git.or.cz/\n\n-- \nSeth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\nhttp://bioconductor.org",
+      "body_snippet": "\"Laurent Gautier\" <lgautier at gmail.com> writes:\n\n> 2007/7/18, Seth Falcon <sfalcon at fhcrc.org>:\n>> Hi Laurent,\n>>\n>> \"Laurent Gautier\" <lgautier at gmail.com> writes:\n>> > It seems to be a problem",
+      "thread_id": "thread-cc68542e4951",
+      "thread_depth": 4,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-4b3c1b6d3cae",
+      "message_id": "<469E3A33.5020308@fhcrc.org>",
+      "from_name": "Marc Carlson",
+      "from_email_hash": "63182bae9b15df223407341203cb8ed095d4cf2c8e9f0f84a8b7320bd591907d",
+      "date": "2007-07-18T09:05:07-07:00",
+      "subject": "[Bioc-devel] hgu95aprobe missing sequences",
+      "subject_clean": "[Bioc-devel] hgu95aprobe missing sequences",
+      "in_reply_to": "<m2ejj8kqfs.fsf@ziti.fhcrc.org>",
+      "references": [
+        "<4006E8CB-6C1E-47E2-9B42-FCC2785A0543@ic.ac.uk>",
+        "<46965CD0.4060702@fhcrc.org>",
+        "<46965CD0.4060702@fhcrc.org>",
+        "<m2vecpwnnq.fsf@ziti.fhcrc.org>",
+        "<46966A90.47B0.00EE.0@med.umich.edu>",
+        "<4696C5BD.2050403@fhcrc.org>",
+        "<4697B48F.47B0.00EE.0@med.umich.edu>",
+        "<46981D58.7050008@fhcrc.org>",
+        "<469B55CF.47B0.00EE.0@med.umich.edu>",
+        "<m2ejj8kqfs.fsf@ziti.fhcrc.org>"
+      ],
+      "body_plain": "Seth Falcon wrote:\n> \"James MacDonald\" <jmacdon at med.umich.edu> writes:\n>   \n>> 3.) Both the yeast2 and ygs98 annotation packages appear to be\n>> busted. In both cases there appear to be far fewer probeset keys in\n>> the envs than are reported. For instance, for the ygs98 package:\n>>\n>>     \n>>> length(ygs98CHR)\n>>>       \n>> [1] 6776 ygs98()\n>>     \n>\n> Marc has identified a bug in the yeast2 AnnBuilder scripts and is\n> working on finding the root cause and a fix.  We will at least be able\n> to resolve this for the next release if not sooner.\n>\n>\n> + seth\nSo I have spent some time on this problem and come to the following\nconclusions:\n1) there is more than one bug within AnnBuilder as pertains to the\nAffymetrix Yeast packages.\n2) these bugs seems to have been around for a long, long time.  I don't\nknow if these packages have ever had all the IDs mapped/available for yeast.\n3) I have found one of these bugs and corrected it which places most of\nthe missing IDs into the yeast2 package, but unfortunately this\nparticular fix will do almost nothing for the ygs98 package as it has\nanother as of yet unidentified issue.\n\nI have therefore checked in a fix for of AnnBuilder, and made a new\nyeast2 package which I will push out next week when I can get Herve to\nhelp me.  Since these packages have been around for a long time, I\nintend to focus more of my future time on rapidly making the new sqlite\nbased versions of these packages ready for the next release.  The\nenvironment styled packages should be able to be generated from these\nsqlite packages as well which I am hoping will allow us to make a clean\nbreak from this.  So from the users perspective, this should hopefully\nmean that the yeast packages should just mysteriously look better with\nthe next release.",
+      "body_snippet": "Seth Falcon wrote:\n> \"James MacDonald\" <jmacdon at med.umich.edu> writes:\n>   \n>> 3.) Both the yeast2 and ygs98 annotation packages appear to be\n>> busted. In both cases there appear to be far fewer p",
+      "thread_id": "thread-4b3c1b6d3cae",
+      "thread_depth": 0,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-c5884fc8cca5",
+      "message_id": "<469E69B2.9020609@mail.nih.gov>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "5a8e0e6abee8db2f7eeaea6df4cbae4d8713a79b51ddc5ef74e7c509c4b05f87",
+      "date": "2007-07-18T15:27:46-04:00",
+      "subject": "[Bioc-devel] Extending annotation packages",
+      "subject_clean": "[Bioc-devel] Extending annotation packages",
+      "in_reply_to": "<m2ps2pbv0q.fsf@ziti.fhcrc.org>",
+      "references": [
+        "<469D7073.7050902@mail.nih.gov>",
+        "<m2ps2pbv0q.fsf@ziti.fhcrc.org>"
+      ],
+      "body_plain": "Seth Falcon wrote:\n> Hi Sean,\n>\n> Sean Davis <sdavis2 at mail.nih.gov> writes:\n>   \n>> I have built an annotation package, but I would like to add a couple of\n>> more annotation sources (which I will build by hand).  Is there an\n>> accepted way of doing this if the ultimate goal is distribution?  In\n>> particular, I would like to add a mapping to higher-resolution\n>> chromosome location information and another mapping to a boolean\n>> flag.\n>>     \n>\n> I don't think we have a recommended procedure.  A few ideas:\n>\n> 1. You can contribute the annotation data package to BioC and\n>    distribute it there if you like.  In this case, you will be\n>    expected to update the release version prior to each BioC release\n>    and to build the package against the same annotation source data\n>    download that we use for the other packages -- this way things like\n>    GO will be in sync across packages.  Marc Carlson is the contact\n>    person for this (he is a new member of our group in Seattle;\n>    Nianhua is no longer in the group, but still involved in BioC on a\n>    volunteer basis).\n>\n>   \n\nThat would be the plan, yes.\n\n> 2. Is the higher-resolution chromosome location information something\n>    that could be applied to many existing annotation data packages or\n>    just yours?  We hope to have some discussion at the Developer Day\n>    at BioC2007 about future directions for the annotation data\n>    packages with a focus on what newly available data should be\n>    included in future releases of the packages.\n>\n>   \n\nIn addition to locations of genes on the chromosomes, I would like to \ninclude information about the probe locations themselves, since for the \nplatform that I am using, these data are critical. \n\n> 3. Don't forget to add documentation for the objects you add to the\n>    package :-)\n>   \n\nBut, of course.  ; )\n\nAs usual, thanks, Seth.\n\nSean",
+      "body_snippet": "Seth Falcon wrote:\n> Hi Sean,\n>\n> Sean Davis <sdavis2 at mail.nih.gov> writes:\n>   \n>> I have built an annotation package, but I would like to add a couple of\n>> more annotation sources (which I will ",
+      "thread_id": "thread-42c2eb1c8c67",
+      "thread_depth": 2,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-0824ed827a7b",
+      "message_id": "<29623B45-D90B-426B-B55A-1807E66A55CB@stat.berkeley.edu>",
+      "from_name": "Kasper Daniel Hansen",
+      "from_email_hash": "64daa056fd8bc97c1a667a56c348131f4bfb7651adb6032fb836238a930de545",
+      "date": "2007-07-18T13:10:30-07:00",
+      "subject": "[Bioc-devel] Extending annotation packages",
+      "subject_clean": "[Bioc-devel] Extending annotation packages",
+      "in_reply_to": "<469E69B2.9020609@mail.nih.gov>",
+      "references": [
+        "<469D7073.7050902@mail.nih.gov>",
+        "<m2ps2pbv0q.fsf@ziti.fhcrc.org>",
+        "<469E69B2.9020609@mail.nih.gov>"
+      ],
+      "body_plain": "On Jul 18, 2007, at 12:27 PM, Sean Davis wrote:\n\n> Seth Falcon wrote:\n>> Hi Sean,\n>>\n>> Sean Davis <sdavis2 at mail.nih.gov> writes:\n>>\n>>> I have built an annotation package, but I would like to add a  \n>>> couple of\n>>> more annotation sources (which I will build by hand).  Is there an\n>>> accepted way of doing this if the ultimate goal is distribution?  In\n>>> particular, I would like to add a mapping to higher-resolution\n>>> chromosome location information and another mapping to a boolean\n>>> flag.\n>>>\n>>\n>> I don't think we have a recommended procedure.  A few ideas:\n>>\n>> 1. You can contribute the annotation data package to BioC and\n>>    distribute it there if you like.  In this case, you will be\n>>    expected to update the release version prior to each BioC release\n>>    and to build the package against the same annotation source data\n>>    download that we use for the other packages -- this way things  \n>> like\n>>    GO will be in sync across packages.  Marc Carlson is the contact\n>>    person for this (he is a new member of our group in Seattle;\n>>    Nianhua is no longer in the group, but still involved in BioC on a\n>>    volunteer basis).\n>>\n>>\n>\n> That would be the plan, yes.\n>\n>> 2. Is the higher-resolution chromosome location information something\n>>    that could be applied to many existing annotation data packages or\n>>    just yours?  We hope to have some discussion at the Developer Day\n>>    at BioC2007 about future directions for the annotation data\n>>    packages with a focus on what newly available data should be\n>>    included in future releases of the packages.\n>>\n>>\n>\n> In addition to locations of genes on the chromosomes, I would like to\n> include information about the probe locations themselves, since for  \n> the\n> platform that I am using, these data are critical.\n\n(I am assuming that by probe location, Sean means where on the genome  \nthe probe hits).\n\nThis is an interesting idea which is certainly applicable to most  \nmicroarrays with multiple probes per \"gene\" (or transcript or unit or  \nwhatever), including Affy arrays. It has the flavour of the remapping  \ndone by MCBI for the affy chips. It also has the flavour of being  \nessentially equal to the basic mapping done for a tiling array (probe  \nto genome).\n\nThe current BioC annotation strategy is to have (for Affy chips which  \nI am most familiar with)\n\nprobe to \"gene\" mapping : CDF environment\n\"gene\" to annotation like GO etc: annotation packages\nprobe level info: probe package - but currently a probe package is  \nessentially completely independent of any annotation including a genome.\n\nI think that the information Sean wants to include would be useful  \nfor all chips and I think that eg. the MCBI packages are evidence for  \nthat. But I am not sure that the best way to include this information  \nis to extend the annotation packages, but perhaps rather the probe  \npackages. This would imply that the probe packages are bundled with a  \ngenome version - but since genomes usually change rather slowly this  \nmight not be a big problem. Including it in the probe packages would  \nalso mean a redesign since some probes might hit multiple locations,  \nso the information could not just be stored in the usual data.frame.  \nUpgrading to the new SQLite based packages probably makes this much  \nsimpler. (so here I am essentially advocating for a routine blasting  \nof the probes to the genome).\n\nAll in all I think this is something the community should think about  \ndoing. But since Sean has a use case and perhaps a very special chip  \nI would suggest to just \"go ahead and do it\" and see what the results  \nare - we might learn from it.\n\nKasper\n\n>\n>> 3. Don't forget to add documentation for the objects you add to the\n>>    package :-)\n>>\n>\n> But, of course.  ; )\n>\n> As usual, thanks, Seth.\n>\n> Sean\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "On Jul 18, 2007, at 12:27 PM, Sean Davis wrote:\n\n> Seth Falcon wrote:\n>> Hi Sean,\n>>\n>> Sean Davis <sdavis2 at mail.nih.gov> writes:\n>>\n>>> I have built an annotation package, but I would like to add ",
+      "thread_id": "thread-42c2eb1c8c67",
+      "thread_depth": 3,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-3ec28af5060f",
+      "message_id": "<469E7786.7090407@mail.nih.gov>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "5a8e0e6abee8db2f7eeaea6df4cbae4d8713a79b51ddc5ef74e7c509c4b05f87",
+      "date": "2007-07-18T16:26:46-04:00",
+      "subject": "[Bioc-devel] Extending annotation packages",
+      "subject_clean": "[Bioc-devel] Extending annotation packages",
+      "in_reply_to": "<29623B45-D90B-426B-B55A-1807E66A55CB@stat.berkeley.edu>",
+      "references": [
+        "<469D7073.7050902@mail.nih.gov>",
+        "<m2ps2pbv0q.fsf@ziti.fhcrc.org>",
+        "<469E69B2.9020609@mail.nih.gov>",
+        "<29623B45-D90B-426B-B55A-1807E66A55CB@stat.berkeley.edu>"
+      ],
+      "body_plain": "Kasper Daniel Hansen wrote:\n>\n> On Jul 18, 2007, at 12:27 PM, Sean Davis wrote:\n>\n>> Seth Falcon wrote:\n>>> Hi Sean,\n>>>\n>>> Sean Davis <sdavis2 at mail.nih.gov> writes:\n>>>\n>>>> I have built an annotation package, but I would like to add a \n>>>> couple of\n>>>> more annotation sources (which I will build by hand).  Is there an\n>>>> accepted way of doing this if the ultimate goal is distribution?  In\n>>>> particular, I would like to add a mapping to higher-resolution\n>>>> chromosome location information and another mapping to a boolean\n>>>> flag.\n>>>>\n>>>\n>>> I don't think we have a recommended procedure.  A few ideas:\n>>>\n>>> 1. You can contribute the annotation data package to BioC and\n>>>    distribute it there if you like.  In this case, you will be\n>>>    expected to update the release version prior to each BioC release\n>>>    and to build the package against the same annotation source data\n>>>    download that we use for the other packages -- this way things like\n>>>    GO will be in sync across packages.  Marc Carlson is the contact\n>>>    person for this (he is a new member of our group in Seattle;\n>>>    Nianhua is no longer in the group, but still involved in BioC on a\n>>>    volunteer basis).\n>>>\n>>>\n>>\n>> That would be the plan, yes.\n>>\n>>> 2. Is the higher-resolution chromosome location information something\n>>>    that could be applied to many existing annotation data packages or\n>>>    just yours?  We hope to have some discussion at the Developer Day\n>>>    at BioC2007 about future directions for the annotation data\n>>>    packages with a focus on what newly available data should be\n>>>    included in future releases of the packages.\n>>>\n>>>\n>>\n>> In addition to locations of genes on the chromosomes, I would like to\n>> include information about the probe locations themselves, since for the\n>> platform that I am using, these data are critical.\n>\n> (I am assuming that by probe location, Sean means where on the genome \n> the probe hits).\n>\n> This is an interesting idea which is certainly applicable to most \n> microarrays with multiple probes per \"gene\" (or transcript or unit or \n> whatever), including Affy arrays. It has the flavour of the remapping \n> done by MCBI for the affy chips. It also has the flavour of being \n> essentially equal to the basic mapping done for a tiling array (probe \n> to genome).\n>\n> The current BioC annotation strategy is to have (for Affy chips which \n> I am most familiar with)\n>\n> probe to \"gene\" mapping : CDF environment\n> \"gene\" to annotation like GO etc: annotation packages\n> probe level info: probe package - but currently a probe package is \n> essentially completely independent of any annotation including a genome.\n>\n\nKasper, thanks for clarifying some of my points and making some new ones.\n\nWhile affy fits this model, other chips do not and I am not aware of \n\"probe\" packages for anything other than affy.  I'm not averse to \ncreating them (and think it is a great idea to include sequence data \nwhere available), but some of the affyisms may need to be worked out \nbefore this will work.\n\n> I think that the information Sean wants to include would be useful for \n> all chips and I think that eg. the MCBI packages are evidence for \n> that. But I am not sure that the best way to include this information \n> is to extend the annotation packages, but perhaps rather the probe \n> packages. This would imply that the probe packages are bundled with a \n> genome version - but since genomes usually change rather slowly this \n> might not be a big problem. Including it in the probe packages would \n> also mean a redesign since some probes might hit multiple locations, \n> so the information could not just be stored in the usual data.frame. \n> Upgrading to the new SQLite based packages probably makes this much \n> simpler. (so here I am essentially advocating for a routine blasting \n> of the probes to the genome).\n\nI agree that this is a useful exercise, but I'm not sure anyone agrees \non how best to do this and how best to then aggregate probes (for the \naffy example).  If someone wants to blast the probes and make those data \navailable, that is great, but I don't know if it will be possible to \nmake everyone happy here.  In fact, blasting the probes to the genome \nisn't quite right, as probes map to transcripts for gene expression \narrays.  Then, we all need to discuss what transcripts to use and how to \nmap those back to genes.  In short, I do not know if we are there yet in \nterms of the best approach for all.\n\n>\n> All in all I think this is something the community should think about \n> doing. But since Sean has a use case and perhaps a very special chip I \n> would suggest to just \"go ahead and do it\" and see what the results \n> are - we might learn from it.\nI didn't mean to be opaque.  The arrays are CpG island arrays, \nessentially.  There is an arbitrary assignment of probes to genes, but \nthe assignment is, of course, arbitrary because not all CpG islands \naffect the closest gene (or just one gene, or any gene, for that matter). \n\nSean",
+      "body_snippet": "Kasper Daniel Hansen wrote:\n>\n> On Jul 18, 2007, at 12:27 PM, Sean Davis wrote:\n>\n>> Seth Falcon wrote:\n>>> Hi Sean,\n>>>\n>>> Sean Davis <sdavis2 at mail.nih.gov> writes:\n>>>\n>>>> I have built an annot",
+      "thread_id": "thread-42c2eb1c8c67",
+      "thread_depth": 4,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-e9fd65ae09a7",
+      "message_id": "<Pine.GSO.4.58.0707181650070.27248@capecod.bwh.harvard.edu>",
+      "from_name": "Vincent Carey 525-2265",
+      "from_email_hash": "a2452f5b8291c3819d7bf5f8363b8501a99d965cccb34679af430953cca3c633",
+      "date": "2007-07-18T16:52:41-04:00",
+      "subject": "[Bioc-devel] Extending annotation packages",
+      "subject_clean": "[Bioc-devel] Extending annotation packages",
+      "in_reply_to": "<469E7786.7090407@mail.nih.gov>",
+      "references": [
+        "<469D7073.7050902@mail.nih.gov>",
+        "<m2ps2pbv0q.fsf@ziti.fhcrc.org>",
+        "<469E69B2.9020609@mail.nih.gov>",
+        "<29623B45-D90B-426B-B55A-1807E66A55CB@stat.berkeley.edu>",
+        "<469E7786.7090407@mail.nih.gov>"
+      ],
+      "body_plain": ">\n> While affy fits this model, other chips do not and I am not aware of\n> \"probe\" packages for anything other than affy.  I'm not averse to\n\nis the 'lumi' approach of using a hashed version of the probe sequence\nas the probe identifier at all relevant?  seems to avoid the need for\na probe package (at least to provide the sequences and map them to\nidentifiers).  [additionally, is there a proof that there are no 2 distinct\nsequences that hash to the same hash string?]",
+      "body_snippet": ">\n> While affy fits this model, other chips do not and I am not aware of\n> \"probe\" packages for anything other than affy.  I'm not averse to\n\nis the 'lumi' approach of using a hashed version of the pr",
+      "thread_id": "thread-42c2eb1c8c67",
+      "thread_depth": 5,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-a692181d0369",
+      "message_id": "<469E7FD6.604@mail.nih.gov>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "5a8e0e6abee8db2f7eeaea6df4cbae4d8713a79b51ddc5ef74e7c509c4b05f87",
+      "date": "2007-07-18T17:02:14-04:00",
+      "subject": "[Bioc-devel] Extending annotation packages",
+      "subject_clean": "[Bioc-devel] Extending annotation packages",
+      "in_reply_to": "<Pine.GSO.4.58.0707181650070.27248@capecod.bwh.harvard.edu>",
+      "references": [
+        "<469D7073.7050902@mail.nih.gov>",
+        "<m2ps2pbv0q.fsf@ziti.fhcrc.org>",
+        "<469E69B2.9020609@mail.nih.gov>",
+        "<29623B45-D90B-426B-B55A-1807E66A55CB@stat.berkeley.edu>",
+        "<469E7786.7090407@mail.nih.gov>",
+        "<Pine.GSO.4.58.0707181650070.27248@capecod.bwh.harvard.edu>"
+      ],
+      "body_plain": "Vincent Carey 525-2265 wrote:\n>> While affy fits this model, other chips do not and I am not aware of\n>> \"probe\" packages for anything other than affy.  I'm not averse to\n>>     \n>\n> is the 'lumi' approach of using a hashed version of the probe sequence\n> as the probe identifier at all relevant?  seems to avoid the need for\n> a probe package (at least to provide the sequences and map them to\n> identifiers).  [additionally, is there a proof that there are no 2 distinct\n> sequences that hash to the same hash string?]\n>   \nI think the nuID is a base-64 encoding and not simply a hash.  Pan Du or \nSimon Lin could probably comment more fully, though.\n\nSean",
+      "body_snippet": "Vincent Carey 525-2265 wrote:\n>> While affy fits this model, other chips do not and I am not aware of\n>> \"probe\" packages for anything other than affy.  I'm not averse to\n>>     \n>\n> is the 'lumi' app",
+      "thread_id": "thread-42c2eb1c8c67",
+      "thread_depth": 6,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-36d2cd67ef79",
+      "message_id": "<m2bqe974ji.fsf@ziti.fhcrc.org>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2007-07-18T15:03:45-07:00",
+      "subject": "[Bioc-devel] Procedure for fixing packges in the current BioC release",
+      "subject_clean": "[Bioc-devel] Procedure for fixing packges in the current BioC release",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi all,\n\nAna sent this question and, with her permission, I thought I would\nanswer on the list.\n\nAna Conesa writes:\n> I want to ask you about the procedure for updating packages/fixing\n> bugs in between BioC releases. How does it go? I guess you should\n> commit your changes first using subversion, and then?\n\nFirst, let me remind you about the branches we have in svn for\ndevelopment.  Development on BioC-devel happens on the svn \"trunk\".\nDevelopment on the current 2.0 release happens on the release branch:\n\n  https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_2_0/madman/Rpacks/\n\nWe do not make changes to old releases.\n\nOnly bug fixes should be applied to the release branch.  If you have a\nfix, you should make them in a working copy of your package from the\nrelease branch (this is important).  Be sure to:\n\n   - increment the version number (only last digit should change)\n   - run R CMD check on your package and on any packages that Depend\n     on your package.\n   - commit to the release branch\n\nThen the build process will propagate your update to the release\nrepository (assuming it passes check for us as well).\n\nThere are some more details here:\n\n    http://wiki.fhcrc.org/bioc/HowTo/Update_Release_Branch\n\n+ seth\n\n\n-- \nSeth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\nhttp://bioconductor.org",
+      "body_snippet": "Hi all,\n\nAna sent this question and, with her permission, I thought I would\nanswer on the list.\n\nAna Conesa writes:\n> I want to ask you about the procedure for updating packages/fixing\n> bugs in betwe",
+      "thread_id": "thread-36d2cd67ef79",
+      "thread_depth": 0,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-09974c1ec65e",
+      "message_id": "<m2ir8g1hbx.fsf_-_@ziti.fhcrc.org>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2007-07-19T09:36:18-07:00",
+      "subject": "[Bioc-devel] bug-report for combine [RESOLVED]",
+      "subject_clean": "[Bioc-devel] bug-report for combine [RESOLVED]",
+      "in_reply_to": "<m2sl7laego.fsf@ziti.fhcrc.org> (Seth Falcon's message of \"Wed, 18 Jul 2007 09:01:11 -0700\")",
+      "references": [
+        "<27d1e6020707180512v31966217m27b63425ec3ed81a@mail.gmail.com>",
+        "<27d1e6020707180523y869ec12m53c733b1ec30c713@mail.gmail.com>",
+        "<m2tzs1bvhu.fsf@ziti.fhcrc.org>",
+        "<27d1e6020707180814g5e0f0a2aq849cbe662cde92a3@mail.gmail.com>",
+        "<m2sl7laego.fsf@ziti.fhcrc.org>"
+      ],
+      "body_plain": "Hi,\n\nLaurent, thanks for the patch you sent to me offlist.  I've applied it\nand added a unit test based on the example you sent that triggered the\nerror.\n\nSo this issue should be resolved in Biobase 1.15.21.\n\n+ seth\n\n-- \nSeth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\nhttp://bioconductor.org",
+      "body_snippet": "Hi,\n\nLaurent, thanks for the patch you sent to me offlist.  I've applied it\nand added a unit test based on the example you sent that triggered the\nerror.\n\nSo this issue should be resolved in Biobase 1",
+      "thread_id": "thread-cc68542e4951",
+      "thread_depth": 5,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-12884dfd9e8e",
+      "message_id": "<1184918796.6515.3.camel@maitai.windows.ebi.ac.uk>",
+      "from_name": "Oleg Sklyar",
+      "from_email_hash": "cbe68d3f50967d8247a71d9d59695a0068054b30ff9287210abc49b35f0fad20",
+      "date": "2007-07-20T09:06:36+01:00",
+      "subject": "[Bioc-devel] no BioC-devel check results?",
+      "subject_clean": "[Bioc-devel] no BioC-devel check results?",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\nany idea why \"BioC 2.1: Multiple platform build/check report\" is empty\nfor the last couple of days and when is it getting back to life?\n\nThanks, Oleg\n\n-- \nDr. Oleg Sklyar * EBI-EMBL, Cambridge CB10 1SD, UK * +44-1223-464466",
+      "body_snippet": "Hi,\nany idea why \"BioC 2.1: Multiple platform build/check report\" is empty\nfor the last couple of days and when is it getting back to life?\n\nThanks, Oleg\n\n-- \nDr. Oleg Sklyar * EBI-EMBL, Cambridge CB1",
+      "thread_id": "thread-12884dfd9e8e",
+      "thread_depth": 0,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-8300788f799d",
+      "message_id": "<m2644fueyb.fsf@ziti.fhcrc.org>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2007-07-20T11:07:08-07:00",
+      "subject": "[Bioc-devel] no BioC-devel check results?",
+      "subject_clean": "[Bioc-devel] no BioC-devel check results?",
+      "in_reply_to": "<1184918796.6515.3.camel@maitai.windows.ebi.ac.uk> (Oleg Sklyar's message of \"Fri, 20 Jul 2007 09:06:36 +0100\")",
+      "references": [
+        "<1184918796.6515.3.camel@maitai.windows.ebi.ac.uk>"
+      ],
+      "body_plain": "Hi Oleg,\n\nOleg Sklyar <osklyar at ebi.ac.uk> writes:\n> any idea why \"BioC 2.1: Multiple platform build/check report\" is empty\n> for the last couple of days and when is it getting back to life?\n\nSorry about that.  There is an issue with the Windows build and the\ncurrent configuration of the build system prevents an overall report\nfrom appearing if any of the build nodes completely fails.\n\nHerve is on holiday this week (back on Monday) and he will get things\ngoing again then.\n\nHowever, there is a workaround to get non-Windows check results in the\nmeantime:\n\nOn the check results dispatch page__, there is a link \"download\" which\nlinks to a file report.tgz.  If you unpack this you can open\nreport/lamb1-index.html locally and view the Linux build results, for\nexample.  This build system feature is mostly for repository\nmaintainers because it makes it easy to grep all results for\nparticular warning/error messages.\n\n__ http://www.bioconductor.org/checkResults/\n\nSorry for the inconvenience.  We expect the results to be back to\nnormal early next week.\n\nBest,\n\n+ seth\n\n-- \nSeth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\nhttp://bioconductor.org",
+      "body_snippet": "Hi Oleg,\n\nOleg Sklyar <osklyar at ebi.ac.uk> writes:\n> any idea why \"BioC 2.1: Multiple platform build/check report\" is empty\n> for the last couple of days and when is it getting back to life?\n\nSorry ",
+      "thread_id": "thread-12884dfd9e8e",
+      "thread_depth": 1,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-713925355f02",
+      "message_id": "<m24pjzorvu.fsf@ziti.fhcrc.org>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2007-07-20T11:24:21-07:00",
+      "subject": "[Bioc-devel] RFC: Naming scheme for organism level annotation data packages",
+      "subject_clean": "[Bioc-devel] RFC: Naming scheme for organism level annotation data packages",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hello all,\n\nWe are working on new and improved versions of humanLLmappings (along\nwith rat and mouse).  The contents will be similar, but we are making\nsome significant changes.  In particular, we are trying to make the\ndata maps as similar as possible to those found in the common\nAffymetrix chip-based packages.  This will make programatic use of the\npackages easier.\n\nFor human, mouse, and rat, the central ID will be Entrez Gene.  This\nwill not be the case for all organism level packages,\ne.g. S. cerevisiae where EG is not the ID chosen by the research\ncommunity.  Therefore, we propose the following naming scheme for new\norganism level annotation data packages:\n\n    org.<organism>.db\n\nwhere <organism> is the UniGene organism abbreviation [1].  To start\nwith, then, we will have:\n\n   org.Hs.db\n   org.Mm.db\n   org.Rn.db\n\nThe 'org' prefix identifies the package as organism wide and will make\nit easy for these packages to sort next to each other.  Using UniGene\norganism abbreviations gives us a short, specific, and reliable\nabbreviation.  The 'db' suffix indicates that these packages will be\nbacked by a DB (SQLite) and use the AnnotationDbi interface.\n\nOne possible downside is that if an alternative primary ID emerges\n(e.g. an ensembl based) then we would need to add a way to\ndistinguish.  But we felt it was easier to cross that bridge when we\nget there.\n\nComments?  Suggestions?  Concerns?  Send them along.  If we don't hear\nanything by next Wednesday 25 July, we will move forward with this\nproposal.\n\nBest,\n\n+ seth\n\n[1] There is probably a more graceful way, but you can find an\nabbreviation by browsing here__ and clicking on the number in the\nright column in the row for the organism of interest.\n\n\n-- \nSeth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\nhttp://bioconductor.org",
+      "body_snippet": "Hello all,\n\nWe are working on new and improved versions of humanLLmappings (along\nwith rat and mouse).  The contents will be similar, but we are making\nsome significant changes.  In particular, we are",
+      "thread_id": "thread-713925355f02",
+      "thread_depth": 0,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-f260a2c2db48",
+      "message_id": "<46A1F6A8.6030706@ebi.ac.uk>",
+      "from_name": "Wolfgang Huber",
+      "from_email_hash": "8481a5f74e0203c0e279b0cd7f952f11ea65fcad4bf054f5268c275ad236a2d9",
+      "date": "2007-07-21T13:06:00+01:00",
+      "subject": "[Bioc-devel] RFC: Naming scheme for organism level annotation data\tpackages",
+      "subject_clean": "[Bioc-devel] RFC: Naming scheme for organism level annotation data\tpackages",
+      "in_reply_to": "<m24pjzorvu.fsf@ziti.fhcrc.org>",
+      "references": [
+        "<m24pjzorvu.fsf@ziti.fhcrc.org>"
+      ],
+      "body_plain": "Hi Seth,\n\nsounds good to me.\n\nOne possible option I wanted to throw into the ring to solve the \nidentifier system problem and at the same be at least conceptually \nprepared for annotations of multi-species systems (e.g. host-pathogen, \nsay, man/anopheles/plasmodium) would be to use name of the name of \nidentifier system (EG) as the prefix rather than \"org\".\n\n  Best wishes\n\tWolfgang\n\n  Falcon ha scritto:\n> Hello all,\n> \n> We are working on new and improved versions of humanLLmappings (along\n> with rat and mouse).  The contents will be similar, but we are making\n> some significant changes.  In particular, we are trying to make the\n> data maps as similar as possible to those found in the common\n> Affymetrix chip-based packages.  This will make programatic use of the\n> packages easier.\n> \n> For human, mouse, and rat, the central ID will be Entrez Gene.  This\n> will not be the case for all organism level packages,\n> e.g. S. cerevisiae where EG is not the ID chosen by the research\n> community.  Therefore, we propose the following naming scheme for new\n> organism level annotation data packages:\n> \n>     org.<organism>.db\n> \n> where <organism> is the UniGene organism abbreviation [1].  To start\n> with, then, we will have:\n> \n>    org.Hs.db\n>    org.Mm.db\n>    org.Rn.db\n> \n> The 'org' prefix identifies the package as organism wide and will make\n> it easy for these packages to sort next to each other.  Using UniGene\n> organism abbreviations gives us a short, specific, and reliable\n> abbreviation.  The 'db' suffix indicates that these packages will be\n> backed by a DB (SQLite) and use the AnnotationDbi interface.\n> \n> One possible downside is that if an alternative primary ID emerges\n> (e.g. an ensembl based) then we would need to add a way to\n> distinguish.  But we felt it was easier to cross that bridge when we\n> get there.\n> \n> Comments?  Suggestions?  Concerns?  Send them along.  If we don't hear\n> anything by next Wednesday 25 July, we will move forward with this\n> proposal.\n> \n> Best,\n> \n> + seth\n> \n> [1] There is probably a more graceful way, but you can find an\n> abbreviation by browsing here__ and clicking on the number in the\n> right column in the row for the organism of interest.\n> \n> \n\n\n-- \n\nBest wishes\n   Wolfgang\n\n------------------------------------------------------------------\nWolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber",
+      "body_snippet": "Hi Seth,\n\nsounds good to me.\n\nOne possible option I wanted to throw into the ring to solve the \nidentifier system problem and at the same be at least conceptually \nprepared for annotations of multi-sp",
+      "thread_id": "thread-713925355f02",
+      "thread_depth": 1,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-f2a214c5d56c",
+      "message_id": "<m2myxploy1.fsf@ziti.fhcrc.org>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2007-07-21T09:08:22-07:00",
+      "subject": "[Bioc-devel] RFC: Naming scheme for organism level annotation data\tpackages",
+      "subject_clean": "[Bioc-devel] RFC: Naming scheme for organism level annotation data\tpackages",
+      "in_reply_to": "<46A1F6A8.6030706@ebi.ac.uk> (Wolfgang Huber's message of \"Sat, 21 Jul 2007 13:06:00 +0100\")",
+      "references": [
+        "<m24pjzorvu.fsf@ziti.fhcrc.org>",
+        "<46A1F6A8.6030706@ebi.ac.uk>"
+      ],
+      "body_plain": "Wolfgang Huber <huber at ebi.ac.uk> writes:\n\n> Hi Seth,\n>\n> sounds good to me.\n>\n> One possible option I wanted to throw into the ring to solve the\n> identifier system problem and at the same be at least conceptually\n> prepared for annotations of multi-species systems (e.g. host-pathogen,\n> say, man/anopheles/plasmodium) would be to use name of the name of\n> identifier system (EG) as the prefix rather than \"org\".\n\nThat was something we discussed.  The down sides of that are:\n\n  - What would you put for an updated version of the YEAST package?\n\n  - How would you indentify organism-level packages?  [Perhaps your\n    point is that this may not really be all that useful so isn't\n    worth considering].\n\n+ seth\n\n-- \nSeth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\nhttp://bioconductor.org",
+      "body_snippet": "Wolfgang Huber <huber at ebi.ac.uk> writes:\n\n> Hi Seth,\n>\n> sounds good to me.\n>\n> One possible option I wanted to throw into the ring to solve the\n> identifier system problem and at the same be at le",
+      "thread_id": "thread-713925355f02",
+      "thread_depth": 2,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-46f97c7fe105",
+      "message_id": "<46A23B21.5090900@mail.nih.gov>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "5a8e0e6abee8db2f7eeaea6df4cbae4d8713a79b51ddc5ef74e7c509c4b05f87",
+      "date": "2007-07-21T12:58:09-04:00",
+      "subject": "[Bioc-devel] RFC: Naming scheme for organism level annotation data\tpackages",
+      "subject_clean": "[Bioc-devel] RFC: Naming scheme for organism level annotation data\tpackages",
+      "in_reply_to": "<m2myxploy1.fsf@ziti.fhcrc.org>",
+      "references": [
+        "<m24pjzorvu.fsf@ziti.fhcrc.org>",
+        "<46A1F6A8.6030706@ebi.ac.uk>",
+        "<m2myxploy1.fsf@ziti.fhcrc.org>"
+      ],
+      "body_plain": "Seth Falcon wrote:\n> Wolfgang Huber <huber at ebi.ac.uk> writes:\n>\n>   \n>> Hi Seth,\n>>\n>> sounds good to me.\n>>\n>> One possible option I wanted to throw into the ring to solve the\n>> identifier system problem and at the same be at least conceptually\n>> prepared for annotations of multi-species systems (e.g. host-pathogen,\n>> say, man/anopheles/plasmodium) would be to use name of the name of\n>> identifier system (EG) as the prefix rather than \"org\".\n>>     \n>\n> That was something we discussed.  The down sides of that are:\n>\n>   - What would you put for an updated version of the YEAST package?\n>\n>   - How would you indentify organism-level packages?  [Perhaps your\n>     point is that this may not really be all that useful so isn't\n>     worth considering].\n>   \n\nSince Seth et al. have produced a wonderfully useful db-based system, it \nseems that these data packages could be much more flexible from an ID \npoint of view.  One has a primary ID associated with the data package, \nbut mappings, to the extent that they are available, could also be \nincluded.  Then, you could have something like:\n\nprimaryKey(org.Hs.mappings)\n[1] \"EntrezGene\"\n\navailableKeys(org.Hs.mappings)\n    KeyType   ExampleValue\n[1] \"EntrezGene\"   9923\n[2] \"EnsemblGene\"   ENSG00000273213\n[3] \"HUGOSymbol\"   BRCA1\n\nAnd tools for getting data:\n\nmget(mykeys, org.Hs.mappingsSYMBOL) #expects mykeys to be EntrezGene\n\nmget(mykeys, org.Hs.mappingsSYMBOL,keytype=\"EnsemblGene\") #does lookup \nof EnsemblGene to EntrezGene and then does the mget\n# under the hood, this is a simple join in sql\n\nSoftware using such annotation packages automatically becomes hugely \nmore powerful.  Alternatively, a MAPPINGENVIRONMENT could be included \nthat could do the up-front mapping from one ID type to the primary key \n(and back again) and then software could remain largely unchanged from \nthe current situation (assuming there is a single primary key).\n\nThe reasons that I like this approach are:\n1) Each organism package then need be created only once and the \nexpectation would be that most of the appropriate mappings would be \nincluded.\n2) Standardizes mappings between ID types--individual users can rely on \na standard mapping with version information (Nothing worse than an \nexternal mapping source \"updating\" halfway through a project)\n3) Allows one \"pipeline\" for the production of the annotation and \nprimary keys, while allowing flexibility in the production of secondary \nmappings (an arbitrary number of mappings can be added; one could even \nimagine allowing users to add their own mappings quite easily to the \ndatabase with a single function)\n4) Software immediately becomes more useful without much increased \ncomplexity\n5) Could be extended to have multiple primary keytypes in the same data \npackage with automatic key conversions.\n\nOf course, some attention would need to be paid to documenting the \nsource of the alternative mappings, but the alternative mappings are \nreadily available.  With the adoption of a sql backend for these \npackages, all of this becomes doable with the adoption of a single table \n(or two, if one includes the \"availableKey\" information in a separate \ntable--a good idea, in my opinion) and some infrastructure for doing the \nlookups (API level infrastructure, since the backend is a simple join).\n\nAll of this said, I am not so intimately involved to know how much work \nthis would actually entail, but I think since we are talking about \nmaking changes, it is worthwhile entertaining various options.\n\nSean",
+      "body_snippet": "Seth Falcon wrote:\n> Wolfgang Huber <huber at ebi.ac.uk> writes:\n>\n>   \n>> Hi Seth,\n>>\n>> sounds good to me.\n>>\n>> One possible option I wanted to throw into the ring to solve the\n>> identifier system",
+      "thread_id": "thread-713925355f02",
+      "thread_depth": 3,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-3e48d02a7ef5",
+      "message_id": "<46A353E8.8040204@ebi.ac.uk>",
+      "from_name": "Wolfgang Huber",
+      "from_email_hash": "8481a5f74e0203c0e279b0cd7f952f11ea65fcad4bf054f5268c275ad236a2d9",
+      "date": "2007-07-22T14:56:08+02:00",
+      "subject": "[Bioc-devel] RFC: Naming scheme for organism level annotation data\tpackages",
+      "subject_clean": "[Bioc-devel] RFC: Naming scheme for organism level annotation data\tpackages",
+      "in_reply_to": "<m2myxploy1.fsf@ziti.fhcrc.org>",
+      "references": [
+        "<m24pjzorvu.fsf@ziti.fhcrc.org>",
+        "<46A1F6A8.6030706@ebi.ac.uk>",
+        "<m2myxploy1.fsf@ziti.fhcrc.org>"
+      ],
+      "body_plain": "Dear Seth,\n\n>> One possible option I wanted to throw into the ring to solve the\n>> identifier system problem and at the same be at least conceptually\n>> prepared for annotations of multi-species systems (e.g. host-pathogen,\n>> say, man/anopheles/plasmodium) would be to use name of the name of\n>> identifier system (EG) as the prefix rather than \"org\".\n> \n> That was something we discussed.  The down sides of that are:\n> \n>   - What would you put for an updated version of the YEAST package?\n\n\nhow about sgd.sc.db or sc.sgd.db or just sc.db?\ngiven that SGD is responsible for the systematic names of the genes in \nthe S.cerevisiae genome:\n   http://www.yeastgenome.org/help/yeastGeneNomenclature.shtml\n\nyeast is a very simple and clean example compared to the state of \naffairs in many other species and associated scientific communities, so \nin that case stating \"SGD\" might be unnecessary, due to its undisputed \ncentral role. So it may not necessarily be the best example for us for \ndeciding how to do things in general.\n\nIn Sc, it is much more apparent what a \"gene\" is: in other organisms, \nthe mapping between what are the actual proteins in the cell and the \nloci on the DNA where they are transcribed from is more complex, in S \ncerevisiae it is so simple that one often doesn't even think about it.\n\n   Best wishes\n\tWolfgang\n> \n>   - How would you indentify organism-level packages?  [Perhaps your\n>     point is that this may not really be all that useful so isn't\n>     worth considering].\n> \n> + seth\n>",
+      "body_snippet": "Dear Seth,\n\n>> One possible option I wanted to throw into the ring to solve the\n>> identifier system problem and at the same be at least conceptually\n>> prepared for annotations of multi-species syste",
+      "thread_id": "thread-713925355f02",
+      "thread_depth": 3,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-9c526b3edaea",
+      "message_id": "<m2veccb8lh.fsf@ziti.local>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2007-07-22T11:23:54-07:00",
+      "subject": "[Bioc-devel] RFC: Naming scheme for organism level annotation data\tpackages",
+      "subject_clean": "[Bioc-devel] RFC: Naming scheme for organism level annotation data\tpackages",
+      "in_reply_to": "<46A353E8.8040204@ebi.ac.uk> (Wolfgang Huber's message of \"Sun, 22 Jul 2007 14:56:08 +0200\")",
+      "references": [
+        "<m24pjzorvu.fsf@ziti.fhcrc.org>",
+        "<46A1F6A8.6030706@ebi.ac.uk>",
+        "<m2myxploy1.fsf@ziti.fhcrc.org>",
+        "<46A353E8.8040204@ebi.ac.uk>"
+      ],
+      "body_plain": "Wolfgang Huber <huber at ebi.ac.uk> writes:\n\n> Dear Seth,\n>\n>>> One possible option I wanted to throw into the ring to solve the\n>>> identifier system problem and at the same be at least conceptually\n>>> prepared for annotations of multi-species systems (e.g. host-pathogen,\n>>> say, man/anopheles/plasmodium) would be to use name of the name of\n>>> identifier system (EG) as the prefix rather than \"org\".\n>>\n>> That was something we discussed.  The down sides of that are:\n>>\n>>   - What would you put for an updated version of the YEAST package?\n>\n>\n> how about sgd.sc.db or sc.sgd.db or just sc.db?\n> given that SGD is responsible for the systematic names of the genes in\n> the S.cerevisiae genome:\n>   http://www.yeastgenome.org/help/yeastGeneNomenclature.shtml\n>\n> yeast is a very simple and clean example compared to the state of\n> affairs in many other species and associated scientific communities,\n> so in that case stating \"SGD\" might be unnecessary, due to its\n> undisputed central role. So it may not necessarily be the best example\n> for us for deciding how to do things in general.\n>\n> In Sc, it is much more apparent what a \"gene\" is: in other organisms,\n> the mapping between what are the actual proteins in the cell and the\n> loci on the DNA where they are transcribed from is more complex, in S\n> cerevisiae it is so simple that one often doesn't even think about it.\n\nThose are fine suggestions.  Do you (or others) think it is worth\nhaving a common prefix for all organism level packages?\n\n   org.sgd.Sc.db\n   org.eg.Hs.db\n   org.eg.Mm.db\n\nSince we don't (yet) have a super fancy dynamic webapp that allows\nusers to slice and dice their package display, there is some immediate\nbenefit to having similar packages sort next to each other.\n\n+ seth\n\n-- \nSeth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\nhttp://bioconductor.org",
+      "body_snippet": "Wolfgang Huber <huber at ebi.ac.uk> writes:\n\n> Dear Seth,\n>\n>>> One possible option I wanted to throw into the ring to solve the\n>>> identifier system problem and at the same be at least conceptually\n",
+      "thread_id": "thread-713925355f02",
+      "thread_depth": 4,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-ac92d4b769db",
+      "message_id": "<Pine.GSO.4.58.0707230613220.6811@capecod.bwh.harvard.edu>",
+      "from_name": "Vincent Carey 525-2265",
+      "from_email_hash": "a2452f5b8291c3819d7bf5f8363b8501a99d965cccb34679af430953cca3c633",
+      "date": "2007-07-23T06:20:11-04:00",
+      "subject": "[Bioc-devel] RFC: Naming scheme for organism level annotation data packages",
+      "subject_clean": "[Bioc-devel] RFC: Naming scheme for organism level annotation data packages",
+      "in_reply_to": "<m2veccb8lh.fsf@ziti.local>",
+      "references": [
+        "<m24pjzorvu.fsf@ziti.fhcrc.org>",
+        "<46A1F6A8.6030706@ebi.ac.uk>",
+        "<m2myxploy1.fsf@ziti.fhcrc.org>",
+        "<46A353E8.8040204@ebi.ac.uk>",
+        "<m2veccb8lh.fsf@ziti.local>"
+      ],
+      "body_plain": ">\n> Those are fine suggestions.  Do you (or others) think it is worth\n> having a common prefix for all organism level packages?\n>\n>    org.sgd.Sc.db\n>    org.eg.Hs.db\n>    org.eg.Mm.db\n>\n> Since we don't (yet) have a super fancy dynamic webapp that allows\n> users to slice and dice their package display, there is some immediate\n> benefit to having similar packages sort next to each other.\n\nwouldn't the sorting be more informative if we had, for example\n\norg.Hs.eg.db -- entrez gene\norg.Hs.en.db  -- ensembl, maybe\n\ni.e., provider would nest within organism.  if it is not intended\nto have multiple providers, take it out\n\norg.Hs.db\norg.Sc.db\n\ni would expect to scan for organism first, then for provider within\norganism if we are going to distinguish these.\n\nif the justification for the \"eg\" is clear in earlier posts, disregard\nthis ... i did not read them closely enough to remember now.\n\n>\n> + seth\n>\n> --\n> Seth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\n> http://bioconductor.org\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": ">\n> Those are fine suggestions.  Do you (or others) think it is worth\n> having a common prefix for all organism level packages?\n>\n>    org.sgd.Sc.db\n>    org.eg.Hs.db\n>    org.eg.Mm.db\n>\n> Since we do",
+      "thread_id": "thread-713925355f02",
+      "thread_depth": 5,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-26a61720189f",
+      "message_id": "<m2hcnvb4sw.fsf@ziti.local>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2007-07-23T06:58:07-07:00",
+      "subject": "[Bioc-devel] RFC: Naming scheme for organism level annotation data packages",
+      "subject_clean": "[Bioc-devel] RFC: Naming scheme for organism level annotation data packages",
+      "in_reply_to": "<Pine.GSO.4.58.0707230613220.6811@capecod.bwh.harvard.edu> (Vincent Carey's message of \"Mon, 23 Jul 2007 06:20:11 -0400 (EDT)\")",
+      "references": [
+        "<m24pjzorvu.fsf@ziti.fhcrc.org>",
+        "<46A1F6A8.6030706@ebi.ac.uk>",
+        "<m2myxploy1.fsf@ziti.fhcrc.org>",
+        "<46A353E8.8040204@ebi.ac.uk>",
+        "<m2veccb8lh.fsf@ziti.local>",
+        "<Pine.GSO.4.58.0707230613220.6811@capecod.bwh.harvard.edu>"
+      ],
+      "body_plain": "Vincent Carey 525-2265 <stvjc at channing.harvard.edu> writes:\n> wouldn't the sorting be more informative if we had, for example\n>\n> org.Hs.eg.db -- entrez gene\n> org.Hs.en.db  -- ensembl, maybe\n\nYes.\n\n> i.e., provider would nest within organism.  if it is not intended\n> to have multiple providers, take it out\n>\n> org.Hs.db\n> org.Sc.db\n>\n> i would expect to scan for organism first, then for provider within\n> organism if we are going to distinguish these.\n>\n> if the justification for the \"eg\" is clear in earlier posts, disregard\n> this ... i did not read them closely enough to remember now.\n\nWell, we don't have multiple providers at this time [*] and it isn't clear\nwhether, for exampple, en based data could simply be integrated into\nthe same DB.  So it is simply not clear whether including the provider\nin the name is a good idea.\n\n[*] We do have different providers for different organisms.\n\nSo I think the revised choice is between your two suggestions:\n\n   org.Hs.eg.db   and in general org.<org>.<provider>.db\n\n   OR\n\n   org.<org>.db\n\n\n+ seth\n\n-- \nSeth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\nhttp://bioconductor.org",
+      "body_snippet": "Vincent Carey 525-2265 <stvjc at channing.harvard.edu> writes:\n> wouldn't the sorting be more informative if we had, for example\n>\n> org.Hs.eg.db -- entrez gene\n> org.Hs.en.db  -- ensembl, maybe\n\nYes.",
+      "thread_id": "thread-713925355f02",
+      "thread_depth": 6,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-7fa6246c7b7c",
+      "message_id": "<m2d4yjb40h.fsf@ziti.local>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2007-07-23T07:15:10-07:00",
+      "subject": "[Bioc-devel] RFC: Naming scheme for organism level annotation data\tpackages",
+      "subject_clean": "[Bioc-devel] RFC: Naming scheme for organism level annotation data\tpackages",
+      "in_reply_to": "<46A23B21.5090900@mail.nih.gov> (Sean Davis's message of \"Sat, 21 Jul 2007 12:58:09 -0400\")",
+      "references": [
+        "<m24pjzorvu.fsf@ziti.fhcrc.org>",
+        "<46A1F6A8.6030706@ebi.ac.uk>",
+        "<m2myxploy1.fsf@ziti.fhcrc.org>",
+        "<46A23B21.5090900@mail.nih.gov>"
+      ],
+      "body_plain": "Hi Sean,\n\nSean Davis <sdavis2 at mail.nih.gov> writes:\n> Since Seth et al. have produced a wonderfully useful db-based system,\n> it seems that these data packages could be much more flexible from an\n> ID point of view.  One has a primary ID associated with the data\n> package, but mappings, to the extent that they are available, could\n> also be included.  Then, you could have something like:\n>\n> primaryKey(org.Hs.mappings)\n> [1] \"EntrezGene\"\n>\n> availableKeys(org.Hs.mappings)\n>    KeyType   ExampleValue\n> [1] \"EntrezGene\"   9923\n> [2] \"EnsemblGene\"   ENSG00000273213\n> [3] \"HUGOSymbol\"   BRCA1\n\nInteresting.  Although I can see how this would work from a DB point\nof view, it isn't clear to me that such a combined packge would be\nfeasible/desirable.  If the IDs are more or less different names for\nthe same things, then no problem.  But if a new ID induces an entirely\nnew mapping of all the downstream relations, well, the resulting DB\nsize could be prohibitive.\n\nYour pseudocode suggests the notion of a package-level object\n\"org.Hs.mappings\".  That isn't something we've implemented in\nAnnotationDbi, but I like the idea.\n\nI'd like to point out that we have a number of the SQLite-based\nannotation data packages available in devel and this would be a great\ntime for interested parties to give them a try and send us feedback.\n\nThe packages should work as drop-in replacements for the\nenvironment-based packages.  There are some additional features which\ncurrently are only documented in the AnnotationDbi vignette.\n\n> The reasons that I like this approach are:\n> 1) Each organism package then need be created only once and the\n> expectation would be that most of the appropriate mappings would be\n> included.\n\nIt seems to me that this only works if the IDs are nearly equivalent.\nIf not, each \"primary ID\" needs to be deeply involved in the process\nof creating the DB tables.\n\n> 2) Standardizes mappings between ID types--individual users can rely\n> on a standard mapping with version information (Nothing worse than an\n> external mapping source \"updating\" halfway through a project)\n> 3) Allows one \"pipeline\" for the production of the annotation and\n> primary keys, while allowing flexibility in the production of\n> secondary mappings (an arbitrary number of mappings can be added; one\n> could even imagine allowing users to add their own mappings quite\n> easily to the database with a single function)\n> 4) Software immediately becomes more useful without much increased\n> complexity\n> 5) Could be extended to have multiple primary keytypes in the same\n> data package with automatic key conversions.\n\nLet me know if I'm misunderstanding, but here I think you are\ndescribing a system that would define a mapping, say, from enseml to\nEG and it isn't clear to me that this is what someone wanting ensembl\nannotation would really want -- it would allow them to work with\nensembl IDs, but using EG annotation.\n\nBest Wishes,\n\n+ seth\n\n-- \nSeth Falcon | Computational Biology | Fred Hutchinson Cancer Research Center\nhttp://bioconductor.org",
+      "body_snippet": "Hi Sean,\n\nSean Davis <sdavis2 at mail.nih.gov> writes:\n> Since Seth et al. have produced a wonderfully useful db-based system,\n> it seems that these data packages could be much more flexible from an\n>",
+      "thread_id": "thread-713925355f02",
+      "thread_depth": 4,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-6f24108c8785",
+      "message_id": "<46A4ECEE.9050005@fhcrc.org>",
+      "from_name": "Herve Pages",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2007-07-23T11:01:18-07:00",
+      "subject": "[Bioc-devel] no BioC-devel check results?",
+      "subject_clean": "[Bioc-devel] no BioC-devel check results?",
+      "in_reply_to": "<1184918796.6515.3.camel@maitai.windows.ebi.ac.uk>",
+      "references": [
+        "<1184918796.6515.3.camel@maitai.windows.ebi.ac.uk>"
+      ],
+      "body_plain": "Hi Oleg,\n\nBuild results for BioC devel are back:\n\n  http://bioconductor.org/checkResults/2.1/bioc-LATEST/\n\nHopefully, the next report (today at midnight, Seattle time) will include\nthe results for Windows. Sorry for the inconvenience.\n\nH.\n\nOleg Sklyar wrote:\n> Hi,\n> any idea why \"BioC 2.1: Multiple platform build/check report\" is empty\n> for the last couple of days and when is it getting back to life?\n> \n> Thanks, Oleg\n>",
+      "body_snippet": "Hi Oleg,\n\nBuild results for BioC devel are back:\n\n  http://bioconductor.org/checkResults/2.1/bioc-LATEST/\n\nHopefully, the next report (today at midnight, Seattle time) will include\nthe results for Win",
+      "thread_id": "thread-12884dfd9e8e",
+      "thread_depth": 1,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-fef12d0a3864",
+      "message_id": "<46A55C22.3060501@med.umich.edu>",
+      "from_name": "James MacDonald",
+      "from_email_hash": "51e0486782bd6ed6ad0d8d179dbc9204aca523620b6842837909c743527fce1d",
+      "date": "2007-07-23T21:55:46-04:00",
+      "subject": "[Bioc-devel] NEWS",
+      "subject_clean": "[Bioc-devel] NEWS",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "July 2007\n\naffy\n\n\t  ReadAffy constructs AnnotatedDataFrame rather than calling\n\t  read.AnnotatedDataFrame; minor doc fixes\n\n\naffyio\n\n\t   fix an issue in read_bpmap with SET_VECTOR_ELT()\n\naffylmGUI\n\n\t   References to Digestion changed to Degradation. Changed\n\t   Menu Item name and function names. See Bioconductor emails\n\t   from Gordon Smyth/Robert Gentleman around December\n\t   6th. 2006.\n\n\t   Fixed a bug in Normalize.R introduced in 1.10.1 - bracket\n\t   misplaced as shown below: Replaced this line\n\t   Try(write.table(NormalizedAffyData.exprs),file=FileName,\n\t   sep=\"\\t\",quote=FALSE,col.names=NA) with\n\t   Try(write.table(NormalizedAffyData.exprs,file=FileName,\n\t   sep=\"\\t\",quote=FALSE,col.names=NA))\n\n\t   Error on console when HTML report was to be created. It\n\t   read: \"Error in get(x, envir, mode, inherits) : variable\n\t   \"HTMLenv\" was not found\" Modify htmlreport.R replace:\n\t   try(assign(\".HTML.graph\", TRUE, env = get(\"HTMLenv\", envir =\n\t   .GlobalEnv))) with: if\n\t   (exists(\"HTMLenv\",where=\".GlobalEnv\",mode=\"environment\")){\n\t   try(assign(\".HTML.graph\", TRUE, env = get(\"HTMLenv\", envir =\n\t   .GlobalEnv))) }#end of if\n\t   (exists(\"HTMLenv\",where=\".GlobalEnv\",mode=\"environment\"))\n\n  annaffy\n\n\t   replaced hgu95av2db by hgu95av2.db\n\n\t   Fix ann pkg detection for name change in SQLite-based packages\n\nannotate\n\n\t   Updates for SQLite-based package rename db => .db\n\nAnnotationDbi\n\n  \t   Fixed broken example in ?GONode.\n\n\t   The rightColType slot for ENTREZID map is not set to\n\t   \"integer\" anymore (this slot should probably go away for\n\t   AnnDbMap objects since it seems that left names and right\n\t   names should always be strings if we want revmap() and the\n\t   upcoming \"plug map\" feature to work properly and in a\n\t   consistent manner)\n\n\t   Replaced \"db\" suffix by \".db\" in all db package names. Small\n\t   improvements to makeAnnDbPkg()\n\n\t   Added experimental agilent package.\n\t\n\t   Package should look a lot like an hgu95av2.\n\t   This is because its using a similar set of\n\t   operations to knit everything together as\n\t   is used by that package. So it *should* work\n\t   as one of these.\n\n\t   Fixed bug in dbCountUniqueMappedVals(). Added debug.sql().\n\n\t   Added loadAnnDbPkgIndex() and use it in\n\t   \"makeAnnDbPkg-character\" method. Reorganized\n\t   ANNDBPKG-INDEX.TXT.\n\nbeadarray\n\n\t   backgroundCorrect() function now checks if background\n\t   correction has already been carried out before doing any\n\t   further adjustment - imageplot() now allows negative values\n\t   to be displayed (previously only plotted non-negative\n\t   values). Also gives a warning when NA/Inf values are\n\t   present. These are values are replaced with zeros - bug in\n\t   readIllumina() which meant background correction was not\n\t   taking place when useImages=FALSE now fixed\n\n\t   plotDERank now returns a matrix.\n\nBiobase\n\n\t   Add assayData documentation to ExpressionSet - reference\n\t   eSet, where info on subsetting also provided - add [[\n\t   documentation for AssayData\n\n\t   added \"strbreak\" to the show method for AnnotatedDataFrame\n\n\t   Provide more consistent AnnotatedDataFrame dimLabels for\n\t   eSet\n\n\t   Completed C-implementation of the Needleman-Wunsch algo\n\t   (src/align_needwunsQS.c). Depending on the size of the\n\t   strings to align, the new needwunsQS() function is 100 to\n\t   1000 times faster than the old one (pure R). Also, now\n\t   needwunsQS() returns a BStringAlign object (new class which\n\t   purpose is to describe an alignment between 2\n\t   strings). Deprecated alignScore() in favor of score(). Still\n\t   need to update needwunsQS() man page and to document new\n\t   BStringAlign-related methods (initialize, align1, align2,\n\t   score, show).\n\n\t   added nucleotide alignment example in needwunsQS() man page\n\n\t   added the complementViews() function + a split() method for\n\t   BString objects (will probably use another name for the\n\t   latter since there is some uglyness associated to the use of\n\t   the split() generic)\n\n\t   Renamed \"complementViews\" -> \"mask\" + mask() is now a\n\t   generic with methods for BString and BStringViews\n\t   objects. Some other minor (internal) changes.\n\nBufferedMatrix\n\n\t   add MoveStorageDirectory()\n\n\nCategory\n\n\t   Use exact=TRUE in calls to [[ This resolves undesired partial\n\t   matching that was occuring in addChrBandAnnotation.\n\n\t   Fix gseaperm to work properly in absence of the Matrix\n\t   package\n\ncellHTS\n\n\t   The function \"normalizedChannels\" was restored to the\n\t   behaviour it had before May 2007, and a new function called\n\t   \"summarizeChannels\" was added.  The \"path\" argument similar\n\t   to that in function \"readPlateData\" was added to the\n\t   functions \"configure\" and \"annotate\".  In \"writeReport\", the\n\t   option to add the tooltips to the image plot was set by\n\t   default to FALSE.\n\n\t   Corrected for the case where there are different batches\n\t   using different positive controls.\n\ncellHTS2\n\n\t   A completely revised (from scratch) implementation of cellHTS\n\t   To avoid too many tears from existing users, we give it a\n\t   new name, so they know they are in for some changes when\n\t   they install it.  Eventually, cellHTS can be taken out of\n\t   the releases.\n\nEBImage\n\n\t   bug correction in moments for the case when image does not\n\t   contain any objects\n\nfbat\n\n\t   fixed a bug in checkMarkers so that allele frequencies can\n\t   be calculated correctly.\n\n\t   added 'drop=FALSE' for some R code to avoid converting\n\t   matrix to vector.\n\n\t   added a argument 'missingOutput' to the functions\n\t   'pedAFreq' and 'pedGFreq' to fix a bug that caused wrong\n\t   output of the functions 'pedAFreq', 'pedGFreq' and\n\t   'checkMarkers'. If 'missingOutput=TRUE', then information\n\t   about missing alleles will output, otherwise missing allele\n\t   information will not be output.\n\n\t   introduced a pedigree object containing four elements\n\t   'ped', 'columns', 'markerNames', and 'Position'.\n\n\t   added functions 'readPed', 'readLink', and 'readHapMap' to\n\t   read pedigree file, data file with PLINK format, and snp\n\t   files output by HapMap webbrowser to a pedigree object\n\n\t   added the functions 'checkMarkers.default' and 'getFounders'\n\n\t   added sample info files for subjects in four races (CEU,\n\t   YRI, CHB, and JPT) in HapMap studies.\n\n\t   deleted CAMP example files (because GeneticsBase package has\n\t   these files) moved geneSet2Ped code to GeneticsBase\n\t\ngenefilter\n\n\t   Remove require.SYMBOL arg from nsFilter, add ... to generic\n\t\n\t   require.SYMBOL may make sense for display purposes, but\n\t   does not make sense as a gene filtering option since lack of\n\t   symbol has no biological interpretation.\n\t\n\t   ... was added to the nsFilter generic to give more\n\t   flexibility to specializing methods.\n\nGeneticsBase\n\n\t   introduced pedigree object containg five elements (ped,\n\t   columns, markerNames, Position, fileName) in the function\n\t   ped2geneSet\n\t\n\t   Moved geneSet2Ped files from fbat to GeneticsBase\n\n\t   deleted power.casectl.R which is no longer used\n\t\nGEOquery\n\n\t   Added GSEMatrix argument to getGEO to allow parsing of\n\t   SeriesMatrix GSE files Changed GPL parsing to be much\n\t   faster; other entities to follow\n\nGlobalAncova\n\n\t   Import AnnotationDbi The generics for accessing GO objects\n\t   moved to AnnotationDbi.  The addition of the package to\n\t   Depends is hopefully temporary, but allows passing of check\n\t   for now.\n\nglobaltest\n\t\n\t   Add AnnotationDbi to Depends generic functions for\n\t   manipulating GO objects moved to AnnotationDbi.  Although it\n\t   should be possible to only import, that doesn't appear to be\n\t   working. For now, import _and_ Depend.\n\t\nGOstats\n\n\t   Fix a bug in termGraphs reverseEdgeDirections doesn't handle\n\t   edge attributes properly yet so we do the reversing as a\n\t   last step.\n\n\t   Fix node labeling in termGraphs and plotGOTermGraph\n\n\t\ngraph\n\n\t   This is an >= R-2.6.0 package now\n\n\t   Remove call to addVigs2WinMenu from Biobase This causes a\n\t   warning because we don't want to depend/suggest\n\t   Biobase. Although adding the menu item is a good thing, we\n\t   hope alternatives will be available and common in R 2.6.0\n\n\t   Deprecated buildRepDepGraph and pkgInstOrder Both functions\n\t   have more powerful equivalents available in the pkgDepTools\n\t   package. Once removed, the Suggest on RBGL may be able to be\n\t   removed. The import for tools can be as well.\n\n\t   subGraph for graphNEL now properly propagates node and edge\n\t   attributes\n\n\t   minor fixes to the graph vignette and a rewrite of the\n\t   design discussion\n\n\t   introduced the start of some multigraph classes\n\nidiogram\n\n\t   idiogram visuals improved - telomere tips and hashed\n\t   centromere.\n\n\t   added a \"color.cen\" option to idiogram - allows you to\n\t   change the color of the centromere when margin=\"i\"\n\t\nkeggorth\n\n\t   New Package:\n\n\t\tgraph support for KO, KEGG Orthology\n\n\t   Maintainer:\n\n\t\tVince Carey\n\nlimma\n\n\t    - new argument n.pts for normexp.fit. n.pts=2^10 becomes the\n\t    default for method=\"normexp\" in backgroundCorrect(). This\n\t    decreases computation time and introduces some robustness.\n\t    - backgroundCorrect() now accepts a matrix argument.\n\n\t    - decideTests(method=\"hierarchical\") now passes the\n\t    adjust.method down to the second (t-test) level of\n\t    testing. Previously the second level testing was always\n\t    \"holm\". The spelling is also corrected from \"heirarchical\"\n     \t    to \"hierarchical\".\n\nlogicFS\n\n\t  Fixed a bug that occurs when in the multiple tree case not\n\t  all logic trees are grown.\n\nlumi\n\n\t  Adding code of checking negative values when using log2\n\t  transform.\n\n\t  Major updates:\n\t  1. All the major functions compatible with both ExpressionSet and\n\t  LumiBatch class\n\t  2. presentCount was removed from the featureData. use\n\t  detectionCall function to estimate presentCount\n\t  3. lumiR function now allows user to select the input data\n\t  columns\n\t  4. Add lumiB function for background correction\n\t  5. lumiExpresso function to encapsulate all preprocessing\n\t  functions\n\t  6. Vignette tutorial has major updates.\n\nmade4\n\n  \t  bug update to heatplot, added arraylabels to ord\n\n\nmakecdfenv\n\t\n\t  Added a message at the end of make.cdf.package() telling end\n\t  user that they have to install the package before they can\n\t  use it.\n\n\t  Added just a bit more to the message for make.cdf.package,\n\t  pointing users to make.cdf.env if they don't want to install\n\t  a package.\n\t\noneChannelGUI\n\n\t  Fixing a bug related to the load of Rat exon arrays.  Fixing a\n\t  but related to the load of exon data using APT tools Adding\n\t  the clustering menu also the raw affy menu Adding PCA with\n\t  in the classification tools\n\n\t  Interface to APT tools DABG p-value calculation was\n\t  implemented.  Interface to APT tools MiDAS method for\n\t  alternative splicing detection was implemented.\n\t  filteringMidas function was implemented in order to selected\n\t  putative alternative splicing using MiDAS p-values.\n\t  oneChannelGUI was adapted to the modifications made in\n\t  affylmGUI\n\n\t  Adding MiDAS functions\n\n\t  Adding brief Hs annotation data derived by Affymetrix\n\t  data. This annotation file will be available until\n\t  annotation libraries for exon arrays will be available\n\n\t  Exon arrays analysis: Fixing a bug in the function filtering\n\t  gene/exon expression on the basis of dabg p-value Adding a\n\t  new set of functions to perform basic files manipulation\n\t  within oneChannelGUI Exon arrays analysis: Adding hs gene\n\t  level annotation to limma TopTable.  TopTable annotation is\n\t  now done using bioconductor annotation libraries for 3'IVT\n\t  afymetrix arrays\n\n\t  Linking Hs core exon annotation to data generated with APT\n\t  tools as weel as with those generated with Expression\n\t  Console\n\n\t  Adding RankProd interface Fixing APT MiDAS DABG\n\t  implementations\n\n\t  Adapting the target file to the use of RPadvance\n\n\t  Alternative splicing detection by rank product method was\n\t  implemented (The efficacy of the method is still under\n\t  evaluation).  RP and RPAdvance functions from the RanKProd\n\t  package were gaphically interfaced in opneChannelGUI.\n\npanp\n\n\t  Changed pa.calls() to support new ExpressionSet object as\n\t  input.  Changed pa.calls() output object to list of two\n\t  matrices (was exprSet). pa.calls() can still accept exprSet\n\t  input object, but will throw warning message.  Removed\n\t  extraneous test exprSet.  Single test dataset is now an\n\t  ExpressionSet.\n\npcaMethods\n\n\t  Applied Kevin Wrights diff for faster nipals. Nipals PCA\n\t  really should be re-written in C for further speed\n\t  improvement\n\npdInfoBuilder\n\n\t  Update DB_PATH in .onLoad for pd.mapping template\n\t\n\t  If the user has different versions installed in multiple\n\t  package libraries, we need to get the right one at\n\t  runtime. Note that for the lazyloading mechanism to work and\n\t  so that we can create a valid map object, we also need the\n\t  path in package scope for the initial install.\n\n\t  Add templated unit test suite for pdInfo packages\n\t\n\t  Thanks to a patch from Vince, packages generated by\n\t  pdInfoBuilder now include a minimal RUnit unit test suite.\n\npreprocessCore\n\n\t  Added R_qnorm_robust_weights to the roaster of C callables\n\t  so that affyPLM can actually use it (without this, affyPLM\n\t  does not compile on Windows).\n\n\t  Added med_abs to the roaster of C callables (same as for\n\t  R_qnorm_robust_weights in previous commit.\n\nRingo\n\n\t  enabled addition of probes' GC content to probeAnno\n\t  environment\n\nRintact\n\n\t  remove slots interactionType, expPubMed and expIntAct from\n\t  class interactionEntry, and add them to\n\t  intactInteraction. This changes allow uses map interactions\n\t  with experiment and interaction detaction methods when one\n\t  interactionEntry contains multiple experiments. Also\n\t  modified function psi25complex to provide protein complex\n\t  IntAct ID in the outputs.\n\nRuuid\n\n\t  Refactor to minimize the WIN32 specific code\n\n\t  Use RAWSXP instead of CHARSXP to handle uuid data This patch\n\t  makes Ruuid compatible with recent changes in R 2.6.0\n\nsiggenes\n\n\t  Improved version of denspr (which is used in ebam for\n\t  categorical variables).\n\n\t  Fixed a few bugs.  Now lev in cat.ebam and cat.stat can\n\t  also handle lists.\n\n\t  Now RefSNP IDs can be added to the html output.\n\nsigPathway\n\n\t  Added functions (e.g., importGeneSets) to let users import\n\t  gene sets stored in GMT, GMX, GRP, and XML file formats.\n\nvsn\n\n\t  fixed a bug in show method for \"vsn\", and clarified a man\n\t  page\n\n\t  Now the parameters for optim (factr, pgtol) are no longer\n\t  hardcoded, but are passed down from R and are taken from the\n\t  vsnInput object\n\n\t  Better comment on prototype vsnInput In preceding revision,\n\t  I mistakenly checked in an edited version of vsn.c. I have\n\t  reverted this back to how it was before.\n\n\t  Now the L-BFGS-B parameters are exposed\n\n\t\nxcms\n\n\t  Added wrapper for MassSpecWavelet peak picking on single\n\t  spectra (findPeaks.MSW) Added some more logic to\n\t  joinOverlappingFeatures()\n\n-- \nJames W. MacDonald, MS\nBiostatistician\nUMCCC cDNA and Affymetrix Core\nUniversity of Michigan\n1500 E Medical Center Drive\n7410 CCGC\nAnn Arbor MI 48109\n734-647-5623\n\n\n**********************************************************\nElectronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.",
+      "body_snippet": "July 2007\n\naffy\n\n\t  ReadAffy constructs AnnotatedDataFrame rather than calling\n\t  read.AnnotatedDataFrame; minor doc fixes\n\n\naffyio\n\n\t   fix an issue in read_bpmap with SET_VECTOR_ELT()\n\naffylmGUI\n\n\t ",
+      "thread_id": "thread-fef12d0a3864",
+      "thread_depth": 0,
+      "month": "2007-07"
+    },
+    {
+      "id": "msg-3c6e72165338",
+      "message_id": "<46A5C40B.47B0.00EE.0@med.umich.edu>",
+      "from_name": "James MacDonald",
+      "from_email_hash": "51e0486782bd6ed6ad0d8d179dbc9204aca523620b6842837909c743527fce1d",
+      "date": "2007-07-24T09:19:06-04:00",
+      "subject": "[Bioc-devel] NEWS redux (now with Biostrings ;-D)",
+      "subject_clean": "[Bioc-devel] NEWS redux (now with Biostrings ;-D)",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "July 2007\n\naffy\n\n\t  ReadAffy constructs AnnotatedDataFrame rather than calling\n\t  read.AnnotatedDataFrame; minor doc fixes\n\n\naffyio\n\n\t   fix an issue in read_bpmap with SET_VECTOR_ELT()\n\naffylmGUI\n\n\t   References to Digestion changed to Degradation. Changed\n\t   Menu Item name and function names. See Bioconductor emails\n\t   from Gordon Smyth/Robert Gentleman around December\n\t   6th. 2006.\n\n\t   Fixed a bug in Normalize.R introduced in 1.10.1 - bracket\n\t   misplaced as shown below: Replaced this line\n\t   Try(write.table(NormalizedAffyData.exprs),file=FileName,\n\t   sep=\"\\t\",quote=FALSE,col.names=NA) with\n\t   Try(write.table(NormalizedAffyData.exprs,file=FileName,\n\t   sep=\"\\t\",quote=FALSE,col.names=NA))\n\n\t   Error on console when HTML report was to be created. It\n\t   read: \"Error in get(x, envir, mode, inherits) : variable\n\t   \"HTMLenv\" was not found\" Modify htmlreport.R replace:\n\t   try(assign(\".HTML.graph\", TRUE, env = get(\"HTMLenv\", envir =\n\t   .GlobalEnv))) with: if\n\t   (exists(\"HTMLenv\",where=\".GlobalEnv\",mode=\"environment\")){\n\t   try(assign(\".HTML.graph\", TRUE, env = get(\"HTMLenv\", envir =\n\t   .GlobalEnv))) }#end of if\n\t   (exists(\"HTMLenv\",where=\".GlobalEnv\",mode=\"environment\"))\n\n annaffy\n\n\t   replaced hgu95av2db by hgu95av2.db\n\n\t   Fix ann pkg detection for name change in SQLite-based packages\n\nannotate\n\n\t   Updates for SQLite-based package rename db => .db\n\nAnnotationDbi\n\n \t   Fixed broken example in ?GONode.\n\n\t   The rightColType slot for ENTREZID map is not set to\n\t   \"integer\" anymore (this slot should probably go away for\n\t   AnnDbMap objects since it seems that left names and right\n\t   names should always be strings if we want revmap() and the\n\t   upcoming \"plug map\" feature to work properly and in a\n\t   consistent manner)\n \n\t   Replaced \"db\" suffix by \".db\" in all db package names. Small\n\t   improvements to makeAnnDbPkg()\n\n\t   Added experimental agilent package.\n\t  \n\t   Package should look a lot like an hgu95av2.\n\t   This is because its using a similar set of\n\t   operations to knit everything together as\n\t   is used by that package. So it *should* work\n\t   as one of these.\n\n\t   Fixed bug in dbCountUniqueMappedVals(). Added debug.sql().\n\n\t   Added loadAnnDbPkgIndex() and use it in\n\t   \"makeAnnDbPkg-character\" method. Reorganized\n\t   ANNDBPKG-INDEX.TXT.\n\nbeadarray\n\n\t   backgroundCorrect() function now checks if background\n\t   correction has already been carried out before doing any\n\t   further adjustment - imageplot() now allows negative values\n\t   to be displayed (previously only plotted non-negative\n\t   values). Also gives a warning when NA/Inf values are\n\t   present. These are values are replaced with zeros - bug in\n\t   readIllumina() which meant background correction was not\n\t   taking place when useImages=FALSE now fixed\n\n\t   plotDERank now returns a matrix.\n\nBiobase\n\n\t   Add assayData documentation to ExpressionSet - reference\n\t   eSet, where info on subsetting also provided - add [[\n\t   documentation for AssayData\n\n\t   added \"strbreak\" to the show method for AnnotatedDataFrame\n\n\t   Provide more consistent AnnotatedDataFrame dimLabels for\n\t   eSet\n\n\t   Completed C-implementation of the Needleman-Wunsch algo\n\t   (src/align_needwunsQS.c). Depending on the size of the\n\t   strings to align, the new needwunsQS() function is 100 to\n\t   1000 times faster than the old one (pure R). Also, now\n\t   needwunsQS() returns a BStringAlign object (new class which\n\t   purpose is to describe an alignment between 2\n\t   strings). Deprecated alignScore() in favor of score(). Still\n\t   need to update needwunsQS() man page and to document new\n\t   BStringAlign-related methods (initialize, align1, align2,\n\t   score, show).\n\n\t   added nucleotide alignment example in needwunsQS() man page\n\n\t   added the complementViews() function + a split() method for\n\t   BString objects (will probably use another name for the\n\t   latter since there is some uglyness associated to the use of\n\t   the split() generic)\n\n\t   Renamed \"complementViews\" -> \"mask\" + mask() is now a\n\t   generic with methods for BString and BStringViews\n\t   objects. Some other minor (internal) changes.\n\nBiostrings\n\n\t  added src/align_needwunsQS.c\n\t\n\t  some work on src/align_needwunsQS.c\n\t\n\t  more work on src/align_needwunsQS.c\n\n\t  Completed C-implementation of the Needleman-Wunsch algo\n\t  (src/align_needwunsQS.c). Depending on the size of the strings\n\t  to align, the new needwunsQS() function is 100 to 1000 times\n\t  faster than the old one (pure R). Also, now needwunsQS() returns\n\t  a BStringAlign object (new class which purpose is to describe an\n\t  alignment between 2 strings). Deprecated alignScore() in favor\n\t  of score(). Still need to update needwunsQS() man page and to\n\t  document new BStringAlign-related methods (initialize, align1,\n\t  align2, score, show). Version bump anymway.\n\n\t  Depends on R (>= 2.6.0) + some cosmetic.\n\n\t  added nucleotide alignment example in needwunsQS() man page\n\n\t  changed size limit for length(s1)*length(s2) from 1e+08 to 4e+08\n\t  in needwunsQS()\n\n\t  Added predefined scoring matrices BLOSUM45, BLOSUM50, BLOSUM62,\n\t  BLOSUM80, BLOSUM100, PAM30, PAM40, PAM70, PAM120 and\n\t  PAM250. Removed blosum50.  See ?scoring_matrices - Arg\n\t  'substmat' for needwunsQS() can now be the name of a predefined\n\t  scoring matrix (e.g. \"BLOSUM62\").  - BStringAlign class: added\n\t  \"length\", \"nchar\" and \"alphabet\" methods + a man page.  -\n\t  Version bump.\n\n\t  added the complementViews() function + a split() method for\n\t  BString objects\n\t  (will probably use another name for the latter since there is\n\t  some uglyness associated to the use of the split() generic)\n\n\t  Renamed \"complementViews\" -> \"mask\" + mask() is now a generic\n\t  with methods for BString and BStringViews objects. Some other\n\t  minor (internal) changes. Version bump.\n\n\n\t  Some minor bug fixes. Updated TODO (moved some comments about\n\t  \"normalized\" BStringViews objects from TODO to\n\t  R/BStringViews-constructors.R).\n\n\t  Got rid of the \"split\" generic by merging the \"split\"\n\t  functionality to the \"mask\" generic. \"mask\" has now a dedicated\n\t  man page. Version bump.\n\n\t  Reorganized/improved the set of functions used for fast\n\t  substring extraction.\n\n\t  Added some examples to man page for fast substring\n\t  extraction. Version bump.\n\t  \n\t  renamed subBStringViews -> subviews\n\nBufferedMatrix\n\n\t   add MoveStorageDirectory()\n\n\nCategory\n\n\t   Use exact=TRUE in calls to [[ This resolves undesired partial\n\t   matching that was occuring in addChrBandAnnotation.\n\n\t   Fix gseaperm to work properly in absence of the Matrix\n\t   package\n\ncellHTS\n\n\t   The function \"normalizedChannels\" was restored to the\n\t   behaviour it had before May 2007, and a new function called\n\t   \"summarizeChannels\" was added.  The \"path\" argument similar\n\t   to that in function \"readPlateData\" was added to the\n\t   functions \"configure\" and \"annotate\".  In \"writeReport\", the\n\t   option to add the tooltips to the image plot was set by\n\t   default to FALSE.\n\n\t   Corrected for the case where there are different batches\n\t   using different positive controls.\n\ncellHTS2\n\n\t   A completely revised (from scratch) implementation of cellHTS\n\t   To avoid too many tears from existing users, we give it a\n\t   new name, so they know they are in for some changes when\n\t   they install it.  Eventually, cellHTS can be taken out of\n\t   the releases.\n\nEBImage\n\n\t   bug correction in moments for the case when image does not\n\t   contain any objects\n\nfbat\n\n\t   fixed a bug in checkMarkers so that allele frequencies can\n\t   be calculated correctly.\n\n\t   added 'drop=FALSE' for some R code to avoid converting\n\t   matrix to vector.\n\n\t   added a argument 'missingOutput' to the functions\n\t   'pedAFreq' and 'pedGFreq' to fix a bug that caused wrong\n\t   output of the functions 'pedAFreq', 'pedGFreq' and\n\t   'checkMarkers'. If 'missingOutput=TRUE', then information\n\t   about missing alleles will output, otherwise missing allele\n\t   information will not be output.\n\n\t   introduced a pedigree object containing four elements\n\t   'ped', 'columns', 'markerNames', and 'Position'.\n\n\t   added functions 'readPed', 'readLink', and 'readHapMap' to\n\t   read pedigree file, data file with PLINK format, and snp\n\t   files output by HapMap webbrowser to a pedigree object\n\n\t   added the functions 'checkMarkers.default' and 'getFounders'\n\n\t   added sample info files for subjects in four races (CEU,\n\t   YRI, CHB, and JPT) in HapMap studies.\n\n\t   deleted CAMP example files (because GeneticsBase package has\n\t   these files) moved geneSet2Ped code to GeneticsBase\n\t  \ngenefilter\n\n\t   Remove require.SYMBOL arg from nsFilter, add ... to generic\n\t  \n\t   require.SYMBOL may make sense for display purposes, but\n\t   does not make sense as a gene filtering option since lack of\n\t   symbol has no biological interpretation.\n\t  \n\t   ... was added to the nsFilter generic to give more\n\t   flexibility to specializing methods.\n\nGeneticsBase\n\n\t   introduced pedigree object containg five elements (ped,\n\t   columns, markerNames, Position, fileName) in the function\n\t   ped2geneSet\n\t  \n\t   Moved geneSet2Ped files from fbat to GeneticsBase\n\n\t   deleted power.casectl.R which is no longer used\n\t  \nGEOquery\n\n\t   Added GSEMatrix argument to getGEO to allow parsing of\n\t   SeriesMatrix GSE files Changed GPL parsing to be much\n\t   faster; other entities to follow\n\nGlobalAncova\n\n\t   Import AnnotationDbi The generics for accessing GO objects\n\t   moved to AnnotationDbi.  The addition of the package to\n\t   Depends is hopefully temporary, but allows passing of check\n\t   for now.\n\nglobaltest\n\t\n\t   Add AnnotationDbi to Depends generic functions for\n\t   manipulating GO objects moved to AnnotationDbi.  Although it\n\t   should be possible to only import, that doesn't appear to be\n\t   working. For now, import _and_ Depend.\n\t\nGOstats\n\n\t   Fix a bug in termGraphs reverseEdgeDirections doesn't handle\n\t   edge attributes properly yet so we do the reversing as a\n\t   last step.\n\n\t   Fix node labeling in termGraphs and plotGOTermGraph\n\n\t  \ngraph\n\n\t   This is an >= R-2.6.0 package now\n\n\t   Remove call to addVigs2WinMenu from Biobase This causes a\n\t   warning because we don't want to depend/suggest\n\t   Biobase. Although adding the menu item is a good thing, we\n\t   hope alternatives will be available and common in R 2.6.0 \n\n\t   Deprecated buildRepDepGraph and pkgInstOrder Both functions\n\t   have more powerful equivalents available in the pkgDepTools\n\t   package. Once removed, the Suggest on RBGL may be able to be\n\t   removed. The import for tools can be as well.\n\n\t   subGraph for graphNEL now properly propagates node and edge\n\t   attributes\n\n\t   minor fixes to the graph vignette and a rewrite of the\n\t   design discussion\n\n\t   introduced the start of some multigraph classes\n\nidiogram\n\n\t   idiogram visuals improved - telomere tips and hashed\n\t   centromere.\n\n\t   added a \"color.cen\" option to idiogram - allows you to\n\t   change the color of the centromere when margin=\"i\"\n\t  \nkeggorth\n\n\t   New Package:\n\n\t\tgraph support for KO, KEGG Orthology\n\n\t   Maintainer:\n\n\t\tVince Carey\n\nlimma\n\n\t    - new argument n.pts for normexp.fit. n.pts=2^10 becomes the\n\t    default for method=\"normexp\" in backgroundCorrect(). This\n\t    decreases computation time and introduces some robustness.\n\t    - backgroundCorrect() now accepts a matrix argument.\n\n\t    - decideTests(method=\"hierarchical\") now passes the\n\t    adjust.method down to the second (t-test) level of\n\t    testing. Previously the second level testing was always\n\t    \"holm\". The spelling is also corrected from \"heirarchical\"\n    \t    to \"hierarchical\".\n\nlogicFS\n\n\t  Fixed a bug that occurs when in the multiple tree case not\n\t  all logic trees are grown.\n\nlumi\n\n\t  Adding code of checking negative values when using log2\n\t  transform.\n\n\t  Major updates:\n\t  1. All the major functions compatible with both ExpressionSet and\n\t  LumiBatch class\n\t  2. presentCount was removed from the featureData. use\n\t  detectionCall function to estimate presentCount\n\t  3. lumiR function now allows user to select the input data\n\t  columns\n\t  4. Add lumiB function for background correction\n\t  5. lumiExpresso function to encapsulate all preprocessing\n\t  functions\n\t  6. Vignette tutorial has major updates.\n\nmade4\n\n \t  bug update to heatplot, added arraylabels to ord\n\n\nmakecdfenv\n\t\n\t  Added a message at the end of make.cdf.package() telling end\n\t  user that they have to install the package before they can\n\t  use it.\n\n\t  Added just a bit more to the message for make.cdf.package,\n\t  pointing users to make.cdf.env if they don't want to install\n\t  a package.\n\t  \noneChannelGUI\n\n\t  Fixing a bug related to the load of Rat exon arrays.  Fixing a\n\t  but related to the load of exon data using APT tools Adding\n\t  the clustering menu also the raw affy menu Adding PCA with\n\t  in the classification tools\n\n\t  Interface to APT tools DABG p-value calculation was\n\t  implemented.  Interface to APT tools MiDAS method for\n\t  alternative splicing detection was implemented.\n\t  filteringMidas function was implemented in order to selected\n\t  putative alternative splicing using MiDAS p-values.\n\t  oneChannelGUI was adapted to the modifications made in\n\t  affylmGUI\n\n\t  Adding MiDAS functions\n\n\t  Adding brief Hs annotation data derived by Affymetrix\n\t  data. This annotation file will be available until\n\t  annotation libraries for exon arrays will be available\n\n\t  Exon arrays analysis: Fixing a bug in the function filtering\n\t  gene/exon expression on the basis of dabg p-value Adding a\n\t  new set of functions to perform basic files manipulation\n\t  within oneChannelGUI Exon arrays analysis: Adding hs gene\n\t  level annotation to limma TopTable.  TopTable annotation is\n\t  now done using bioconductor annotation libraries for 3'IVT\n\t  afymetrix arrays\n\n\t  Linking Hs core exon annotation to data generated with APT\n\t  tools as weel as with those generated with Expression\n\t  Console\n\n\t  Adding RankProd interface Fixing APT MiDAS DABG\n\t  implementations\n\n\t  Adapting the target file to the use of RPadvance\n\n\t  Alternative splicing detection by rank product method was\n\t  implemented (The efficacy of the method is still under\n\t  evaluation).  RP and RPAdvance functions from the RanKProd\n\t  package were gaphically interfaced in opneChannelGUI.\n\npanp\n\n\t  Changed pa.calls() to support new ExpressionSet object as\n\t  input.  Changed pa.calls() output object to list of two\n\t  matrices (was exprSet). pa.calls() can still accept exprSet\n\t  input object, but will throw warning message.  Removed\n\t  extraneous test exprSet.  Single test dataset is now an\n\t  ExpressionSet.\n\npcaMethods\n\n\t  Applied Kevin Wrights diff for faster nipals. Nipals PCA\n\t  really should be re-written in C for further speed\n\t  improvement\n\npdInfoBuilder\n\n\t  Update DB_PATH in .onLoad for pd.mapping template\n\t  \n\t  If the user has different versions installed in multiple\n\t  package libraries, we need to get the right one at\n\t  runtime. Note that for the lazyloading mechanism to work and\n\t  so that we can create a valid map object, we also need the\n\t  path in package scope for the initial install.\n\n\t  Add templated unit test suite for pdInfo packages\n\t  \n\t  Thanks to a patch from Vince, packages generated by\n\t  pdInfoBuilder now include a minimal RUnit unit test suite.\n\npreprocessCore\n\n\t  Added R_qnorm_robust_weights to the roaster of C callables\n\t  so that affyPLM can actually use it (without this, affyPLM\n\t  does not compile on Windows).\n\n\t  Added med_abs to the roaster of C callables (same as for\n\t  R_qnorm_robust_weights in previous commit.\n\nRingo\n\n\t  enabled addition of probes' GC content to probeAnno\n\t  environment\n\nRintact\n\n\t  remove slots interactionType, expPubMed and expIntAct from\n\t  class interactionEntry, and add them to\n\t  intactInteraction. This changes allow uses map interactions\n\t  with experiment and interaction detaction methods when one\n\t  interactionEntry contains multiple experiments. Also\n\t  modified function psi25complex to provide protein complex\n\t  IntAct ID in the outputs.\n\nRuuid\n\n\t  Refactor to minimize the WIN32 specific code\n\n\t  Use RAWSXP instead of CHARSXP to handle uuid data This patch\n\t  makes Ruuid compatible with recent changes in R 2.6.0\n\nsiggenes\n\n\t  Improved version of denspr (which is used in ebam for\n\t  categorical variables).\n\n\t  Fixed a few bugs.  Now lev in cat.ebam and cat.stat can\n\t  also handle lists.\n\n\t  Now RefSNP IDs can be added to the html output.\n\nsigPathway\n\n\t  Added functions (e.g., importGeneSets) to let users import\n\t  gene sets stored in GMT, GMX, GRP, and XML file formats.\n\nvsn\n\n\t  fixed a bug in show method for \"vsn\", and clarified a man\n\t  page\n\n\t  Now the parameters for optim (factr, pgtol) are no longer\n\t  hardcoded, but are passed down from R and are taken from the\n\t  vsnInput object\n\n\t  Better comment on prototype vsnInput In preceding revision,\n\t  I mistakenly checked in an edited version of vsn.c. I have\n\t  reverted this back to how it was before.\n\n\t  Now the L-BFGS-B parameters are exposed\n\n\t  \nxcms\n\n\t  Added wrapper for MassSpecWavelet peak picking on single\n\t  spectra (findPeaks.MSW) Added some more logic to\n\t  joinOverlappingFeatures()\n\n\n**********************************************************\nElectronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.",
+      "body_snippet": "July 2007\n\naffy\n\n\t  ReadAffy constructs AnnotatedDataFrame rather than calling\n\t  read.AnnotatedDataFrame; minor doc fixes\n\n\naffyio\n\n\t   fix an issue in read_bpmap with SET_VECTOR_ELT()\n\naffylmGUI\n\n\t ",
+      "thread_id": "thread-3c6e72165338",
+      "thread_depth": 0,
+      "month": "2007-07"
+    }
+  ],
+  "threads": [
+    {
+      "id": "thread-8a557d92ba3c",
+      "subject": "[Bioc-devel] Bioconductor Chicago 2007",
+      "message_count": 1,
+      "participants": [
+        "Denise Scholtens"
+      ],
+      "started": "2007-07-05T15:00:53-05:00",
+      "last_reply": "2007-07-05T15:00:53-05:00",
+      "root_message_id": "msg-8a557d92ba3c"
+    },
+    {
+      "id": "thread-d3f373cb5972",
+      "subject": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles (in affy, preprocessCore) if there are NA data",
+      "message_count": 2,
+      "participants": [
+        "Seth Falcon",
+        "Wolfgang Huber"
+      ],
+      "started": "2007-07-11T07:04:48-07:00",
+      "last_reply": "2007-07-11T18:02:04+01:00",
+      "root_message_id": "msg-d3f373cb5972"
+    },
+    {
+      "id": "thread-13dc78ce0d99",
+      "subject": "[Bioc-devel] presentation",
+      "message_count": 1,
+      "participants": [
+        "pingou"
+      ],
+      "started": "2007-07-11T20:17:33+02:00",
+      "last_reply": "2007-07-11T20:17:33+02:00",
+      "root_message_id": "msg-13dc78ce0d99"
+    },
+    {
+      "id": "thread-e0ea7f0e2ff4",
+      "subject": "[Bioc-devel] hgu95aprobe missing sequences",
+      "message_count": 5,
+      "participants": [
+        "Ernest Turro",
+        "James W. MacDonald",
+        "Seth Falcon"
+      ],
+      "started": "2007-07-12T14:31:57+01:00",
+      "last_reply": "2007-07-12T15:33:52-04:00",
+      "root_message_id": "msg-e0ea7f0e2ff4"
+    },
+    {
+      "id": "thread-c5e24ebd56fb",
+      "subject": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles in affy, preprocessCore) if there are NA data",
+      "message_count": 3,
+      "participants": [
+        "Gordon Smyth",
+        "bmb at bmbolstad.com"
+      ],
+      "started": "2007-07-13T09:11:10+10:00",
+      "last_reply": "2007-07-13T12:20:27+10:00",
+      "root_message_id": "msg-c5e24ebd56fb"
+    },
+    {
+      "id": "thread-05fa5dd74564",
+      "subject": "[Bioc-devel] Bioc-devel Digest, Vol 40, Issue 3",
+      "message_count": 2,
+      "participants": [
+        "Gordon Smyth",
+        "bmb at bmbolstad.com"
+      ],
+      "started": "2007-07-13T09:21:16+10:00",
+      "last_reply": "2007-07-12T16:47:31-07:00",
+      "root_message_id": "msg-05fa5dd74564"
+    },
+    {
+      "id": "thread-1e1a58198697",
+      "subject": "[Bioc-devel] [BioC] Peculiar behaviour of normalize.quantiles in affy, preprocessCore) if there are NA data",
+      "message_count": 1,
+      "participants": [
+        "Gordon Smyth"
+      ],
+      "started": "2007-07-13T12:25:43+10:00",
+      "last_reply": "2007-07-13T12:25:43+10:00",
+      "root_message_id": "msg-1e1a58198697"
+    },
+    {
+      "id": "thread-42c2eb1c8c67",
+      "subject": "[Bioc-devel] Extending annotation packages",
+      "message_count": 7,
+      "participants": [
+        "Kasper Daniel Hansen",
+        "Sean Davis",
+        "Seth Falcon",
+        "Vincent Carey 525-2265"
+      ],
+      "started": "2007-07-17T21:44:19-04:00",
+      "last_reply": "2007-07-18T17:02:14-04:00",
+      "root_message_id": "msg-42c2eb1c8c67"
+    },
+    {
+      "id": "thread-4b3c1b6d3cae",
+      "subject": "[Bioc-devel] hgu95aprobe missing sequences",
+      "message_count": 1,
+      "participants": [
+        "Marc Carlson"
+      ],
+      "started": "2007-07-18T09:05:07-07:00",
+      "last_reply": "2007-07-18T09:05:07-07:00",
+      "root_message_id": "msg-4b3c1b6d3cae"
+    },
+    {
+      "id": "thread-36d2cd67ef79",
+      "subject": "[Bioc-devel] Procedure for fixing packges in the current BioC release",
+      "message_count": 1,
+      "participants": [
+        "Seth Falcon"
+      ],
+      "started": "2007-07-18T15:03:45-07:00",
+      "last_reply": "2007-07-18T15:03:45-07:00",
+      "root_message_id": "msg-36d2cd67ef79"
+    },
+    {
+      "id": "thread-cc68542e4951",
+      "subject": "[Bioc-devel] bug-report for combine",
+      "message_count": 6,
+      "participants": [
+        "Laurent Gautier",
+        "Seth Falcon"
+      ],
+      "started": "2007-07-18T20:12:54+08:00",
+      "last_reply": "2007-07-19T09:36:18-07:00",
+      "root_message_id": "msg-cc68542e4951"
+    },
+    {
+      "id": "thread-12884dfd9e8e",
+      "subject": "[Bioc-devel] no BioC-devel check results?",
+      "message_count": 3,
+      "participants": [
+        "Herve Pages",
+        "Oleg Sklyar",
+        "Seth Falcon"
+      ],
+      "started": "2007-07-20T09:06:36+01:00",
+      "last_reply": "2007-07-23T11:01:18-07:00",
+      "root_message_id": "msg-12884dfd9e8e"
+    },
+    {
+      "id": "thread-713925355f02",
+      "subject": "[Bioc-devel] RFC: Naming scheme for organism level annotation data packages",
+      "message_count": 9,
+      "participants": [
+        "Sean Davis",
+        "Seth Falcon",
+        "Vincent Carey 525-2265",
+        "Wolfgang Huber"
+      ],
+      "started": "2007-07-20T11:24:21-07:00",
+      "last_reply": "2007-07-23T07:15:10-07:00",
+      "root_message_id": "msg-713925355f02"
+    },
+    {
+      "id": "thread-fef12d0a3864",
+      "subject": "[Bioc-devel] NEWS",
+      "message_count": 1,
+      "participants": [
+        "James MacDonald"
+      ],
+      "started": "2007-07-23T21:55:46-04:00",
+      "last_reply": "2007-07-23T21:55:46-04:00",
+      "root_message_id": "msg-fef12d0a3864"
+    },
+    {
+      "id": "thread-3c6e72165338",
+      "subject": "[Bioc-devel] NEWS redux (now with Biostrings ;-D)",
+      "message_count": 1,
+      "participants": [
+        "James MacDonald"
+      ],
+      "started": "2007-07-24T09:19:06-04:00",
+      "last_reply": "2007-07-24T09:19:06-04:00",
+      "root_message_id": "msg-3c6e72165338"
+    }
+  ]
+}

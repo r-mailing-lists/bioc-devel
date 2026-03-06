@@ -1,0 +1,1645 @@
+From smyth at wehi.EDU.AU  Thu Nov  1 04:24:08 2007
+From: smyth at wehi.EDU.AU (Gordon Smyth)
+Date: Thu, 01 Nov 2007 14:24:08 +1100
+Subject: [Bioc-devel] fData(x) <- gives errors for ExpressionSet objects
+Message-ID: <6.2.5.6.1.20071101130835.02f61320@wehi.edu.au>
+
+I've a lot trouble adding information to the featureData of 
+ExpressionSet objects. Here is a small reproducible example which 
+shows up one error message.
+
+ > library(Biobase)
+ > example(ExpressionSet)
+
+ > fData(expressionSet)
+NULL data frame with 500 rows
+ > df <- data.frame(a=1:500,b=1:500)
+ > rownames(df) <- featureNames(expressionSet)
+ > eS <- expressionSet;
+ > all.equal(row.names(fData(eS)),row.names(df))
+[1] TRUE
+ > fData(eS) <- df
+
+This all seems good so far. I've been able to overwrite the pData() 
+data.frame. But suppose I add a column first. It shouldn't make any 
+difference, but now replacing the data.frame now longer works. The 
+error complains about row.names, but these are still apparently correct.
+
+Gordon
+
+ > eS <- expressionSet
+ > fData(eS)$Number <- 1:500
+ > all.equal(row.names(fData(eS)),row.names(df))
+[1] TRUE
+ > fData(eS) <- df
+Error in `row.names<-.data.frame`(`*tmp*`, value = c("a", "b")) :
+   invalid 'row.names' length
+
+ > sessionInfo()
+R version 2.6.0 (2007-10-03)
+i386-pc-mingw32
+
+locale:
+LC_COLLATE=English_Australia.1252;LC_CTYPE=English_Australia.1252;LC_MONETARY=English_Australia.1252;LC_NUMERIC=C;LC_TIME=English_Australia.1252
+
+attached base packages:
+[1] tools     stats     graphics  grDevices 
+utils     datasets  methods   base
+
+other attached packages:
+[1] Biobase_1.16.0
+
+
+From mtmorgan at fhcrc.org  Thu Nov  1 06:40:21 2007
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 31 Oct 2007 22:40:21 -0700
+Subject: [Bioc-devel] fData(x) <- gives errors for ExpressionSet objects
+In-Reply-To: <6.2.5.6.1.20071101130835.02f61320@wehi.edu.au> (Gordon Smyth's
+	message of "Thu, 01 Nov 2007 14:24:08 +1100")
+References: <6.2.5.6.1.20071101130835.02f61320@wehi.edu.au>
+Message-ID: <6ph3avqh6be.fsf@gopher4.fhcrc.org>
+
+Thanks Gordon for the report.
+
+I think the row names being objected to are the varMetadata row names
+(only two of them), rather than the pData row names. More importantly,
+I think this was fixed in Biobase 1.16.1, on October 15 (reported by
+Richard Pearson around that time).
+
+Sorry for the inconvenience; if there are other problems, or this is
+not addressed in the patch, then please let me know.
+
+Martin
+
+Gordon Smyth <smyth at wehi.EDU.AU> writes:
+
+> I've a lot trouble adding information to the featureData of 
+> ExpressionSet objects. Here is a small reproducible example which 
+> shows up one error message.
+>
+>  > library(Biobase)
+>  > example(ExpressionSet)
+>
+>  > fData(expressionSet)
+> NULL data frame with 500 rows
+>  > df <- data.frame(a=1:500,b=1:500)
+>  > rownames(df) <- featureNames(expressionSet)
+>  > eS <- expressionSet;
+>  > all.equal(row.names(fData(eS)),row.names(df))
+> [1] TRUE
+>  > fData(eS) <- df
+>
+> This all seems good so far. I've been able to overwrite the pData() 
+> data.frame. But suppose I add a column first. It shouldn't make any 
+> difference, but now replacing the data.frame now longer works. The 
+> error complains about row.names, but these are still apparently correct.
+>
+> Gordon
+>
+>  > eS <- expressionSet
+>  > fData(eS)$Number <- 1:500
+>  > all.equal(row.names(fData(eS)),row.names(df))
+> [1] TRUE
+>  > fData(eS) <- df
+> Error in `row.names<-.data.frame`(`*tmp*`, value = c("a", "b")) :
+>    invalid 'row.names' length
+>
+>  > sessionInfo()
+> R version 2.6.0 (2007-10-03)
+> i386-pc-mingw32
+>
+> locale:
+> LC_COLLATE=English_Australia.1252;LC_CTYPE=English_Australia.1252;LC_MONETARY=English_Australia.1252;LC_NUMERIC=C;LC_TIME=English_Australia.1252
+>
+> attached base packages:
+> [1] tools     stats     graphics  grDevices 
+> utils     datasets  methods   base
+>
+> other attached packages:
+> [1] Biobase_1.16.0
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Martin Morgan
+Computational Biology Shared Resource Director
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M2 B169
+Phone: (206) 667-2793
+
+
+From smyth at wehi.EDU.AU  Thu Nov  1 07:00:25 2007
+From: smyth at wehi.EDU.AU (Gordon Smyth)
+Date: Thu, 01 Nov 2007 17:00:25 +1100
+Subject: [Bioc-devel] fData(x) <- gives errors for ExpressionSet objects
+In-Reply-To: <6ph3avqh6be.fsf@gopher4.fhcrc.org>
+References: <6.2.5.6.1.20071101130835.02f61320@wehi.edu.au>
+	<6ph3avqh6be.fsf@gopher4.fhcrc.org>
+Message-ID: <6.2.5.6.1.20071101165528.02f69e60@wehi.edu.au>
+
+Martin,
+
+Thanks, upgrading to Biobase 1.16.1 fixes this and other problems.
+
+Cheers
+Gordon
+
+At 04:40 PM 1/11/2007, Martin Morgan wrote:
+>Thanks Gordon for the report.
+>
+>I think the row names being objected to are the varMetadata row names
+>(only two of them), rather than the pData row names. More importantly,
+>I think this was fixed in Biobase 1.16.1, on October 15 (reported by
+>Richard Pearson around that time).
+>
+>Sorry for the inconvenience; if there are other problems, or this is
+>not addressed in the patch, then please let me know.
+>
+>Martin
+>
+>Gordon Smyth <smyth at wehi.EDU.AU> writes:
+>
+> > I've a lot trouble adding information to the featureData of
+> > ExpressionSet objects. Here is a small reproducible example which
+> > shows up one error message.
+> >
+> >  > library(Biobase)
+> >  > example(ExpressionSet)
+> >
+> >  > fData(expressionSet)
+> > NULL data frame with 500 rows
+> >  > df <- data.frame(a=1:500,b=1:500)
+> >  > rownames(df) <- featureNames(expressionSet)
+> >  > eS <- expressionSet;
+> >  > all.equal(row.names(fData(eS)),row.names(df))
+> > [1] TRUE
+> >  > fData(eS) <- df
+> >
+> > This all seems good so far. I've been able to overwrite the pData()
+> > data.frame. But suppose I add a column first. It shouldn't make any
+> > difference, but now replacing the data.frame now longer works. The
+> > error complains about row.names, but these are still apparently correct.
+> >
+> > Gordon
+> >
+> >  > eS <- expressionSet
+> >  > fData(eS)$Number <- 1:500
+> >  > all.equal(row.names(fData(eS)),row.names(df))
+> > [1] TRUE
+> >  > fData(eS) <- df
+> > Error in `row.names<-.data.frame`(`*tmp*`, value = c("a", "b")) :
+> >    invalid 'row.names' length
+> >
+> >  > sessionInfo()
+> > R version 2.6.0 (2007-10-03)
+> > i386-pc-mingw32
+> >
+> > locale:
+> > 
+> LC_COLLATE=English_Australia.1252;LC_CTYPE=English_Australia.1252;LC_MONETARY=English_Australia.1252;LC_NUMERIC=C;LC_TIME=English_Australia.1252
+> >
+> > attached base packages:
+> > [1] tools     stats     graphics  grDevices
+> > utils     datasets  methods   base
+> >
+> > other attached packages:
+> > [1] Biobase_1.16.0
+> >
+> > _______________________________________________
+> > Bioc-devel at stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>--
+>Martin Morgan
+>Computational Biology Shared Resource Director
+>Fred Hutchinson Cancer Research Center
+>1100 Fairview Ave. N.
+>PO Box 19024 Seattle, WA 98109
+>
+>Location: Arnold Building M2 B169
+>Phone: (206) 667-2793
+
+
+From acpatel at usa.net  Thu Nov  1 19:22:44 2007
+From: acpatel at usa.net (Anand C. Patel)
+Date: Thu, 01 Nov 2007 12:22:44 -0600
+Subject: [Bioc-devel] Bioc 2.2 versus x86_64-only R 2.7 on OS X
+Message-ID: <345LkasVS5226S23.1193941364@cmsweb23.cms.usa.net>
+
+OK.  In the process of running maSigPro on 30 arrays in an affyBatch (output
+from combineAffyBatch), my previously happy R 2.6 threw malloc errors --
+starting with an inability to allocate a vector of 1.3 gb.  This happened on
+multiple occasions, and happened regardless of whether or not other data was
+cleared, OS X memory was free and available, etc.  The last time it happened
+OS X had 3.4 gb of free physical memory . . .
+
+So, I figured I'd compile a 64-bit version of R 2.7 for OS X 10.5.  After some
+issues, that is now working.  The last easily available 64-bit R for OS X is
+2.5, and I wanted to use the newer packages from 2.6 (at least).  R 2.6 won't
+compile in 64-bit mode with Quartz, but R 2.7 will.
+
+It is compiled specifically for x86_64, as I don't personally need it to run
+on all 4 possible architectures.  I did this by declaring multiple flags at
+./configure time:
+
+./configure CC='gcc -arch x86_64' CXX='g++ -arch x86_64' \
+F77='gfortran -arch x86_64' FC='gfortran -arch x86_64' 'CFLAGS=-g -O3 -m64
+-I/readline/include -L/readline/lib' 'OBJCFLAGS=-g -O3 -m64
+-I/readline/include -L/readline/lib' 'LDFLAGS=-L/usr/local/lib' 'FFLAGS=-g -O3
+-m64 -I/readline/include -L/readline/lib ' 'CXXFLAGS=-g -O3 -m64
+-I/readline/include -L/readline/lib' 'FCFLAGS=-g -O3 -m64 -I/readline/include
+-L/readline/lib' \
+ --with-blas='-framework vecLib' --with-lapack  \
+--with-system-zlib --build=x86_64-apple-darwin9.0.0 \
+--with-tcl-config=/usr/local/lib/tclConfig.sh
+--with-tk-config=/usr/local/lib/tkConfig.sh
+
+However, when I try to install bioc 2.2 packages, there is a significant
+problem.  Most packages compile from source just fine.  However, some of the
+core packages fail to compile because the packages themselves declare
+PKG_CFLAGS and this creates a conflict with the flags above.  affy, affyio,
+and preprocessCore all do their own variation of the following:
+
+(excerpt taken from affyio, but the other two do the same thing)
+
+configure: creating ./config.status
+config.status: creating src/Makevars
+** libs
+gcc -arch x86_64 -std=gnu99 -I/R-devel/include -I/R-devel/include
+-DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\"
+-DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DSTDC_HEADERS=1
+-DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1
+-DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1
+-DHAVE_UNISTD_H=1 -DHAVE_ZLIB=1 -DHAVE_LIBPTHREAD=1 -DUSE_PTHREADS=1
+-I/sw/include -I/usr/local/include   -arch ppc -arch ppc64 -arch i386 -arch
+x86_64         -isysroot /Developer/SDKs/MacOSX10.4u.sdk
+-mmacosx-version-min=10.4   -fPIC  -g -O3 -m64 -I/readline/include
+-L/readline/lib -c fread_functions.c -o fread_functions.o
+lipo: /var/tmp//ccdPcoay.out and /var/tmp//ccz02Cr2.out have the same
+architectures (x86_64) and can't be in the same fat output file
+
+I fixed this by extracting the packages, and individually changing the
+PKGS_CFLAGS line in the Makevars.in files in all 3 packages from:
+PKG_CFLAGS = @CFLAGS@
+to
+PKG_CFLAGS = -isysroot /Developer/SDKs/MacOSX10.4u.sdk
+-mmacosx-version-min=10.4
+
+I am overly aware that this is an ugly kludge.  However, again using affyio as
+an example:
+configure: creating ./config.status
+config.status: creating src/Makevars
+** libs
+gcc -arch x86_64 -std=gnu99 -I/R-devel/include -I/R-devel/include
+-DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\"
+-DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DSTDC_HEADERS=1
+-DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1
+-DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1
+-DHAVE_UNISTD_H=1 -DHAVE_ZLIB=1 -DHAVE_LIBPTHREAD=1 -DUSE_PTHREADS=1
+-I/sw/include -I/usr/local/include   -isysroot /Developer/SDKs/MacOSX10.4u.sdk
+-mmacosx-version-min=10.4   -fPIC  -g -O3 -m64 -I/readline/include
+-L/readline/lib -c fread_functions.c -o fread_functions.o
+
+and it successfully builds and installs.
+
+A glance at the problem and the instructions for Mac R building from
+R.research.att.com suggests that the root of the problem is that the
+architecture specification seems to need to happen at the level of the CC flag
+rather than the CFLAGS flag.  When I tried to compile placing the architecture
+specification (-arch x86_64) in the CFLAGS (and other compiler flags) the R
+compile fails.  Up front it looks like the downside of setting the packages up
+to automatically recognize OS X and compile to all 4 possible architectures. 
+Is there an easier/better way to do this?
+
+Thanks,
+Anand C. Patel, MD
+Washington University School of Medicine
+acpatel at usa.net
+
+
+From hpages at fhcrc.org  Thu Nov  1 21:37:13 2007
+From: hpages at fhcrc.org (Herve Pages)
+Date: Thu, 01 Nov 2007 13:37:13 -0700
+Subject: [Bioc-devel] Bioc 2.2 versus x86_64-only R 2.7 on OS X
+In-Reply-To: <345LkasVS5226S23.1193941364@cmsweb23.cms.usa.net>
+References: <345LkasVS5226S23.1193941364@cmsweb23.cms.usa.net>
+Message-ID: <472A38F9.5090109@fhcrc.org>
+
+Hi Anand,
+
+I hope some Mac expert will be able to help you. Have you tried the R-SIG-Mac
+mailing list? Because in the end, the problem you found is not strictly a
+Bioconductor question but more generally about compiling R packages (that have
+a configure script) for the x86_64 arch on Mac OS X.
+
+Anyway, here are my 2 cents (continued below).
+
+Anand C. Patel wrote:
+> OK.  In the process of running maSigPro on 30 arrays in an affyBatch (output
+> from combineAffyBatch), my previously happy R 2.6 threw malloc errors --
+> starting with an inability to allocate a vector of 1.3 gb.  This happened on
+> multiple occasions, and happened regardless of whether or not other data was
+> cleared, OS X memory was free and available, etc.  The last time it happened
+> OS X had 3.4 gb of free physical memory . . .
+
+You should be able to alloc a vector of 1.3GB. Have you reported this to R-devel
+or R-SIG-Mac? For example, have you tried this:
+  x <- raw(2000000000)
+in a fresh R session?
+This works for me with a 32-bit R-2.6.0 on an Intel Mac Mini with only 2GB of RAM.
+
+> 
+> So, I figured I'd compile a 64-bit version of R 2.7 for OS X 10.5.  After some
+> issues, that is now working.  The last easily available 64-bit R for OS X is
+> 2.5, and I wanted to use the newer packages from 2.6 (at least).  R 2.6 won't
+> compile in 64-bit mode with Quartz, but R 2.7 will.
+> 
+> It is compiled specifically for x86_64, as I don't personally need it to run
+> on all 4 possible architectures.  I did this by declaring multiple flags at
+> ./configure time:
+> 
+> ./configure CC='gcc -arch x86_64' CXX='g++ -arch x86_64' \
+> F77='gfortran -arch x86_64' FC='gfortran -arch x86_64' 'CFLAGS=-g -O3 -m64
+> -I/readline/include -L/readline/lib' 'OBJCFLAGS=-g -O3 -m64
+> -I/readline/include -L/readline/lib' 'LDFLAGS=-L/usr/local/lib' 'FFLAGS=-g -O3
+> -m64 -I/readline/include -L/readline/lib ' 'CXXFLAGS=-g -O3 -m64
+> -I/readline/include -L/readline/lib' 'FCFLAGS=-g -O3 -m64 -I/readline/include
+> -L/readline/lib' \
+>  --with-blas='-framework vecLib' --with-lapack  \
+> --with-system-zlib --build=x86_64-apple-darwin9.0.0 \
+> --with-tcl-config=/usr/local/lib/tclConfig.sh
+> --with-tk-config=/usr/local/lib/tkConfig.sh
+
+I hope this syntax 'CFLAGS=...', 'OBJCFLAGS=...', etc... instead of CFLAGS='...',
+OBJCFLAGS='...', etc... is correct (should be OK but...)
+Also, the step-by-step guide on http://r.research.att.com/exp/ doesn't use any
+of those args so I hope you know what you are doing.
+
+> 
+> However, when I try to install bioc 2.2 packages, there is a significant
+> problem.  Most packages compile from source just fine.  However, some of the
+> core packages fail to compile because the packages themselves declare
+> PKG_CFLAGS and this creates a conflict with the flags above.  affy, affyio,
+> and preprocessCore all do their own variation of the following:
+
+It seems that only packages with a configure script are affected, is that right?
+
+> 
+> (excerpt taken from affyio, but the other two do the same thing)
+> 
+> configure: creating ./config.status
+> config.status: creating src/Makevars
+> ** libs
+> gcc -arch x86_64 -std=gnu99 -I/R-devel/include -I/R-devel/include
+> -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\"
+> -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DSTDC_HEADERS=1
+> -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1
+> -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1
+> -DHAVE_UNISTD_H=1 -DHAVE_ZLIB=1 -DHAVE_LIBPTHREAD=1 -DUSE_PTHREADS=1
+> -I/sw/include -I/usr/local/include   -arch ppc -arch ppc64 -arch i386 -arch
+> x86_64         -isysroot /Developer/SDKs/MacOSX10.4u.sdk
+> -mmacosx-version-min=10.4   -fPIC  -g -O3 -m64 -I/readline/include
+> -L/readline/lib -c fread_functions.c -o fread_functions.o
+> lipo: /var/tmp//ccdPcoay.out and /var/tmp//ccz02Cr2.out have the same
+> architectures (x86_64) and can't be in the same fat output file
+
+Have you tried to not use 'CFLAGS=-g -O3 -m64 -I/readline/include -L/readline/lib'
+when you compile R. What does it do?
+
+Note that if I use R-25-br-quad.tar.gz from http://r.research.att.com/exp/, then affyio compiles
+with no problem:
+
+creating ./config.status
+creating src/Makevars
+** libs
+** arch - x86_64
+gcc -arch x86_64 -std=gnu99 -no-cpp-precomp -I/Library/Frameworks/R.framework/Resources/include
+-I/Library/Frameworks/R.framework/Resources/include/x86_64 -DHAVE_ZLIB=1  -I/usr/local/include
+-D__NO_MATH_INLINES  -fPIC  -g -O2 -c read_abatch.c -o read_abatch.o
+gcc -arch x86_64 -std=gnu99 -no-cpp-precomp -I/Library/Frameworks/R.framework/Resources/include
+-I/Library/Frameworks/R.framework/Resources/include/x86_64 -DHAVE_ZLIB=1  -I/usr/local/include
+-D__NO_MATH_INLINES  -fPIC  -g -O2 -c read_bpmap.c -o read_bpmap.o
+
+(of course this is not the same affyio as yours, because I'm using R-2.5, so I get affyio 1.4.1
+when I do biocLite("affyio", type="source"))
+
+As for trying with a 64-bit R-2.7, I didn't have much luck when I tried to compile R:
+  Error: C stack usage is too close to the limit
+:-(
+
+Cheers,
+H.
+
+
+> 
+> I fixed this by extracting the packages, and individually changing the
+> PKGS_CFLAGS line in the Makevars.in files in all 3 packages from:
+> PKG_CFLAGS = @CFLAGS@
+> to
+> PKG_CFLAGS = -isysroot /Developer/SDKs/MacOSX10.4u.sdk
+> -mmacosx-version-min=10.4
+> 
+> I am overly aware that this is an ugly kludge.  However, again using affyio as
+> an example:
+> configure: creating ./config.status
+> config.status: creating src/Makevars
+> ** libs
+> gcc -arch x86_64 -std=gnu99 -I/R-devel/include -I/R-devel/include
+> -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\"
+> -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DSTDC_HEADERS=1
+> -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1
+> -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1
+> -DHAVE_UNISTD_H=1 -DHAVE_ZLIB=1 -DHAVE_LIBPTHREAD=1 -DUSE_PTHREADS=1
+> -I/sw/include -I/usr/local/include   -isysroot /Developer/SDKs/MacOSX10.4u.sdk
+> -mmacosx-version-min=10.4   -fPIC  -g -O3 -m64 -I/readline/include
+> -L/readline/lib -c fread_functions.c -o fread_functions.o
+> 
+> and it successfully builds and installs.
+> 
+> A glance at the problem and the instructions for Mac R building from
+> R.research.att.com suggests that the root of the problem is that the
+> architecture specification seems to need to happen at the level of the CC flag
+> rather than the CFLAGS flag.  When I tried to compile placing the architecture
+> specification (-arch x86_64) in the CFLAGS (and other compiler flags) the R
+> compile fails.  Up front it looks like the downside of setting the packages up
+> to automatically recognize OS X and compile to all 4 possible architectures. 
+> Is there an easier/better way to do this?
+> 
+> Thanks,
+> Anand C. Patel, MD
+> Washington University School of Medicine
+> acpatel at usa.net
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From work at bapuetz.de  Sun Nov  4 00:47:47 2007
+From: work at bapuetz.de (Benno Puetz)
+Date: Sun, 04 Nov 2007 00:47:47 +0100
+Subject: [Bioc-devel] Problem loading Rdbi (again)
+Message-ID: <472D08A3.8000508@bapuetz.de>
+
+After successfully installing and using Rdbi (1.12.0, on R 2.6.0) 
+yesterday, I started getting error messages when trying to load the 
+library today (... cyclic dependencies ...).
+I am not aware of any change to the system that might have triggered this.
+
+Checking the archives I found this problem mentioned quite some time 
+ago, but no explicit solution.
+Removing the library and freshly installing from Bioconductor did not 
+change anything. This is the only version of Rdbi found on my system.
+
+Any suggestions towards a solution would be welcome
+
+    Benno
+
+
+-- 
+Benno P?tz
+Computational Statistics Group, MPI of Psychiatry
+Kraepelinstr. 10                           Tel.: ++49-89-30622-222
+80804 Munich, Germany                      FAX : ++49-89-30622-601
+
+
+From jmui at igr.poznan.pl  Mon Nov  5 12:31:37 2007
+From: jmui at igr.poznan.pl (Jose M Muino)
+Date: Mon, 05 Nov 2007 12:31:37 +0100
+Subject: [Bioc-devel] Solexa-ChipSeq
+Message-ID: <op.t1bgyzevbo50ms@igr1-160>
+
+Hi everyone,
+
+This is my first mail to this mailing-list.
+
+I am beginning to write a R script in order to analyze some Solexa  
+experiments (Chip-Seq) that we already have done in the lab. The aim of  
+Chip-Seq experiments is to find DNA regions which have an  
+overrepresentation of reads depending of the condition.
+
+I would like to know if there is some other people doing this in  
+bioconductor, and if there is some special format that I should use, or if  
+I can help in something.
+
+About the format I was thinking to use a Perl script, or a modification of  
+the grep algorithm to locate each read, and after to use R to do the  
+statistical analysis on the positions obtained with the Perl script.
+
+Thanks for your time,
+Chema
+
+
+-- 
+
+--------------------------------------
+ALTERNATIVE EMAIL: josem.muinyo at cmb.udl.es
+  Jose M Muino
+  Institute of Plant Genetics
+  Polish Academy of Science
+  Strzeszynska 34
+  61-479 Poznan
+  Poland
+  tel. 48 61 6550254
+
+
+From mtmorgan at fhcrc.org  Mon Nov  5 15:51:33 2007
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 05 Nov 2007 06:51:33 -0800
+Subject: [Bioc-devel] Solexa-ChipSeq
+In-Reply-To: <op.t1bgyzevbo50ms@igr1-160> (Jose M. Muino's message of "Mon,
+	05 Nov 2007 12:31:37 +0100")
+References: <op.t1bgyzevbo50ms@igr1-160>
+Message-ID: <6phsl3khhje.fsf@gopher4.fhcrc.org>
+
+"Jose M Muino" <jmui at igr.poznan.pl> writes:
+> Hi everyone,
+
+Hi Chema --
+
+I have been working on a package over the last couple of weeks. It
+tries to provide infrastructure to analyze Solexa data, focusing
+mostly on QA issues at the moment. The basic idea is to write
+functions that operate on per-tile or per-lane files produced by the
+Solexa pipeline. The results of these functions are then summarized
+over the entire experiment. Roughly, it works like sapply(X, FUN,
+...), where FUN is the per-tile function and the 's' in sapply is the
+summary across tile files.
+
+For instance, I wanted to determine the X and Y coordinate of every
+sequence called by Bustard, the Solexa base caller. I wrote a function
+to extract this information from a tile file of the appropriate type
+
+.qaSeq_xyCoords <- function (fp, params, lane, tile, ..., verbose) 
+{
+    res <- scan(fp,
+                what = list(Lane=NULL, Tile=NULL, X=1L, Y=1L, NULL))
+    res$Lane <- lane
+    res$Tile <- tile
+    res[1:4]
+}
+
+and another function to invoke the function on all files, and
+summarize the result
+
+.qaSeq <- function (sbRunParams, qaFunction, ..., verbose = FALSE) 
+{
+    result <- .qaScrape( # visit each tile file, and apply qaFunction
+    xyCoords <- ... # summarize result across tiles, rbind-like
+    ... # return an S4 object representing the result
+}
+
+These parts plug into the infrastructure I have, so that I can,
+without too much more effort, do the following
+
+> fl <- "/path/to/pipeline/output"
+> v <- SBView(fl) # a 'view' of the pipeline results
+> v
+runsAvail:
+1. ImageAnalysis: C1-36_Firecrest1.8.28_01-10-2007_rbasom
+  1. BaseCallAnalysis: Bustard1.8.28_01-10-2007_rbasom
+    1. AdHocAnalysis: GERALD_01-10-2007_rbasom
+> v[1][[1]] # Bustard, the base caller; 4 file types, 2 tiles
+filePath: ...1-10-2007_rbasom/Bustard1.8.28_01-10-2007_rbasom
+analysisType: BaseCallAnalysis
+lanes fileNames:
+  lanes:
+tiles fileNames: prb, qhg, seq, sig2
+  lanes: 1
+  tiles: 1 70 (2 total)
+runsAvail: GERALD_01-10-2007_rbasom
+> r <- qa(v[1][[1]], qaSeq) # apply 'qaSeq' to the Bustard view
+> r
+QAseq 
+runParameters: runParameters(object)
+lanes: 1 (1 total)
+tiles: 1 70 (2 total)
+xyCoords dimensions: 39923 x 4
+xyBin dimensions: 800 x 5
+seqCount: 39923
+> head(xyCoords(r))
+  Lane Tile    X   Y
+1    1    1 1001 499
+2    1    1  774 665
+3    1    1  898 392
+4    1    1  922 465
+5    1    1  947 451
+6    1    1  895 493
+
+The package is in quite a state of flux, but I could make it
+available to you (and others) if you're interested.
+
+> Hi everyone,
+>
+> This is my first mail to this mailing-list.
+>
+> I am beginning to write a R script in order to analyze some Solexa  
+> experiments (Chip-Seq) that we already have done in the lab. The aim of  
+> Chip-Seq experiments is to find DNA regions which have an  
+> overrepresentation of reads depending of the condition.
+>
+> I would like to know if there is some other people doing this in  
+> bioconductor, and if there is some special format that I should use, or if  
+> I can help in something.
+>
+> About the format I was thinking to use a Perl script, or a modification of  
+> the grep algorithm to locate each read, and after to use R to do the
+
+Not sure exactly whether you mean actually aligning the reads to a
+sequence, or just parsing files produced by an alignment program to
+extract the relevant information. If the later, then R is probably as
+effective as perl. For actual alignment, the magnitude of the data and
+inability to model sequencing error makes grep not practical. Options
+seem to be PhageAlign (Solexa, small genome, includes base call error
+model, impractical for large genomes), ELAND (Solexa; max 2bp
+mismatch, no error model), MAQ
+(http://sourceforge.net/project/showfiles.php?group_id=191815&package_id=229423),
+PolyBayesShort (http://bioinformatics.bc.edu/marthlab/Beta_Release),
+or Bioconductor Biostrings (might have acceptable performance for
+exact matches, though haven't really tried).
+
+One possible advantage of doing as much analysis on tile files, before
+summarizing the entire experiment, is that the tile files can be
+divided amon several processors.
+
+Martin
+
+> statistical analysis on the positions obtained with the Perl script.
+>
+> Thanks for your time,
+> Chema
+>
+>
+> -- 
+>
+> --------------------------------------
+> ALTERNATIVE EMAIL: josem.muinyo at cmb.udl.es
+>   Jose M Muino
+>   Institute of Plant Genetics
+>   Polish Academy of Science
+>   Strzeszynska 34
+>   61-479 Poznan
+>   Poland
+>   tel. 48 61 6550254
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From hpages at fhcrc.org  Mon Nov  5 20:13:03 2007
+From: hpages at fhcrc.org (Herve Pages)
+Date: Mon, 05 Nov 2007 11:13:03 -0800
+Subject: [Bioc-devel] Problem loading Rdbi (again)
+In-Reply-To: <472D08A3.8000508@bapuetz.de>
+References: <472D08A3.8000508@bapuetz.de>
+Message-ID: <472F6B3F.3030104@fhcrc.org>
+
+Hi Benno,
+
+
+Benno Puetz wrote:
+> After successfully installing and using Rdbi (1.12.0, on R 2.6.0) 
+> yesterday, I started getting error messages when trying to load the 
+> library today (... cyclic dependencies ...).
+
+On my system 'library(Rdbi)' is desperately quiet ;-)
+
+It's hard to believe that Rdbi has a circular dep problem since it depends
+on nothing except R >= 1.2. What message do you get _exactly_? and after doing
+what? Please show us the full session.
+
+Also, we need your sessionInfo(). Here is mine:
+
+> sessionInfo()
+R version 2.6.0 (2007-10-03)
+x86_64-unknown-linux-gnu
+
+locale:
+LC_CTYPE=en_US;LC_NUMERIC=C;LC_TIME=en_US;LC_COLLATE=en_US;LC_MONETARY=en_US;LC_MESSAGES=en_US;LC_PAPER=en_US;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US;LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] Rdbi_1.12.0
+
+loaded via a namespace (and not attached):
+[1] rcompgen_0.1-17 tools_2.6.0
+
+
+Cheers,
+H.
+
+
+> I am not aware of any change to the system that might have triggered this.
+> 
+> Checking the archives I found this problem mentioned quite some time 
+> ago, but no explicit solution.
+> Removing the library and freshly installing from Bioconductor did not 
+> change anything. This is the only version of Rdbi found on my system.
+> 
+> Any suggestions towards a solution would be welcome
+> 
+>     Benno
+> 
+>
+
+
+From work at bapuetz.de  Tue Nov  6 00:57:39 2007
+From: work at bapuetz.de (Benno Puetz)
+Date: Tue, 06 Nov 2007 00:57:39 +0100
+Subject: [Bioc-devel] Problem loading Rdbi (again)
+In-Reply-To: <472F6B3F.3030104@fhcrc.org>
+References: <472D08A3.8000508@bapuetz.de> <472F6B3F.3030104@fhcrc.org>
+Message-ID: <472FADF3.2080109@bapuetz.de>
+
+Herve Pages wrote:
+> Hi Benno,
+>
+>
+> Benno Puetz wrote:
+>   
+>> After successfully installing and using Rdbi (1.12.0, on R 2.6.0) 
+>> yesterday, I started getting error messages when trying to load the 
+>> library today (... cyclic dependencies ...).
+>>     
+>
+> On my system 'library(Rdbi)' is desperately quiet ;-)
+>
+> It's hard to believe that Rdbi has a circular dep problem since it depends
+> on nothing except R >= 1.2. What message do you get _exactly_? and after doing
+> what? Please show us the full session.
+>
+> Also, we need your sessionInfo(). Here is mine:
+>
+>   
+>> sessionInfo()
+>>     
+> R version 2.6.0 (2007-10-03)
+> x86_64-unknown-linux-gnu
+>
+> locale:
+> LC_CTYPE=en_US;LC_NUMERIC=C;LC_TIME=en_US;LC_COLLATE=en_US;LC_MONETARY=en_US;LC_MESSAGES=en_US;LC_PAPER=en_US;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US;LC_IDENTIFICATION=C
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> other attached packages:
+> [1] Rdbi_1.12.0
+>
+> loaded via a namespace (and not attached):
+> [1] rcompgen_0.1-17 tools_2.6.0
+>
+>
+>   
+I thought I had a clean R when doing:
+
+[Workspace restored from /Volumes/User/bpuetz/.RData]
+
+ > sessionInfo()
+R version 2.6.0 (2007-10-03)
+powerpc-apple-darwin8.10.1
+
+locale:
+de_DE.UTF-8/de_DE.UTF-8/de_DE.UTF-8/C/de_DE.UTF-8/de_DE.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets
+[6] methods   base    
+ > library(Rdbi)
+Lade n?tiges Paket: Rdbi
+Error in loadNamespace(package, c(which.lib.loc, lib.loc), keep.source = 
+keep.source) :
+  zyklische Abh?ngigkeiten von Namensr?umen werden nicht unterst?tzt
+Error : Paket 'Rdbi' konnte nicht geladen werden
+Error : .onLoad in 'loadNamespace' f?r 'Rdbi' fehlgeschlagen
+Fehler: Laden von Paket/Namensraum f?r 'Rdbi' fehlgeschlagen
+ >
+
+then I noticed the first line and wanted to make sure it was. After
+
+rm (list=ls())
+
+library(Rdbi)
+
+is quiet as it should be... although I seem to have to load RdbiPgSQL 
+manually -
+
+    primer.conn <- dbConnect(PgSQL(),
+                             host='localhost',
+                             dbname='primer')
+
+yields
+
+Fehler in dbConnect(PgSQL(), host = "localhost", dbname = "primer") :
+  konnte Funktion "PgSQL" nicht finden
+
+But I can live with that ...
+
+Thanks for helping me remove the culprit - whatever it may have been
+
+Benno
+
+
+From sdavis2 at mail.nih.gov  Tue Nov  6 01:08:19 2007
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Mon, 05 Nov 2007 19:08:19 -0500
+Subject: [Bioc-devel] Problem loading Rdbi (again)
+In-Reply-To: <472FADF3.2080109@bapuetz.de>
+References: <472D08A3.8000508@bapuetz.de> <472F6B3F.3030104@fhcrc.org>
+	<472FADF3.2080109@bapuetz.de>
+Message-ID: <472FB073.3060206@mail.nih.gov>
+
+Benno Puetz wrote:
+> Herve Pages wrote:
+>   
+>> Hi Benno,
+>>
+>>
+>> Benno Puetz wrote:
+>>   
+>>     
+>>> After successfully installing and using Rdbi (1.12.0, on R 2.6.0) 
+>>> yesterday, I started getting error messages when trying to load the 
+>>> library today (... cyclic dependencies ...).
+>>>     
+>>>       
+>> On my system 'library(Rdbi)' is desperately quiet ;-)
+>>
+>> It's hard to believe that Rdbi has a circular dep problem since it depends
+>> on nothing except R >= 1.2. What message do you get _exactly_? and after doing
+>> what? Please show us the full session.
+>>
+>> Also, we need your sessionInfo(). Here is mine:
+>>
+>>   
+>>     
+>>> sessionInfo()
+>>>     
+>>>       
+>> R version 2.6.0 (2007-10-03)
+>> x86_64-unknown-linux-gnu
+>>
+>> locale:
+>> LC_CTYPE=en_US;LC_NUMERIC=C;LC_TIME=en_US;LC_COLLATE=en_US;LC_MONETARY=en_US;LC_MESSAGES=en_US;LC_PAPER=en_US;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US;LC_IDENTIFICATION=C
+>>
+>> attached base packages:
+>> [1] stats     graphics  grDevices utils     datasets  methods   base
+>>
+>> other attached packages:
+>> [1] Rdbi_1.12.0
+>>
+>> loaded via a namespace (and not attached):
+>> [1] rcompgen_0.1-17 tools_2.6.0
+>>
+>>
+>>   
+>>     
+> I thought I had a clean R when doing:
+>
+> [Workspace restored from /Volumes/User/bpuetz/.RData]
+>
+>  > sessionInfo()
+> R version 2.6.0 (2007-10-03)
+> powerpc-apple-darwin8.10.1
+>
+> locale:
+> de_DE.UTF-8/de_DE.UTF-8/de_DE.UTF-8/C/de_DE.UTF-8/de_DE.UTF-8
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets
+> [6] methods   base    
+>  > library(Rdbi)
+> Lade n?tiges Paket: Rdbi
+> Error in loadNamespace(package, c(which.lib.loc, lib.loc), keep.source = 
+> keep.source) :
+>   zyklische Abh?ngigkeiten von Namensr?umen werden nicht unterst?tzt
+> Error : Paket 'Rdbi' konnte nicht geladen werden
+> Error : .onLoad in 'loadNamespace' f?r 'Rdbi' fehlgeschlagen
+> Fehler: Laden von Paket/Namensraum f?r 'Rdbi' fehlgeschlagen
+>  >
+>
+> then I noticed the first line and wanted to make sure it was. After
+>
+> rm (list=ls())
+>
+> library(Rdbi)
+>
+> is quiet as it should be... although I seem to have to load RdbiPgSQL 
+> manually -
+>
+>     primer.conn <- dbConnect(PgSQL(),
+>                              host='localhost',
+>                              dbname='primer')
+>
+> yields
+>
+> Fehler in dbConnect(PgSQL(), host = "localhost", dbname = "primer") :
+>   konnte Funktion "PgSQL" nicht finden
+>
+> But I can live with that ...
+>
+> Thanks for helping me remove the culprit - whatever it may have been
+>   
+
+I think if one has a previous connection saved in the workspace, this 
+will cause the problem.  After rm(list=ls()), the connection is removed; 
+hence, no further problems.  I have simply gotten in the habit of not 
+saving connections in the workspace.
+
+Sean
+
+
+From jmui at igr.poznan.pl  Tue Nov  6 13:53:30 2007
+From: jmui at igr.poznan.pl (Jose M Muino)
+Date: Tue, 06 Nov 2007 13:53:30 +0100
+Subject: [Bioc-devel] Solexa-ChipSeq
+In-Reply-To: <6phsl3khhje.fsf@gopher4.fhcrc.org>
+References: <op.t1bgyzevbo50ms@igr1-160> <6phsl3khhje.fsf@gopher4.fhcrc.org>
+Message-ID: <op.t1dffgqkbo50ms@igr1-160>
+
+Hi Martin,
+
+Thanks a lot for your comments; they were very useful to me.
+
+I have to read the manuals about MAQ and PolyBayesShort, and I didn?t know  
+these software.
+
+Now, I am reading about SxOligoSearch (   
+http://synasite.mgrc.com.my:8080/sxog/files/SXOligoSearch_benchmark.pdf ).  
+This software allows alignment of Solexa reads to a genome, using the base  
+probability information of the read in order to improve the score of the  
+alignment. Also, they are able to improve the quality of the alignment  
+using the information that a given 5? read should match in a position near  
+of a 3? read match (in the correct orientation).
+
+
+Have a nice day,
+Chema
+
+
+
+
+On Mon, 05 Nov 2007 15:51:33 +0100, Martin Morgan <mtmorgan at fhcrc.org>  
+wrote:
+
+> "Jose M Muino" <jmui at igr.poznan.pl> writes:
+>> Hi everyone,
+>
+> Hi Chema --
+>
+> I have been working on a package over the last couple of weeks. It
+> tries to provide infrastructure to analyze Solexa data, focusing
+> mostly on QA issues at the moment. The basic idea is to write
+> functions that operate on per-tile or per-lane files produced by the
+> Solexa pipeline. The results of these functions are then summarized
+> over the entire experiment. Roughly, it works like sapply(X, FUN,
+> ...), where FUN is the per-tile function and the 's' in sapply is the
+> summary across tile files.
+>
+> For instance, I wanted to determine the X and Y coordinate of every
+> sequence called by Bustard, the Solexa base caller. I wrote a function
+> to extract this information from a tile file of the appropriate type
+>
+> .qaSeq_xyCoords <- function (fp, params, lane, tile, ..., verbose)
+> {
+>     res <- scan(fp,
+>                 what = list(Lane=NULL, Tile=NULL, X=1L, Y=1L, NULL))
+>     res$Lane <- lane
+>     res$Tile <- tile
+>     res[1:4]
+> }
+>
+> and another function to invoke the function on all files, and
+> summarize the result
+>
+> .qaSeq <- function (sbRunParams, qaFunction, ..., verbose = FALSE)
+> {
+>     result <- .qaScrape( # visit each tile file, and apply qaFunction
+>     xyCoords <- ... # summarize result across tiles, rbind-like
+>     ... # return an S4 object representing the result
+> }
+>
+> These parts plug into the infrastructure I have, so that I can,
+> without too much more effort, do the following
+>
+>> fl <- "/path/to/pipeline/output"
+>> v <- SBView(fl) # a 'view' of the pipeline results
+>> v
+> runsAvail:
+> 1. ImageAnalysis: C1-36_Firecrest1.8.28_01-10-2007_rbasom
+>   1. BaseCallAnalysis: Bustard1.8.28_01-10-2007_rbasom
+>     1. AdHocAnalysis: GERALD_01-10-2007_rbasom
+>> v[1][[1]] # Bustard, the base caller; 4 file types, 2 tiles
+> filePath: ...1-10-2007_rbasom/Bustard1.8.28_01-10-2007_rbasom
+> analysisType: BaseCallAnalysis
+> lanes fileNames:
+>   lanes:
+> tiles fileNames: prb, qhg, seq, sig2
+>   lanes: 1
+>   tiles: 1 70 (2 total)
+> runsAvail: GERALD_01-10-2007_rbasom
+>> r <- qa(v[1][[1]], qaSeq) # apply 'qaSeq' to the Bustard view
+>> r
+> QAseq
+> runParameters: runParameters(object)
+> lanes: 1 (1 total)
+> tiles: 1 70 (2 total)
+> xyCoords dimensions: 39923 x 4
+> xyBin dimensions: 800 x 5
+> seqCount: 39923
+>> head(xyCoords(r))
+>   Lane Tile    X   Y
+> 1    1    1 1001 499
+> 2    1    1  774 665
+> 3    1    1  898 392
+> 4    1    1  922 465
+> 5    1    1  947 451
+> 6    1    1  895 493
+>
+> The package is in quite a state of flux, but I could make it
+> available to you (and others) if you're interested.
+>
+>> Hi everyone,
+>>
+>> This is my first mail to this mailing-list.
+>>
+>> I am beginning to write a R script in order to analyze some Solexa
+>> experiments (Chip-Seq) that we already have done in the lab. The aim of
+>> Chip-Seq experiments is to find DNA regions which have an
+>> overrepresentation of reads depending of the condition.
+>>
+>> I would like to know if there is some other people doing this in
+>> bioconductor, and if there is some special format that I should use, or  
+>> if
+>> I can help in something.
+>>
+>> About the format I was thinking to use a Perl script, or a modification  
+>> of
+>> the grep algorithm to locate each read, and after to use R to do the
+>
+> Not sure exactly whether you mean actually aligning the reads to a
+> sequence, or just parsing files produced by an alignment program to
+> extract the relevant information. If the later, then R is probably as
+> effective as perl. For actual alignment, the magnitude of the data and
+> inability to model sequencing error makes grep not practical. Options
+> seem to be PhageAlign (Solexa, small genome, includes base call error
+> model, impractical for large genomes), ELAND (Solexa; max 2bp
+> mismatch, no error model), MAQ
+> (http://sourceforge.net/project/showfiles.php?group_id=191815&package_id=229423),
+> PolyBayesShort (http://bioinformatics.bc.edu/marthlab/Beta_Release),
+> or Bioconductor Biostrings (might have acceptable performance for
+> exact matches, though haven't really tried).
+>
+> One possible advantage of doing as much analysis on tile files, before
+> summarizing the entire experiment, is that the tile files can be
+> divided amon several processors.
+>
+> Martin
+>
+>> statistical analysis on the positions obtained with the Perl script.
+>>
+>> Thanks for your time,
+>> Chema
+>>
+>>
+>> --
+>>
+>> --------------------------------------
+>> ALTERNATIVE EMAIL: josem.muinyo at cmb.udl.es
+>>   Jose M Muino
+>>   Institute of Plant Genetics
+>>   Polish Academy of Science
+>>   Strzeszynska 34
+>>   61-479 Poznan
+>>   Poland
+>>   tel. 48 61 6550254
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+
+-- 
+
+--------------------------------------
+ALTERNATIVE EMAIL: josem.muinyo at cmb.udl.es
+  Jose M Muino
+  Institute of Plant Genetics
+  Polish Academy of Science
+  Strzeszynska 34
+  61-479 Poznan
+  Poland
+  tel. 48 61 6550254
+
+
+From jmacdon at med.umich.edu  Tue Nov  6 15:22:38 2007
+From: jmacdon at med.umich.edu (James MacDonald)
+Date: Tue, 06 Nov 2007 09:22:38 -0500
+Subject: [Bioc-devel] Changelog
+Message-ID: <47303233.47B0.00EE.0@med.umich.edu>
+
+Hi all,
+
+As we all discussed last month, rather than parsing the svn commit logs by hand and sending an email (as well as posting to the BioC website), I am now automagically parsing the svn commit logs and putting the results online using the blosxom blogging software (yes, I too have entered the 21th century ;-D).
+
+http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi
+
+There were many opinions expressed about the changelog and the rules governing what goes in and what stays out, and I appreciate all the input. I understand that some developers use the commit messages as a means to communicate to their fellow developers, and that some commits are really just small changes that might not need to be tracked. 
+
+That said, I think we are all going to have to work together on this one. It is much easier for me to look at a commit message when parsing by hand and say 'Hmm. That doesn't make any sense to me.' and summarily exclude it from the changelog. When doing things automatically this isn't that easy.
+
+So if you are making a commit that doesn't need to be published on the changelog, simply prepend a # to the beginning of all lines that you don't want published. As mentioned before, lines != sentence. A line is a block of text separated by a new line character, so a single # will comment out everything you type until you hit the return key.
+
+The changelog allows one to look at changes for just one package, by date, etc. See here for more information
+
+http://fgc.lsi.umich.edu/info.html 
+
+There is also the ability to subscribe to an RSS feed for the whole changelog or just a subset of packages, although the results vary depending on the RSS reader you use. Firefox's live bookmarks doesn't seem to work correctly, whereas the google reader does YMMV.
+
+Best,
+
+Jim
+
+
+-- 
+
+James W. MacDonald, M.S.
+Biostatistician
+Affymetrix and cDNA Microarray Core
+University of Michigan Cancer Center
+1500 E. Medical Center Drive
+7410 CCGC
+Ann Arbor MI 48109
+734-647-5623
+
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues
+
+
+From hpages at fhcrc.org  Wed Nov 21 01:34:02 2007
+From: hpages at fhcrc.org (Herve Pages)
+Date: Tue, 20 Nov 2007 16:34:02 -0800
+Subject: [Bioc-devel] Automatic notifications of build failure
+Message-ID: <47437CFA.7040909@fhcrc.org>
+
+Hi BioC developers,
+
+Two weeks ago, our build system started sending weekly notifications
+of build failure. This notification is an individual email sent every
+Tuesday to each maintainer whose package failed to pass 'R CMD build'
+or 'R CMD check' on any of our build system during the latest build run.
+Note that this is for the *release* builds only:
+
+  http://bioconductor.org/checkResults/release/bioc-LATEST/
+
+(Maybe we'll consider to do the same for the *devel* builds
+in the future, especially when we get close to the next release.)
+
+These automatically generated emails are sent from the following
+address:
+
+  BBS-noreply at bioconductor.org
+
+and look like this (for package foo):
+
+  Subject:
+  -----------------------------------------------------------------------
+  foo problems reported by the "Multiple platform build/check report" for
+  BioC 2.1
+
+  Body:
+  -----------------------------------------------------------------------
+  [This is an automatically generated email. Please don't reply.]
+
+  Hi foo maintainer,
+
+  According to the "Multiple platform build/check report" for BioC 2.1,
+  the foo package has the following problem(s):
+
+    o ERROR for 'R CMD check' on wellington. See the details here:
+        http://bioconductor.org/checkResults/2.1/bioc-LATEST/foo/wellington-checksrc.html
+
+    o TIMEOUT for 'R CMD build' on pitt. See the details here:
+        http://bioconductor.org/checkResults/2.1/bioc-LATEST/foo/pitt-buildsrc.html
+
+  Please take the time to address this and use your Subversion account
+  when you are ready to commit a fix to your package.
+
+  Notes:
+    ...
+    <some important notes here>
+    ...
+
+  Thanks for contributing to the Bioconductor project!
+  -----------------------------------------------------------------------
+
+Please, make sure that they will not be caught by your spam filter.
+
+Any feedback on this new feature is welcome.
+
+Cheers,
+H.
+
+
+From bullard at berkeley.edu  Sun Nov 25 21:41:07 2007
+From: bullard at berkeley.edu (James Bullard)
+Date: Sun, 25 Nov 2007 12:41:07 -0800
+Subject: [Bioc-devel] broken website ?
+Message-ID: <C02078DF-7D5D-44F0-8674-A320B45C74C7@berkeley.edu>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+Url: https://stat.ethz.ch/pipermail/bioc-devel/attachments/20071125/9e42870c/attachment.pl 
+
+From stvjc at channing.harvard.edu  Mon Nov 26 02:18:03 2007
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Sun, 25 Nov 2007 20:18:03 -0500 (EST)
+Subject: [Bioc-devel] broken website ?
+In-Reply-To: <C02078DF-7D5D-44F0-8674-A320B45C74C7@berkeley.edu>
+References: <C02078DF-7D5D-44F0-8674-A320B45C74C7@berkeley.edu>
+Message-ID: <Pine.GSO.4.58.0711252015100.27611@capecod.bwh.harvard.edu>
+
+you are right, there is a problem when you go through task
+views.
+
+bioconductor.org/packages/2.1/Microarray.html, which is
+accessed through the task views links under download, shows
+no packages in view.  seems like a logic problem with the
+use of the views ontology.
+
+the problem is very severe -- hardly any packages can be seen
+through the web pages.
+
+---
+Vince Carey, PhD
+Assoc. Prof Med (Biostatistics)
+Harvard Medical School
+Channing Laboratory - ph 6175252265 fa 6177311541
+181 Longwood Ave Boston MA 02115 USA
+stvjc at channing.harvard.edu
+
+On Sun, 25 Nov 2007, James Bullard wrote:
+
+> Hi All, I am trying to figure out what is going on with the website
+> (BiocViews), particularly I cannot really see any of the packages,
+> which I know to be there. Is this a known problem?
+>
+> thanks, jim
+>
+> http://bioconductor.org/packages/release/BiocViews.html
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+The information transmitted in this electronic communica...{{dropped:9}}
+
+
+From hpages at fhcrc.org  Tue Nov 27 00:38:35 2007
+From: hpages at fhcrc.org (Herve Pages)
+Date: Mon, 26 Nov 2007 15:38:35 -0800
+Subject: [Bioc-devel] broken website ?
+In-Reply-To: <Pine.GSO.4.58.0711252015100.27611@capecod.bwh.harvard.edu>
+References: <C02078DF-7D5D-44F0-8674-A320B45C74C7@berkeley.edu>
+	<Pine.GSO.4.58.0711252015100.27611@capecod.bwh.harvard.edu>
+Message-ID: <474B58FB.2080103@fhcrc.org>
+
+Hi James, Vince,
+
+A recent change in the base::write.dcf() function broke the script we use
+to generate those views. This is fixed now. Thanks for reporting the problem.
+
+Cheers,
+H.
+
+
+Vincent Carey 525-2265 wrote:
+> you are right, there is a problem when you go through task
+> views.
+> 
+> bioconductor.org/packages/2.1/Microarray.html, which is
+> accessed through the task views links under download, shows
+> no packages in view.  seems like a logic problem with the
+> use of the views ontology.
+> 
+> the problem is very severe -- hardly any packages can be seen
+> through the web pages.
+> 
+> ---
+> Vince Carey, PhD
+> Assoc. Prof Med (Biostatistics)
+> Harvard Medical School
+> Channing Laboratory - ph 6175252265 fa 6177311541
+> 181 Longwood Ave Boston MA 02115 USA
+> stvjc at channing.harvard.edu
+> 
+> On Sun, 25 Nov 2007, James Bullard wrote:
+> 
+>> Hi All, I am trying to figure out what is going on with the website
+>> (BiocViews), particularly I cannot really see any of the packages,
+>> which I know to be there. Is this a known problem?
+>>
+>> thanks, jim
+>>
+>> http://bioconductor.org/packages/release/BiocViews.html
+>> 	[[alternative HTML version deleted]]
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+> 
+> The information transmitted in this electronic communica...{{dropped:9}}
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From bullard at berkeley.edu  Tue Nov 27 04:52:55 2007
+From: bullard at berkeley.edu (James Bullard)
+Date: Mon, 26 Nov 2007 19:52:55 -0800
+Subject: [Bioc-devel] broken website ?
+In-Reply-To: <474B58FB.2080103@fhcrc.org>
+References: <C02078DF-7D5D-44F0-8674-A320B45C74C7@berkeley.edu>
+	<Pine.GSO.4.58.0711252015100.27611@capecod.bwh.harvard.edu>
+	<474B58FB.2080103@fhcrc.org>
+Message-ID: <8EF83CAC-28C4-4908-8F64-6EDA8983F258@berkeley.edu>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+Url: https://stat.ethz.ch/pipermail/bioc-devel/attachments/20071126/5903bf05/attachment.pl 
+
+From stvjc at channing.harvard.edu  Tue Nov 27 12:06:13 2007
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Tue, 27 Nov 2007 06:06:13 -0500 (EST)
+Subject: [Bioc-devel] broken website ?
+In-Reply-To: <8EF83CAC-28C4-4908-8F64-6EDA8983F258@berkeley.edu>
+References: <C02078DF-7D5D-44F0-8674-A320B45C74C7@berkeley.edu>
+	<Pine.GSO.4.58.0711252015100.27611@capecod.bwh.harvard.edu>
+	<474B58FB.2080103@fhcrc.org>
+	<8EF83CAC-28C4-4908-8F64-6EDA8983F258@berkeley.edu>
+Message-ID: <Pine.GSO.4.58.0711270601490.26386@capecod.bwh.harvard.edu>
+
+the experimental data are visible through, e.g. packages/2.1/data/experiment
+
+Leukemia.html does seem to exist but i know of no experiment package
+with that name -- not in a current checkout of the svn archive
+bioc-data/trunk/experiment/pkgs, in any case.
+
+---
+Vince Carey, PhD
+Assoc. Prof Med (Biostatistics)
+Harvard Medical School
+Channing Laboratory - ph 6175252265 fa 6177311541
+181 Longwood Ave Boston MA 02115 USA
+stvjc at channing.harvard.edu
+
+On Mon, 26 Nov 2007, James Bullard wrote:
+
+> Okay, it looks good when it comes to software packages, but I am a
+> little confused about where all of the experimental data packages are
+> i.e.
+>
+> http://bioconductor.org/packages/release/Leukemia.html
+>
+> I must be missing something here, but I thought I would find more
+> experimental data; maybe it is a matter of generating new pages in
+> this section?
+>
+> thanks again, jim
+>
+>
+> On Nov 26, 2007, at 3:38 PM, Herve Pages wrote:
+>
+> > Hi James, Vince,
+> >
+> > A recent change in the base::write.dcf() function broke the script
+> > we use
+> > to generate those views. This is fixed now. Thanks for reporting
+> > the problem.
+> >
+> > Cheers,
+> > H.
+> >
+> >
+> > Vincent Carey 525-2265 wrote:
+> >> you are right, there is a problem when you go through task
+> >> views.
+> >>
+> >> bioconductor.org/packages/2.1/Microarray.html, which is
+> >> accessed through the task views links under download, shows
+> >> no packages in view.  seems like a logic problem with the
+> >> use of the views ontology.
+> >>
+> >> the problem is very severe -- hardly any packages can be seen
+> >> through the web pages.
+> >>
+> >> ---
+> >> Vince Carey, PhD
+> >> Assoc. Prof Med (Biostatistics)
+> >> Harvard Medical School
+> >> Channing Laboratory - ph 6175252265 fa 6177311541
+> >> 181 Longwood Ave Boston MA 02115 USA
+> >> stvjc at channing.harvard.edu
+> >>
+> >> On Sun, 25 Nov 2007, James Bullard wrote:
+> >>
+> >>> Hi All, I am trying to figure out what is going on with the website
+> >>> (BiocViews), particularly I cannot really see any of the packages,
+> >>> which I know to be there. Is this a known problem?
+> >>>
+> >>> thanks, jim
+> >>>
+> >>> http://bioconductor.org/packages/release/BiocViews.html
+> >>> 	[[alternative HTML version deleted]]
+> >>>
+> >>> _______________________________________________
+> >>> Bioc-devel at stat.math.ethz.ch mailing list
+> >>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >>>
+> >>
+> >> The information transmitted in this electronic communica...
+> >> {{dropped:9}}
+> >>
+> >> _______________________________________________
+> >> Bioc-devel at stat.math.ethz.ch mailing list
+> >> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >>
+> >
+>
+>
+
+The information transmitted in this electronic communica...{{dropped:9}}
+
+
+From hb at stat.berkeley.edu  Wed Nov 28 07:05:16 2007
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Tue, 27 Nov 2007 22:05:16 -0800
+Subject: [Bioc-devel] affxparser: release version not available for OSX?
+Message-ID: <59d7961d0711272205x5582fe2s7f1a8f15f6db9945@mail.gmail.com>
+
+Hi,
+
+according to
+
+  http://bioconductor.org/packages/2.1/bioc/html/affxparser.html
+
+there is no release version of 'affxparser' available for OSX.
+
+...and the devel version is out of date:
+
+  http://bioconductor.org/packages/2.2/bioc/html/affxparser.html
+
+Cheers
+
+/Henrik
+
+
+From hb at stat.berkeley.edu  Wed Nov 28 07:15:44 2007
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Tue, 27 Nov 2007 22:15:44 -0800
+Subject: [Bioc-devel] affyPLM: release version not available for OSX?
+Message-ID: <59d7961d0711272215k491fddbwecb5aef53bd2bf63@mail.gmail.com>
+
+Hi again,
+
+like 'affxparser', there are problems with 'affyPLM'.
+
+According to
+
+  http://bioconductor.org/packages/2.1/bioc/html/affyPLM.html
+
+there is no release version of 'affyPLM' available for OSX.
+
+...and the devel version for OSX is out of date:
+
+  http://bioconductor.org/packages/2.2/bioc/html/affyPLM.html
+
+Cheers
+
+/Henrik
+
+
+From hpages at fhcrc.org  Thu Nov 29 04:58:04 2007
+From: hpages at fhcrc.org (Herve Pages)
+Date: Wed, 28 Nov 2007 19:58:04 -0800
+Subject: [Bioc-devel] affxparser: release version not available for OSX?
+In-Reply-To: <59d7961d0711272205x5582fe2s7f1a8f15f6db9945@mail.gmail.com>
+References: <59d7961d0711272205x5582fe2s7f1a8f15f6db9945@mail.gmail.com>
+Message-ID: <474E38CC.2020606@fhcrc.org>
+
+Hi Henrik,
+
+Henrik Bengtsson wrote:
+> Hi,
+> 
+> according to
+> 
+>   http://bioconductor.org/packages/2.1/bioc/html/affxparser.html
+> 
+> there is no release version of 'affxparser' available for OSX.
+
+What do you mean? According to this page, affxparser 1.10.1 is available
+as Source, Windows binary and OS X binary.
+
+> 
+> ...and the devel version is out of date:
+> 
+>   http://bioconductor.org/packages/2.2/bioc/html/affxparser.html
+
+We don't build (and have never built) BioC devel on Mac OS X so what's
+here is an old stalled Mac OS X binary (probably from before the last
+release). Maybe it would be less confusing if we didn't have this
+binary at all.
+The good news is that we are planning to start building BioC devel on
+Mac OS X (Leopard) very soon.
+
+Cheers,
+H.
+
+
+> 
+> Cheers
+> 
+> /Henrik
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From hb at stat.berkeley.edu  Fri Nov 30 18:22:42 2007
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Fri, 30 Nov 2007 09:22:42 -0800
+Subject: [Bioc-devel] affxparser: release version not available for OSX?
+In-Reply-To: <474E38CC.2020606@fhcrc.org>
+References: <59d7961d0711272205x5582fe2s7f1a8f15f6db9945@mail.gmail.com>
+	<474E38CC.2020606@fhcrc.org>
+Message-ID: <59d7961d0711300922i4a85d91eu8f362a8e6335dd8c@mail.gmail.com>
+
+Hi.
+
+On 28/11/2007, Herve Pages <hpages at fhcrc.org> wrote:
+> Hi Henrik,
+>
+> Henrik Bengtsson wrote:
+> > Hi,
+> >
+> > according to
+> >
+> >   http://bioconductor.org/packages/2.1/bioc/html/affxparser.html
+> >
+> > there is no release version of 'affxparser' available for OSX.
+>
+> What do you mean? According to this page, affxparser 1.10.1 is available
+> as Source, Windows binary and OS X binary.
+
+It was indeed reporting it as "Not available" (or similar) when I sent
+the email.  However, now the OSX is there again.  Strange.
+
+>
+> >
+> > ...and the devel version is out of date:
+> >
+> >   http://bioconductor.org/packages/2.2/bioc/html/affxparser.html
+>
+> We don't build (and have never built) BioC devel on Mac OS X so what's
+> here is an old stalled Mac OS X binary (probably from before the last
+> release). Maybe it would be less confusing if we didn't have this
+> binary at all.
+> The good news is that we are planning to start building BioC devel on
+> Mac OS X (Leopard) very soon.
+
+Thanks for this update; I'm not an OSX user so did not know this.
+
+/Henrik
+
+>
+> Cheers,
+> H.
+>
+>
+> >
+> > Cheers
+> >
+> > /Henrik
+> >
+> > _______________________________________________
+> > Bioc-devel at stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+

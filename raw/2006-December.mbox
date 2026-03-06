@@ -1,0 +1,3032 @@
+From sfalcon at fhcrc.org  Tue Dec  5 01:10:01 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 04 Dec 2006 16:10:01 -0800
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <45747B16.6030505@stats.uwo.ca> (Duncan Murdoch's message of "Mon,
+	04 Dec 2006 14:46:30 -0500")
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<45747B16.6030505@stats.uwo.ca>
+Message-ID: <m27ix7ryna.fsf_-_@ziti.local>
+
+[I've moved this discussion to bioc-devel where it began and
+belongs.  For those catching up, Fritz Leisch wrote some comments
+about recent Sweave changes (mostly quoted below) and Duncan Murdoch
+responded.  I have some comments added below.]
+
+Duncan Murdoch <murdoch at stats.uwo.ca> writes:
+> On 12/3/2006 11:55 AM, Friedrich Leisch wrote:
+>> [ To Bioc-Core: This continues a discussion in R-core on the changes
+>> Duncan Murdoch made to the parser and Sweave to keep original
+>> formatting and comments of code chunks. ]
+>> 
+>> 
+>> Sorry to join in late, I was travelling last week. First, let me thank
+>> Duncan for his work, this really fixes one of the main drawbacks
+>> Sweave had!
+>> 
+>> Hence, I agree with Duncan and Martin in that I would like to change
+>> the default in R to keep.source=TRUE. But I understand Robert that
+>> testing software gets hard if the tools which are used for testing
+>> change.
+>> 
+>> As discussed by email this summer on r-devel I want to change another
+>> Sweave default for 2.5: I want to set stylepath=FALSE and include no
+>> \usepackage{/path/to/Sweave.sty} by default. This means in effect that
+>> each Sweave file needs to be adapted, by either inserting
+>> \usepackage{Sweave} or \SweaveOpts{stylepath=true} in the header. I
+>> didn't implement the changes back then because the discussion was too
+>> close to feature freeze.
+>> 
+>> I also will do some other Sweave changes over christmas break, but
+>> those should all be safe, i.e., only add functionality.
+>> 
+>> Before people now start yelling at me: We can only improve software,
+>> if we are allowed to change it and/or fix behavior that can be
+>> considered a bug. And the paths inserted on Windows machines in an
+>> English locale are buggy (and were so ever since ...).
+>> 
+>> To make future changes easier I want to suggest the following (for
+>> BioC): Have all package authors insert a
+>> 
+>> 	\SweaveInput{BiocSweaveDefaults}
+>> 
+>> at the beginning of each vignette, and centrally provide a
+>> BiocSweaveDefaults.Rnw file with settings we think are appropriate for
+>> BioC (details to be discussed). With that we would have easy means of
+>> 
+>>  1) changing Sweave when necessary, but
+>>  2) keeping defaults in sync for all BioC vignettes, and overriding
+>>     changes we don't like.
+>> 
+>> If we include the usapackage{Sweave} statement in
+>> BiocSweaveDefaults.Rnw, we have central control for all Sweave
+>> processing options as well as for latex options like noae or nogin.
+>> 
+>> Comments?
+>
+> I think that looks like a good long-term solution.  For 2.5.0, would it
+> be possible to put in place a way to change SweaveOpts defaults in
+> vignettes with *no* changes to the vignettes?  I.e. some sort of
+> external config file which set the defaults for any SweaveOpts setting.
+> I'd suggest the search order for this file should be
+>
+>    - a location specified in the Sweave call
+>    - the directory of the .Rnw file
+>    - the home directory of the current user
+>    - a new RHOME/share/Sweave directory, or possibly RHOME/share/texmf
+>
+> Duncan Murdoch
+
+I like the idea of being able to modify SweaveOpts without having to
+change the vignette contents.  For this to be usable for us, it needs
+to get picked up by 'R CMD build', at least, because that is how
+vignettes get built in our build system.
+
+A central BiocSweaveDefaults.Rnw file could be more trouble than it is
+worth.  It requires modifying all vignettes to include the file and
+then there is the question of where such a file would live.
+Generally, developers only maintain a single package and don't do a
+checkout of everything.  Right now, packages are self-contained and I
+would hate to see that change.  -- but I think something along these
+lines could provide useful insulation against changes in Sweave that
+we aren't ready for.
+
++ seth
+
+
+
+Duncan M. and Fritz: perhaps you guys could subscribe to bioc-devel
+for a short period of time so your messages will go through?
+
+
+From LMramba at kilifi.kemri-wellcome.org  Tue Dec  5 12:08:51 2006
+From: LMramba at kilifi.kemri-wellcome.org (Lazarus Mramba)
+Date: Tue, 05 Dec 2006 14:08:51 +0300
+Subject: [Bioc-devel] How to do permutations, combinations, intergrations,
+	differentiations
+Message-ID: <s5757d93.074@KILIFI.KEMRI-WELLCOME.ORG>
+
+I also would wish to know how to do permutation and Combination,
+Factorials, How to intergrate and differentiate equations using the R
+environment as a calculator.
+Please advise
+Lazarus Mramba
+
+>>> bioc-devel-request at stat.math.ethz.ch 12/05 2:00 PM >>>
+Send Bioc-devel mailing list submissions to
+	bioc-devel at stat.math.ethz.ch 
+
+To subscribe or unsubscribe via the World Wide Web, visit
+	https://stat.ethz.ch/mailman/listinfo/bioc-devel 
+or, via email, send a message with subject or body 'help' to
+	bioc-devel-request at stat.math.ethz.ch 
+
+You can reach the person managing the list at
+	bioc-devel-owner at stat.math.ethz.ch 
+
+When replying, please edit your Subject line so it is more specific
+than "Re: Contents of Bioc-devel digest..."
+
+
+Today's Topics:
+
+   1. Re: Sweave changes (keep.source = TRUE or FALSE?) (Seth Falcon)
+
+
+----------------------------------------------------------------------
+
+Message: 1
+Date: Mon, 04 Dec 2006 16:10:01 -0800
+From: Seth Falcon <sfalcon at fhcrc.org>
+Subject: Re: [Bioc-devel] Sweave changes (keep.source = TRUE or
+	FALSE?)
+To: bioc-devel at stat.math.ethz.ch 
+Cc: friedrich.leisch at stat.uni-muenchen.de,	Duncan Murdoch
+	<murdoch at stats.uwo.ca>
+Message-ID: <m27ix7ryna.fsf_-_ at ziti.local>
+Content-Type: text/plain; charset=us-ascii
+
+[I've moved this discussion to bioc-devel where it began and
+belongs.  For those catching up, Fritz Leisch wrote some comments
+about recent Sweave changes (mostly quoted below) and Duncan Murdoch
+responded.  I have some comments added below.]
+
+Duncan Murdoch <murdoch at stats.uwo.ca> writes:
+> On 12/3/2006 11:55 AM, Friedrich Leisch wrote:
+>> [ To Bioc-Core: This continues a discussion in R-core on the
+changes
+>> Duncan Murdoch made to the parser and Sweave to keep original
+>> formatting and comments of code chunks. ]
+>> 
+>> 
+>> Sorry to join in late, I was travelling last week. First, let me
+thank
+>> Duncan for his work, this really fixes one of the main drawbacks
+>> Sweave had!
+>> 
+>> Hence, I agree with Duncan and Martin in that I would like to
+change
+>> the default in R to keep.source=TRUE. But I understand Robert that
+>> testing software gets hard if the tools which are used for testing
+>> change.
+>> 
+>> As discussed by email this summer on r-devel I want to change
+another
+>> Sweave default for 2.5: I want to set stylepath=FALSE and include
+no
+>> \usepackage{/path/to/Sweave.sty} by default. This means in effect
+that
+>> each Sweave file needs to be adapted, by either inserting
+>> \usepackage{Sweave} or \SweaveOpts{stylepath=true} in the header. I
+>> didn't implement the changes back then because the discussion was
+too
+>> close to feature freeze.
+>> 
+>> I also will do some other Sweave changes over christmas break, but
+>> those should all be safe, i.e., only add functionality.
+>> 
+>> Before people now start yelling at me: We can only improve
+software,
+>> if we are allowed to change it and/or fix behavior that can be
+>> considered a bug. And the paths inserted on Windows machines in an
+>> English locale are buggy (and were so ever since ...).
+>> 
+>> To make future changes easier I want to suggest the following (for
+>> BioC): Have all package authors insert a
+>> 
+>> 	\SweaveInput{BiocSweaveDefaults}
+>> 
+>> at the beginning of each vignette, and centrally provide a
+>> BiocSweaveDefaults.Rnw file with settings we think are appropriate
+for
+>> BioC (details to be discussed). With that we would have easy means
+of
+>> 
+>>  1) changing Sweave when necessary, but
+>>  2) keeping defaults in sync for all BioC vignettes, and overriding
+>>     changes we don't like.
+>> 
+>> If we include the usapackage{Sweave} statement in
+>> BiocSweaveDefaults.Rnw, we have central control for all Sweave
+>> processing options as well as for latex options like noae or nogin.
+>> 
+>> Comments?
+>
+> I think that looks like a good long-term solution.  For 2.5.0, would
+it
+> be possible to put in place a way to change SweaveOpts defaults in
+> vignettes with *no* changes to the vignettes?  I.e. some sort of
+> external config file which set the defaults for any SweaveOpts
+setting.
+> I'd suggest the search order for this file should be
+>
+>    - a location specified in the Sweave call
+>    - the directory of the .Rnw file
+>    - the home directory of the current user
+>    - a new RHOME/share/Sweave directory, or possibly
+RHOME/share/texmf
+>
+> Duncan Murdoch
+
+I like the idea of being able to modify SweaveOpts without having to
+change the vignette contents.  For this to be usable for us, it needs
+to get picked up by 'R CMD build', at least, because that is how
+vignettes get built in our build system.
+
+A central BiocSweaveDefaults.Rnw file could be more trouble than it is
+worth.  It requires modifying all vignettes to include the file and
+then there is the question of where such a file would live.
+Generally, developers only maintain a single package and don't do a
+checkout of everything.  Right now, packages are self-contained and I
+would hate to see that change.  -- but I think something along these
+lines could provide useful insulation against changes in Sweave that
+we aren't ready for.
+
++ seth
+
+
+
+Duncan M. and Fritz: perhaps you guys could subscribe to bioc-devel
+for a short period of time so your messages will go through?
+
+
+
+------------------------------
+
+_______________________________________________
+Bioc-devel mailing list
+Bioc-devel at stat.math.ethz.ch 
+https://stat.ethz.ch/mailman/listinfo/bioc-devel 
+
+
+End of Bioc-devel Digest, Vol 33, Issue 1
+
+
+From huber at ebi.ac.uk  Tue Dec  5 16:27:02 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Tue, 05 Dec 2006 15:27:02 +0000
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <m27ix7ryna.fsf_-_@ziti.local>
+References: <456CEE70.6040709@stats.uwo.ca>	<17775.59614.963640.147491@stat.math.ethz.ch>	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>	<45747B16.6030505@stats.uwo.ca>
+	<m27ix7ryna.fsf_-_@ziti.local>
+Message-ID: <45758FC6.7080806@ebi.ac.uk>
+
+Hi all,
+
+Seth wrote:
+> I like the idea of being able to modify SweaveOpts without having to
+> change the vignette contents.  For this to be usable for us, it needs
+> to get picked up by 'R CMD build', at least, because that is how
+> vignettes get built in our build system.
+> 
+> A central BiocSweaveDefaults.Rnw file could be more trouble than it is
+> worth.  It requires modifying all vignettes to include the file and
+> then there is the question of where such a file would live.
+> Generally, developers only maintain a single package and don't do a
+> checkout of everything.  Right now, packages are self-contained and I
+> would hate to see that change.  -- but I think something along these
+> lines could provide useful insulation against changes in Sweave that
+> we aren't ready for.
+
+This discussion seems to move into the direction of having different
+"flavours" of R. In addition to --vanilla, we could add a --bioc
+flavour. Alternatively, a really minimal "Biobase"-type package that
+needs to be loaded for any use with Bioconductor and contained such
+goodies as setting the Sweave default behaviour and the biocLite script?
+
+I am not sure whether this a direction that we really want to take, and
+I am here not suggesting actually taking it, but isn't this the logical
+consequence?
+
+ Best wishes
+  Wolfgang
+
+-- 
+------------------------------------------------------------------
+Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber
+
+
+From lgautier at altern.org  Tue Dec  5 17:45:34 2006
+From: lgautier at altern.org (lgautier at altern.org)
+Date: Tue, 5 Dec 2006 17:45:34 +0100 (CET)
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <45758FC6.7080806@ebi.ac.uk>
+References: <456CEE70.6040709@stats.uwo.ca>	<17775.59614.963640.147491@stat.math.ethz.ch>	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>	<45747B16.6030505@stats.uwo.ca>
+	<m27ix7ryna.fsf_-_@ziti.local> <45758FC6.7080806@ebi.ac.uk>
+Message-ID: <34964.218.212.98.77.1165337134.squirrel@www.altern.org>
+
+> Hi all,
+>
+> Seth wrote:
+>> I like the idea of being able to modify SweaveOpts without having to
+>> change the vignette contents.  For this to be usable for us, it needs
+>> to get picked up by 'R CMD build', at least, because that is how
+>> vignettes get built in our build system.
+>>
+>> A central BiocSweaveDefaults.Rnw file could be more trouble than it is
+>> worth.  It requires modifying all vignettes to include the file and
+>> then there is the question of where such a file would live.
+>> Generally, developers only maintain a single package and don't do a
+>> checkout of everything.  Right now, packages are self-contained and I
+>> would hate to see that change.  -- but I think something along these
+>> lines could provide useful insulation against changes in Sweave that
+>> we aren't ready for.
+>
+> This discussion seems to move into the direction of having different
+> "flavours" of R. In addition to --vanilla, we could add a --bioc
+> flavour.
+
+I hope this will not happen, as I would suspect this is problem-prone.
+
+>          Alternatively, a really minimal "Biobase"-type package that
+> needs to be loaded for any use with Bioconductor and contained such
+> goodies as setting the Sweave default behaviour and the biocLite script?
+
+That would be a much better option, IMHO: settings specific to BioC would
+remain separate from R-core.
+
+> I am not sure whether this a direction that we really want to take, and
+> I am here not suggesting actually taking it, but isn't this the logical
+> consequence?
+
+I would not see the fact that Biobase would be setting a couple of options
+as a novel and dramatic change. In the time 'reposTools' was used, the
+default system system for R repositories was completely by-passed, and
+bioClite is still something sitting on the top of install.packages
+-somehow-... or did I miss something ?
+
+
+L.
+
+
+
+>  Best wishes
+>   Wolfgang
+>
+> --
+> ------------------------------------------------------------------
+> Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From rgentlem at fhcrc.org  Tue Dec  5 20:24:04 2006
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Tue, 5 Dec 2006 11:24:04 -0800
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <34964.218.212.98.77.1165337134.squirrel@www.altern.org>
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<45747B16.6030505@stats.uwo.ca> <m27ix7ryna.fsf_-_@ziti.local>
+	<45758FC6.7080806@ebi.ac.uk>
+	<34964.218.212.98.77.1165337134.squirrel@www.altern.org>
+Message-ID: <b796582f0612051124i4c195ef8w8208b42113bda553@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+Url: https://stat.ethz.ch/pipermail/bioc-devel/attachments/20061205/da37cf5d/attachment.pl 
+
+From stvjc at channing.harvard.edu  Tue Dec  5 22:04:36 2006
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Tue, 5 Dec 2006 16:04:36 -0500 (EST)
+Subject: [Bioc-devel] [biocore] Sweave changes (keep.source = TRUE or
+	FALSE?) (fwd)
+Message-ID: <Pine.GSO.4.58.0612051602530.16893@capecod.bwh.harvard.edu>
+
+(in case you didn't get this as it was sent to r-core instead of
+bioc-devel...)
+
+>
+> Sorry to join in late, I was travelling last week. First, let me thank
+> Duncan for his work, this really fixes one of the main drawbacks
+> Sweave had!
+>
+> Hence, I agree with Duncan and Martin in that I would like to change
+> the default in R to keep.source=TRUE. But I understand Robert that
+> testing software gets hard if the tools which are used for testing
+> change.
+
+It seems to me that if you are changing the API/behavior then we users
+have
+to adapt to that, given sufficient warning.  This means that instead of
+Sweave("foo.Rnw"), I have to write Sweave("foo.Rnw", keep.source=FALSE),
+to get the former behavior, right?
+
+It may still be debatable whether keep.source=TRUE is a desirable default.
+It does propagate comments, but Sweave is supporting literate programming,
+so that comments in code are not necessarily crucial for the objective
+of the Sweave user.  The document narrative is supposed to take care
+of commenting.  It is also not clear to me that keeping the source
+formatting is preferable to the programmatic formatting by the interpreter
+display facility.
+
+So I would say there are real questions about the suitability of
+keep.source=TRUE
+as a default for Sweave.  The availability is definitely nice, but the
+spirit and aesthetic aspects of Sweave use may be better supported in
+many cases, perhaps the vast majority of all documents created to date,
+with
+keep.source=FALSE.
+
+>
+> As discussed by email this summer on r-devel I want to change another
+> Sweave default for 2.5: I want to set stylepath=FALSE and include no
+> \usepackage{/path/to/Sweave.sty} by default. This means in effect that
+> each Sweave file needs to be adapted, by either inserting
+> \usepackage{Sweave} or \SweaveOpts{stylepath=true} in the header. I
+> didn't implement the changes back then because the discussion was too
+> close to feature freeze.
+>
+> I also will do some other Sweave changes over christmas break, but
+> those should all be safe, i.e., only add functionality.
+>
+> Before people now start yelling at me: We can only improve software,
+> if we are allowed to change it and/or fix behavior that can be
+> considered a bug. And the paths inserted on Windows machines in an
+> English locale are buggy (and were so ever since ...).
+>
+In the past windows users had to do something to deal with undesirable
+latex resource path generation with Sweave, I have some recollection
+of that.  Now all users have to do something to get the old behavior?
+Is it not possible to fix the windows path generation problem at
+the R level instead?
+
+Assuming not, then I have to write
+
+Sweave("foo.Rnw", keep.source=FALSE, stylepath=TRUE)
+
+to get the old behavior on non-windows machines.  I can't remember
+what I might have to do to get the desired behavior on windows
+machines.
+
+>
+> To make future changes easier I want to suggest the following (for
+> BioC): Have all package authors insert a
+>
+>       \SweaveInput{BiocSweaveDefaults}
+>
+> at the beginning of each vignette, and centrally provide a
+> BiocSweaveDefaults.Rnw file with settings we think are appropriate for
+> BioC (details to be discussed). With that we would have easy means of
+>
+>  1) changing Sweave when necessary, but
+>  2) keeping defaults in sync for all BioC vignettes, and overriding
+>     changes we don't like.
+>
+> If we include the usapackage{Sweave} statement in
+> BiocSweaveDefaults.Rnw, we have central control for all Sweave
+> processing options as well as for latex options like noae or nogin.
+>
+> Comments?
+>
+Personally I try to avoid external determinants of function behavior
+whenever possible.  I would rather be able to read in a document how
+function
+parameters should be set to get a certain behavior, than to read in
+a document that I need to find and modify an external resource
+configuration file
+to get a certain behavior.
+
+For my personal situation, if I put
+
+Sweave = function(...) utils::Sweave(..., keep.source=FALSE,
+stylepath=TRUE)
+
+in my .Rprofile, I would get the old behavior (right?), and nothing else
+needs to change.  I might need a different approach under windows, and
+trouble may brew when I use --vanilla, alas.
+
+In summary, I use Sweave a lot, it should evolve, and I appreciate the
+alert to alterations of default behaviors.  I encourage further deliberation about
+the ultimate default on keep.source.
+
+
+From friedrich.leisch at stat.uni-muenchen.de  Wed Dec  6 11:41:43 2006
+From: friedrich.leisch at stat.uni-muenchen.de (Friedrich Leisch)
+Date: Wed, 6 Dec 2006 11:41:43 +0100
+Subject: [Bioc-devel] [biocore] Sweave changes (keep.source = TRUE or
+	FALSE?)
+In-Reply-To: <Pine.GSO.4.58.0612051221530.26010@capecod.bwh.harvard.edu>
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<Pine.GSO.4.58.0612051221530.26010@capecod.bwh.harvard.edu>
+Message-ID: <17782.40551.653787.395685@celebrian.ci.tuwien.ac.at>
+
+
+[ resent to bioc-devel upon request from Seth ]
+
+>>>>> On Tue, 5 Dec 2006 13:17:14 -0500 (EST),
+>>>>> Vincent Carey 525-2265 (VC5) wrote:
+
+  >> 
+  >> Sorry to join in late, I was travelling last week. First, let me thank
+  >> Duncan for his work, this really fixes one of the main drawbacks
+  >> Sweave had!
+  >> 
+  >> Hence, I agree with Duncan and Martin in that I would like to change
+  >> the default in R to keep.source=TRUE. But I understand Robert that
+  >> testing software gets hard if the tools which are used for testing
+  >> change.
+
+  > It seems to me that if you are changing the API/behavior then we users have
+  > to adapt to that, given sufficient warning.  This means that instead of
+  > Sweave("foo.Rnw"), I have to write Sweave("foo.Rnw", keep.source=FALSE),
+  > to get the former behavior, right?
+
+Or insert \SweaveOpts{keep.source=FALSE} in the vignette or set the
+global default for R via options() or whatever -> that is yet to be
+implemented and one of the goals of this discussion is to see what is
+the best way in terms of least work for developers.
+
+  > It may still be debatable whether keep.source=TRUE is a desirable default.
+  > It does propagate comments, but Sweave is supporting literate programming,
+  > so that comments in code are not necessarily crucial for the objective
+  > of the Sweave user.  The document narrative is supposed to take care
+  > of commenting.  It is also not clear to me that keeping the source
+  > formatting is preferable to the programmatic formatting by the interpreter
+  > display facility.
+
+  > So I would say there are real questions about the suitability of
+  > keep.source=TRUE as a default for Sweave.  The availability is
+  > definitely nice, but the spirit and aesthetic aspects of Sweave
+  > use may be better supported in many cases, perhaps the vast
+  > majority of all documents created to date, with keep.source=FALSE.
+
+I agree on the comments part, i.e., that comments in code chunks
+should not be so much necessary as in standard R code. One exception
+is inside function definitions where the can be very usefull.
+
+Ad source formatting: If you use a smart editor with automatic
+indentation etc then human formatting is better than what the machine
+does in many cases (depends on the human, of course). I tend to break
+lines at points where it makes sense content-wise to group arguments
+of a function on one line that belong together. E.g., for a plot
+statment one line contains the data, the next line all axis
+annotation, etc.
+
+
+  >> 
+  >> As discussed by email this summer on r-devel I want to change another
+  >> Sweave default for 2.5: I want to set stylepath=FALSE and include no
+  >> \usepackage{/path/to/Sweave.sty} by default. This means in effect that
+  >> each Sweave file needs to be adapted, by either inserting
+  >> \usepackage{Sweave} or \SweaveOpts{stylepath=true} in the header. I
+  >> didn't implement the changes back then because the discussion was too
+  >> close to feature freeze.
+  >> 
+  >> I also will do some other Sweave changes over christmas break, but
+  >> those should all be safe, i.e., only add functionality.
+  >> 
+  >> Before people now start yelling at me: We can only improve software,
+  >> if we are allowed to change it and/or fix behavior that can be
+  >> considered a bug. And the paths inserted on Windows machines in an
+  >> English locale are buggy (and were so ever since ...).
+
+  > In the past windows users had to do something to deal with undesirable
+  > latex resource path generation with Sweave, I have some recollection
+  > of that.  Now all users have to do something to get the old
+  > behavior?
+
+No. I will implement an options setting for Sweave, i.e., you define
+what you want once in your .Rprofile and are done. 
+
+
+  > Is it not possible to fix the windows path generation problem at
+  > the R level instead?
+
+It is not an R problem, but a latex problem: The default path to an R
+installation on an *English* windows machine (path depends on
+language) is
+
+  C:\Program Files\R\... 
+
+and the blank is something latex cannot handle.
+
+Best,
+Fritz
+
+
+From friedrich.leisch at stat.uni-muenchen.de  Wed Dec  6 12:16:33 2006
+From: friedrich.leisch at stat.uni-muenchen.de (Friedrich Leisch)
+Date: Wed, 6 Dec 2006 12:16:33 +0100
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <4575D53C.7090908@stats.uwo.ca>
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<45747B16.6030505@stats.uwo.ca> <m27ix7ryna.fsf_-_@ziti.local>
+	<45758FC6.7080806@ebi.ac.uk>
+	<34964.218.212.98.77.1165337134.squirrel@www.altern.org>
+	<b796582f0612051124i4c195ef8w8208b42113bda553@mail.gmail.com>
+	<4575D53C.7090908@stats.uwo.ca>
+Message-ID: <17782.42641.660329.909908@celebrian.ci.tuwien.ac.at>
+
+>>>>> On Tue, 05 Dec 2006 15:23:24 -0500,
+>>>>> Duncan Murdoch (DM) wrote:
+
+  > Right, that's what we want to do.  But I want an easier way for someone 
+  > with an existing document to get the old behaviour.
+
+
+My plan would be the following:
+
+1) Set the default of all Sweave options via options(), such that it
+   can be changed in the Rprofile of a site-wide installation or in a
+   user's ~/.Rprofile file or even on a per-directory basis. This will
+   also result in R CMD build reading the desired defaults.
+
+2) Have something like
+	R CMD Sweave --opts "additional args passed to Sweave() call"
+   to be able to override it even from the shell.
+
+If BioC decides to default to keep.source=FALSE and stylepath=TRUE
+then it will not be necessary to touch any existing vignettes. R CMD
+check and build currently run R --vanilla and hence ignore the stuff in
+1), so will need changes there, too. But nothing that's not doable,
+I'll give it a shot over Christmas break. 
+
+Best,
+Fritz
+
+
+From friedrich.leisch at stat.uni-muenchen.de  Wed Dec  6 14:48:06 2006
+From: friedrich.leisch at stat.uni-muenchen.de (Friedrich Leisch)
+Date: Wed, 6 Dec 2006 14:48:06 +0100
+Subject: [Bioc-devel] [biocore] Sweave changes (keep.source = TRUE or
+	FALSE?)
+In-Reply-To: <Pine.LNX.4.64.0612061130040.6922@gannet.stats.ox.ac.uk>
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<Pine.GSO.4.58.0612051221530.26010@capecod.bwh.harvard.edu>
+	<17782.40551.653787.395685@celebrian.ci.tuwien.ac.at>
+	<Pine.LNX.4.64.0612061130040.6922@gannet.stats.ox.ac.uk>
+Message-ID: <17782.51734.662625.758748@celebrian.ci.tuwien.ac.at>
+
+>>>>> On Wed, 6 Dec 2006 11:32:25 +0000 (GMT),
+>>>>> Prof Brian Ripley (PBR) wrote:
+
+[...]
+
+  >> > Is it not possible to fix the windows path generation problem at
+  >> > the R level instead?
+  >> 
+  >> It is not an R problem, but a latex problem: The default path to an R
+  >> installation on an *English* windows machine (path depends on
+  >> language) is
+  >> 
+  >> C:\Program Files\R\...
+  >> 
+  >> and the blank is something latex cannot handle.
+
+  > In Windows R, use shortPathName():
+
+Been there, seen that ;-(
+
+Then you get tildes in your path, which latex doesn't like
+either. That was the discussion which we had in August, see
+
+  http://tolstoy.newcastle.edu.au/R/devel/06/08/6675.html
+  http://tolstoy.newcastle.edu.au/R/devel/06/08/6697.html
+
+and the thread leading to those two. I did look for *reliable*
+alternatives, but found none and hence want to follow your advice and
+stop *automatically* inserting a path which will most likely not work
+on the platform most users have.
+
+
+Best,
+Fritz
+
+
+From friedrich.leisch at stat.uni-muenchen.de  Wed Dec  6 17:07:03 2006
+From: friedrich.leisch at stat.uni-muenchen.de (Friedrich Leisch)
+Date: Wed, 6 Dec 2006 17:07:03 +0100
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <45758FC6.7080806@ebi.ac.uk>
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<45747B16.6030505@stats.uwo.ca> <m27ix7ryna.fsf_-_@ziti.local>
+	<45758FC6.7080806@ebi.ac.uk>
+Message-ID: <17782.60071.851707.496913@celebrian.ci.tuwien.ac.at>
+
+>>>>> On Tue, 05 Dec 2006 15:27:02 +0000,
+>>>>> Wolfgang Huber (WH) wrote:
+
+[...]
+
+  > This discussion seems to move into the direction of having different
+  > "flavours" of R. In addition to --vanilla, we could add a --bioc
+  > flavour. Alternatively, a really minimal "Biobase"-type package that
+  > needs to be loaded for any use with Bioconductor and contained such
+  > goodies as setting the Sweave default behaviour and the biocLite script?
+
+  > I am not sure whether this a direction that we really want to take, and
+  > I am here not suggesting actually taking it, but isn't this the logical
+  > consequence?
+
+Unfortunately yes ... but I'd say this is a more general problem and
+may also apply a to other user groups, so I would not hardcode a
+--bioc exception into the code.
+
+IMO R must be allowed to change, but if possible it should be easy to
+protect yourself against changes when possible. I always considered
+the parse&deparse behavior of Sweave a bug for which I had no simple
+solution (and am somewhat surprised that there are people who think it
+is a feature). So now that the bug is fixed, it would be natural for
+me to make that available as default.
+
+The unix way of solving something like that is having site-wide
+configuration files which the sysadmin sets for all users. R has the
+same concept, but R CMD check and build do not use it (to make the
+process as portable as possible). That behavior is good as a default,
+but we should allow users and sysadmins to override it, i.e., load
+other configurations especially in R CMD build.
+
+The basic concept was always that
+
+1) The author runs R CMD build, and it is OK if that works only on the
+   author's machine, especially for vignettes. It is strange the
+   building vignettes finds and happily uses the local TeX
+   configuration including style and bibtes files, but ignores the
+   local R configuration.
+
+2) Everybody, especially repositories, should be able to run R CMD
+   check on a package.
+
+I'd propose to fix 1) in R 2.5.0, i.e., add an option --no-vanilla to
+R CMD build such that local configurations are read.
+
+Best,
+Fritz
+
+
+From krc at mdacc.tmc.edu  Wed Dec  6 19:37:22 2006
+From: krc at mdacc.tmc.edu (Kevin R. Coombes)
+Date: Wed, 06 Dec 2006 12:37:22 -0600
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <17782.60071.851707.496913@celebrian.ci.tuwien.ac.at>
+References: <456CEE70.6040709@stats.uwo.ca>	<17775.59614.963640.147491@stat.math.ethz.ch>	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>	<45747B16.6030505@stats.uwo.ca>
+	<m27ix7ryna.fsf_-_@ziti.local>	<45758FC6.7080806@ebi.ac.uk>
+	<17782.60071.851707.496913@celebrian.ci.tuwien.ac.at>
+Message-ID: <45770DE2.7080801@mdacc.tmc.edu>
+
+Hi,
+
+I don't really think anyone believes that the parse&deparse behavior was 
+exactly a "feature". Instead, I think the primary issue is one of 
+backwards compatibility.
+
+You are proposing to change the behavior of Sweave in a manner that will 
+cause old code to break. Here "break" has two meanings. Some automatic 
+development tools will stop working on existing valid code.  In 
+addition, existing valid code will produce results that differ from what 
+they produced previously.
+
+To deal with this, you are going to add an option that will allow users 
+to get the old behavior.  However, you propose to set the default value 
+of the option to require users to go back and modify all their old code 
+in order to prevent things from breaking. It seems obvious to me that 
+the default behavior should be the one that does not break old code or 
+require the editing of old code in order to get the old behavior.
+
+The reason I use Sweave (for virtually every analysis I do any more) is 
+that I can guarantee that when I can go back to the code six months from 
+now, I can regenerate the analysis and I can regenerate the 
+documentation, and I know that I will get the same results. Changing the 
+default behavior of Sweave violates that guarantee, since the 
+documentation will not be identical to what it was before. Personally, I 
+am willing to pay the cost with NEW analyses to invoke the new behavior 
+explicitly (which I do agree is the preferred behavior) because I think 
+the goal of backwards compatibility is more important.
+
+In other words, I disagree with your characterization of the 
+parse&deparse behavior as a "bug".  It did not cause incorrect results 
+in the documentation or the code, and everyone using Sweave knew about 
+the behavior.
+
+Best,
+	Kevin
+
+Friedrich Leisch wrote:
+>>>>>> On Tue, 05 Dec 2006 15:27:02 +0000,
+>>>>>> Wolfgang Huber (WH) wrote:
+> 
+> [...]
+> 
+> IMO R must be allowed to change, but if possible it should be easy to
+> protect yourself against changes when possible. I always considered
+> the parse&deparse behavior of Sweave a bug for which I had no simple
+> solution (and am somewhat surprised that there are people who think it
+> is a feature). So now that the bug is fixed, it would be natural for
+> me to make that available as default.
+> 
+> [...]
+
+> Best,
+> Fritz
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From murdoch at stats.uwo.ca  Wed Dec  6 19:56:24 2006
+From: murdoch at stats.uwo.ca (Duncan Murdoch)
+Date: Wed, 06 Dec 2006 13:56:24 -0500
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <45770DE2.7080801@mdacc.tmc.edu>
+References: <456CEE70.6040709@stats.uwo.ca>	<17775.59614.963640.147491@stat.math.ethz.ch>	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>	<45747B16.6030505@stats.uwo.ca>
+	<m27ix7ryna.fsf_-_@ziti.local>	<45758FC6.7080806@ebi.ac.uk>
+	<17782.60071.851707.496913@celebrian.ci.tuwien.ac.at>
+	<45770DE2.7080801@mdacc.tmc.edu>
+Message-ID: <45771258.1080607@stats.uwo.ca>
+
+On 12/6/2006 1:37 PM, Kevin R. Coombes wrote:
+> Hi,
+> 
+> I don't really think anyone believes that the parse&deparse behavior was 
+> exactly a "feature". Instead, I think the primary issue is one of 
+> backwards compatibility.
+> 
+> You are proposing to change the behavior of Sweave in a manner that will 
+> cause old code to break. Here "break" has two meanings. Some automatic 
+> development tools will stop working on existing valid code.  In 
+> addition, existing valid code will produce results that differ from what 
+> they produced previously.
+
+I'm not sure what you're thinking of here.  Could you give examples of
+these?
+
+I think you're talking about my change that puts source code in place of
+deparsed code rather than Fritz's stylepath change.  The intention of
+the deparsed code has been that it parses to the same thing as the
+original code did, so I don't see how you will get different results.
+The code will print differently, but will have identical meaning; is
+that what concerns you?
+
+> To deal with this, you are going to add an option that will allow users 
+> to get the old behavior.  However, you propose to set the default value 
+> of the option to require users to go back and modify all their old code 
+> in order to prevent things from breaking. It seems obvious to me that 
+> the default behavior should be the one that does not break old code or 
+> require the editing of old code in order to get the old behavior.
+> 
+> The reason I use Sweave (for virtually every analysis I do any more) is 
+> that I can guarantee that when I can go back to the code six months from 
+> now, I can regenerate the analysis and I can regenerate the 
+> documentation, and I know that I will get the same results. 
+
+But you don't have a guarantee that you will get identical formatting,
+because the deparser in R might change its formatting, the functions you
+use might change their formatting, LaTeX might change its formatting,
+etc.  With the keep.source=TRUE option, you'll be at least guaranteed
+that your source won't change again.
+
+Duncan Murdoch
+
+Changing the
+> default behavior of Sweave violates that guarantee, since the 
+> documentation will not be identical to what it was before. Personally, I 
+> am willing to pay the cost with NEW analyses to invoke the new behavior 
+> explicitly (which I do agree is the preferred behavior) because I think 
+> the goal of backwards compatibility is more important.
+> 
+> In other words, I disagree with your characterization of the 
+> parse&deparse behavior as a "bug".  It did not cause incorrect results 
+> in the documentation or the code, and everyone using Sweave knew about 
+> the behavior.
+> 
+> Best,
+> 	Kevin
+> 
+> Friedrich Leisch wrote:
+>>>>>>> On Tue, 05 Dec 2006 15:27:02 +0000,
+>>>>>>> Wolfgang Huber (WH) wrote:
+>> 
+>> [...]
+>> 
+>> IMO R must be allowed to change, but if possible it should be easy to
+>> protect yourself against changes when possible. I always considered
+>> the parse&deparse behavior of Sweave a bug for which I had no simple
+>> solution (and am somewhat surprised that there are people who think it
+>> is a feature). So now that the bug is fixed, it would be natural for
+>> me to make that available as default.
+>> 
+>> [...]
+> 
+>> Best,
+>> Fritz
+>> 
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From deepayan.sarkar at gmail.com  Wed Dec  6 23:09:07 2006
+From: deepayan.sarkar at gmail.com (Deepayan Sarkar)
+Date: Wed, 6 Dec 2006 14:09:07 -0800
+Subject: [Bioc-devel] [biocore] Sweave changes (keep.source = TRUE or
+	FALSE?)
+In-Reply-To: <17782.40551.653787.395685@celebrian.ci.tuwien.ac.at>
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<Pine.GSO.4.58.0612051221530.26010@capecod.bwh.harvard.edu>
+	<17782.40551.653787.395685@celebrian.ci.tuwien.ac.at>
+Message-ID: <eb555e660612061409m13a5cb80he0364381f1126598@mail.gmail.com>
+
+On 12/6/06, Friedrich Leisch <friedrich.leisch at stat.uni-muenchen.de> wrote:
+>
+> [ resent to bioc-devel upon request from Seth ]
+>
+> >>>>> On Tue, 5 Dec 2006 13:17:14 -0500 (EST),
+> >>>>> Vincent Carey 525-2265 (VC5) wrote:
+>
+>   >>
+>   >> Sorry to join in late, I was travelling last week. First, let me thank
+>   >> Duncan for his work, this really fixes one of the main drawbacks
+>   >> Sweave had!
+>   >>
+>   >> Hence, I agree with Duncan and Martin in that I would like to change
+>   >> the default in R to keep.source=TRUE. But I understand Robert that
+>   >> testing software gets hard if the tools which are used for testing
+>   >> change.
+>
+>   > It seems to me that if you are changing the API/behavior then we users have
+>   > to adapt to that, given sufficient warning.  This means that instead of
+>   > Sweave("foo.Rnw"), I have to write Sweave("foo.Rnw", keep.source=FALSE),
+>   > to get the former behavior, right?
+>
+> Or insert \SweaveOpts{keep.source=FALSE} in the vignette or set the
+> global default for R via options() or whatever -> that is yet to be
+> implemented and one of the goals of this discussion is to see what is
+> the best way in terms of least work for developers.
+>
+>   > It may still be debatable whether keep.source=TRUE is a desirable default.
+>   > It does propagate comments, but Sweave is supporting literate programming,
+>   > so that comments in code are not necessarily crucial for the objective
+>   > of the Sweave user.  The document narrative is supposed to take care
+>   > of commenting.  It is also not clear to me that keeping the source
+>   > formatting is preferable to the programmatic formatting by the interpreter
+>   > display facility.
+>
+>   > So I would say there are real questions about the suitability of
+>   > keep.source=TRUE as a default for Sweave.  The availability is
+>   > definitely nice, but the spirit and aesthetic aspects of Sweave
+>   > use may be better supported in many cases, perhaps the vast
+>   > majority of all documents created to date, with keep.source=FALSE.
+>
+> I agree on the comments part, i.e., that comments in code chunks
+> should not be so much necessary as in standard R code. One exception
+> is inside function definitions where the can be very usefull.
+>
+> Ad source formatting: If you use a smart editor with automatic
+> indentation etc then human formatting is better than what the machine
+> does in many cases (depends on the human, of course).
+
+I think that's a big "if", and it relates to Wolfgang and Vince's
+point: does it really make sense to make keep.source=TRUE the default?
+Once upon a time, I would have agreed with you that the parse-deparse
+behaviour is less desirable, but now I'm not so sure. Prof Ripley
+addresses this point in this post from a year ago:
+
+https://stat.ethz.ch/pipermail/r-help/2005-December/084199.html
+
+where he in particular quotes section 3.1 (Tidying R code) of the
+'Writing R Extensions' manual:
+
+   This tidied version is much easier to read, not least by other users
+   who are used to the standard format.
+
+I think this applies all the more to Sweave documents, which are by
+nature intended to be read by others.
+
+There's another issue which no one has raised, which is that of
+wrapping. With keep.source=TRUE, there's no check that lines don't get
+too long (not that deparse does that great a job at it, but at least
+it's something). Do we really want a default where there is no such
+check? To me, it seems that one of the major points of a LaTeX-like
+typesetting system is automatic formatting by default.
+
+Of course, I would personally use keep.source=TRUE in all my
+documents, because I do use a smart editor with automatic indentation,
+and I have the relevant snippets from
+
+http://cran.r-project.org/doc/manuals/R-ints.html#R-coding-standards and
+http://www.ci.tuwien.ac.at/~leisch/Sweave/sweave-site.el
+
+in my .emacs file. However, anyone with similar coding practices is
+also likely to be sophisticated enough to know to put a \SweaveOpts{}
+line on top of his or her .Rnw files. I don't think the same can be
+said of more casual R coders.
+
+-Deepayan
+
+[...]
+
+
+From rgentlem at fhcrc.org  Thu Dec  7 04:24:39 2006
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Wed, 6 Dec 2006 19:24:39 -0800
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <17782.42641.660329.909908@celebrian.ci.tuwien.ac.at>
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<45747B16.6030505@stats.uwo.ca> <m27ix7ryna.fsf_-_@ziti.local>
+	<45758FC6.7080806@ebi.ac.uk>
+	<34964.218.212.98.77.1165337134.squirrel@www.altern.org>
+	<b796582f0612051124i4c195ef8w8208b42113bda553@mail.gmail.com>
+	<4575D53C.7090908@stats.uwo.ca>
+	<17782.42641.660329.909908@celebrian.ci.tuwien.ac.at>
+Message-ID: <b796582f0612061924q66b7545cp913a2755e48f07fe@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+Url: https://stat.ethz.ch/pipermail/bioc-devel/attachments/20061206/6d5cf5a5/attachment.pl 
+
+From friedrich.leisch at stat.uni-muenchen.de  Thu Dec  7 12:00:02 2006
+From: friedrich.leisch at stat.uni-muenchen.de (Friedrich Leisch)
+Date: Thu, 7 Dec 2006 12:00:02 +0100
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <45770DE2.7080801@mdacc.tmc.edu>
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<45747B16.6030505@stats.uwo.ca> <m27ix7ryna.fsf_-_@ziti.local>
+	<45758FC6.7080806@ebi.ac.uk>
+	<17782.60071.851707.496913@celebrian.ci.tuwien.ac.at>
+	<45770DE2.7080801@mdacc.tmc.edu>
+Message-ID: <17783.62514.186419.33021@celebrian.ci.tuwien.ac.at>
+
+>>>>> On Wed, 06 Dec 2006 12:37:22 -0600,
+>>>>> Kevin R Coombes (KRC) wrote:
+
+  > Hi,
+  > I don't really think anyone believes that the parse&deparse behavior was 
+  > exactly a "feature". Instead, I think the primary issue is one of 
+  > backwards compatibility.
+
+  > You are proposing to change the behavior of Sweave in a manner that will 
+  > cause old code to break. Here "break" has two meanings. Some automatic 
+  > development tools will stop working on existing valid code.  In 
+  > addition, existing valid code will produce results that differ from what 
+  > they produced previously.
+
+  > To deal with this, you are going to add an option that will allow users 
+  > to get the old behavior.  However, you propose to set the default value 
+  > of the option to require users to go back and modify all their old code 
+  > in order to prevent things from breaking. It seems obvious to me that 
+  > the default behavior should be the one that does not break old code or 
+  > require the editing of old code in order to get the old behavior.
+
+  > The reason I use Sweave (for virtually every analysis I do any more) is 
+  > that I can guarantee that when I can go back to the code six months from 
+  > now, I can regenerate the analysis and I can regenerate the 
+  > documentation, and I know that I will get the same results. Changing the 
+  > default behavior of Sweave violates that guarantee, since the 
+  > documentation will not be identical to what it was before. Personally, I 
+  > am willing to pay the cost with NEW analyses to invoke the new behavior 
+  > explicitly (which I do agree is the preferred behavior) because I think 
+  > the goal of backwards compatibility is more important.
+
+  > In other words, I disagree with your characterization of the 
+  > parse&deparse behavior as a "bug".  It did not cause incorrect results 
+  > in the documentation or the code, and everyone using Sweave knew about 
+  > the behavior.
+
+Give me a break, that is simply nonsense. Sweave guarantees that you
+can reproduce your results USING THE VERSION OF R THAT WAS USED FOR
+THE ORIGINAL ANALYSIS, and that will still be true, because in R 2.4.x
+there is no option keep.source.  Running a new version of R means
+dozens of R functions will have changed, plotting functions may yield
+figures that look different etc. etc. ... what you propose is in
+essence that we are not allowed to change the default behaviour of ANY
+R FUNCTION. Is that what you are proposing?
+
+And note that the changes I propose will not change any numerical
+results or figures, nor will I "break code", the only thing that
+changes is that the formatting of input lines looks different (and in
+most cases better, that's why we want to do it).
+
+It's not like I am changing Sweave behavior every other week, actually
+it is the first one at all. I have thought a lot whether I want to do
+it or not, and I really think it is a good idea. What is great about R
+is that it is allowed to change (if changes are transparent and
+announced early enough). There is a certain operation system with a
+market share of about 90% where backwards compatibility is more
+important than development or security, and I don'tthink that should
+be our role model.
+
+Best,
+Fritz
+
+
+From murdoch at stats.uwo.ca  Thu Dec  7 12:04:58 2006
+From: murdoch at stats.uwo.ca (Duncan Murdoch)
+Date: Thu, 07 Dec 2006 06:04:58 -0500
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <b796582f0612061924q66b7545cp913a2755e48f07fe@mail.gmail.com>
+References: <456CEE70.6040709@stats.uwo.ca>	
+	<17775.59614.963640.147491@stat.math.ethz.ch>	
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>	
+	<45747B16.6030505@stats.uwo.ca> <m27ix7ryna.fsf_-_@ziti.local>	
+	<45758FC6.7080806@ebi.ac.uk>	
+	<34964.218.212.98.77.1165337134.squirrel@www.altern.org>	
+	<b796582f0612051124i4c195ef8w8208b42113bda553@mail.gmail.com>	
+	<4575D53C.7090908@stats.uwo.ca>	
+	<17782.42641.660329.909908@celebrian.ci.tuwien.ac.at>
+	<b796582f0612061924q66b7545cp913a2755e48f07fe@mail.gmail.com>
+Message-ID: <4577F55A.9060603@stats.uwo.ca>
+
+On 12/6/2006 10:24 PM, Robert Gentleman wrote:
+> On 12/6/06, Friedrich Leisch <friedrich.leisch at stat.uni-muenchen.de> wrote:
+>>>>>>> On Tue, 05 Dec 2006 15:23:24 -0500,
+>>>>>>> Duncan Murdoch (DM) wrote:
+>>   > Right, that's what we want to do.  But I want an easier way for
+>> someone
+>>   > with an existing document to get the old behaviour.
+>>
+>>
+>> My plan would be the following:
+>>
+>> 1) Set the default of all Sweave options via options(), such that it
+>>    can be changed in the Rprofile of a site-wide installation or in a
+>>    user's ~/.Rprofile file or even on a per-directory basis. This will
+>>    also result in R CMD build reading the desired defaults.
+> 
+> 
+> 
+>   I guess I don't see how this would work, or just what value there would be
+> in it. Typically global options are useful for things that are entirely
+> under the control of the user.
+>   For Sweave, I hope that all attributes are directly under the control of
+> the author. The user must respect the choices of the author to see the
+> document as intended and so I guess I am missing how this idea would be of
+> any use.
+
+The plan is just about setting the defaults.  If the author cared to set 
+a specific value that would be respected.
+
+For people like you with existing vignettes, there would be changes to 
+the formatting (assuming we follow Fritz's and my proposal to change the 
+default from the old keep.source=FALSE value) because you wouldn't have 
+known to set this option before it existed, and that's a valid concern. 
+  I'm not sure Fritz's proposal would help you to make a single small 
+change to your package so that all vignettes in it follow the old 
+convention.  Currently you need to make a per-vignette change (and could 
+make per-chunk changes if you want).
+
+>   Whether keep.source is TRUE or FALSE needs to be honored on either a per
+> document (or more realistically per chunk) basis. And so that is what R CMD
+> build is going to need to deal with appropriately.
+
+That's already in place (per chunk settings overriding per document 
+settings overriding Sweave call settings), and I don't think there are 
+plans to change it.
+
+>   Some options may of course be such that a global switch is fine, but if
+> you do it via options then some package authors may feel that they have a
+> right to set the options for their package - this is one reason why global
+> options are seldom that good of an idea.
+> 
+> 2) Have something like
+>>         R CMD Sweave --opts "additional args passed to Sweave() call"
+>>    to be able to override it even from the shell.
+> 
+> 
+> 
+>   Again, I just don't see how this is a good idea. Every document needs to
+> have its own explicit handling instructions for all chunks. It makes no
+> sense to let me process the document differently from what the author wants
+> or requires.
+> 
+>   The only thing that is up for grabs is the default setting - what to do it
+> nothing is specified.
+> Documents that want that need specify nothing, everyone else has to modify
+> their document to explicitly state handling instructions.  If something is
+> specified, at either the document or chunk level it ought to be honored. The
+> idea that different people might decide to process it differently seems not
+> very useful to me.
+
+That's not being suggested, Fritz was just talking about the default case.
+
+Duncan Murdoch
+> 
+> 
+> 
+> If BioC decides to default to keep.source=FALSE and stylepath=TRUE
+>> then it will not be necessary to touch any existing vignettes. R CMD
+>> check and build currently run R --vanilla and hence ignore the stuff in
+>> 1), so will need changes there, too. But nothing that's not doable,
+>> I'll give it a shot over Christmas break.
+>>
+>> Best,
+>> Fritz
+>>
+>>
+>>
+>>
+> 
+>
+
+
+From friedrich.leisch at stat.uni-muenchen.de  Thu Dec  7 12:26:06 2006
+From: friedrich.leisch at stat.uni-muenchen.de (Friedrich Leisch)
+Date: Thu, 7 Dec 2006 12:26:06 +0100
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <b796582f0612061924q66b7545cp913a2755e48f07fe@mail.gmail.com>
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<45747B16.6030505@stats.uwo.ca> <m27ix7ryna.fsf_-_@ziti.local>
+	<45758FC6.7080806@ebi.ac.uk>
+	<34964.218.212.98.77.1165337134.squirrel@www.altern.org>
+	<b796582f0612051124i4c195ef8w8208b42113bda553@mail.gmail.com>
+	<4575D53C.7090908@stats.uwo.ca>
+	<17782.42641.660329.909908@celebrian.ci.tuwien.ac.at>
+	<b796582f0612061924q66b7545cp913a2755e48f07fe@mail.gmail.com>
+Message-ID: <17783.64078.642623.834407@celebrian.ci.tuwien.ac.at>
+
+>>>>> On Wed, 6 Dec 2006 19:24:39 -0800,
+>>>>> Robert Gentleman (RG) wrote:
+
+  > On 12/6/06, Friedrich Leisch <friedrich.leisch at stat.uni-muenchen.de> wrote:
+  >> 
+  >> >>>>> On Tue, 05 Dec 2006 15:23:24 -0500,
+  >> >>>>> Duncan Murdoch (DM) wrote:
+  >> 
+  >> > Right, that's what we want to do.  But I want an easier way for
+  >> someone
+  >> > with an existing document to get the old behaviour.
+  >> 
+  >> 
+  >> My plan would be the following:
+  >> 
+  >> 1) Set the default of all Sweave options via options(), such that it
+  >> can be changed in the Rprofile of a site-wide installation or in a
+  >> user's ~/.Rprofile file or even on a per-directory basis. This will
+  >> also result in R CMD build reading the desired defaults.
+
+
+
+  >   I guess I don't see how this would work, or just what value there would be
+  > in it. Typically global options are useful for things that are entirely
+  > under the control of the user.
+  >   For Sweave, I hope that all attributes are directly under the control of
+  > the author. The user must respect the choices of the author to see the
+  > document as intended and so I guess I am missing how this idea would be of
+  > any use.
+
+
+Yes, I thought so, too, that's why you currently can set defaults for
+the options within a document using \SweaveOpts{}, but not for an R
+session using options(). That was a design choice, not just oversight.
+
+But then somebody told me it cannot be expected from authors to insert
+a single line into their document and we need a solution where 200
+vignettes of a certain project, where the vignettes are built
+centrally, could be controlled without touching the documents. Well,
+if I don't change the documents, I have to change the configuration of
+the machines where the vignettes are built.
+
+But I must admit I am tired of this discussion, I never anticipated
+how much resistance something would provoke where I think it really is
+a feature, and I'll leave the defaults as they are now. It's not too
+hard to program emacs to insert an \SweaveOpts{keep.source=TRUE} into
+every .Rnw file I start to write.
+
+But what I do anticipate is that we will have a lot of fun developing
+R beyond what it is now, because obviously we are at a point where we
+are no longer allowed to improve it, when that means breaking
+backwards compatibility. Finally one of the main curses of commercial
+software has reached us.
+
+Note: I got only one serious email (the one by Deepayan I'll answer in
+a minute) that keep.source=FALSE produces better looking documents in
+some cases, and that's a discussion I like.  All other complaints
+where simply of the form "we can't change it because it has always
+been the way that it is". I thought that rule is not necessarily true
+in a research project like R.
+
+.f
+
+
+From krc at mdacc.tmc.edu  Thu Dec  7 16:13:19 2006
+From: krc at mdacc.tmc.edu (Kevin R. Coombes)
+Date: Thu, 07 Dec 2006 09:13:19 -0600
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <17783.62514.186419.33021@celebrian.ci.tuwien.ac.at>
+References: <456CEE70.6040709@stats.uwo.ca>	<17775.59614.963640.147491@stat.math.ethz.ch>	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>	<45747B16.6030505@stats.uwo.ca>	<m27ix7ryna.fsf_-_@ziti.local>	<45758FC6.7080806@ebi.ac.uk>	<17782.60071.851707.496913@celebrian.ci.tuwien.ac.at>	<45770DE2.7080801@mdacc.tmc.edu>
+	<17783.62514.186419.33021@celebrian.ci.tuwien.ac.at>
+Message-ID: <45782F8F.3030202@mdacc.tmc.edu>
+
+One of the problems I have with using R and BioConductor is that 
+backwards compatibility rarely seems to be considered when new versions 
+are released.  (That statement may be wrong, but it is the impression I 
+have formed from watching things change over time.) Someone gets an idea 
+for a structural change that can potentially break tons of existing 
+code, and because it is theoretically better (and may even really be 
+better; that's not the point), they go ahead and  implement the change. 
+And when some poor user raises a question on one of these mailing lists, 
+the most common answer seems to be "upgrade to the latest versions of R 
+and BioConductor, and modify your code accordingly".  And then do it 
+again next quarter.
+
+By contrast, I have documents written in TeX in the early 1980's that 
+still compile and still produce EXACTLY the same output. And I still 
+have a lot of old perl scripts that still do exactly what they are 
+supposed to do.  In those cases, Donald Knuth and Larry Wall have acted 
+as "benevolent dictators" who insist that the people proposing changes 
+have to at least give serious thought to how to ensure that existing 
+code doesn't break.
+
+I suspect my reaction to the proposed changes in Sweave results 
+precisely because I like Sweave so much, and use it for every I analysis 
+I perform.  Its primary virtue is for the production of documents that 
+will need to remain available for a long time. That's why I want the 
+documentation and the code in the same file, after all, so I can return 
+to it when it's time to write the methods section to the manuscript that 
+resulted from all those computations. And I can return to it again when 
+someone sends me a question after the paper gets published. And by that 
+time, I will probably have upgraded R and BioConductor, and I want the 
+figures that I generate tomorrow to still be the same as the figures I 
+sent to the publisher yesterday. And if I generated the actual PDF that 
+I sent to the publisher from an Sweave file and if it includes code 
+samples, then I don't want those code samples to change in the PDF file 
+I produce tomorrow.
+
+And yes; I do propose not changing the DEFAULT behavior of any existing 
+function. That's what backwards compatibility means.  If you add 
+additional features and you are going to put in an option to let the 
+user control the behavior anyway, then the default option should ensure 
+that code that works now will continue to produce the same results in 
+the future. Even in new versions of R. Even in new versions of 
+BioConductor.
+
+Best,
+	Kevin
+
+Friedrich Leisch wrote:
+>>>>>> On Wed, 06 Dec 2006 12:37:22 -0600,
+>>>>>> Kevin R Coombes (KRC) wrote:
+> 
+>   > Hi,
+>   > I don't really think anyone believes that the parse&deparse behavior was 
+>   > exactly a "feature". Instead, I think the primary issue is one of 
+>   > backwards compatibility.
+> 
+>   > You are proposing to change the behavior of Sweave in a manner that will 
+>   > cause old code to break. Here "break" has two meanings. Some automatic 
+>   > development tools will stop working on existing valid code.  In 
+>   > addition, existing valid code will produce results that differ from what 
+>   > they produced previously.
+> 
+>   > To deal with this, you are going to add an option that will allow users 
+>   > to get the old behavior.  However, you propose to set the default value 
+>   > of the option to require users to go back and modify all their old code 
+>   > in order to prevent things from breaking. It seems obvious to me that 
+>   > the default behavior should be the one that does not break old code or 
+>   > require the editing of old code in order to get the old behavior.
+> 
+>   > The reason I use Sweave (for virtually every analysis I do any more) is 
+>   > that I can guarantee that when I can go back to the code six months from 
+>   > now, I can regenerate the analysis and I can regenerate the 
+>   > documentation, and I know that I will get the same results. Changing the 
+>   > default behavior of Sweave violates that guarantee, since the 
+>   > documentation will not be identical to what it was before. Personally, I 
+>   > am willing to pay the cost with NEW analyses to invoke the new behavior 
+>   > explicitly (which I do agree is the preferred behavior) because I think 
+>   > the goal of backwards compatibility is more important.
+> 
+>   > In other words, I disagree with your characterization of the 
+>   > parse&deparse behavior as a "bug".  It did not cause incorrect results 
+>   > in the documentation or the code, and everyone using Sweave knew about 
+>   > the behavior.
+> 
+> Give me a break, that is simply nonsense. Sweave guarantees that you
+> can reproduce your results USING THE VERSION OF R THAT WAS USED FOR
+> THE ORIGINAL ANALYSIS, and that will still be true, because in R 2.4.x
+> there is no option keep.source.  Running a new version of R means
+> dozens of R functions will have changed, plotting functions may yield
+> figures that look different etc. etc. ... what you propose is in
+> essence that we are not allowed to change the default behaviour of ANY
+> R FUNCTION. Is that what you are proposing?
+> 
+> And note that the changes I propose will not change any numerical
+> results or figures, nor will I "break code", the only thing that
+> changes is that the formatting of input lines looks different (and in
+> most cases better, that's why we want to do it).
+> 
+> It's not like I am changing Sweave behavior every other week, actually
+> it is the first one at all. I have thought a lot whether I want to do
+> it or not, and I really think it is a good idea. What is great about R
+> is that it is allowed to change (if changes are transparent and
+> announced early enough). There is a certain operation system with a
+> market share of about 90% where backwards compatibility is more
+> important than development or security, and I don'tthink that should
+> be our role model.
+> 
+> Best,
+> Fritz
+
+
+From nettela at telus.net  Thu Dec  7 17:19:21 2006
+From: nettela at telus.net (Alberto Nettel-Aguirre)
+Date: Thu,  7 Dec 2006 08:19:21 -0800
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <17783.62514.186419.33021@celebrian.ci.tuwien.ac.at>
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<45747B16.6030505@stats.uwo.ca> <m27ix7ryna.fsf_-_@ziti.local>
+	<45758FC6.7080806@ebi.ac.uk>
+	<17782.60071.851707.496913@celebrian.ci.tuwien.ac.at>
+	<45770DE2.7080801@mdacc.tmc.edu>
+	<17783.62514.186419.33021@celebrian.ci.tuwien.ac.at>
+Message-ID: <1165508361.45783f0914877@webmail.telus.net>
+
+Hello, I am not one of the developers, but I am surely one of the users of R and
+Sweave in the academic world. I rarely reply to the thread as I have not much to
+say, but I do read much of what is happening.
+
+I agree with Friedrich. I think we (as users) have to appreciate the effort that
+has gone into developing both R and Latex (Sweave) for using together. We have a
+software that is free, that is reliable and very sound statistically speaking.
+
+One of the great things about these softwares is the fact that changes can
+happen and that everything is really transparent, the fact that there is help
+available and that the developers are always kind enough to be answering
+questions worth answering.
+
+The fact that any change will be announced and that instructions on how to
+implement or on how to go back to a previous version is way more than what any
+commercial software does. Commercial software goes on, makes changes, tries to
+keep that backwards comapatibility, but still there is a black box or a very
+complex procedure for getting back to older defaults etc.
+
+As a user with, by far not the same knowledge of the 'guts' of R and Latex as
+the developers, I feel that any change the developers see fit, and that is
+announced and that there is a way to 'evrride' such options, is perfect.
+
+We can't (should not at least) expect the developers to keep track of our work
+and our preferences for each user. As long as there is that freedom for each
+user to adapt the siftware to his/her needs, I believe we are in a priviledged
+situation.
+
+Thanks to FL, DM and all.
+Alberto
+
+Quoting Friedrich Leisch <friedrich.leisch at stat.uni-muenchen.de>:
+
+> >>>>> On Wed, 06 Dec 2006 12:37:22 -0600,
+> >>>>> Kevin R Coombes (KRC) wrote:
+> 
+>   > Hi,
+>   > I don't really think anyone believes that the parse&deparse behavior was
+> 
+>   > exactly a "feature". Instead, I think the primary issue is one of 
+>   > backwards compatibility.
+> 
+>   > You are proposing to change the behavior of Sweave in a manner that will
+> 
+>   > cause old code to break. Here "break" has two meanings. Some automatic 
+>   > development tools will stop working on existing valid code.  In 
+>   > addition, existing valid code will produce results that differ from what
+> 
+>   > they produced previously.
+> 
+>   > To deal with this, you are going to add an option that will allow users 
+>   > to get the old behavior.  However, you propose to set the default value 
+>   > of the option to require users to go back and modify all their old code 
+>   > in order to prevent things from breaking. It seems obvious to me that 
+>   > the default behavior should be the one that does not break old code or 
+>   > require the editing of old code in order to get the old behavior.
+> 
+>   > The reason I use Sweave (for virtually every analysis I do any more) is 
+>   > that I can guarantee that when I can go back to the code six months from
+> 
+>   > now, I can regenerate the analysis and I can regenerate the 
+>   > documentation, and I know that I will get the same results. Changing the
+> 
+>   > default behavior of Sweave violates that guarantee, since the 
+>   > documentation will not be identical to what it was before. Personally, I
+> 
+>   > am willing to pay the cost with NEW analyses to invoke the new behavior 
+>   > explicitly (which I do agree is the preferred behavior) because I think 
+>   > the goal of backwards compatibility is more important.
+> 
+>   > In other words, I disagree with your characterization of the 
+>   > parse&deparse behavior as a "bug".  It did not cause incorrect results 
+>   > in the documentation or the code, and everyone using Sweave knew about 
+>   > the behavior.
+> 
+> Give me a break, that is simply nonsense. Sweave guarantees that you
+> can reproduce your results USING THE VERSION OF R THAT WAS USED FOR
+> THE ORIGINAL ANALYSIS, and that will still be true, because in R 2.4.x
+> there is no option keep.source.  Running a new version of R means
+> dozens of R functions will have changed, plotting functions may yield
+> figures that look different etc. etc. ... what you propose is in
+> essence that we are not allowed to change the default behaviour of ANY
+> R FUNCTION. Is that what you are proposing?
+> 
+> And note that the changes I propose will not change any numerical
+> results or figures, nor will I "break code", the only thing that
+> changes is that the formatting of input lines looks different (and in
+> most cases better, that's why we want to do it).
+> 
+> It's not like I am changing Sweave behavior every other week, actually
+> it is the first one at all. I have thought a lot whether I want to do
+> it or not, and I really think it is a good idea. What is great about R
+> is that it is allowed to change (if changes are transparent and
+> announced early enough). There is a certain operation system with a
+> market share of about 90% where backwards compatibility is more
+> important than development or security, and I don'tthink that should
+> be our role model.
+> 
+> Best,
+> Fritz
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+
+--
+
+
+From stvjc at channing.harvard.edu  Thu Dec  7 17:39:20 2006
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Thu, 7 Dec 2006 11:39:20 -0500 (EST)
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <45782F8F.3030202@mdacc.tmc.edu>
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<45747B16.6030505@stats.uwo.ca>
+	<m27ix7ryna.fsf_-_@ziti.local> <45758FC6.7080806@ebi.ac.uk>
+	<17782.60071.851707.496913@celebrian.ci.tuwien.ac.at>
+	<45770DE2.7080801@mdacc.tmc.edu>
+	<17783.62514.186419.33021@celebrian.ci.tuwien.ac.at>
+	<45782F8F.3030202@mdacc.tmc.edu>
+Message-ID: <Pine.GSO.4.58.0612071134240.1945@capecod.bwh.harvard.edu>
+
+
+> One of the problems I have with using R and BioConductor is that
+> backwards compatibility rarely seems to be considered when new versions
+> are released.  (That statement may be wrong, but it is the impression I
+> have formed from watching things change over time.) Someone gets an idea
+
+I object -- we do put considerable effort into the deprecation activity when
+features are being withdrawn.  Deprecating serialized data instances took
+some work.  Users get a full release period of warning that things are
+changing, and we try to provide convenient tools that perform the necessary
+revisions.   You are correct that full/permanent backwards
+compatibility is not a priority; it is retained when it is consistent with
+the overall progress of the project.
+
+
+From stvjc at channing.harvard.edu  Thu Dec  7 18:00:44 2006
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Thu, 7 Dec 2006 12:00:44 -0500 (EST)
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <17783.64078.642623.834407@celebrian.ci.tuwien.ac.at>
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<45747B16.6030505@stats.uwo.ca>
+	<m27ix7ryna.fsf_-_@ziti.local> <45758FC6.7080806@ebi.ac.uk>
+	<34964.218.212.98.77.1165337134.squirrel@www.altern.org>
+	<b796582f0612051124i4c195ef8w8208b42113bda553@mail.gmail.com>
+	<4575D53C.7090908@stats.uwo.ca>
+	<17782.42641.660329.909908@celebrian.ci.tuwien.ac.at>
+	<b796582f0612061924q66b7545cp913a2755e48f07fe@mail.gmail.com>
+	<17783.64078.642623.834407@celebrian.ci.tuwien.ac.at>
+Message-ID: <Pine.GSO.4.58.0612071141220.1945@capecod.bwh.harvard.edu>
+
+>
+> Note: I got only one serious email (the one by Deepayan I'll answer in
+> a minute) that keep.source=FALSE produces better looking documents in
+> some cases, and that's a discussion I like.  All other complaints
+> where simply of the form "we can't change it because it has always
+> been the way that it is". I thought that rule is not necessarily true
+> in a research project like R.
+
+I don't accept the caricature here.  People can disagree on what
+a good default setting is, and, apparently, even what a bug is.
+I would never have regarded the use of R deparse formatting by Sweave
+as a bug -- that just tells you how messy my sources are.  I can pay
+the price of setting an option if you want to remove the role of
+deparse in code formatting.  But I wanted you alert you to an alternative
+attitude about it, which includes reckoning with the possibility that
+things may look a lot worse in a lot of default-processed documents, both
+those written in the past and those to be written, when the default is changed.
+That possibility may also be dismissed, but it is not a conservative
+complaint, and it does provide a basis for thinking about the purpose
+of a default setting.
+
+No one challenged the introduction of the new functionality.  The initial
+justification for the alteration of the default included the desire to get
+more information on possible problems with the new keep.source functionality
+in connection with Sweave.  I found that somewhat annoying -- yes, it will
+generate data on possible problems, but at substantial cost to users, or
+maybe just to our project.  So I think there was a basis for objection to
+the altered default, but one that could be discussed.  I recognize that
+R-devel is unstable and experimental, but there is still a role for some
+pushback, and the core can choose to disregard it if the benefits of the
+change outweigh the costs.
+
+I was completely mystified by the transition from a
+default setting for a code formatting process to considerations of
+central configuration files or flavors of R.  But maybe that reflects
+my limitations more than anything else.  I think this issue is very
+local to a feature of a specific piece of software and should have no
+broad ramifications for the general installation process or
+distribution/installation of R.
+
+
+From jmacdon at med.umich.edu  Thu Dec  7 20:49:42 2006
+From: jmacdon at med.umich.edu (James MacDonald)
+Date: Thu, 07 Dec 2006 14:49:42 -0500
+Subject: [Bioc-devel] NEWS November 2006
+Message-ID: <45782A9E.47B0.00EE.0@med.umich.edu>
+
+	November 2006
+
+affxparser
+	Bugfix for readCdfUnits() with stratifyBy="mm", which
+	previously returned pm probes
+	
+	Bugfix for readCdfGroupNames() which was crashing on Unix
+
+	Added stratifyBy argument to readCdf()
+	
+affy
+	Changed output from exprSet-based objects to ExpressionSet-based
+objects
+
+affycoretools	
+	Added ability to plot arbitrary principal components in
+plotPCA()
+
+	Added hyperGoutput(), a replacement for the hyperG2annaffy()
+	function that uses new functions in GOstats/Category package
+
+affyio
+	Added gzipped binary cel file support
+
+affyPLM
+	Added standard error output to the RMA model
+
+affyQCreport
+	Added lattice dependency
+
+AnnBuilder
+	egRefseqParser() modified to skip entries with a missing value
+	
+	Turned off warning message for mis-matched KEGG file names as
+	a given organism may not have all the pathways
+
+Biobase
+	Changed makeExpressionSetPackage() to makeDataPackage() with
+	an ExpressionSet method
+
+	Added Biobase dependency
+
+biomaRt
+	Import RCurl, removed RMySQL from suggests
+
+	Enabled query for data coming from more than two tables when
+	using biomaRt in MySQL mode
+
+	Added check to see if the server is down when a query returns
+	an empty result
+
+	Updated biomaRt to work with new BioMart v0.5 release
+
+Biostrings
+	Renamed 'first' and 'last' slots to 'start' and 'end' in
+	BStringViews class
+
+BSgenome
+	Instead of having all sequences stored in BStringViews
+	objects, now single sequences are stored in DNAString objects,
+	and multiple sequences are stored in BStrinbViews objects. As
+	a consequence, the definition of the BSgenome class has been
+	changed and the show() method prints two separated indices
+
+	Fixed bug in buildDataFiles()
+	
+	Added getSeq() function
+
+	Added the available.genomes() function
+
+BufferedMatrix
+	Added ability to use logical vectors to index BufferedMatrix
+	objects
+
+	Registered the C-level functionality so it can potentially be
+	used in other packages
+
+BufferedMatrixMethods
+	New Package: Provides microarray related methods that utilize
+	BufferedMatrix objects
+
+	Maintainer: Benjamin Milo Bolstad
+
+Category
+	Integrated hyperGTest() to use KEGG and PFAM as well as GO
+terms
+
+	Fixed htmlReport() to use the label argument
+
+	Use appand=FALSE in the definition of the generic of
+htmlReport()
+
+	Added DBPkg class for SQLite-based annotation packges
+	
+	Added various functions for SQLite-based annotation packages
+
+cosmo
+	New Package: cosmo searches a set of unaligned DNA sequences for
+a shared
+	motif that may, for example, represent a common transcription
+	factor binding site. The algorithm is similar to MEME, but
+	also allows the user to specify a set of constraints that the
+	
+	position weight matrix of the unknown motif must satisfy. 
+	Such constraints may include bounds on the information content
+	across certain regions of the unknown motif, for example, and
+	can often be formulated on the basis of prior knowledge about 
+	the structure of the transcription factor in question.
+	The unknown motif width, the distribution of motif occurrences
+	(OOPS, ZOOPS, or TCM), as well as the appropriate constraint
+	set can be selected data-adaptively.
+
+	Maintainer: Oliver Bembom
+
+GOstats
+	Code for htmlReport() moved from GOstats to Category
+
+	Bugfix to probeSetSummary() which was failing due to move of
+	functions to Category
+
+KEGGSOAP
+	Updated to access KEGG API v6. Added functions
+	search_compounds_by_name, search_glycans_by_name,
+	search_compounds_by_composition,
+	search_glycans_by_composition, search_compounds_by_mass,
+	search_glycans_by_mass, search_compounds_by_subcomp,
+	search_glycans_by_kcam
+
+made4
+	Bugfix to bga(), which errored on certain Affy probeset names
+
+occugene
+	New Package: Statistical tools for building random mutagenesis
+	libraries for prokaryotes. The package has functions for
+	handling the occupancy distribution for a multinomial and for
+	estimating the number of essential genes in random transposon
+	mutagenesis libraries.
+
+	Maintainer: Oliver Will
+
+pdInfoBuilder
+	New Package: This package produces SQLite-based cdf/annotation
+	databases for SNP chips. It can be extended for handling other
+	chip technologies
+	
+	Maintainer: Seth Falcon
+
+RefPlus
+	New Package: The package contains functions for pre-processing
+	Affymetrix data using the RMA+ and the RMA++ methods.
+
+	Maintainer: Kai-Ming Chang
+
+SemSim
+	New Package: Implementation of semantic similarity measures
+	based on information content of Gene Ontology terms.
+
+	Maintainer: Xiang Guo
+
+smoothMiner
+	New Package: use smooth regression to investigate families of
+	trajectories
+
+	Maintainer: V. Carey
+
+
+
+
+
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.
+
+
+From murdoch at stats.uwo.ca  Fri Dec  8 01:13:04 2006
+From: murdoch at stats.uwo.ca (Duncan Murdoch)
+Date: Thu, 07 Dec 2006 19:13:04 -0500
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <45782F8F.3030202@mdacc.tmc.edu>
+References: <456CEE70.6040709@stats.uwo.ca>	<17775.59614.963640.147491@stat.math.ethz.ch>	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>	<45747B16.6030505@stats.uwo.ca>	<m27ix7ryna.fsf_-_@ziti.local>	<45758FC6.7080806@ebi.ac.uk>	<17782.60071.851707.496913@celebrian.ci.tuwien.ac.at>	<45770DE2.7080801@mdacc.tmc.edu>
+	<17783.62514.186419.33021@celebrian.ci.tuwien.ac.at>
+	<45782F8F.3030202@mdacc.tmc.edu>
+Message-ID: <4578AE10.3010709@stats.uwo.ca>
+
+Kevin R. Coombes wrote:
+> One of the problems I have with using R and BioConductor is that 
+> backwards compatibility rarely seems to be considered when new versions 
+> are released.  (That statement may be wrong, but it is the impression I 
+> have formed from watching things change over time.) Someone gets an idea 
+> for a structural change that can potentially break tons of existing 
+> code, and because it is theoretically better (and may even really be 
+> better; that's not the point), they go ahead and  implement the change. 
+>   
+
+I can't think of any times where this has happened since I've been 
+involved with the R project.  The thread you posted to is certainly not 
+an example: it is about a change that may be released next April.  If 
+5-6 months discussion isn't enough time to consider backwards 
+compatibility, then I think it's just impossible to meet your standards.
+> And when some poor user raises a question on one of these mailing lists, 
+> the most common answer seems to be "upgrade to the latest versions of R 
+> and BioConductor, and modify your code accordingly".  And then do it 
+> again next quarter.
+>   
+I don't see that this has anything to do with this thread, but if you 
+want support for free from me, then you'll have to use the same version 
+of R as I do.  I think that's the motivation behind the message you've 
+heard from others.  If you want to hire someone to support an outdated 
+version of R I think you'll be able to do it, but don't expect volunteer 
+support.
+> By contrast, I have documents written in TeX in the early 1980's that 
+> still compile and still produce EXACTLY the same output. And I still 
+> have a lot of old perl scripts that still do exactly what they are 
+> supposed to do.  In those cases, Donald Knuth and Larry Wall have acted 
+> as "benevolent dictators" who insist that the people proposing changes 
+> have to at least give serious thought to how to ensure that existing 
+> code doesn't break.
+>   
+> I suspect my reaction to the proposed changes in Sweave results 
+> precisely because I like Sweave so much, and use it for every I analysis 
+> I perform.  Its primary virtue is for the production of documents that 
+> will need to remain available for a long time. That's why I want the 
+> documentation and the code in the same file, after all, so I can return 
+> to it when it's time to write the methods section to the manuscript that 
+> resulted from all those computations. And I can return to it again when 
+> someone sends me a question after the paper gets published. And by that 
+> time, I will probably have upgraded R and BioConductor, and I want the 
+> figures that I generate tomorrow to still be the same as the figures I 
+> sent to the publisher yesterday. And if I generated the actual PDF that 
+> I sent to the publisher from an Sweave file and if it includes code 
+> samples, then I don't want those code samples to change in the PDF file 
+> I produce tomorrow.
+>   
+Then you shouldn't be updating R every quarter.   You should update less 
+frequently, and document which versions were used to produce each 
+document.  We make an effort to keep old versions available, but it is 
+not a priority to maintain perfect backwards compatibility:  for that to 
+be sensible would depend on the assumption that all decisions are 
+perfect when the are made, and so they should be irrevocable.  That's 
+just not realistic.
+
+You certainly shouldn't be using R-devel for anything at all.  The 
+public statement about what sort of changes are allowed there
+(from the development guidelines on developer.r-project.org) is:
+
+For r-devel i.e. what becomes x.y.0 releases only one rule seems
+necessary:
+
+DO NOT add code that cannot become reasonably complete by the next release.
+
+
+> And yes; I do propose not changing the DEFAULT behavior of any existing 
+> function. That's what backwards compatibility means.  If you add 
+> additional features and you are going to put in an option to let the On
+> user control the behavior anyway, then the default option should ensure 
+> that code that works now will continue to produce the same results in 
+> the future. Even in new versions of R. Even in new versions of 
+> BioConductor.
+>   
+Maintaining that degree of backwards compatibility is not the R policy.  
+I think you would not be able to convince many people that it should be.
+
+Duncan Murdoch
+> Best,
+> 	Kevin
+>
+> Friedrich Leisch wrote:
+>   
+>>>>>>> On Wed, 06 Dec 2006 12:37:22 -0600,
+>>>>>>> Kevin R Coombes (KRC) wrote:
+>>>>>>>               
+>>   > Hi,
+>>   > I don't really think anyone believes that the parse&deparse behavior was 
+>>   > exactly a "feature". Instead, I think the primary issue is one of 
+>>   > backwards compatibility.
+>>
+>>   > You are proposing to change the behavior of Sweave in a manner that will 
+>>   > cause old code to break. Here "break" has two meanings. Some automatic 
+>>   > development tools will stop working on existing valid code.  In 
+>>   > addition, existing valid code will produce results that differ from what 
+>>   > they produced previously.
+>>
+>>   > To deal with this, you are going to add an option that will allow users 
+>>   > to get the old behavior.  However, you propose to set the default value 
+>>   > of the option to require users to go back and modify all their old code 
+>>   > in order to prevent things from breaking. It seems obvious to me that 
+>>   > the default behavior should be the one that does not break old code or 
+>>   > require the editing of old code in order to get the old behavior.
+>>
+>>   > The reason I use Sweave (for virtually every analysis I do any more) is 
+>>   > that I can guarantee that when I can go back to the code six months from 
+>>   > now, I can regenerate the analysis and I can regenerate the 
+>>   > documentation, and I know that I will get the same results. Changing the 
+>>   > default behavior of Sweave violates that guarantee, since the 
+>>   > documentation will not be identical to what it was before. Personally, I 
+>>   > am willing to pay the cost with NEW analyses to invoke the new behavior 
+>>   > explicitly (which I do agree is the preferred behavior) because I think 
+>>   > the goal of backwards compatibility is more important.
+>>
+>>   > In other words, I disagree with your characterization of the 
+>>   > parse&deparse behavior as a "bug".  It did not cause incorrect results 
+>>   > in the documentation or the code, and everyone using Sweave knew about 
+>>   > the behavior.
+>>
+>> Give me a break, that is simply nonsense. Sweave guarantees that you
+>> can reproduce your results USING THE VERSION OF R THAT WAS USED FOR
+>> THE ORIGINAL ANALYSIS, and that will still be true, because in R 2.4.x
+>> there is no option keep.source.  Running a new version of R means
+>> dozens of R functions will have changed, plotting functions may yield
+>> figures that look different etc. etc. ... what you propose is in
+>> essence that we are not allowed to change the default behaviour of ANY
+>> R FUNCTION. Is that what you are proposing?
+>>
+>> And note that the changes I propose will not change any numerical
+>> results or figures, nor will I "break code", the only thing that
+>> changes is that the formatting of input lines looks different (and in
+>> most cases better, that's why we want to do it).
+>>
+>> It's not like I am changing Sweave behavior every other week, actually
+>> it is the first one at all. I have thought a lot whether I want to do
+>> it or not, and I really think it is a good idea. What is great about R
+>> is that it is allowed to change (if changes are transparent and
+>> announced early enough). There is a certain operation system with a
+>> market share of about 90% where backwards compatibility is more
+>> important than development or security, and I don'tthink that should
+>> be our role model.
+>>
+>> Best,
+>> Fritz
+>>
+
+
+From murdoch at stats.uwo.ca  Fri Dec  8 02:39:32 2006
+From: murdoch at stats.uwo.ca (Duncan Murdoch)
+Date: Thu, 07 Dec 2006 20:39:32 -0500
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <45782F8F.3030202@mdacc.tmc.edu>
+References: <456CEE70.6040709@stats.uwo.ca>	<17775.59614.963640.147491@stat.math.ethz.ch>	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>	<45747B16.6030505@stats.uwo.ca>	<m27ix7ryna.fsf_-_@ziti.local>	<45758FC6.7080806@ebi.ac.uk>	<17782.60071.851707.496913@celebrian.ci.tuwien.ac.at>	<45770DE2.7080801@mdacc.tmc.edu>
+	<17783.62514.186419.33021@celebrian.ci.tuwien.ac.at>
+	<45782F8F.3030202@mdacc.tmc.edu>
+Message-ID: <4578C254.8030200@stats.uwo.ca>
+
+Kevin R. Coombes wrote:
+
+> > One of the problems I have with using R and BioConductor is that 
+> > backwards compatibility rarely seems to be considered when new versions 
+> > are released.  (That statement may be wrong, but it is the impression I 
+> > have formed from watching things change over time.) Someone gets an idea 
+> > for a structural change that can potentially break tons of existing 
+> > code, and because it is theoretically better (and may even really be 
+> > better; that's not the point), they go ahead and  implement the change. 
+> >   
+>   
+
+I can't think of any times where this has happened since I've been 
+involved with the R project.  (There might be some, but I can't think of them.)
+The thread you posted to is certainly not an example: it is about a change that may be released next April.  If 5-6 months discussion isn't enough time to consider backwards 
+compatibility, then I think it's just impossible to meet your standards.
+
+> > And when some poor user raises a question on one of these mailing lists, 
+> > the most common answer seems to be "upgrade to the latest versions of R 
+> > and BioConductor, and modify your code accordingly".  And then do it 
+> > again next quarter.
+> >   
+>   
+I don't see that this has anything to do with this thread, and I'm reasonably sure I've never said that to you, but it sounds like something I would say.  If you 
+want support for free from me, then you'll have to use the same version 
+of R as I do.  I think that's the motivation behind the message you've 
+heard from others.  If you want to hire someone to support an outdated 
+version of R I think you'll be able to do it, but don't expect to be able to dictate the terms for volunteer support.
+
+> > By contrast, I have documents written in TeX in the early 1980's that 
+> > still compile and still produce EXACTLY the same output. And I still 
+> > have a lot of old perl scripts that still do exactly what they are 
+> > supposed to do.  In those cases, Donald Knuth and Larry Wall have acted 
+> > as "benevolent dictators" who insist that the people proposing changes 
+> > have to at least give serious thought to how to ensure that existing 
+> > code doesn't break.
+> >   
+> > I suspect my reaction to the proposed changes in Sweave results 
+> > precisely because I like Sweave so much, and use it for every I analysis 
+> > I perform.  Its primary virtue is for the production of documents that 
+> > will need to remain available for a long time. That's why I want the 
+> > documentation and the code in the same file, after all, so I can return 
+> > to it when it's time to write the methods section to the manuscript that 
+> > resulted from all those computations. And I can return to it again when 
+> > someone sends me a question after the paper gets published. And by that 
+> > time, I will probably have upgraded R and BioConductor, and I want the 
+> > figures that I generate tomorrow to still be the same as the figures I 
+> > sent to the publisher yesterday. And if I generated the actual PDF that 
+> > I sent to the publisher from an Sweave file and if it includes code 
+> > samples, then I don't want those code samples to change in the PDF file 
+> > I produce tomorrow.
+> >   
+>   
+Then you shouldn't be updating R every quarter.   You should update less 
+frequently, and document which versions were used to produce each 
+document.  We make an effort to keep old versions available, but it is 
+not a priority to maintain perfect backwards compatibility:  for that to 
+be sensible would depend on the assumption that all decisions are 
+perfect when they are made, and so they should be irrevocable.  That's 
+just not realistic.
+
+You certainly shouldn't be using R-devel for anything at all.  The 
+public statement about what sort of changes are allowed there
+(from the development guidelines on developer.r-project.org) is:
+
+For r-devel i.e. what becomes x.y.0 releases only one rule seems
+necessary:
+
+DO NOT add code that cannot become reasonably complete by the next release.
+
+That's just not compatible with the degree of stability that you're looking for. 
+
+> > And yes; I do propose not changing the DEFAULT behavior of any existing 
+> > function. That's what backwards compatibility means.  If you add 
+> > additional features and you are going to put in an option to let the On
+> > user control the behavior anyway, then the default option should ensure 
+> > that code that works now will continue to produce the same results in 
+> > the future. Even in new versions of R. Even in new versions of 
+> > BioConductor.
+> >   
+>   
+Maintaining that degree of backwards compatibility is not the R policy.  
+I think you would not be able to convince many people that it should be.
+
+Duncan Murdoch
+
+> > Best,
+> > 	Kevin
+> >
+> > Friedrich Leisch wrote:
+> >   
+>   
+>>>>>>> >>>>>>> On Wed, 06 Dec 2006 12:37:22 -0600,
+>>>>>>> >>>>>>> Kevin R Coombes (KRC) wrote:
+>>>>>>> >>>>>>>               
+>>>>>>>               
+>> >>   > Hi,
+>> >>   > I don't really think anyone believes that the parse&deparse behavior was 
+>> >>   > exactly a "feature". Instead, I think the primary issue is one of 
+>> >>   > backwards compatibility.
+>> >>
+>> >>   > You are proposing to change the behavior of Sweave in a manner that will 
+>> >>   > cause old code to break. Here "break" has two meanings. Some automatic 
+>> >>   > development tools will stop working on existing valid code.  In 
+>> >>   > addition, existing valid code will produce results that differ from what 
+>> >>   > they produced previously.
+>> >>
+>> >>   > To deal with this, you are going to add an option that will allow users 
+>> >>   > to get the old behavior.  However, you propose to set the default value 
+>> >>   > of the option to require users to go back and modify all their old code 
+>> >>   > in order to prevent things from breaking. It seems obvious to me that 
+>> >>   > the default behavior should be the one that does not break old code or 
+>> >>   > require the editing of old code in order to get the old behavior.
+>> >>
+>> >>   > The reason I use Sweave (for virtually every analysis I do any more) is 
+>> >>   > that I can guarantee that when I can go back to the code six months from 
+>> >>   > now, I can regenerate the analysis and I can regenerate the 
+>> >>   > documentation, and I know that I will get the same results. Changing the 
+>> >>   > default behavior of Sweave violates that guarantee, since the 
+>> >>   > documentation will not be identical to what it was before. Personally, I 
+>> >>   > am willing to pay the cost with NEW analyses to invoke the new behavior 
+>> >>   > explicitly (which I do agree is the preferred behavior) because I think 
+>> >>   > the goal of backwards compatibility is more important.
+>> >>
+>> >>   > In other words, I disagree with your characterization of the 
+>> >>   > parse&deparse behavior as a "bug".  It did not cause incorrect results 
+>> >>   > in the documentation or the code, and everyone using Sweave knew about 
+>> >>   > the behavior.
+>> >>
+>> >> Give me a break, that is simply nonsense. Sweave guarantees that you
+>> >> can reproduce your results USING THE VERSION OF R THAT WAS USED FOR
+>> >> THE ORIGINAL ANALYSIS, and that will still be true, because in R 2.4.x
+>> >> there is no option keep.source.  Running a new version of R means
+>> >> dozens of R functions will have changed, plotting functions may yield
+>> >> figures that look different etc. etc. ... what you propose is in
+>> >> essence that we are not allowed to change the default behaviour of ANY
+>> >> R FUNCTION. Is that what you are proposing?
+>> >>
+>> >> And note that the changes I propose will not change any numerical
+>> >> results or figures, nor will I "break code", the only thing that
+>> >> changes is that the formatting of input lines looks different (and in
+>> >> most cases better, that's why we want to do it).
+>> >>
+>> >> It's not like I am changing Sweave behavior every other week, actually
+>> >> it is the first one at all. I have thought a lot whether I want to do
+>> >> it or not, and I really think it is a good idea. What is great about R
+>> >> is that it is allowed to change (if changes are transparent and
+>> >> announced early enough). There is a certain operation system with a
+>> >> market share of about 90% where backwards compatibility is more
+>> >> important than development or security, and I don'tthink that should
+>> >> be our role model.
+>> >>
+>> >> Best,
+>> >> Fritz
+>> >>     
+>>
+
+
+From Friedrich.Leisch at stat.uni-muenchen.de  Fri Dec  8 17:03:58 2006
+From: Friedrich.Leisch at stat.uni-muenchen.de (Friedrich Leisch)
+Date: Fri, 8 Dec 2006 17:03:58 +0100
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <Pine.GSO.4.58.0612071141220.1945@capecod.bwh.harvard.edu>
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<45747B16.6030505@stats.uwo.ca> <m27ix7ryna.fsf_-_@ziti.local>
+	<45758FC6.7080806@ebi.ac.uk>
+	<34964.218.212.98.77.1165337134.squirrel@www.altern.org>
+	<b796582f0612051124i4c195ef8w8208b42113bda553@mail.gmail.com>
+	<4575D53C.7090908@stats.uwo.ca>
+	<17782.42641.660329.909908@celebrian.ci.tuwien.ac.at>
+	<b796582f0612061924q66b7545cp913a2755e48f07fe@mail.gmail.com>
+	<17783.64078.642623.834407@celebrian.ci.tuwien.ac.at>
+	<Pine.GSO.4.58.0612071141220.1945@capecod.bwh.harvard.edu>
+Message-ID: <17785.36078.341392.134600@celebrian.ci.tuwien.ac.at>
+
+
+Vince,
+
+I must apologize, the wording that "I got only one serious email" was
+not appropriate (but reflects how I perceived the discussion up to
+that point).  From my point of view the situation looked/looks as
+follows:
+
+(0) This whole discussion happens for me at a very bad point in time
+    due to very limited time, hence delays in aswering emails (because I
+    did carefully think about each proposal I made).
+
+(1) I personally think that R code I write is well-idented and
+    formatted and I never liked Sweave to reformat my sources.
+
+(2) Over the years I have answered dozens of "bug reports" in private
+    emails why Sweave discards comments and reformats the sources to
+    people to lazy to read the FAQ.
+
+(3) Finally, Duncan implements a solution to the problem, I expect him
+    to get praised for it, and what happens is a flame war.
+
+(4) Perhaps I should have read more carefully between the lines of
+    some emails (but see (0)), but the basic tone was [ATTENTION,
+    EXAGGARATION, i don't want to insult anybody, just set the picture
+    ]: "you can't do that because we would have to insert one line in
+    each of our documents. We know how to write complicated software to
+    analzye microarrays, but not how to automate that task."
+
+So all of R is allowed to improve and change all the time, but here is
+exception? Why? [Email continued below]
+
+
+>>>>> On Thu, 7 Dec 2006 12:00:44 -0500 (EST),
+>>>>> Vincent Carey 525-2265 (VC5) wrote:
+
+  >> 
+  >> Note: I got only one serious email (the one by Deepayan I'll answer in
+  >> a minute) that keep.source=FALSE produces better looking documents in
+  >> some cases, and that's a discussion I like.  All other complaints
+  >> where simply of the form "we can't change it because it has always
+  >> been the way that it is". I thought that rule is not necessarily true
+  >> in a research project like R.
+
+  > I don't accept the caricature here.  People can disagree on what
+  > a good default setting is, and, apparently, even what a bug is.
+
+Yes, and if the reactions would have been formulated like that, I
+would have responded differently. But the first reactions were "you
+can't do that, because it means work for us." [repeated several times
+and not exactly silently].
+
+
+  > I would never have regarded the use of R deparse formatting by
+  > Sweave as a bug -- that just tells you how messy my sources are.
+  > I can pay the price of setting an option if you want to remove the
+  > role of deparse in code formatting.  But I wanted you alert you to
+  > an alternative attitude about it, which includes reckoning with
+  > the possibility that things may look a lot worse in a lot of
+  > default-processed documents, both those written in the past and
+  > those to be written, when the default is changed.  That
+  > possibility may also be dismissed, but it is not a conservative
+  > complaint, and it does provide a basis for thinking about the
+  > purpose of a default setting.
+
+  > No one challenged the introduction of the new functionality.  The
+  > initial justification for the alteration of the default included
+  > the desire to get more information on possible problems with the
+  > new keep.source functionality in connection with Sweave.  I found
+  > that somewhat annoying -- yes, it will generate data on possible
+  > problems, but at substantial cost to users, or maybe just to our
+  > project.  So I think there was a basis for objection to the
+  > altered default, but one that could be discussed.  I recognize
+  > that R-devel is unstable and experimental, but there is still a
+  > role for some pushback, and the core can choose to disregard it if
+  > the benefits of the change outweigh the costs.
+
+I fully agree here, but there must be arguments why the change should
+not be made, and the argument cannot be "we have to adapt 200 files"
+(when the change can be done in a 3 line R/sed/perl/whatever script
+automatically). 
+
+
+  > I was completely mystified by the transition from a
+  > default setting for a code formatting process to considerations of
+  > central configuration files or flavors of R.  But maybe that reflects
+  > my limitations more than anything else.  I think this issue is very
+  > local to a feature of a specific piece of software and should have no
+  > broad ramifications for the general installation process or
+  > distribution/installation of R.
+
+Well, I don't like to fix a problem locally for one particular aspect
+of the distribution process. If building of vignettes should be
+configurable for a project, so should the rest of the build process
+(and vice versa). Anything else is hard to maintain and not
+transparent to users.
+
+Best,
+Fritz
+
+PS: At least from my point of view the discussion since my last couple
+of emails email was much more focused on pros and cons rather than
+simple "I don't want that!!!" statments, hence perhaps it needs some
+caricature from time to time ... ;-)
+
+
+From stvjc at channing.harvard.edu  Fri Dec  8 19:00:15 2006
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Fri, 8 Dec 2006 13:00:15 -0500 (EST)
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <17785.36078.341392.134600@celebrian.ci.tuwien.ac.at>
+References: <456CEE70.6040709@stats.uwo.ca>
+	<17775.59614.963640.147491@stat.math.ethz.ch>
+	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>
+	<45747B16.6030505@stats.uwo.ca>
+	<m27ix7ryna.fsf_-_@ziti.local> <45758FC6.7080806@ebi.ac.uk>
+	<34964.218.212.98.77.1165337134.squirrel@www.altern.org>
+	<b796582f0612051124i4c195ef8w8208b42113bda553@mail.gmail.com>
+	<4575D53C.7090908@stats.uwo.ca>
+	<17782.42641.660329.909908@celebrian.ci.tuwien.ac.at>
+	<b796582f0612061924q66b7545cp913a2755e48f07fe@mail.gmail.com>
+	<17783.64078.642623.834407@celebrian.ci.tuwien.ac.at>
+	<Pine.GSO.4.58.0612071141220.1945@capecod.bwh.harvard.edu>
+	<17785.36078.341392.134600@celebrian.ci.tuwien.ac.at>
+Message-ID: <Pine.GSO.4.58.0612081258040.26348@capecod.bwh.harvard.edu>
+
+>
+>
+>   > I was completely mystified by the transition from a
+>   > default setting for a code formatting process to considerations of
+>   > central configuration files or flavors of R.  But maybe that reflects
+>   > my limitations more than anything else.  I think this issue is very
+>   > local to a feature of a specific piece of software and should have no
+>   > broad ramifications for the general installation process or
+>   > distribution/installation of R.
+>
+> Well, I don't like to fix a problem locally for one particular aspect
+> of the distribution process. If building of vignettes should be
+> configurable for a project, so should the rest of the build process
+> (and vice versa). Anything else is hard to maintain and not
+> transparent to users.
+
+Hi Fritz -- Apology accepted (and not really necessary)...
+now I need to spend some time understanding this
+last part, but for now, I think something like closure
+has been reached.
+
+Vince
+
+
+From Karl.Dykema at vai.org  Thu Dec 14 20:18:25 2006
+From: Karl.Dykema at vai.org (Dykema, Karl)
+Date: Thu, 14 Dec 2006 14:18:25 -0500
+Subject: [Bioc-devel] New Package - PGSEA - Parametric Gene Set Enrichment
+	Analysis
+Message-ID: <CEA39A213F7F2E44A0DED9210BCD352F023D0A4E@VAIEXCH04.vai.org>
+
+BioC developers,
+
+Gene set enrichment analysis/categorical analysis is becoming a popular
+method by which to examine gene expression data.  
+
+While analysis of genes sets that are derived from canonical pathway
+maps (KEGG, GO, etc) can be informative, it is also informative to
+examine gene lists that are deregulated in response to a defined
+experimental procedure (application of drug, gene knock-down, etc).
+These genes lists can be collected from the literature or re-derived
+from data deposited in gene expression databases. 
+
+We have put together a small package in an attempt to codify this idea.
+The package is similar to the Category package that already exists, but
+tries to de-couple the complexities of collecting and annotating gene
+lists from the specific categorical analysis method. Included in this
+package is a small collection of signatures were collected from various
+articles. In addition, we have included a set of signatures derived from
+the dataset published by Lamb et al., in the paper "The Connectivity
+Map: using gene-expression signatures to connect small molecules, genes,
+and disease." 
+
+Is there an existing effort and/or any interest in setting up a
+structure to curate and exchange experimental derived gene lists within
+BioC? I know that other groups are working on collecting databases of
+such signatures and am on the fence about how much to invest in this
+effort.  Any feedback would be welcome.
+
+http://www.vai.org/upload/departments/computationalbiology/PGSEA_1.0.0.z
+ip
+
+http://www.vai.org/upload/departments/computationalbiology/PGSEA_1.0.0.t
+ar.gz
+
+
+-------------------------------
+Karl Dykema
+Laboratory of Computational Biology
+Van Andel Research Institute
+333 Bostwick Ave. NE
+Grand Rapids, MI 49503 
+(616) 234-5554
+This email message, including any attachments, is for the so...{{dropped}}
+
+
+From hpages at fhcrc.org  Fri Dec 15 04:28:15 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Thu, 14 Dec 2006 19:28:15 -0800
+Subject: [Bioc-devel] Some build system news
+Message-ID: <4582164F.4060608@fhcrc.org>
+
+Hi all,
+
+As you might have already seen, we've replaced our main build machine 'gopher5'
+by 'lamb1', a brand new server:
+
+  http://bioconductor.org/checkResults/2.0/
+
+It's a 64 bit system running Linux SUSE 10.1 for x86_64.
+
+"Main" build machine means that a devel package is made publicly available
+(by being pushed to http://bioconductor.org/packages/2.0/bioc/) only if it
+passes the CHECK on 'lamb1' with no error (it can have warnings though).
+
+Also, maybe you've been wondering what's going on with some package description
+pages:
+
+  http://bioconductor.org/packages/2.0/bioc/
+
+As you can see, the individual pages for the packages listed below the GGtools
+package are missing. This problem is related to the migration of all our
+scripts from gopher5 to lamb1 and should get back to a normal state tomorrow
+around noon.
+
+Also the build results for our new Windows server (liverpool) are
+not looking good for an obscure pdflatex.exe error that occurs
+when building most of the vignettes. We'll investigate this and
+try to fix ASAP. In the meantime, if someone has already seen this problem
+before and can provide some usefull feedback, s/he is more than welcome.
+A typical example can be seen here:
+
+  http://bioconductor.org/checkResults/2.0/liverpool-ABarray-buildsrc.html
+
+Thanks!
+
+Best,
+H.
+
+
+From keith at wehi.EDU.AU  Fri Dec 15 05:52:14 2006
+From: keith at wehi.EDU.AU (Keith Satterley)
+Date: Fri, 15 Dec 2006 15:52:14 +1100
+Subject: [Bioc-devel] Some build system news
+In-Reply-To: <4582164F.4060608@fhcrc.org>
+References: <4582164F.4060608@fhcrc.org>
+Message-ID: <458229FE.4010803@wehi.edu.au>
+
+Hi Herve,
+
+I struck the problem mentioned back in August this year. It is related to Sweave.sty
+
+A copy the email I sent on 24/8/06 follows:
+*******************
+I've been checking the build reports at
+
+http://bioconductor.org/checkResults/1.9/
+
+and I notice that the following packages, which have exactly three errors, on 
+the three Windows XP nodes (walpole,matrix1 & matrix2), all have a similar error 
+message as shown below:
+=================
+* creating vignettes ... ERROR
+entering extended mode
+
+C:\texmf\tex\latex\base\article.cls:17: Emergency stoptexi2dvi: pdflatex exited 
+with bad status, quitting.
+texi2dvi: see "ABarray.log" for errors.
+buildVignettes(dir = '.')
+Error in texi2dvi(file = bft, pdf = TRUE, clean = FALSE, quiet = quiet) :
+     running texi2dvi on 'ABarray.tex' failed
+Execution halted
+=================
+The log file refers to being unable to find Sweave.sty.
+
+The error does not occur on the Windows Server 2003 node(lemming).
+
+The packages that I noticed were:
+
+ABarray
+convert
+afflmGUI
+EBarrays
+goTools
+limma
+limmaGUI
+
+I was having the same problem on my machine
+ >sessionInfo()
+R version 2.4.0 Under development (unstable) (2006-08-14 r38872)
+i386-pc-mingw32
+
+locale:
+LC_COLLATE=English_Australia.1252;LC_CTYPE=English_Australia.1252;LC_MONETARY=English_Australia.1252;LC_NUMERIC=C;LC_TIME=English_Australia.1252
+
+attached base packages:
+[1] "methods"   "stats"     "graphics"  "grDevices" "utils"     "datasets" "base"
+ >
+(Also I have the same problems with R-2.3.1)
+and found that if I placed a copy of Sweave.sty (copied from 
+C:\R\R-x.y.z\share\texmf ) into the doc subdirectory of my package (in mycase 
+affylmGUI and limmaGUI), the error was no longer generated and vignettes were 
+created.
+
+Is this the recommended solution or am I doing something wrong with some other 
+part of my packages? Or is there perhaps some configuration issue with R that 
+should be addressed.
+
+Not sure if this is an R-devel question or Bioc-devel, but since the Bioc XP 
+nodes show the problem, I thought it best to start on this list,
+***************
+
+There was further discussion of this: The subject name on the messages were:
+"texmf error on 7 packages on devel winXP build nodes"
+which then became:
+"Sweave windows style path (was Re: texmf error on 7 packages on devel winXP 
+build nodes)"
+
+Hope that helps,
+
+Keith
+
+========================
+Keith Satterley
+Bioinformatics Division
+The Walter and Eliza Hall Institute of Medical Research
+=======================
+
+Herve Pages wrote:
+> Hi all,
+> 
+> As you might have already seen, we've replaced our main build machine 'gopher5'
+> by 'lamb1', a brand new server:
+> 
+>   http://bioconductor.org/checkResults/2.0/
+> 
+> It's a 64 bit system running Linux SUSE 10.1 for x86_64.
+> 
+> "Main" build machine means that a devel package is made publicly available
+> (by being pushed to http://bioconductor.org/packages/2.0/bioc/) only if it
+> passes the CHECK on 'lamb1' with no error (it can have warnings though).
+> 
+> Also, maybe you've been wondering what's going on with some package description
+> pages:
+> 
+>   http://bioconductor.org/packages/2.0/bioc/
+> 
+> As you can see, the individual pages for the packages listed below the GGtools
+> package are missing. This problem is related to the migration of all our
+> scripts from gopher5 to lamb1 and should get back to a normal state tomorrow
+> around noon.
+> 
+> Also the build results for our new Windows server (liverpool) are
+> not looking good for an obscure pdflatex.exe error that occurs
+> when building most of the vignettes. We'll investigate this and
+> try to fix ASAP. In the meantime, if someone has already seen this problem
+> before and can provide some usefull feedback, s/he is more than welcome.
+> A typical example can be seen here:
+> 
+>   http://bioconductor.org/checkResults/2.0/liverpool-ABarray-buildsrc.html
+> 
+> Thanks!
+> 
+> Best,
+> H.
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From znmeb at cesmail.net  Sun Dec 17 01:22:20 2006
+From: znmeb at cesmail.net (M. Edward (Ed) Borasky)
+Date: Sat, 16 Dec 2006 16:22:20 -0800
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <17785.36078.341392.134600@celebrian.ci.tuwien.ac.at>
+References: <456CEE70.6040709@stats.uwo.ca>	<17775.59614.963640.147491@stat.math.ethz.ch>	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>	<45747B16.6030505@stats.uwo.ca>
+	<m27ix7ryna.fsf_-_@ziti.local>	<45758FC6.7080806@ebi.ac.uk>	<34964.218.212.98.77.1165337134.squirrel@www.altern.org>	<b796582f0612051124i4c195ef8w8208b42113bda553@mail.gmail.com>	<4575D53C.7090908@stats.uwo.ca>	<17782.42641.660329.909908@celebrian.ci.tuwien.ac.at>	<b796582f0612061924q66b7545cp913a2755e48f07fe@mail.gmail.com>	<17783.64078.642623.834407@celebrian.ci.tuwien.ac.at>	<Pine.GSO.4.58.0612071141220.1945@capecod.bwh.harvard.edu>
+	<17785.36078.341392.134600@celebrian.ci.tuwien.ac.at>
+Message-ID: <45848DBC.8000607@cesmail.net>
+
+As is my "tradition", I'm about to take a holiday break from my "day 
+job" and work on my own personal open source projects. Not entirely by 
+coincidence, this year's project involves literate programming, 
+reproducible research, R, Sweave, NoWeb, LyX, and some other tools, most 
+notably the Ruby "scripting language" and SWIG. It's a rather ambitious 
+project, given how little free time I have, but I'm hoping to at least 
+get the infrastructure in place by mid-March.
+
+As a result, I don't have an "existing code base" for changes to Sweave 
+to force changes in, but I very much want to be able to build code in 
+the next week or so that's going to work both with the current R 2.4.0  
+and future versions of R, with as much "agility" and "pragmatic project 
+automation", to use the concepts I'm picking up from the Ruby world, as 
+possible. So how should I proceed?
+
+Should I download the R-devel source and build around that, knowing that 
+between now and mid-March there will be a lot of change? Or should I 
+stick with R 2.4.0, knowing that one of the core areas of the project is 
+going to change in R? Or should I drop the whole idea and tackle a less 
+ambitious project? :)
+
+To clarify (I hope) why I'm asking these questions, you can get an old 
+partial description of the project at the RubyForge repository. 
+Unfortunately, the web interface seems to be down, but the anonymous CVS 
+is working.
+
+$ cvs -d :pserver:anonymous at rubyforge.org:/var/cvs/cougar checkout 
+Rameau/Rameau.pdf
+
+
+-- 
+M. Edward (Ed) Borasky, FBG, AB, PTA, PGS, MS, MNLP, NST, ACMC(P)
+http://borasky-research.blogspot.com/
+
+If God had meant for carrots to be eaten cooked, He would have given rabbits fire.
+
+
+From murdoch at stats.uwo.ca  Sun Dec 17 03:56:12 2006
+From: murdoch at stats.uwo.ca (Duncan Murdoch)
+Date: Sat, 16 Dec 2006 21:56:12 -0500
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <45848DBC.8000607@cesmail.net>
+References: <456CEE70.6040709@stats.uwo.ca>	<17775.59614.963640.147491@stat.math.ethz.ch>	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>	<45747B16.6030505@stats.uwo.ca>
+	<m27ix7ryna.fsf_-_@ziti.local>	<45758FC6.7080806@ebi.ac.uk>	<34964.218.212.98.77.1165337134.squirrel@www.altern.org>	<b796582f0612051124i4c195ef8w8208b42113bda553@mail.gmail.com>	<4575D53C.7090908@stats.uwo.ca>	<17782.42641.660329.909908@celebrian.ci.tuwien.ac.at>	<b796582f0612061924q66b7545cp913a2755e48f07fe@mail.gmail.com>	<17783.64078.642623.834407@celebrian.ci.tuwien.ac.at>	<Pine.GSO.4.58.0612071141220.1945@capecod.bwh.harvard.edu>
+	<17785.36078.341392.134600@celebrian.ci.tuwien.ac.at>
+	<45848DBC.8000607@cesmail.net>
+Message-ID: <4584B1CC.9050005@stats.uwo.ca>
+
+On 12/16/2006 7:22 PM, M. Edward (Ed) Borasky wrote:
+> As is my "tradition", I'm about to take a holiday break from my "day 
+> job" and work on my own personal open source projects. Not entirely by 
+> coincidence, this year's project involves literate programming, 
+> reproducible research, R, Sweave, NoWeb, LyX, and some other tools, most 
+> notably the Ruby "scripting language" and SWIG. It's a rather ambitious 
+> project, given how little free time I have, but I'm hoping to at least 
+> get the infrastructure in place by mid-March.
+> 
+> As a result, I don't have an "existing code base" for changes to Sweave 
+> to force changes in, but I very much want to be able to build code in 
+> the next week or so that's going to work both with the current R 2.4.0  
+> and future versions of R, with as much "agility" and "pragmatic project 
+> automation", to use the concepts I'm picking up from the Ruby world, as 
+> possible. So how should I proceed?
+> 
+> Should I download the R-devel source and build around that, knowing that 
+> between now and mid-March there will be a lot of change? Or should I 
+> stick with R 2.4.0, knowing that one of the core areas of the project is 
+> going to change in R? Or should I drop the whole idea and tackle a less 
+> ambitious project? :)
+
+1.  Don't use 2.4.0, version 2.4.1 will be released on Monday.
+
+2.  There will not be a lot of change from 2.4.1 to 2.5.0.  R changes 
+slowly.
+
+3.  If you want to maintain comments and formatting in your source code 
+in Sweave, then use R-devel and turn on the option.  If you don't care, 
+then it doesn't matter which version you use.  If you hate the idea of 
+displaying your formatting and comments, then turn off the option. (This 
+works in 2.4.0, which won't even blink when you turn off the 
+non-existent option.)
+
+4.  If you had some other "core idea of the project" in mind, then you 
+should say more explicitly what it is.  I don't think the new Sweave 
+capability changes a core idea of the project, but I think that's what 
+you were talking about.
+
+Duncan Murdoch
+
+> To clarify (I hope) why I'm asking these questions, you can get an old 
+> partial description of the project at the RubyForge repository. 
+> Unfortunately, the web interface seems to be down, but the anonymous CVS 
+> is working.
+> 
+> $ cvs -d :pserver:anonymous at rubyforge.org:/var/cvs/cougar checkout 
+> Rameau/Rameau.pdf
+> 
+>
+
+
+From znmeb at cesmail.net  Sun Dec 17 07:35:14 2006
+From: znmeb at cesmail.net (M. Edward (Ed) Borasky)
+Date: Sat, 16 Dec 2006 22:35:14 -0800
+Subject: [Bioc-devel] Sweave changes (keep.source = TRUE or FALSE?)
+In-Reply-To: <4584B1CC.9050005@stats.uwo.ca>
+References: <456CEE70.6040709@stats.uwo.ca>	<17775.59614.963640.147491@stat.math.ethz.ch>	<17779.373.814185.59469@celebrian.ci.tuwien.ac.at>	<45747B16.6030505@stats.uwo.ca>
+	<m27ix7ryna.fsf_-_@ziti.local>	<45758FC6.7080806@ebi.ac.uk>	<34964.218.212.98.77.1165337134.squirrel@www.altern.org>	<b796582f0612051124i4c195ef8w8208b42113bda553@mail.gmail.com>	<4575D53C.7090908@stats.uwo.ca>	<17782.42641.660329.909908@celebrian.ci.tuwien.ac.at>	<b796582f0612061924q66b7545cp913a2755e48f07fe@mail.gmail.com>	<17783.64078.642623.834407@celebrian.ci.tuwien.ac.at>	<Pine.GSO.4.58.0612071141220.1945@capecod.bwh.harvard.edu>
+	<17785.36078.341392.134600@celebrian.ci.tuwien.ac.at>
+	<45848DBC.8000607@cesmail.net> <4584B1CC.9050005@stats.uwo.ca>
+Message-ID: <4584E522.6020600@cesmail.net>
+
+Duncan Murdoch wrote:
+> 1.  Don't use 2.4.0, version 2.4.1 will be released on Monday.
+Ah ... OK. I just notified the good folks at Gentoo about that. I've 
+been off the mailing lists.
+> 2.  There will not be a lot of change from 2.4.1 to 2.5.0.  R changes 
+> slowly.
+IIRC the R releases usually happen in April and October. My 0.99 release 
+will probably be in March, so I may need to work with 2.4.1 unless I 
+want to wait and sync up with 2.5. I think I'll try R-devel first just 
+to get used to the new Sweave behavior.
+> 3.  If you want to maintain comments and formatting in your source 
+> code in Sweave, then use R-devel and turn on the option.  If you don't 
+> care, then it doesn't matter which version you use.  If you hate the 
+> idea of displaying your formatting and comments, then turn off the 
+> option. (This works in 2.4.0, which won't even blink when you turn off 
+> the non-existent option.)
+I don't have any personal preferences, but in general more options are 
+welcome in this area. I think I'll start with R-devel and see how it works.
+> 4.  If you had some other "core idea of the project" in mind, then you 
+> should say more explicitly what it is.  I don't think the new Sweave 
+> capability changes a core idea of the project, but I think that's what 
+> you were talking about.
+The core idea is that reproducible research should be easy. And R 
+already does most of what I want to do -- what I want to add is a 
+collection of workflow management and project automation tools built in 
+Ruby. I also want to add symbolic computation capabilities, but right 
+now I'm leaning towards just integrating Axiom rather than using a 
+library, because Axiom also has literate programming tools built in.
+
+-- 
+M. Edward (Ed) Borasky, FBG, AB, PTA, PGS, MS, MNLP, NST, ACMC(P)
+http://borasky-research.blogspot.com/
+
+If God had meant for carrots to be eaten cooked, He would have given rabbits fire.
+
+
+From khansen at stat.Berkeley.EDU  Sun Dec 17 23:28:26 2006
+From: khansen at stat.Berkeley.EDU (Kasper Daniel Hansen)
+Date: Sun, 17 Dec 2006 23:28:26 +0100
+Subject: [Bioc-devel] Some build system news
+In-Reply-To: <4582164F.4060608@fhcrc.org>
+References: <4582164F.4060608@fhcrc.org>
+Message-ID: <BC348556-65AA-486A-A624-7ED00AB15997@stat.berkeley.edu>
+
+On Dec 15, 2006, at 4:28 AM, Herve Pages wrote:
+
+> Hi all,
+>
+> As you might have already seen, we've replaced our main build  
+> machine 'gopher5'
+> by 'lamb1', a brand new server:
+>
+>   http://bioconductor.org/checkResults/2.0/
+>
+> It's a 64 bit system running Linux SUSE 10.1 for x86_64.
+>
+> "Main" build machine means that a devel package is made publicly  
+> available
+> (by being pushed to http://bioconductor.org/packages/2.0/bioc/)  
+> only if it
+> passes the CHECK on 'lamb1' with no error (it can have warnings  
+> though).
+
+I assume you have thought this through. I just want to point out the  
+the lamb1 system is one specific architecture and there may be  
+(development) packages that have problems only for specific  
+architectures. This is of course mostly relevant for non-R code, and  
+I may be a bit biased since I have worked on two packages where the  
+platform differences really mattered.
+
+Kasper
+
+> Also, maybe you've been wondering what's going on with some package  
+> description
+> pages:
+>
+>   http://bioconductor.org/packages/2.0/bioc/
+>
+> As you can see, the individual pages for the packages listed below  
+> the GGtools
+> package are missing. This problem is related to the migration of  
+> all our
+> scripts from gopher5 to lamb1 and should get back to a normal state  
+> tomorrow
+> around noon.
+>
+> Also the build results for our new Windows server (liverpool) are
+> not looking good for an obscure pdflatex.exe error that occurs
+> when building most of the vignettes. We'll investigate this and
+> try to fix ASAP. In the meantime, if someone has already seen this  
+> problem
+> before and can provide some usefull feedback, s/he is more than  
+> welcome.
+> A typical example can be seen here:
+>
+>   http://bioconductor.org/checkResults/2.0/liverpool-ABarray- 
+> buildsrc.html
+>
+> Thanks!
+>
+> Best,
+> H.
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From sfalcon at fhcrc.org  Mon Dec 18 16:03:13 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 18 Dec 2006 07:03:13 -0800
+Subject: [Bioc-devel] Some build system news
+In-Reply-To: <BC348556-65AA-486A-A624-7ED00AB15997@stat.berkeley.edu> (Kasper
+	Daniel Hansen's message of "Sun, 17 Dec 2006 23:28:26 +0100")
+References: <4582164F.4060608@fhcrc.org>
+	<BC348556-65AA-486A-A624-7ED00AB15997@stat.berkeley.edu>
+Message-ID: <m27iwp4572.fsf@ziti.local>
+
+Kasper Daniel Hansen <khansen at stat.berkeley.edu> writes:
+
+> On Dec 15, 2006, at 4:28 AM, Herve Pages wrote:
+>> "Main" build machine means that a devel package is made publicly  
+>> available
+>> (by being pushed to http://bioconductor.org/packages/2.0/bioc/)  
+>> only if it
+>> passes the CHECK on 'lamb1' with no error (it can have warnings  
+>> though).
+>
+> I assume you have thought this through. I just want to point out the  
+> the lamb1 system is one specific architecture and there may be  
+> (development) packages that have problems only for specific  
+> architectures. This is of course mostly relevant for non-R code, and  
+> I may be a bit biased since I have worked on two packages where the  
+> platform differences really mattered.
+
+The "feature" that source packages rely on a single build system is
+not new.  Things have been this way since I started working on the
+project.  I agree that there might be some value in adding more
+robustness, but I'm really not sure it would be worth the time
+required to implement (when we could be working on other aspects of
+the project).
+
++ seth
+
+
+From hpages at fhcrc.org  Mon Dec 18 19:55:54 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Mon, 18 Dec 2006 10:55:54 -0800
+Subject: [Bioc-devel] Some build system news
+In-Reply-To: <BC348556-65AA-486A-A624-7ED00AB15997@stat.berkeley.edu>
+References: <4582164F.4060608@fhcrc.org>
+	<BC348556-65AA-486A-A624-7ED00AB15997@stat.berkeley.edu>
+Message-ID: <4586E43A.5050203@fhcrc.org>
+
+Kasper Daniel Hansen wrote:
+> On Dec 15, 2006, at 4:28 AM, Herve Pages wrote:
+> 
+>> "Main" build machine means that a devel package is made publicly
+>> available
+>> (by being pushed to http://bioconductor.org/packages/2.0/bioc/) only
+>> if it
+>> passes the CHECK on 'lamb1' with no error (it can have warnings though).
+> 
+> I assume you have thought this through. I just want to point out the the
+> lamb1 system is one specific architecture and there may be (development)
+> packages that have problems only for specific architectures. This is of
+> course mostly relevant for non-R code, and I may be a bit biased since I
+> have worked on two packages where the platform differences really mattered.
+> 
+
+Hi Kasper,
+
+I should have said:
+
+  "Main" build machine means that the _src_ tarball (.tar.gz) of a package is
+   made publicly available if it passes the CHECK on 'lamb1' with no error.
+
+For binary packages things are a little bit different:
+  - lemming is our "main" Windows build machine
+  - We don't build Mac binaries: we only build and check the source packages
+    on derby, our Mac build machine. Universal binaries are built externally by
+    Simon Urbanek (results are here http://r.research.att.com/reports/) but for
+    release packages only.
+
+I agree that the lamb1 system is still one specific platform among
+many other Unix/Linux platforms. The underlying question is: on how many
+platforms should a source package build and pass check before it can be
+considered good enough to be made publicly available? And what is the exact
+definition of "platform" to start with: is it just the microprossesor type
+or the n-uplet (microprossesor type, OS type, OS version, compilers, etc...)?
+
+Best,
+H.
+
+
+> Kasper
+> 
+>> Also, maybe you've been wondering what's going on with some package
+>> description
+>> pages:
+>>
+>>   http://bioconductor.org/packages/2.0/bioc/
+>>
+>> As you can see, the individual pages for the packages listed below the
+>> GGtools
+>> package are missing. This problem is related to the migration of all our
+>> scripts from gopher5 to lamb1 and should get back to a normal state
+>> tomorrow
+>> around noon.
+>>
+>> Also the build results for our new Windows server (liverpool) are
+>> not looking good for an obscure pdflatex.exe error that occurs
+>> when building most of the vignettes. We'll investigate this and
+>> try to fix ASAP. In the meantime, if someone has already seen this
+>> problem
+>> before and can provide some usefull feedback, s/he is more than welcome.
+>> A typical example can be seen here:
+>>
+>>  
+>> http://bioconductor.org/checkResults/2.0/liverpool-ABarray-buildsrc.html
+>>
+>> Thanks!
+>>
+>> Best,
+>> H.
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From khansen at stat.Berkeley.EDU  Tue Dec 19 00:30:01 2006
+From: khansen at stat.Berkeley.EDU (Kasper Daniel Hansen)
+Date: Tue, 19 Dec 2006 00:30:01 +0100
+Subject: [Bioc-devel] Some build system news
+In-Reply-To: <4586E43A.5050203@fhcrc.org>
+References: <4582164F.4060608@fhcrc.org>
+	<BC348556-65AA-486A-A624-7ED00AB15997@stat.berkeley.edu>
+	<4586E43A.5050203@fhcrc.org>
+Message-ID: <C377A544-515E-4EDF-8745-25472EB8EC15@stat.Berkeley.EDU>
+
+
+On Dec 18, 2006, at 7:55 PM, Herve Pages wrote:
+
+> Kasper Daniel Hansen wrote:
+>> On Dec 15, 2006, at 4:28 AM, Herve Pages wrote:
+>>
+>>> "Main" build machine means that a devel package is made publicly
+>>> available
+>>> (by being pushed to http://bioconductor.org/packages/2.0/bioc/) only
+>>> if it
+>>> passes the CHECK on 'lamb1' with no error (it can have warnings  
+>>> though).
+>>
+>> I assume you have thought this through. I just want to point out  
+>> the the
+>> lamb1 system is one specific architecture and there may be  
+>> (development)
+>> packages that have problems only for specific architectures. This  
+>> is of
+>> course mostly relevant for non-R code, and I may be a bit biased  
+>> since I
+>> have worked on two packages where the platform differences really  
+>> mattered.
+>>
+>
+> Hi Kasper,
+>
+> I should have said:
+>
+>   "Main" build machine means that the _src_ tarball (.tar.gz) of a  
+> package is
+>    made publicly available if it passes the CHECK on 'lamb1' with  
+> no error.
+>
+> For binary packages things are a little bit different:
+>   - lemming is our "main" Windows build machine
+>   - We don't build Mac binaries: we only build and check the source  
+> packages
+>     on derby, our Mac build machine. Universal binaries are built  
+> externally by
+>     Simon Urbanek (results are here http://r.research.att.com/ 
+> reports/) but for
+>     release packages only.
+>
+> I agree that the lamb1 system is still one specific platform among
+> many other Unix/Linux platforms. The underlying question is: on how  
+> many
+> platforms should a source package build and pass check before it  
+> can be
+> considered good enough to be made publicly available? And what is  
+> the exact
+> definition of "platform" to start with: is it just the  
+> microprossesor type
+> or the n-uplet (microprossesor type, OS type, OS version,  
+> compilers, etc...)?
+
+Now I get it. I agree with Seth that there is no compelling reason to  
+change it. For me, the interesting part is that check gets run on all  
+platforms irrespectively of the result on one of them. Whether or not  
+the tarball is released is less important.
+
+However, if I were to pick one core platform it would be 32 bit Linux.
+
+Kasper
+
+
+> Best,
+> H.
+>
+>
+>> Kasper
+>>
+>>> Also, maybe you've been wondering what's going on with some package
+>>> description
+>>> pages:
+>>>
+>>>   http://bioconductor.org/packages/2.0/bioc/
+>>>
+>>> As you can see, the individual pages for the packages listed  
+>>> below the
+>>> GGtools
+>>> package are missing. This problem is related to the migration of  
+>>> all our
+>>> scripts from gopher5 to lamb1 and should get back to a normal state
+>>> tomorrow
+>>> around noon.
+>>>
+>>> Also the build results for our new Windows server (liverpool) are
+>>> not looking good for an obscure pdflatex.exe error that occurs
+>>> when building most of the vignettes. We'll investigate this and
+>>> try to fix ASAP. In the meantime, if someone has already seen this
+>>> problem
+>>> before and can provide some usefull feedback, s/he is more than  
+>>> welcome.
+>>> A typical example can be seen here:
+>>>
+>>>
+>>> http://bioconductor.org/checkResults/2.0/liverpool-ABarray- 
+>>> buildsrc.html
+>>>
+>>> Thanks!
+>>>
+>>> Best,
+>>> H.
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+
+

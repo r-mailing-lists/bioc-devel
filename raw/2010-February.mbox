@@ -1,0 +1,906 @@
+From ssefick at gmail.com  Thu Feb  4 06:31:40 2010
+From: ssefick at gmail.com (stephen sefick)
+Date: Wed, 3 Feb 2010 23:31:40 -0600
+Subject: [Bioc-devel] modifyWeights Problem
+Message-ID: <c502a9e11002032131t3e274f89ud10b986f379be8ae@mail.gmail.com>
+
+I am using the limma packages for the first time, and I need help with
+the modifyWeights function.  I have about three years of experience
+with R programing, but this is the first time that I have run an
+analysis with a bioconductor package.  I have included the code below.
+ I know that this is not a reproducible example and I would gladly
+give any more information requested.  I am trying to modify the
+weights of genes that I know are housekeeping genes (upweight).  I can
+not get the modifyWeights function to work to save my life.  The
+weights array is 6400, 6.  The control status vector is 12800- that
+seems like only two of the arrays are being represented???????  I
+don't know what is wrong.  Any help would be greatly appreciated
+thanks,
+
+Stephen Sefick
+
+library(limma)
+library(marray)
+library(convert)
+library(statmod)
+#read in targets file
+targets <- readTargets("targets.txt", row.names="Name")
+#weight everything with flags !cutoff=0!
+RG <- read.maimages(targets$FileName, source="genepix",
+wt.fun=wtflags(cutoff=-50 weight=0))
+#read .gal file
+#remove extra tab in file
+
+a <- readGAL()
+b <- a[,-6]
+RG$genes<-b
+#spot types file
+spottypes <- readSpotTypes()
+RG$genes$Status <- controlStatus(spottypes, RG$genes)
+
+##################CHANGE weighting for spot types#####################
+######################################################################
+multiply <- c(1,0,2,0,1,0,1,1,1)
+######################################################################
+######################################################################
+
+a <- unique(RG$genes$ID)
+status=RG$genes$Status
+w <- modifyWeights(RG$weights, RG$genes$Status, a, c(0, 1))
+
+-- 
+Stephen Sefick
+
+Let's not spend our time and resources thinking about things that are
+so little or so large that all they really do for us is puff us up and
+make us feel like gods.  We are mammals, and have not exhausted the
+annoying little problems of being mammals.
+
+								-K. Mullis
+
+
+From mtmorgan at fhcrc.org  Thu Feb  4 21:27:30 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 04 Feb 2010 12:27:30 -0800
+Subject: [Bioc-devel] Updated new package submission process
+Message-ID: <4B6B2DB2.7050102@fhcrc.org>
+
+Bioconductors!
+
+New, high quality, user-contributed packages addressing leading-edge
+analyses and technologies are a great resource for the Bioconductor
+community. We have adjusted and streamlined the new package submission
+process, as outlined here:
+
+  http://wiki.fhcrc.org/bioc/HowTo/Package_Contribution
+
+The new contribution process emphasizes production of technically
+correct packages meeting standards of functionality, documentation, and
+interoperability. These changes take effect immediately; previously
+submitted packages will be processed following the original approach.
+
+We're also taking this opportunity to transfer the primary contact for
+new package submissions to Chao-Jen Wong (see the Contact Information
+section of the web page mentioned above); Nishant Gopalakrishnan has
+done an excellent job moving packages through the submission process for
+more than a year.
+
+Best wishes,
+
+Martin
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From mwkimpel at gmail.com  Wed Feb 10 04:41:59 2010
+From: mwkimpel at gmail.com (Mark Kimpel)
+Date: Tue, 9 Feb 2010 22:41:59 -0500
+Subject: [Bioc-devel] affxparser compile fails on R-devel
+Message-ID: <6b93d1831002091941y404d1f31ha9999e6a764f65d3@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100209/d6893d9e/attachment.pl>
+
+From kasperdanielhansen at gmail.com  Wed Feb 10 05:35:42 2010
+From: kasperdanielhansen at gmail.com (Kasper Daniel Hansen)
+Date: Tue, 9 Feb 2010 23:35:42 -0500
+Subject: [Bioc-devel] affxparser compile fails on R-devel
+In-Reply-To: <6b93d1831002091941y404d1f31ha9999e6a764f65d3@mail.gmail.com>
+References: <6b93d1831002091941y404d1f31ha9999e6a764f65d3@mail.gmail.com>
+Message-ID: <e780c0971002092035x1c04ccebu8f6788086ae9f6b8@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100209/c8c5dfc3/attachment.pl>
+
+From Arnaud.Droit at ircm.qc.ca  Thu Feb 11 18:08:34 2010
+From: Arnaud.Droit at ircm.qc.ca (Droit Arnaud)
+Date: Thu, 11 Feb 2010 12:08:34 -0500
+Subject: [Bioc-devel] rGADEM is now available
+Message-ID: <4E689095-CF6F-437C-A7EF-45A3F8EF2E33@ircm.qc.ca>
+
+Hello everyone,
+
+rGADEM a new package for de novo motif discovery is available on Bioconductor.
+
+We propose an efficient method which combines spaces dyad and an expectation-maximization algorithm (EM).
+Candidates words (four to six nucleotide) for constructing spaced dyads are prioritized by their degree of overrepresentation on the input sequence data.
+Spaced dyads are converted into starting position weight matrices (PWMs).
+rGADEM then employs a genetic algorithm, with an embedded EM to improve starting PWMs, to guide the evolution of a population of spaced dyads towards one whose entropy score  are more statistically significant.
+
+Please, let me know of you have comments, suggestions.
+
+Thanks,
+
+Arnaud Droit, Ph.D
+Computational Biology Unit
+Institut de Recherches Cliniques de Montr?al
+arnaud.droit at ircm.qc.ca<mailto:arnaud.droit at ircm.qc.ca>
+
+
+From hb at stat.berkeley.edu  Fri Feb 19 12:43:11 2010
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Fri, 19 Feb 2010 12:43:11 +0100
+Subject: [Bioc-devel] Suggestion to use packageStartupMessage() instead of
+	cat() in GLAD
+Message-ID: <59d7961d1002190343n5f81e954x19ac110ec662b190@mail.gmail.com>
+
+Hi,
+
+maintainer CC:ed, but since this may apply to other
+packages/developers too, I send it to the list.
+
+In .onLoad() of GLAD the welcome message is outputted using cat().
+Could you please update this to use packageStartupMessage() instead.
+This way it is possible to load GLAD quietly.  Moreover, the message
+will not be loaded if you access a function in GLAD using "::", e.g.
+GLAD::as.profileCGH.  Right now/with cat() you get:
+
+% R --vanilla
+
+> fcn <- GLAD::as.profileCGH
+
+######################################################################################
+
+Have fun with GLAD
+
+For smoothing it is possible to use either
+the AWS algorithm (Polzehl and Spokoiny, 2002)
+or the HaarSeg algorithm (Ben-Yaacov and Eldar, Bioinformatics,  2008)
+
+If you use the package with AWS, please cite:
+Hupe et al. (Bioinformatics, 2004) and Polzehl and Spokoiny (2002)
+
+If you use the package with HaarSeg, please cite:
+Hupe et al. (Bioinformatics, 2004) and (Ben-Yaacov and Eldar,
+Bioinformatics, 2008)
+
+For fast computation it is recommanded to use
+the daglad function with smoothfunc=haarseg
+
+######################################################################################
+
+New options are available in daglad: see help for details.
+
+
+> print(fcn)
+function (object, ...)
+{
+    UseMethod("as.profileCGH")
+}
+<environment: namespace:GLAD>
+
+
+Thanks
+
+Henrik
+
+PS. Your "rulers" - ####....# - are longer than 80, which is the
+typical terminal width, and therefore they will line wrap.  You might
+want to shorten them to 80 or dynamically use getOption("width").
+
+
+From sneumann at ipb-halle.de  Sat Feb 20 20:52:30 2010
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Sat, 20 Feb 2010 20:52:30 +0100
+Subject: [Bioc-devel] Mac build (xcms)
+In-Reply-To: <4B7F288A.3050109@scripps.edu>
+References: <4B7F288A.3050109@scripps.edu>
+Message-ID: <1266695550.15508.749.camel@paddy>
+
+Hi,
+
+XCMS has link problems on MacOS ppc build, see Ralf's mail below.
+
+We had a similar issue april last year 
+http://groups.google.de/group/xcms-devel/browse_thread/thread/bb2584a7c015e56e/a24d1436bfc5d552?hl=de&ie=UTF-8&oe=utf-8&q=Re:+xcms+and+parallel+make#a24d1436bfc5d552
+which got fixed by Patrick Aboyoun back then. Patrick's answer 
+back then is at the end of this mail.
+
+Since R-2.10 or so R CMD build moved over to some perl code,
+which might have re-introduced this similar problem unnoticed.
+Could that be ?
+
+If we'd add a unit test to XCMS (which are disabled 
+in the BioC builds ?!) or added that obiwarp() call to a vignette, 
+we'd have a broken ("ERROR") build on MacOS. This way 
+only the users will notice, which is even worse.
+
+Any clues ?
+
+Yours,
+Steffen
+
+On Fri, 2010-02-19 at 16:10 -0800, Ralf Tautenhahn wrote:
+> I am not a Mac person, and I am not familiar with these multiarch
+> builds that Mac seems to use.
+> 
+> It seems the current builds of release and devel for Mac
+> http://bioconductor.org/checkResults/2.5/bioc-LATEST/xcms/pelham-buildsrc.html
+> http://bioconductor.org/checkResults/2.6/bioc-LATEST/xcms/pelham-buildsrc.html
+> are not compiled/linked correctly.
+> 
+> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/mat.cpp -o obiwarp/mat.o
+> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/vec.cpp -o obiwarp/vec.o
+> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/xcms_dynprog.cpp -o obiwarp/xcms_dynprog.o
+> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/xcms_lmat.cpp -o obiwarp/xcms_lmat.o
+> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/xcms_obiwarp.cpp -o obiwarp/xcms_obiwarp.o
+> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c mzClust_hclust.c -o mzClust_hclust.o
+> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c mzROI.c -o mzROI.o
+> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c netCDF.c -o netCDF.o
+> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c ramp_base64.cpp -o ramp_base64.o
+> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c ramp.cpp -o ramp.o
+> ramp.cpp: In function ?char* rampValidFileType(const char*)?:
+> ramp.cpp:1459: warning: ?result? may be used uninitialized in this function
+> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c rampR.cpp -o rampR.o
+> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c util.c -o util.o
+> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c xcms.c -o xcms.o
+> g++-4.2 -arch i386 -dynamiclib -Wl,-headerpad_max_install_names -undefined dynamic_lookup -single_module -multiply_defined suppress -L/usr/local/lib -o xcms.so obiwarp/mat.o obiwarp/vec.o obiwarp/xcms_dynprog.o obiwarp/xcms_lmat.o obiwarp/xcms_obiwarp.o mzClust_hclust.o mzROI.o netCDF.o ramp_base64.o ramp.o rampR.o util.o xcms.o -L/usr/local/lib -L/sw/lib -lnetcdf -lz -F/Library/Frameworks/R.framework/.. -framework R -Wl,-framework -Wl,CoreFoundation
+> ** arch - ppc
+> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c mzClust_hclust.c -o mzClust_hclust.o
+> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c mzROI.c -o mzROI.o
+> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c netCDF.c -o netCDF.o
+> g++-4.0 -arch ppc -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c ramp_base64.cpp -o ramp_base64.o
+> g++-4.0 -arch ppc -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c ramp.cpp -o ramp.o
+> g++-4.0 -arch ppc -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c rampR.cpp -o rampR.o
+> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c util.c -o util.o
+> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c xcms.c -o xcms.o
+> g++-4.2 -arch ppc -dynamiclib -Wl,-headerpad_max_install_names -undefined dynamic_lookup -single_module -multiply_defined suppress -L/usr/local/lib -o xcms.so obiwarp/mat.o obiwarp/vec.o obiwarp/xcms_dynprog.o obiwarp/xcms_lmat.o obiwarp/xcms_obiwarp.o mzClust_hclust.o mzROI.o netCDF.o ramp_base64.o ramp.o rampR.o util.o xcms.o -L/usr/local/lib -L/sw/lib -lnetcdf -lz -F/Library/Frameworks/R.framework/.. -framework R -Wl,-framework -Wl,CoreFoundation
+> ld: warning in obiwarp/mat.o, file is not of required architecture
+> ld: warning in obiwarp/vec.o, file is not of required architecture
+> ld: warning in obiwarp/xcms_dynprog.o, file is not of required architecture
+> ld: warning in obiwarp/xcms_lmat.o, file is not of required architecture
+> ld: warning in obiwarp/xcms_obiwarp.o, file is not of required architecture
+> 
+> As you can see, the obiwarp part is build for 32 bit, only.
+> 
+> As a result you get this kind of error message on Mac's when trying to
+> use obiwarp:
+> Error in .Call("R_set_from_xcms", valscantime1, scantime1, mzval,
+> mz,  : 
+>   C symbol name "R_set_from_xcms" not in load table
+> 
+> (defined in  src/obiwarp/xcms_obiwarp.cpp:extern "C" SEXP
+> R_set_from_xcms(SEXP valscantime, SEXP scantime, SEXP mzrange, SEXP
+> mz, SEXP intensity)
+> 
+> It builds correctly (for the main architecture, only)
+> when the --no-multiarch option is used for R CMD INSTALL.
+> 
+> 
+> Any Mac build gurus out there ?
+
+######################################################################################
+# This is Patrick's answer from last year, which I can't find 
+# in any of the public archives:
+#
+
+On Fri, 2009-04-24 at 09:54 -0700, Patrick Aboyoun wrote: 
+> Steffen,
+> Per Brian suggestion I changed the build universal binary script on the 
+> BioC Mac OS X nodes to use the (variable regulated) command
+> 
+> R_ARCH=/$arch $R_CMD CMD INSTALL --preclean --library="$R_LIBS" 
+> --libs-only "$srcpkg_filepath"
+> 
+> The addition of the --preclean flag solved the problem. There are other 
+> BioC packages with similar issues that need to be cleaned out now in a 
+> similar manner, but it appears that BioC packages with embedded source 
+> libraries no longer have to concern themselves with multi-architecture 
+> builds. (Problems will still exist for packages that expect the Mac OS X 
+> machines to have pre-built multi-architecture shared libraries, but that 
+> is another issue.)
+> 
+> 
+> Patrick
+> 
+> 
+> Steffen Neumann wrote:
+> > Hi,
+> >
+> > the problem we (Patrick) solved with "all: clean $(SHLIB)"
+> > was that we have a subdirectory "xcms/src/obiwarp"
+> > which contains *.c files and *.o fies after "make all".
+> >
+> > BUT because MacOS BioC is building i386/PPC/PPC64 consecutively,
+> > and presumably calling something like 
+> >
+> > 	make clean
+> > 	for ARCH in (i386 ppc ppc64) {
+> > 		make all
+> > 	}
+> >
+> > and *not*
+> >
+> > 	for ARCH in (i386 ppc ppc64) {
+> > 		make clean
+> > 		make all
+> > 	}
+> >
+> > we had linker warnings in http://bioconductor.org/.../xcms/pelham-buildsrc.html
+> > about those leftover *.o in the obiwarp subdirectory:
+> >
+> > g++-4.2 -arch ppc -dynamiclib -Wl,-headerpad_max_install_names  -undefined dynamic_lookup -single_module -multiply_defined suppress -L/usr/local/lib -o xcms.so obiwarp/cmdparser.o obiwarp/mat.o obiwarp/vec.o obiwarp/xcms_dynprog.o obiwarp/xcms_lmat.o obiwarp/xcms_obiwarp.o mzClust_hclust.o mzROI.o netCDF.o ramp_base64.o ramp.o rampR.o util.o xcms.o -L/usr/local/lib -L/sw/lib -lnetcdf -lz  -F/Library/Frameworks/R.framework/.. -framework R -Wl,-framework -Wl,CoreFoundation
+> >   
+> >> ld: warning in obiwarp/cmdparser.o, file is not of required architecture
+> >> ld: warning in obiwarp/mat.o, file is not of required architecture
+> >>     
+> >
+> > I am happy to get suggestions for a better solution, 
+> > which 1) allows to organise C sources in subdirectories
+> > and 2) works with multiple Arch builds. Maybe these 
+> > multiarch builds need to call make clean explicitely inbetween ?
+> >
+> > Yours,
+> > Steffen
+> >
+> >   
+> 
+
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From Philippe.Hupe at curie.fr  Mon Feb 22 18:19:17 2010
+From: Philippe.Hupe at curie.fr (=?ISO-8859-1?Q?Philippe_Hup=E9?=)
+Date: Mon, 22 Feb 2010 18:19:17 +0100
+Subject: [Bioc-devel] Suggestion to use packageStartupMessage() instead
+ of	cat() in GLAD
+In-Reply-To: <59d7961d1002190343n5f81e954x19ac110ec662b190@mail.gmail.com>
+References: <59d7961d1002190343n5f81e954x19ac110ec662b190@mail.gmail.com>
+Message-ID: <4B82BC95.90307@curie.fr>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100222/b5cf2cf2/attachment.pl>
+
+From paboyoun at fhcrc.org  Mon Feb 22 19:59:06 2010
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Mon, 22 Feb 2010 10:59:06 -0800
+Subject: [Bioc-devel] Mac build (xcms)
+In-Reply-To: <1266695550.15508.749.camel@paddy>
+References: <4B7F288A.3050109@scripps.edu> <1266695550.15508.749.camel@paddy>
+Message-ID: <4B82D3FA.6090403@fhcrc.org>
+
+Steffen,
+I am unable to reproduce the problem. Currently the builds are fine and 
+when I run R-2.10/R-devel --arch=ppc, download xcms via biocLite, and 
+run the RUnit tests everything seems to be in order. Perhaps there is 
+some confusion over the warning messages you are receiving during the 
+build process? The BioC build process occurs in three stages for Mac OS 
+X 10.4 and 10.5.
+
+1) Build package source tarball, which is *not* distributed at 
+bioconductor.org. At this step we only test arch=i386 and so the ld 
+warning messages for arch=ppc are not meaningful.
+
+2) Check package source tarball that was built in first step. Again we 
+only test arch=i386.
+
+3) Build binary package tarball. At this step, the build for each 
+architecture (i386, pcc for Mac OS X 10.4 and i386, ppc, x86_64 for Mac 
+OS X 10.5) is performed separately using the (parameterized) command
+
+             R_ARCH=/{i386/ppc} R CMD INSTALL --preclean 
+--library=xcms.buildbin-libdir --libs-only xcms_VERSION.tar.gz
+
+The resulting shared objects from each of the architecture builds are 
+then bundled together in the *.tgz Mac OS X binary package tarball. It 
+is this multi-architecture collection that is distributed at 
+bioconductor.org.
+
+If I am misunderstanding your concerns, let me know.
+
+Cheers,
+Patrick
+
+
+On 2/20/10 11:52 AM, Steffen Neumann wrote:
+> Hi,
+>
+> XCMS has link problems on MacOS ppc build, see Ralf's mail below.
+>
+> We had a similar issue april last year
+> http://groups.google.de/group/xcms-devel/browse_thread/thread/bb2584a7c015e56e/a24d1436bfc5d552?hl=de&ie=UTF-8&oe=utf-8&q=Re:+xcms+and+parallel+make#a24d1436bfc5d552
+> which got fixed by Patrick Aboyoun back then. Patrick's answer
+> back then is at the end of this mail.
+>
+> Since R-2.10 or so R CMD build moved over to some perl code,
+> which might have re-introduced this similar problem unnoticed.
+> Could that be ?
+>
+> If we'd add a unit test to XCMS (which are disabled
+> in the BioC builds ?!) or added that obiwarp() call to a vignette,
+> we'd have a broken ("ERROR") build on MacOS. This way
+> only the users will notice, which is even worse.
+>
+> Any clues ?
+>
+> Yours,
+> Steffen
+>
+> On Fri, 2010-02-19 at 16:10 -0800, Ralf Tautenhahn wrote:
+>    
+>> I am not a Mac person, and I am not familiar with these multiarch
+>> builds that Mac seems to use.
+>>
+>> It seems the current builds of release and devel for Mac
+>> http://bioconductor.org/checkResults/2.5/bioc-LATEST/xcms/pelham-buildsrc.html
+>> http://bioconductor.org/checkResults/2.6/bioc-LATEST/xcms/pelham-buildsrc.html
+>> are not compiled/linked correctly.
+>>
+>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/mat.cpp -o obiwarp/mat.o
+>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/vec.cpp -o obiwarp/vec.o
+>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/xcms_dynprog.cpp -o obiwarp/xcms_dynprog.o
+>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/xcms_lmat.cpp -o obiwarp/xcms_lmat.o
+>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/xcms_obiwarp.cpp -o obiwarp/xcms_obiwarp.o
+>> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c mzClust_hclust.c -o mzClust_hclust.o
+>> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c mzROI.c -o mzROI.o
+>> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c netCDF.c -o netCDF.o
+>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c ramp_base64.cpp -o ramp_base64.o
+>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c ramp.cpp -o ramp.o
+>> ramp.cpp: In function ?char* rampValidFileType(const char*)?:
+>> ramp.cpp:1459: warning: ?result? may be used uninitialized in this function
+>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c rampR.cpp -o rampR.o
+>> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c util.c -o util.o
+>> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c xcms.c -o xcms.o
+>> g++-4.2 -arch i386 -dynamiclib -Wl,-headerpad_max_install_names -undefined dynamic_lookup -single_module -multiply_defined suppress -L/usr/local/lib -o xcms.so obiwarp/mat.o obiwarp/vec.o obiwarp/xcms_dynprog.o obiwarp/xcms_lmat.o obiwarp/xcms_obiwarp.o mzClust_hclust.o mzROI.o netCDF.o ramp_base64.o ramp.o rampR.o util.o xcms.o -L/usr/local/lib -L/sw/lib -lnetcdf -lz -F/Library/Frameworks/R.framework/.. -framework R -Wl,-framework -Wl,CoreFoundation
+>> ** arch - ppc
+>> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c mzClust_hclust.c -o mzClust_hclust.o
+>> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c mzROI.c -o mzROI.o
+>> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c netCDF.c -o netCDF.o
+>> g++-4.0 -arch ppc -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c ramp_base64.cpp -o ramp_base64.o
+>> g++-4.0 -arch ppc -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c ramp.cpp -o ramp.o
+>> g++-4.0 -arch ppc -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c rampR.cpp -o rampR.o
+>> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c util.c -o util.o
+>> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c xcms.c -o xcms.o
+>> g++-4.2 -arch ppc -dynamiclib -Wl,-headerpad_max_install_names -undefined dynamic_lookup -single_module -multiply_defined suppress -L/usr/local/lib -o xcms.so obiwarp/mat.o obiwarp/vec.o obiwarp/xcms_dynprog.o obiwarp/xcms_lmat.o obiwarp/xcms_obiwarp.o mzClust_hclust.o mzROI.o netCDF.o ramp_base64.o ramp.o rampR.o util.o xcms.o -L/usr/local/lib -L/sw/lib -lnetcdf -lz -F/Library/Frameworks/R.framework/.. -framework R -Wl,-framework -Wl,CoreFoundation
+>> ld: warning in obiwarp/mat.o, file is not of required architecture
+>> ld: warning in obiwarp/vec.o, file is not of required architecture
+>> ld: warning in obiwarp/xcms_dynprog.o, file is not of required architecture
+>> ld: warning in obiwarp/xcms_lmat.o, file is not of required architecture
+>> ld: warning in obiwarp/xcms_obiwarp.o, file is not of required architecture
+>>
+>> As you can see, the obiwarp part is build for 32 bit, only.
+>>
+>> As a result you get this kind of error message on Mac's when trying to
+>> use obiwarp:
+>> Error in .Call("R_set_from_xcms", valscantime1, scantime1, mzval,
+>> mz,  :
+>>    C symbol name "R_set_from_xcms" not in load table
+>>
+>> (defined in  src/obiwarp/xcms_obiwarp.cpp:extern "C" SEXP
+>> R_set_from_xcms(SEXP valscantime, SEXP scantime, SEXP mzrange, SEXP
+>> mz, SEXP intensity)
+>>
+>> It builds correctly (for the main architecture, only)
+>> when the --no-multiarch option is used for R CMD INSTALL.
+>>
+>>
+>> Any Mac build gurus out there ?
+>>      
+> ######################################################################################
+> # This is Patrick's answer from last year, which I can't find
+> # in any of the public archives:
+> #
+>
+> On Fri, 2009-04-24 at 09:54 -0700, Patrick Aboyoun wrote:
+>    
+>> Steffen,
+>> Per Brian suggestion I changed the build universal binary script on the
+>> BioC Mac OS X nodes to use the (variable regulated) command
+>>
+>> R_ARCH=/$arch $R_CMD CMD INSTALL --preclean --library="$R_LIBS"
+>> --libs-only "$srcpkg_filepath"
+>>
+>> The addition of the --preclean flag solved the problem. There are other
+>> BioC packages with similar issues that need to be cleaned out now in a
+>> similar manner, but it appears that BioC packages with embedded source
+>> libraries no longer have to concern themselves with multi-architecture
+>> builds. (Problems will still exist for packages that expect the Mac OS X
+>> machines to have pre-built multi-architecture shared libraries, but that
+>> is another issue.)
+>>
+>>
+>> Patrick
+>>
+>>
+>> Steffen Neumann wrote:
+>>      
+>>> Hi,
+>>>
+>>> the problem we (Patrick) solved with "all: clean $(SHLIB)"
+>>> was that we have a subdirectory "xcms/src/obiwarp"
+>>> which contains *.c files and *.o fies after "make all".
+>>>
+>>> BUT because MacOS BioC is building i386/PPC/PPC64 consecutively,
+>>> and presumably calling something like
+>>>
+>>> 	make clean
+>>> 	for ARCH in (i386 ppc ppc64) {
+>>> 		make all
+>>> 	}
+>>>
+>>> and *not*
+>>>
+>>> 	for ARCH in (i386 ppc ppc64) {
+>>> 		make clean
+>>> 		make all
+>>> 	}
+>>>
+>>> we had linker warnings in http://bioconductor.org/.../xcms/pelham-buildsrc.html
+>>> about those leftover *.o in the obiwarp subdirectory:
+>>>
+>>> g++-4.2 -arch ppc -dynamiclib -Wl,-headerpad_max_install_names  -undefined dynamic_lookup -single_module -multiply_defined suppress -L/usr/local/lib -o xcms.so obiwarp/cmdparser.o obiwarp/mat.o obiwarp/vec.o obiwarp/xcms_dynprog.o obiwarp/xcms_lmat.o obiwarp/xcms_obiwarp.o mzClust_hclust.o mzROI.o netCDF.o ramp_base64.o ramp.o rampR.o util.o xcms.o -L/usr/local/lib -L/sw/lib -lnetcdf -lz  -F/Library/Frameworks/R.framework/.. -framework R -Wl,-framework -Wl,CoreFoundation
+>>>
+>>>        
+>>>> ld: warning in obiwarp/cmdparser.o, file is not of required architecture
+>>>> ld: warning in obiwarp/mat.o, file is not of required architecture
+>>>>
+>>>>          
+>>> I am happy to get suggestions for a better solution,
+>>> which 1) allows to organise C sources in subdirectories
+>>> and 2) works with multiple Arch builds. Maybe these
+>>> multiarch builds need to call make clean explicitely inbetween ?
+>>>
+>>> Yours,
+>>> Steffen
+>>>
+>>>
+>>>        
+>>      
+>
+>
+
+
+From paboyoun at fhcrc.org  Tue Feb 23 01:01:26 2010
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Mon, 22 Feb 2010 16:01:26 -0800
+Subject: [Bioc-devel] Mac build (xcms)
+In-Reply-To: <9DE4F942-9804-4E36-BBF9-D321B6FECA0E@scripps.edu>
+References: <4B7F288A.3050109@scripps.edu> <1266695550.15508.749.camel@paddy>
+	<4B82D3FA.6090403@fhcrc.org>
+	<9DE4F942-9804-4E36-BBF9-D321B6FECA0E@scripps.edu>
+Message-ID: <4B831AD6.1030007@fhcrc.org>
+
+Colin,
+Is this a concern or has the xcms dev team had problems with the xcms 
+binary packages distributed from bioconductor.org?
+
+The build reports can be overwhelming and the relevant reports we are 
+interested in for this discussion is the "BUILD BIN" step:
+
+http://bioconductor.org/checkResults/2.5/bioc-LATEST/xcms/pitt-buildbin.html
+http://bioconductor.org/checkResults/2.6/bioc-LATEST/xcms/pitt-buildbin.html
+http://bioconductor.org/checkResults/2.5/bioc-LATEST/xcms/pelham-buildbin.html
+http://bioconductor.org/checkResults/2.6/bioc-LATEST/xcms/pelham-buildbin.html
+
+The "Command output" section shows the builds on each of the 
+architectures linking just fine. This is in stark contrast to the ld 
+warning messages you get during the "BUILD" (SOURCE) step:
+
+http://bioconductor.org/checkResults/2.5/bioc-LATEST/xcms/pitt-buildsrc.html
+http://bioconductor.org/checkResults/2.6/bioc-LATEST/xcms/pitt-buildsrc.html
+http://bioconductor.org/checkResults/2.5/bioc-LATEST/xcms/pelham-buildsrc.html
+http://bioconductor.org/checkResults/2.6/bioc-LATEST/xcms/pelham-buildsrc.html
+
+For the multi-architecture builds, the messages you want to monitor are 
+in the former "BUILD BIN" step. These "BUILD BIN" builds use the 
+--preclean flag that performs the cleanup operation you mentioned in 
+your e-mail. Does this make sense?
+
+
+Patrick
+
+
+On 2/22/10 3:26 PM, Colin A. Smith wrote:
+> I think the problem is that the old i386 object files in xcms/src/obiwarp are not getting removed prior to the ppc build. Looking at cleanup_pkg() in /Library/Frameworks/R.framework/Resources/bin/build, it appears that there are two ways for the old object files to be removed:
+>
+> 1) If a Makevars file is present, it attempts to call make clean. xcms has a "clean:" action in it's Makevars file that looks like it should be removing all object files.
+>
+> 2) After that, there's a command that appears to remove all *.o, *.s, etc files at the root level of the src directory. I'm not enough of a Perl hacker to know for sure.
+>
+> My guess, based on the build log messages, is that #1 isn't happening for whatever reason, and #2 is. Adding a test "echo" command to the "clean:" action might help show whether #1 is happening. If it isn't, then the trick would be figuring out how to make it happen.
+>
+> -Colin
+>
+> On Feb 22, 2010, at 10:59, Patrick Aboyoun wrote:
+>
+>    
+>> Steffen,
+>> I am unable to reproduce the problem. Currently the builds are fine and when I run R-2.10/R-devel --arch=ppc, download xcms via biocLite, and run the RUnit tests everything seems to be in order. Perhaps there is some confusion over the warning messages you are receiving during the build process? The BioC build process occurs in three stages for Mac OS X 10.4 and 10.5.
+>>
+>> 1) Build package source tarball, which is *not* distributed at bioconductor.org. At this step we only test arch=i386 and so the ld warning messages for arch=ppc are not meaningful.
+>>
+>> 2) Check package source tarball that was built in first step. Again we only test arch=i386.
+>>
+>> 3) Build binary package tarball. At this step, the build for each architecture (i386, pcc for Mac OS X 10.4 and i386, ppc, x86_64 for Mac OS X 10.5) is performed separately using the (parameterized) command
+>>
+>>             R_ARCH=/{i386/ppc} R CMD INSTALL --preclean --library=xcms.buildbin-libdir --libs-only xcms_VERSION.tar.gz
+>>
+>> The resulting shared objects from each of the architecture builds are then bundled together in the *.tgz Mac OS X binary package tarball. It is this multi-architecture collection that is distributed at bioconductor.org.
+>>
+>> If I am misunderstanding your concerns, let me know.
+>>
+>> Cheers,
+>> Patrick
+>>
+>>
+>> On 2/20/10 11:52 AM, Steffen Neumann wrote:
+>>      
+>>> Hi,
+>>>
+>>> XCMS has link problems on MacOS ppc build, see Ralf's mail below.
+>>>
+>>> We had a similar issue april last year
+>>> http://groups.google.de/group/xcms-devel/browse_thread/thread/bb2584a7c015e56e/a24d1436bfc5d552?hl=de&ie=UTF-8&oe=utf-8&q=Re:+xcms+and+parallel+make#a24d1436bfc5d552
+>>> which got fixed by Patrick Aboyoun back then. Patrick's answer
+>>> back then is at the end of this mail.
+>>>
+>>> Since R-2.10 or so R CMD build moved over to some perl code,
+>>> which might have re-introduced this similar problem unnoticed.
+>>> Could that be ?
+>>>
+>>> If we'd add a unit test to XCMS (which are disabled
+>>> in the BioC builds ?!) or added that obiwarp() call to a vignette,
+>>> we'd have a broken ("ERROR") build on MacOS. This way
+>>> only the users will notice, which is even worse.
+>>>
+>>> Any clues ?
+>>>
+>>> Yours,
+>>> Steffen
+>>>
+>>> On Fri, 2010-02-19 at 16:10 -0800, Ralf Tautenhahn wrote:
+>>>
+>>>        
+>>>> I am not a Mac person, and I am not familiar with these multiarch
+>>>> builds that Mac seems to use.
+>>>>
+>>>> It seems the current builds of release and devel for Mac
+>>>> http://bioconductor.org/checkResults/2.5/bioc-LATEST/xcms/pelham-buildsrc.html
+>>>> http://bioconductor.org/checkResults/2.6/bioc-LATEST/xcms/pelham-buildsrc.html
+>>>> are not compiled/linked correctly.
+>>>>
+>>>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/mat.cpp -o obiwarp/mat.o
+>>>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/vec.cpp -o obiwarp/vec.o
+>>>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/xcms_dynprog.cpp -o obiwarp/xcms_dynprog.o
+>>>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/xcms_lmat.cpp -o obiwarp/xcms_lmat.o
+>>>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c obiwarp/xcms_obiwarp.cpp -o obiwarp/xcms_obiwarp.o
+>>>> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c mzClust_hclust.c -o mzClust_hclust.o
+>>>> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c mzROI.c -o mzROI.o
+>>>> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c netCDF.c -o netCDF.o
+>>>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c ramp_base64.cpp -o ramp_base64.o
+>>>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c ramp.cpp -o ramp.o
+>>>> ramp.cpp: In function ?char* rampValidFileType(const char*)?:
+>>>> ramp.cpp:1459: warning: ?result? may be used uninitialized in this function
+>>>> g++-4.0 -arch i386 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -fasm-blocks -c rampR.cpp -o rampR.o
+>>>> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c util.c -o util.o
+>>>> gcc-4.2 -arch i386 -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/i386 -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -Wall -c xcms.c -o xcms.o
+>>>> g++-4.2 -arch i386 -dynamiclib -Wl,-headerpad_max_install_names -undefined dynamic_lookup -single_module -multiply_defined suppress -L/usr/local/lib -o xcms.so obiwarp/mat.o obiwarp/vec.o obiwarp/xcms_dynprog.o obiwarp/xcms_lmat.o obiwarp/xcms_obiwarp.o mzClust_hclust.o mzROI.o netCDF.o ramp_base64.o ramp.o rampR.o util.o xcms.o -L/usr/local/lib -L/sw/lib -lnetcdf -lz -F/Library/Frameworks/R.framework/.. -framework R -Wl,-framework -Wl,CoreFoundation
+>>>> ** arch - ppc
+>>>> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c mzClust_hclust.c -o mzClust_hclust.o
+>>>> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c mzROI.c -o mzROI.o
+>>>> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c netCDF.c -o netCDF.o
+>>>> g++-4.0 -arch ppc -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c ramp_base64.cpp -o ramp_base64.o
+>>>> g++-4.0 -arch ppc -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c ramp.cpp -o ramp.o
+>>>> g++-4.0 -arch ppc -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c rampR.cpp -o rampR.o
+>>>> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c util.c -o util.o
+>>>> gcc-4.2 -arch ppc -std=gnu99 -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include -I/Library/Frameworks/R.framework/Versions/2.10/Resources/include/ppc -I/usr/local/include -I/sw/include -D_LARGEFILE_SOURCE -I/usr/local/include    -fPIC  -g -O2 -c xcms.c -o xcms.o
+>>>> g++-4.2 -arch ppc -dynamiclib -Wl,-headerpad_max_install_names -undefined dynamic_lookup -single_module -multiply_defined suppress -L/usr/local/lib -o xcms.so obiwarp/mat.o obiwarp/vec.o obiwarp/xcms_dynprog.o obiwarp/xcms_lmat.o obiwarp/xcms_obiwarp.o mzClust_hclust.o mzROI.o netCDF.o ramp_base64.o ramp.o rampR.o util.o xcms.o -L/usr/local/lib -L/sw/lib -lnetcdf -lz -F/Library/Frameworks/R.framework/.. -framework R -Wl,-framework -Wl,CoreFoundation
+>>>> ld: warning in obiwarp/mat.o, file is not of required architecture
+>>>> ld: warning in obiwarp/vec.o, file is not of required architecture
+>>>> ld: warning in obiwarp/xcms_dynprog.o, file is not of required architecture
+>>>> ld: warning in obiwarp/xcms_lmat.o, file is not of required architecture
+>>>> ld: warning in obiwarp/xcms_obiwarp.o, file is not of required architecture
+>>>>
+>>>> As you can see, the obiwarp part is build for 32 bit, only.
+>>>>
+>>>> As a result you get this kind of error message on Mac's when trying to
+>>>> use obiwarp:
+>>>> Error in .Call("R_set_from_xcms", valscantime1, scantime1, mzval,
+>>>> mz,  :
+>>>>    C symbol name "R_set_from_xcms" not in load table
+>>>>
+>>>> (defined in  src/obiwarp/xcms_obiwarp.cpp:extern "C" SEXP
+>>>> R_set_from_xcms(SEXP valscantime, SEXP scantime, SEXP mzrange, SEXP
+>>>> mz, SEXP intensity)
+>>>>
+>>>> It builds correctly (for the main architecture, only)
+>>>> when the --no-multiarch option is used for R CMD INSTALL.
+>>>>
+>>>>
+>>>> Any Mac build gurus out there ?
+>>>>
+>>>>          
+>>> ######################################################################################
+>>> # This is Patrick's answer from last year, which I can't find
+>>> # in any of the public archives:
+>>> #
+>>>
+>>> On Fri, 2009-04-24 at 09:54 -0700, Patrick Aboyoun wrote:
+>>>
+>>>        
+>>>> Steffen,
+>>>> Per Brian suggestion I changed the build universal binary script on the
+>>>> BioC Mac OS X nodes to use the (variable regulated) command
+>>>>
+>>>> R_ARCH=/$arch $R_CMD CMD INSTALL --preclean --library="$R_LIBS"
+>>>> --libs-only "$srcpkg_filepath"
+>>>>
+>>>> The addition of the --preclean flag solved the problem. There are other
+>>>> BioC packages with similar issues that need to be cleaned out now in a
+>>>> similar manner, but it appears that BioC packages with embedded source
+>>>> libraries no longer have to concern themselves with multi-architecture
+>>>> builds. (Problems will still exist for packages that expect the Mac OS X
+>>>> machines to have pre-built multi-architecture shared libraries, but that
+>>>> is another issue.)
+>>>>
+>>>>
+>>>> Patrick
+>>>>
+>>>>
+>>>> Steffen Neumann wrote:
+>>>>
+>>>>          
+>>>>> Hi,
+>>>>>
+>>>>> the problem we (Patrick) solved with "all: clean $(SHLIB)"
+>>>>> was that we have a subdirectory "xcms/src/obiwarp"
+>>>>> which contains *.c files and *.o fies after "make all".
+>>>>>
+>>>>> BUT because MacOS BioC is building i386/PPC/PPC64 consecutively,
+>>>>> and presumably calling something like
+>>>>>
+>>>>> 	make clean
+>>>>> 	for ARCH in (i386 ppc ppc64) {
+>>>>> 		make all
+>>>>> 	}
+>>>>>
+>>>>> and *not*
+>>>>>
+>>>>> 	for ARCH in (i386 ppc ppc64) {
+>>>>> 		make clean
+>>>>> 		make all
+>>>>> 	}
+>>>>>
+>>>>> we had linker warnings in http://bioconductor.org/.../xcms/pelham-buildsrc.html
+>>>>> about those leftover *.o in the obiwarp subdirectory:
+>>>>>
+>>>>> g++-4.2 -arch ppc -dynamiclib -Wl,-headerpad_max_install_names  -undefined dynamic_lookup -single_module -multiply_defined suppress -L/usr/local/lib -o xcms.so obiwarp/cmdparser.o obiwarp/mat.o obiwarp/vec.o obiwarp/xcms_dynprog.o obiwarp/xcms_lmat.o obiwarp/xcms_obiwarp.o mzClust_hclust.o mzROI.o netCDF.o ramp_base64.o ramp.o rampR.o util.o xcms.o -L/usr/local/lib -L/sw/lib -lnetcdf -lz  -F/Library/Frameworks/R.framework/.. -framework R -Wl,-framework -Wl,CoreFoundation
+>>>>>
+>>>>>
+>>>>>            
+>>>>>> ld: warning in obiwarp/cmdparser.o, file is not of required architecture
+>>>>>> ld: warning in obiwarp/mat.o, file is not of required architecture
+>>>>>>
+>>>>>>
+>>>>>>              
+>>>>> I am happy to get suggestions for a better solution,
+>>>>> which 1) allows to organise C sources in subdirectories
+>>>>> and 2) works with multiple Arch builds. Maybe these
+>>>>> multiarch builds need to call make clean explicitely inbetween ?
+>>>>>
+>>>>> Yours,
+>>>>> Steffen
+>>>>>
+
+
+From hpages at fhcrc.org  Thu Feb 25 22:57:23 2010
+From: hpages at fhcrc.org (=?UTF-8?B?SGVydsOpIFBhZ8Oocw==?=)
+Date: Thu, 25 Feb 2010 13:57:23 -0800
+Subject: [Bioc-devel] Mac build (xcms)
+In-Reply-To: <1266695550.15508.749.camel@paddy>
+References: <4B7F288A.3050109@scripps.edu> <1266695550.15508.749.camel@paddy>
+Message-ID: <4B86F243.6020608@fhcrc.org>
+
+Hi Steffen,
+
+Steffen Neumann wrote:
+[...]
+> 
+> If we'd add a unit test to XCMS (which are disabled 
+> in the BioC builds ?!)
+
+*Unit* tests are not "standard" tests!
+
+Standard tests are described here:
+   http://cran.fhcrc.org/doc/manuals/R-exts.html#Package-subdirectories
+and must be put in the tests/ subdir of your package.
+By default they are run by 'R CMD check' (unless the --no-tests
+option is specified, but our build system doesn't do that).
+
+As you can see here:
+http://bioconductor.org/checkResults/2.6/bioc-LATEST/xcms/pitt-checksrc.html
+the build system runs 'R CMD check --no-vignettes xcms_1.21.14.tar.gz',
+so that won't trigger the execution of the *unit* tests unless you add
+some code to your package for that purpose.
+
+See for example the latest CHECK report for the IRanges package:
+
+http://bioconductor.org/checkResults/2.6/bioc-LATEST/IRanges/pitt-checksrc.html
+
+At the bottom of the "Command output" section, you have:
+
+* checking for portable use of $BLAS_LIBS ... OK
+* checking examples ... OK
+* checking tests ...
+   Running ?runalltests.R?
+   Comparing ?runalltests.Rout? to ?runalltests.Rout.save? ... OK
+  OK
+* checking package vignettes in 'inst/doc' ... SKIPPED
+* checking PDF version of manual ... OK
+
+The standard tests are run i.e. the *.R files under tests/ are executed.
+To have 'R CMD check' run the *unit* tests, the trick is to put code in
+those *.R files that will run them. Which is what the IRanges package
+does.
+
+Cheers,
+H.
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+

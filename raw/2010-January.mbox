@@ -1,0 +1,3787 @@
+From hb at stat.berkeley.edu  Sun Jan  3 00:50:36 2010
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Sat, 2 Jan 2010 15:50:36 -0800
+Subject: [Bioc-devel] oligoClasses v1.9.22 broken [using R v2.11.0 devel
+	(2010-01-02 r50883)]
+Message-ID: <59d7961d1001021550v1a5eb9a5pd651e1d640aba71c@mail.gmail.com>
+
+FYI:
+
+% R --vanilla
+
+> library(oligoClasses)
+Loading required package: Biobase
+
+Welcome to Bioconductor
+
+  Vignettes contain introductory material. To view, type
+  'openVignette()'. To cite Bioconductor, see
+  'citation("Biobase")' and for packages 'citation(pkgname)'.
+
+Error in sub("([^-]+)_.*", "\\1", info$pkgname) :
+  could not find symbol "extended" in environment of the generic function
+Error : unable to load R code in package 'Biostrings'
+Error: package/namespace load failed for 'oligoClasses'
+
+
+This is probably related to:
+
+DEPRECATED & DEFUNCT
+
+    o	Basic regular expressions are defunct, and strsplit(), grep(),
+	grepl(), sub(), gsub(), regexpr() and gregexpr() no longer
+	have an 'extended' argument.
+
+Source: http://cran.r-project.org/bin/windows/base/NEWS.R-2.11.0dev
+
+
+> packageDescription("oligoClasses")
+Package: oligoClasses
+Version: 1.9.22
+Title: Classes for high-throughput arrays supported by oligo
+Author: Benilton Carvalho <bcarvalh at jhsph.edu> and Robert Scharpf
+        <rscharpf at jhsph.edu>
+Maintainer: Benilton Carvalho <bcarvalh at jhsph.edu>
+Depends: Biobase, methods
+Suggests: pd.genomewidesnp.6, pd.genomewidesnp.5,
+        pd.mapping50k.hind240, pd.mapping50k.xba240,
+        pd.mapping250k.sty, pd.mapping250k.nsp, genomewidesnp6Crlmm,
+        genomewidesnp5Crlmm
+Imports: graphics, Biostrings (>= 2.13.9), Biobase (>= 2.7.0), affyio
+Description: This package contains class definitions, validity checks,
+        and initialization methods for classes used by the oligo
+        package and friends.
+License: GPL (>= 2)
+LazyLoad: yes
+Collate: AllClasses.R AllGenerics.R functions.R initialize-methods.R
+        methods-AlleleSet.R methods-FeatureSet.R methods-oligoSnpSet.R
+        methods-CNSet.R methods-PDInfo.R methods-SnpSet.R
+        show-methods.R zzz.R
+biocViews: Infrastructure
+Packaged: 2009-12-30 22:29:47 UTC; biocbuild
+Built: R 2.11.0; ; 2009-12-31 03:25:58 UTC; windows
+
+-- File: C:\Users\hb/R/win-library/2.11/oligoClasses/Meta/package.rds
+
+
+
+> sessionInfo()
+R version 2.11.0 Under development (unstable) (2010-01-02 r50883)
+i386-pc-mingw32
+
+locale:
+[1] LC_COLLATE=English_United States.1252
+[2] LC_CTYPE=English_United States.1252
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C
+[5] LC_TIME=English_United States.1252
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] Biobase_2.5.8
+
+loaded via a namespace (and not attached):
+[1] affyio_1.15.1  IRanges_1.3.93
+
+
+/Henrik
+
+
+From hb at stat.berkeley.edu  Sun Jan  3 01:00:16 2010
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Sat, 2 Jan 2010 16:00:16 -0800
+Subject: [Bioc-devel] oligoClasses v1.9.22 broken [using R v2.11.0 devel
+	(2010-01-02 r50883)] [SOLVED]
+Message-ID: <59d7961d1001021600h3057fd94qa9dbe8db1b302b23@mail.gmail.com>
+
+Seems to be solved by updating Biostrings (and/or IRanges).
+library("Biostrings") gave the same error before updating.  Now:
+
+> library(oligoClasses)
+Loading required package: Biobase
+
+Welcome to Bioconductor
+
+  Vignettes contain introductory material. To view, type
+  'openVignette()'. To cite Bioconductor, see
+  'citation("Biobase")' and for packages 'citation(pkgname)'.
+
+Welcome to oligoClasses version 1.9.22
+> sessionInfo()
+R version 2.11.0 Under development (unstable) (2010-01-02 r50883)
+i386-pc-mingw32
+
+locale:
+[1] LC_COLLATE=English_United States.1252
+[2] LC_CTYPE=English_United States.1252
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C
+[5] LC_TIME=English_United States.1252
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] oligoClasses_1.9.22 Biobase_2.5.8
+
+loaded via a namespace (and not attached):
+[1] affyio_1.15.1      Biostrings_2.15.11 IRanges_1.5.22
+
+/Henrik
+
+On Sat, Jan 2, 2010 at 3:50 PM, Henrik Bengtsson <hb at stat.berkeley.edu> wrote:
+> FYI:
+>
+> % R --vanilla
+>
+>> library(oligoClasses)
+> Loading required package: Biobase
+>
+> Welcome to Bioconductor
+>
+> ?Vignettes contain introductory material. To view, type
+> ?'openVignette()'. To cite Bioconductor, see
+> ?'citation("Biobase")' and for packages 'citation(pkgname)'.
+>
+> Error in sub("([^-]+)_.*", "\\1", info$pkgname) :
+> ?could not find symbol "extended" in environment of the generic function
+> Error : unable to load R code in package 'Biostrings'
+> Error: package/namespace load failed for 'oligoClasses'
+>
+>
+> This is probably related to:
+>
+> DEPRECATED & DEFUNCT
+>
+> ? ?o ? Basic regular expressions are defunct, and strsplit(), grep(),
+> ? ? ? ?grepl(), sub(), gsub(), regexpr() and gregexpr() no longer
+> ? ? ? ?have an 'extended' argument.
+>
+> Source: http://cran.r-project.org/bin/windows/base/NEWS.R-2.11.0dev
+>
+>
+>> packageDescription("oligoClasses")
+> Package: oligoClasses
+> Version: 1.9.22
+> Title: Classes for high-throughput arrays supported by oligo
+> Author: Benilton Carvalho <bcarvalh at jhsph.edu> and Robert Scharpf
+> ? ? ? ?<rscharpf at jhsph.edu>
+> Maintainer: Benilton Carvalho <bcarvalh at jhsph.edu>
+> Depends: Biobase, methods
+> Suggests: pd.genomewidesnp.6, pd.genomewidesnp.5,
+> ? ? ? ?pd.mapping50k.hind240, pd.mapping50k.xba240,
+> ? ? ? ?pd.mapping250k.sty, pd.mapping250k.nsp, genomewidesnp6Crlmm,
+> ? ? ? ?genomewidesnp5Crlmm
+> Imports: graphics, Biostrings (>= 2.13.9), Biobase (>= 2.7.0), affyio
+> Description: This package contains class definitions, validity checks,
+> ? ? ? ?and initialization methods for classes used by the oligo
+> ? ? ? ?package and friends.
+> License: GPL (>= 2)
+> LazyLoad: yes
+> Collate: AllClasses.R AllGenerics.R functions.R initialize-methods.R
+> ? ? ? ?methods-AlleleSet.R methods-FeatureSet.R methods-oligoSnpSet.R
+> ? ? ? ?methods-CNSet.R methods-PDInfo.R methods-SnpSet.R
+> ? ? ? ?show-methods.R zzz.R
+> biocViews: Infrastructure
+> Packaged: 2009-12-30 22:29:47 UTC; biocbuild
+> Built: R 2.11.0; ; 2009-12-31 03:25:58 UTC; windows
+>
+> -- File: C:\Users\hb/R/win-library/2.11/oligoClasses/Meta/package.rds
+>
+>
+>
+>> sessionInfo()
+> R version 2.11.0 Under development (unstable) (2010-01-02 r50883)
+> i386-pc-mingw32
+>
+> locale:
+> [1] LC_COLLATE=English_United States.1252
+> [2] LC_CTYPE=English_United States.1252
+> [3] LC_MONETARY=English_United States.1252
+> [4] LC_NUMERIC=C
+> [5] LC_TIME=English_United States.1252
+>
+> attached base packages:
+> [1] stats ? ? graphics ?grDevices utils ? ? datasets ?methods ? base
+>
+> other attached packages:
+> [1] Biobase_2.5.8
+>
+> loaded via a namespace (and not attached):
+> [1] affyio_1.15.1 ?IRanges_1.3.93
+>
+>
+> /Henrik
+>
+
+
+From henning.red at googlemail.com  Mon Jan  4 03:12:28 2010
+From: henning.red at googlemail.com (Henning Redestig)
+Date: Mon, 4 Jan 2010 11:12:28 +0900
+Subject: [Bioc-devel] Rscript on Bioconductor test servers
+Message-ID: <d4d592db1001031812u15af76bfg35cdb43365b2bfbc@mail.gmail.com>
+
+Hi,
+
+I have started to use the package Rcpp for simplified usage of C++
+components (in the pcaMethods package). To build packages using Rcpp I
+need to set the location of Rcpp.h. To do this in a reliable manner I
+use a Makevars script containing
+
+PKG_CPPFLAGS = $(shell Rscript -e 'Rcpp:::CxxFlags()')
+PKG_LIBS = $(shell Rscript -e 'Rcpp:::LdFlags()')
+
+but this fails on Bioconductors test servers with
+
+make: Rscript: Command not found
+
+Is Rscript not available on the test servers? If so, can we please
+have it enabled?
+
+cheers,
+
+-- 
+/Henning Redestig
+
+Metabolomics Research Group | RIKEN Plant Science Center
+
+
+From sfalcon at fhcrc.org  Mon Jan  4 18:38:22 2010
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 04 Jan 2010 09:38:22 -0800
+Subject: [Bioc-devel] Rscript on Bioconductor test servers
+In-Reply-To: <d4d592db1001031812u15af76bfg35cdb43365b2bfbc@mail.gmail.com>
+References: <d4d592db1001031812u15af76bfg35cdb43365b2bfbc@mail.gmail.com>
+Message-ID: <4B42278E.802@fhcrc.org>
+
+Hi Henning,
+
+On 1/3/10 6:12 PM, Henning Redestig wrote:
+> I have started to use the package Rcpp for simplified usage of C++
+> components (in the pcaMethods package). To build packages using Rcpp
+> I need to set the location of Rcpp.h. To do this in a reliable manner
+> I use a Makevars script containing
+>
+> PKG_CPPFLAGS = $(shell Rscript -e 'Rcpp:::CxxFlags()') PKG_LIBS =
+> $(shell Rscript -e 'Rcpp:::LdFlags()')
+>
+> but this fails on Bioconductors test servers with
+>
+> make: Rscript: Command not found
+>
+> Is Rscript not available on the test servers? If so, can we please
+> have it enabled?
+
+It seems like this should be a case where LinkingTo should help you.
+ From Writing R Extensions:
+
+* WRE 5.4 Registering native routines
+> A package that wishes to make use of header files in other packages
+> needs to declare them as a comma-separated list in the field
+> LinkingTo in the DESCRIPTION file. For example
+>
+> Depends: link2, link3 LinkingTo: link2, link3
+>
+> It should also `Depend' on those packages for they have to be
+> installed prior to this one, and loaded prior to this one (so the
+> path to their compiled code can be found).
+>
+> This then arranges that the include directories in the installed
+> linked-to packages are added to the include paths for C and C++ code.
+
+Your suggested solution has two potential problems:
+
+1. You are proposing to use ":::" to access private functions from 
+within a package.  If these functions are meant to be used outside of 
+Rcpp, then they should be exported and then be accessible using "::".
+
+2. Calling Rscript or even R without qualification can be a problem 
+since it may not refer to the version of R that is doing the 
+installation.  I will do some looking, but I think a better way would be 
+to refer to $(R_HOME)/bin/R in Makevars.  You don't need Rscript for 
+this, the following would work:
+
+     $(R_HOME)/bin/R --slave -e "1:5"  # your code here
+
+So please see if you can get things to work using LinkingTo and let's go 
+from there.
+
++ seth
+
+-- 
+Seth Falcon
+Program in Computational Biology | Fred Hutchinson Cancer Research Center
+
+
+From sneumann at ipb-halle.de  Mon Jan  4 19:54:26 2010
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Mon, 04 Jan 2010 19:54:26 +0100
+Subject: [Bioc-devel] Rscript on Bioconductor test servers
+In-Reply-To: <4B42278E.802@fhcrc.org>
+References: <d4d592db1001031812u15af76bfg35cdb43365b2bfbc@mail.gmail.com>
+	<4B42278E.802@fhcrc.org>
+Message-ID: <1262631266.24947.337.camel@paddy>
+
+On Mon, 2010-01-04 at 09:38 -0800, Seth Falcon wrote:
+> On 1/3/10 6:12 PM, Henning Redestig wrote:
+> > I have started to use the package Rcpp for simplified usage of C++
+> > components (in the pcaMethods package). To build packages using Rcpp
+> > I need to set the location of Rcpp.h. 
+Another, possibly suboptimal, solution is 
+to include Rcpp.[ch] in your package, 
+as in http://www.bioconductor.org/packages/stats/bioc/Rdisop.html
+
+Yours,
+Steffen
+
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From henning.red at googlemail.com  Tue Jan  5 07:11:33 2010
+From: henning.red at googlemail.com (Henning Redestig)
+Date: Tue, 5 Jan 2010 15:11:33 +0900
+Subject: [Bioc-devel] Rscript on Bioconductor test servers
+In-Reply-To: <4B42278E.802@fhcrc.org>
+References: <d4d592db1001031812u15af76bfg35cdb43365b2bfbc@mail.gmail.com>
+	<4B42278E.802@fhcrc.org>
+Message-ID: <d4d592db1001042211h75666b02kca82fbd58a3b5a1b@mail.gmail.com>
+
+Hi Seth,
+
+2010/1/5 Seth Falcon <sfalcon at fhcrc.org>:
+> It seems like this should be a case where LinkingTo should help you.
+> From Writing R Extensions:
+>
+> * WRE 5.4 Registering native routines
+>>
+>> A package that wishes to make use of header files in other packages
+>> needs to declare them as a comma-separated list in the field
+>> LinkingTo in the DESCRIPTION file. For example
+>>
+>> Depends: link2, link3 LinkingTo: link2, link3
+>>
+>> It should also `Depend' on those packages for they have to be
+>> installed prior to this one, and loaded prior to this one (so the
+>> path to their compiled code can be found).
+>>
+>> This then arranges that the include directories in the installed
+>> linked-to packages are added to the include paths for C and C++ code.
+
+According to the author of Rcpp, Dirk Eddelbuettel, this is tricky for C++.
+
+>From http://dirk.eddelbuettel.com/code/rcpp.html :
+   What about using LinkingTo in the DESCRIPTION file?  Great
+   question, but nobody has explained yet how to do that for C++. For
+   C, we could do what lme4 and matrix do. But for C++? The 'name
+   mangling' really gets in the way. Let us know if you know how to do this.
+
+and therefore he suggests the Makevars script approach.
+
+> Your suggested solution has two potential problems:
+>
+> 1. You are proposing to use ":::" to access private functions from within a
+> package. ?If these functions are meant to be used outside of Rcpp, then they
+> should be exported and then be accessible using "::".
+
+Good point, I have forwarded this to the Rcpp-devel list.
+
+> 2. Calling Rscript or even R without qualification can be a problem since it
+> may not refer to the version of R that is doing the installation. I will do
+> some looking, but I think a better way would be to refer to $(R_HOME)/bin/R
+> in Makevars. You don't need Rscript for this, the following would work:
+>
+> $(R_HOME)/bin/R --slave -e "1:5" # your code here
+
+On my computer (ubuntu) I could get:
+
+PKG_CPPFLAGS = $(shell $(R_HOME)/bin/R --slave -e 'Rcpp:::CxxFlags()')
+PKG_LIBS = $(shell $(R_HOME)/bin/R --slave -e 'Rcpp:::LdFlags()')
+
+to work, and am now waiting to see what Bioconductors servers think.
+
+cheers,
+
+-- 
+/Henning Redestig
+
+Metabolomics Research Group | RIKEN Plant Science Center
+
+
+From fjsim at buffalo.edu  Tue Jan  5 23:44:30 2010
+From: fjsim at buffalo.edu (Fraser Sim)
+Date: Tue, 5 Jan 2010 17:44:30 -0500
+Subject: [Bioc-devel] Bioconductor using 64-bit R build
+Message-ID: <048401ca8e58$a4aba8e0$ee02faa0$@edu>
+
+Dear all,
+
+I realize this is completely unsupported but wanted to give it a try. I
+downloaded the compiled version of Windows 64-bit R that Gong Yu recently
+posted details on in the [Rd] mailing list. It starts fine on my version of
+Vista. I was able to run the demo(graphics) so I thought I'd try
+Bioconductor. Here is the sessionInfo().
+
+> sessionInfo()
+R version 2.11.0 Under development (unstable) (2006-00-00 r00000) 
+x86_64-pc-mingw64 
+
+locale:
+[1] LC_COLLATE=English_United States.1252 
+[2] LC_CTYPE=English_United States.1252   
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.1252    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] limma_3.3.5   Biobase_2.7.3
+
+loaded via a namespace (and not attached):
+[1] tools_2.11.0
+
+I tried installing Bioconductor from source using biocLite("Biobase", type =
+'source'). This worked when I used the 64-bit MINGW mentioned by Gong. I am
+able to load the Biobase library.
+
+I then tried to compile limma which also worked fine. See the sessionInfo
+for confirmation. Unfortunately, when I tried to compile genefilter, it
+failed when compiling the RSQLite package.
+
+Here is the output.
+
+> biocLite("RSQLite", type = 'source')
+Using R version 2.11.0 (R-devel), biocinstall version 2.6.4.
+Installing Bioconductor version 2.6 packages:
+[1] "RSQLite"
+Please wait...
+
+trying URL 'http://cran.fhcrc.org/src/contrib/RSQLite_0.8-0.tar.gz'
+Content type 'application/x-gzip' length 1179466 bytes (1.1 Mb)
+opened URL
+downloaded 1.1 Mb
+
+* installing *source* package 'RSQLite' ...
+
+   **********************************************
+   WARNING: this package has a configure script
+         It probably needs manual configuration
+   **********************************************
+
+
+** libs
+  making DLL ...
+gcc -I"C:/Users/fjsim/DOWNLO~1/R-64BI~1/include"
+-DRSQLITE_USE_BUNDLED_SQLITE       -O3 -Wall  -std=gnu99 -c RS-DBI.c -o
+RS-DBI.o
+In file included from RS-DBI.c:19:0:
+RS-DBI.h:45:7: error: conflicting types for 'getpid'
+d:\rtools\mingw64\bin\../lib/gcc/x86_64-pc-mingw32/4.5.0/../../../../x86_64-
+pc-mingw32/include/process.h:150:15: note: previous declaration of 'getpid'
+was here
+make: *** [RS-DBI.o] Error 1
+  ... done
+ERROR: compilation failed for package 'RSQLite'
+* removing 'C:/Users/fjsim/Downloads/R-64Bit-for-Win64/library/RSQLite'
+
+The downloaded packages are in
+        'C:\Users\fjsim\AppData\Local\Temp\Rtmpr8pCxb\downloaded_packages'
+Warning message:
+In install.packages(pkgs = pkgs, repos = repos, ...) :
+  installation of package 'RSQLite' had non-zero exit status
+
+Any ideas what I should try next to get RSQLite? It would be great to have
+R/Bioconductor working on 64-bit Windows and I'm willing to help out.
+
+Cheers,
+Fraser
+
+
+From sfalcon at fhcrc.org  Wed Jan  6 01:47:10 2010
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 05 Jan 2010 16:47:10 -0800
+Subject: [Bioc-devel] Bioconductor using 64-bit R build
+In-Reply-To: <048401ca8e58$a4aba8e0$ee02faa0$@edu>
+References: <048401ca8e58$a4aba8e0$ee02faa0$@edu>
+Message-ID: <4B43DD8E.8060703@fhcrc.org>
+
+Hi Fraser,
+
+On 1/5/10 2:44 PM, Fraser Sim wrote:
+<snip>
+> I then tried to compile limma which also worked fine. See the sessionInfo
+> for confirmation. Unfortunately, when I tried to compile genefilter, it
+> failed when compiling the RSQLite package.
+>
+> Here is the output.
+>
+<snip>
+> ** libs
+>    making DLL ...
+> gcc -I"C:/Users/fjsim/DOWNLO~1/R-64BI~1/include"
+> -DRSQLITE_USE_BUNDLED_SQLITE       -O3 -Wall  -std=gnu99 -c RS-DBI.c -o
+> RS-DBI.o
+> In file included from RS-DBI.c:19:0:
+> RS-DBI.h:45:7: error: conflicting types for 'getpid'
+> d:\rtools\mingw64\bin\../lib/gcc/x86_64-pc-mingw32/4.5.0/../../../../x86_64-
+> pc-mingw32/include/process.h:150:15: note: previous declaration of 'getpid'
+> was here
+> make: *** [RS-DBI.o] Error 1
+>    ... done
+> ERROR: compilation failed for package 'RSQLite'
+> * removing 'C:/Users/fjsim/Downloads/R-64Bit-for-Win64/library/RSQLite'
+
+> Any ideas what I should try next to get RSQLite? It would be great to have
+> R/Bioconductor working on 64-bit Windows and I'm willing to help out.
+
+So the error seems to indicate a conflict in the definition of the 
+return type for getpid.  RS-DBI.h in RSQLite has this:
+
+/* Microsoft Visual C++ uses int _getpid()  */
+#ifdef MSVC
+#include <process.h>
+#define getpid _getpid
+#define pid_t int
+#else
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
+pid_t getpid();
+
+
+Now I would not expect a mingw compiler to define MSVC, but I could be 
+wrong and that could be where process.h is being included.  This would 
+make some sense in that pid_t is probably not an int in win64 and so the 
+declaration of getpid() fails.
+
+Or something else is going on related to this.  I don't have an 
+environment to test, but am willing to review patches for RSQLite if you 
+can find something that works.
+
+Perhaps that's enough to help you start tracking down the issue?
+
++ seth
+
+-- 
+Seth Falcon
+Program in Computational Biology | Fred Hutchinson Cancer Research Center
+
+
+From Leila.Farajzadeh at agrsci.dk  Wed Jan  6 10:25:55 2010
+From: Leila.Farajzadeh at agrsci.dk (Leila Farajzadeh)
+Date: Wed, 6 Jan 2010 10:25:55 +0100
+Subject: [Bioc-devel] FW:
+Message-ID: <EABF18825634634EBD77A34C740FAEEF0189A17551F6@DJFEXMBX01.djf.agrsci.dk>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100106/b79c226d/attachment.pl>
+
+From sfalcon at fhcrc.org  Wed Jan  6 17:58:40 2010
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 06 Jan 2010 08:58:40 -0800
+Subject: [Bioc-devel] FW:
+In-Reply-To: <EABF18825634634EBD77A34C740FAEEF0189A17551F6@DJFEXMBX01.djf.agrsci.dk>
+References: <EABF18825634634EBD77A34C740FAEEF0189A17551F6@DJFEXMBX01.djf.agrsci.dk>
+Message-ID: <4B44C140.9020201@fhcrc.org>
+
+Hi Leila,
+
+On 1/6/10 1:25 AM, Leila Farajzadeh wrote:
+> ________________________________ From: Leila Farajzadeh Sent:
+> Wednesday, January 06, 2010 10:07 AM To:
+> 'bioconductor at stat.math.ethz.ch' Subject:
+
+I think the bioconductor list was a better choice for this discussion.
+If you are not subscribed (which is required to post) I would recommend
+that.  It would also be a good idea to read through the posting guide
+for some hints on writing a post that is easy to answer.
+
+http://bioconductor.org/docs/postingGuide.html
+
+> hi every one I have just started working with data coming from
+> RNA-seq.I have run an edgeR program on the the data in linux,for
+> differential expression ,but in one  of the steps I got the error
+> like this:
+>
+> cls<- gsub("[0-9]", "", colnames(dataList$data))
+>> cls
+> character(0)
+>
+> and after this I will get error in next steps.I want to know if any
+> one has got an error like this?if yes how to solve it?
+
+You need to tell us:
+
+- sessionInfo()
+
+- What do class(dataList$data), length(dataList$data), 
+colnames(dataList$data) give?
+
+
+-- 
+Seth Falcon
+Program in Computational Biology | Fred Hutchinson Cancer Research Center
+
+
+From henning.red at googlemail.com  Thu Jan  7 01:36:55 2010
+From: henning.red at googlemail.com (Henning Redestig)
+Date: Thu, 7 Jan 2010 09:36:55 +0900
+Subject: [Bioc-devel] Rscript on Bioconductor test servers
+In-Reply-To: <d4d592db1001042211h75666b02kca82fbd58a3b5a1b@mail.gmail.com>
+References: <d4d592db1001031812u15af76bfg35cdb43365b2bfbc@mail.gmail.com>
+	<4B42278E.802@fhcrc.org>
+	<d4d592db1001042211h75666b02kca82fbd58a3b5a1b@mail.gmail.com>
+Message-ID: <d4d592db1001061636m25e6e1a0k9332b9534b0545e8@mail.gmail.com>
+
+Just a conclusion to this matter, a Makevars script with
+
+PKG_CPPFLAGS = $(shell $(R_HOME)/bin/R --slave -e 'Rcpp:::CxxFlags()')
+PKG_LIBS = $(shell $(R_HOME)/bin/R --slave -e 'Rcpp:::LdFlags()')
+
+and a Makevars.win with
+
+PKG_CPPFLAGS = $(shell $(R_HOME)/bin/Rterm.exe --slave -e 'Rcpp:::CxxFlags()')
+PKG_LIBS = $(shell $(R_HOME)/bin/Rterm.exe --slave -e 'Rcpp:::LdFlags()')
+
+successfully sets the compiling flags for using Rcpp.
+
+cheers,
+
+
+-- 
+/Henning Redestig
+
+Metabolomics Research Group | RIKEN Plant Science Center
+
+
+From sfalcon at fhcrc.org  Thu Jan  7 02:04:29 2010
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 06 Jan 2010 17:04:29 -0800
+Subject: [Bioc-devel] Rscript on Bioconductor test servers
+In-Reply-To: <d4d592db1001061636m25e6e1a0k9332b9534b0545e8@mail.gmail.com>
+References: <d4d592db1001031812u15af76bfg35cdb43365b2bfbc@mail.gmail.com>	<4B42278E.802@fhcrc.org>	<d4d592db1001042211h75666b02kca82fbd58a3b5a1b@mail.gmail.com>
+	<d4d592db1001061636m25e6e1a0k9332b9534b0545e8@mail.gmail.com>
+Message-ID: <4B45331D.3030806@fhcrc.org>
+
+On 1/6/10 4:36 PM, Henning Redestig wrote:
+> Just a conclusion to this matter, a Makevars script with
+
+Glad you got things to work.
+
+> PKG_CPPFLAGS = $(shell $(R_HOME)/bin/R --slave -e 'Rcpp:::CxxFlags()')
+> PKG_LIBS = $(shell $(R_HOME)/bin/R --slave -e 'Rcpp:::LdFlags()')
+>
+> and a Makevars.win with
+>
+> PKG_CPPFLAGS = $(shell $(R_HOME)/bin/Rterm.exe --slave -e 'Rcpp:::CxxFlags()')
+> PKG_LIBS = $(shell $(R_HOME)/bin/Rterm.exe --slave -e 'Rcpp:::LdFlags()')
+>
+> successfully sets the compiling flags for using Rcpp.
+
+FWIW, I believe that you can use the $(R_HOME)/bin/R --slave -e 'blah' 
+syntax on Windows too (works for me on XP w/ stock R 2-10.1).
+
++ seth
+
+-- 
+Seth Falcon
+Program in Computational Biology | Fred Hutchinson Cancer Research Center
+
+
+From khansen at stat.berkeley.edu  Fri Jan  8 18:07:00 2010
+From: khansen at stat.berkeley.edu (Kasper Daniel Hansen)
+Date: Fri, 8 Jan 2010 12:07:00 -0500
+Subject: [Bioc-devel] push changes to devel
+Message-ID: <3CCDA0A3-A06E-44BF-84EC-E3186BF48212@stat.berkeley.edu>
+
+Recently GenomeGraphs had an update (in devel) where an argument name of makeBaseTrack changed from segmentation to trackOverlay.  This update happened without bumping the version number (and it happened before Xmas).
+
+When I install GenomeGraphs using biocLite on R-devel (using pkgType = "source") I get the old version of GenomeGraphs containing the argument name segmentation.  But on the other hand it is clear from the current build failure of Genominator that the version of GenomeGraphs used for R CMD check is the new version with the argument name trackOverlay.
+
+I am now caught in a peculiar situation.  If I don't do anything, Genominator fails R CMD check.  But if I fix Genominator to use the new version of GenomeGraphs, it will pass R CMD check, but any user who downloads Genominator and GenomeGraphs through biocLite will find that they don't match up (because they will get the old version of GenomeGraphs).
+
+I could have made a mistake somewhere, but I have tried double checking it.
+
+For release I know that if a package gets updated, it needs to have its version bumped in order to be re-build.
+
+But for devel I assumed that as soon as I change something in svn, the changes are reflected in what is available through biocLite (of course, allowing for the package to be rebuild), no matter if I bump the version or not.  That does not seem to be the case.  And no matter what the rule is, it is confusing that a different version is used for R CMD check than what is available through biocLite.
+
+So essentially: what is the rules for version bumping in devel.  Also, it might make sense to write them down somewhere on the developer pages (where there might be some info, I just could not find it).
+
+Kasper
+
+
+From sfalcon at fhcrc.org  Sat Jan  9 01:28:06 2010
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 08 Jan 2010 16:28:06 -0800
+Subject: [Bioc-devel] push changes to devel
+In-Reply-To: <3CCDA0A3-A06E-44BF-84EC-E3186BF48212@stat.berkeley.edu>
+References: <3CCDA0A3-A06E-44BF-84EC-E3186BF48212@stat.berkeley.edu>
+Message-ID: <4B47CD96.2040805@fhcrc.org>
+
+On 1/8/10 9:07 AM, Kasper Daniel Hansen wrote:
+> Recently GenomeGraphs had an update (in devel) where an argument name
+> of makeBaseTrack changed from segmentation to trackOverlay.  This
+> update happened without bumping the version number (and it happened
+> before Xmas).
+>
+> When I install GenomeGraphs using biocLite on R-devel (using pkgType
+> = "source") I get the old version of GenomeGraphs containing the
+> argument name segmentation.  But on the other hand it is clear from
+> the current build failure of Genominator that the version of
+> GenomeGraphs used for R CMD check is the new version with the
+> argument name trackOverlay.
+
+As I understand it, the nightly build tests the latest svn version of 
+all packages.
+
+Only those packages that pass check with no error *and* have a version 
+bump are pushed to the devel repos (hit by biocLite).
+
+> I am now caught in a peculiar situation.  If I don't do anything,
+> Genominator fails R CMD check.  But if I fix Genominator to use the
+> new version of GenomeGraphs, it will pass R CMD check, but any user
+> who downloads Genominator and GenomeGraphs through biocLite will find
+> that they don't match up (because they will get the old version of
+> GenomeGraphs).
+>
+> I could have made a mistake somewhere, but I have tried double
+> checking it.
+>
+> For release I know that if a package gets updated, it needs to have
+> its version bumped in order to be re-build.
+>
+> But for devel I assumed that as soon as I change something in svn,
+> the changes are reflected in what is available through biocLite (of
+> course, allowing for the package to be rebuild), no matter if I bump
+> the version or not.  That does not seem to be the case.  And no
+> matter what the rule is, it is confusing that a different version is
+> used for R CMD check than what is available through biocLite.
+
+I appreciate the confusion.  The current rule avoids having our 
+repository (release or devel) serving the same version of a package with 
+different underlying code and I think that's desirable.
+
+> So essentially: what is the rules for version bumping in devel.
+
+Version numbers are cheap and so as a rule, folks should be incrementing 
+z in x.y.z for nearly all devel changes.  This is especially the case if 
+changes are made that impact packages that depend on you.
+
+> Also, it might make sense to write them down somewhere on the
+> developer pages (where there might be some info, I just could not
+> find it).
+
+I think I hear a volunteer for adding something to the dev wiki ;-)
+
+I suspect that this particular problem can be easily solved with a mail 
+to the maintainer of GenomeGraphs.  If not, let us know.
+
+Best Wishes,
+
++ seth
+
+-- 
+Seth Falcon
+Bioconductor Core Team | FHCRC
+
+
+From khansen at stat.berkeley.edu  Sun Jan 10 23:55:30 2010
+From: khansen at stat.berkeley.edu (Kasper Daniel Hansen)
+Date: Sun, 10 Jan 2010 17:55:30 -0500
+Subject: [Bioc-devel] push changes to devel
+In-Reply-To: <4B47CD96.2040805@fhcrc.org>
+References: <3CCDA0A3-A06E-44BF-84EC-E3186BF48212@stat.berkeley.edu>
+	<4B47CD96.2040805@fhcrc.org>
+Message-ID: <923240A3-C9A6-4889-AC1C-5A7B3512BB63@stat.berkeley.edu>
+
+Thanks for the clarifications.  As is evident from my original email, this works a bit differently than I expected.
+
+Leaving aside my current issues that are easily resolvable,  I would find it more natural that R CMD check on package A (which depends on package B) uses the version of package B obtainable by biocLite.  But if this is the first time this issue has appeared in the last many years, it is probably not worth spending any more time on.
+
+Kasper
+
+
+On Jan 8, 2010, at 19:28 PM, Seth Falcon wrote:
+
+> On 1/8/10 9:07 AM, Kasper Daniel Hansen wrote:
+>> Recently GenomeGraphs had an update (in devel) where an argument name
+>> of makeBaseTrack changed from segmentation to trackOverlay.  This
+>> update happened without bumping the version number (and it happened
+>> before Xmas).
+>> 
+>> When I install GenomeGraphs using biocLite on R-devel (using pkgType
+>> = "source") I get the old version of GenomeGraphs containing the
+>> argument name segmentation.  But on the other hand it is clear from
+>> the current build failure of Genominator that the version of
+>> GenomeGraphs used for R CMD check is the new version with the
+>> argument name trackOverlay.
+> 
+> As I understand it, the nightly build tests the latest svn version of all packages.
+> 
+> Only those packages that pass check with no error *and* have a version bump are pushed to the devel repos (hit by biocLite).
+> 
+>> I am now caught in a peculiar situation.  If I don't do anything,
+>> Genominator fails R CMD check.  But if I fix Genominator to use the
+>> new version of GenomeGraphs, it will pass R CMD check, but any user
+>> who downloads Genominator and GenomeGraphs through biocLite will find
+>> that they don't match up (because they will get the old version of
+>> GenomeGraphs).
+>> 
+>> I could have made a mistake somewhere, but I have tried double
+>> checking it.
+>> 
+>> For release I know that if a package gets updated, it needs to have
+>> its version bumped in order to be re-build.
+>> 
+>> But for devel I assumed that as soon as I change something in svn,
+>> the changes are reflected in what is available through biocLite (of
+>> course, allowing for the package to be rebuild), no matter if I bump
+>> the version or not.  That does not seem to be the case.  And no
+>> matter what the rule is, it is confusing that a different version is
+>> used for R CMD check than what is available through biocLite.
+> 
+> I appreciate the confusion.  The current rule avoids having our repository (release or devel) serving the same version of a package with different underlying code and I think that's desirable.
+> 
+>> So essentially: what is the rules for version bumping in devel.
+> 
+> Version numbers are cheap and so as a rule, folks should be incrementing z in x.y.z for nearly all devel changes.  This is especially the case if changes are made that impact packages that depend on you.
+> 
+>> Also, it might make sense to write them down somewhere on the
+>> developer pages (where there might be some info, I just could not
+>> find it).
+> 
+> I think I hear a volunteer for adding something to the dev wiki ;-)
+> 
+> I suspect that this particular problem can be easily solved with a mail to the maintainer of GenomeGraphs.  If not, let us know.
+> 
+> Best Wishes,
+> 
+> + seth
+> 
+> -- 
+> Seth Falcon
+> Bioconductor Core Team | FHCRC
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From sneumann at ipb-halle.de  Mon Jan 11 12:44:07 2010
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Mon, 11 Jan 2010 12:44:07 +0100
+Subject: [Bioc-devel] PNG Graphics overwrite problem on MacOSX
+Message-ID: <1263210247.4416.387.camel@paddy>
+
+Hi,
+
+we're developers of http://bioconductor.org/packages/bioc/html/xcms.html
+and by now more than one user has reported a problem 
+with PNG graphics created by xcms *on MacOSX only*.
+
+Some examples can be seen at:
+Correct: http://dl.dropbox.com/u/814697/001.png
+Broken: http://dl.dropbox.com/u/814697/002.png
+Broken: http://dl.dropbox.com/u/814697/003.png
+
+As you see, axis and main title are overdrawn for the 2nd and 4rd plot.
+whereas the actual plot content is fine.
+
+The graphics are created with approx. the following code snippet:
+
+plot.xcmsEIC <- function(x, ...) {
+   # Create one plot for each grp
+   for (i in grpidx) {
+        plot(0, 0, type = "n", 
+             main = paste("Extracted ...:", object at mzrange[i,1],
+                          "-", object at mzrange[i,2], "m/z"))
+        points(pts[i], type = "l")
+   } 
+}
+
+and called via 
+
+            png(file.path(eicdir, "%003d.png"), width = w, height = h)
+            plot(eics, object, rtrange = eicwidth)
+            dev.off()
+
+Questions: 
+1) Has anyone seen such an effect before ? On system configuration is
+described below. 
+2) Is there a way to see the vignettes created 
+on pit/pelham ?
+
+Yours,
+Steffen
+
+On Fri, 2010-01-08 at 20:42 +0100, GUILLOU Claude wrote:
+> I confirm this problem observed by Daniel on the EIC png images.
+> Actually It it was on my Macbook that Steffen observed that problem
+last July.
+> In the mean time we installed XCMS on both Linux and windows machines
+where this bug does not appear.
+> As regards the Mac I could not find a fix. In fact  I hoped that
+installation of Snow Leopard ,  full reinstallation with latest R
+release version  R 2.10.0 GUI 1.30 Leopard build 64-bit of last october
+together with the  latest XCMS package might solve the problem.
+
+
+
+
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From khansen at stat.berkeley.edu  Mon Jan 11 13:59:42 2010
+From: khansen at stat.berkeley.edu (Kasper Daniel Hansen)
+Date: Mon, 11 Jan 2010 07:59:42 -0500
+Subject: [Bioc-devel] PNG Graphics overwrite problem on MacOSX
+In-Reply-To: <1263210247.4416.387.camel@paddy>
+References: <1263210247.4416.387.camel@paddy>
+Message-ID: <E6210E33-9A64-4968-9772-D02BC174B739@stat.berkeley.edu>
+
+Is this only for PNG are does this also seems weird when you use, say, pdf() on OS X?
+
+It is hard to say, but it seems that the title is not just overplotting, but two different texts overplotted.  Are you explicitly drawing the title several times and for the other platforms the text just gets positioned exactly on top of each other, or are you sure you are only drawing the text once (this is impossible to tell from your snippet)?  For the 2nd and 3rd png the title is not only overplotted, but seems to be two different sets of text (note the presence of "1" in the title).  
+
+Kasper
+
+
+On Jan 11, 2010, at 6:44 AM, Steffen Neumann wrote:
+
+> Hi,
+> 
+> we're developers of http://bioconductor.org/packages/bioc/html/xcms.html
+> and by now more than one user has reported a problem 
+> with PNG graphics created by xcms *on MacOSX only*.
+> 
+> Some examples can be seen at:
+> Correct: http://dl.dropbox.com/u/814697/001.png
+> Broken: http://dl.dropbox.com/u/814697/002.png
+> Broken: http://dl.dropbox.com/u/814697/003.png
+> 
+> As you see, axis and main title are overdrawn for the 2nd and 4rd plot.
+> whereas the actual plot content is fine.
+> 
+> The graphics are created with approx. the following code snippet:
+> 
+> plot.xcmsEIC <- function(x, ...) {
+>   # Create one plot for each grp
+>   for (i in grpidx) {
+>        plot(0, 0, type = "n", 
+>             main = paste("Extracted ...:", object at mzrange[i,1],
+>                          "-", object at mzrange[i,2], "m/z"))
+>        points(pts[i], type = "l")
+>   } 
+> }
+> 
+> and called via 
+> 
+>            png(file.path(eicdir, "%003d.png"), width = w, height = h)
+>            plot(eics, object, rtrange = eicwidth)
+>            dev.off()
+> 
+> Questions: 
+> 1) Has anyone seen such an effect before ? On system configuration is
+> described below. 
+> 2) Is there a way to see the vignettes created 
+> on pit/pelham ?
+> 
+> Yours,
+> Steffen
+> 
+> On Fri, 2010-01-08 at 20:42 +0100, GUILLOU Claude wrote:
+>> I confirm this problem observed by Daniel on the EIC png images.
+>> Actually It it was on my Macbook that Steffen observed that problem
+> last July.
+>> In the mean time we installed XCMS on both Linux and windows machines
+> where this bug does not appear.
+>> As regards the Mac I could not find a fix. In fact  I hoped that
+> installation of Snow Leopard ,  full reinstallation with latest R
+> release version  R 2.10.0 GUI 1.30 Leopard build 64-bit of last october
+> together with the  latest XCMS package might solve the problem.
+> 
+> 
+> 
+> 
+> 
+> -- 
+> IPB Halle                    AG Massenspektrometrie & Bioinformatik
+> Dr. Steffen Neumann          http://www.IPB-Halle.DE
+> Weinberg 3                   http://msbi.bic-gh.de
+> 06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+>                                  +49 (0) 345 5582 - 0
+> sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From sneumann at ipb-halle.de  Mon Jan 11 15:56:55 2010
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Mon, 11 Jan 2010 15:56:55 +0100
+Subject: [Bioc-devel] PNG Graphics overwrite problem on MacOSX
+In-Reply-To: <E6210E33-9A64-4968-9772-D02BC174B739@stat.berkeley.edu>
+References: <1263210247.4416.387.camel@paddy>
+	<E6210E33-9A64-4968-9772-D02BC174B739@stat.berkeley.edu>
+Message-ID: <1263221815.4416.438.camel@paddy>
+
+On Mon, 2010-01-11 at 07:59 -0500, Kasper Daniel Hansen wrote:
+> Is this only for PNG are does this also seems weird when you use, say, pdf() on OS X?
+I don't have a Mac at hand, so I can't test :-(
+
+> It is hard to say, but it seems that the title is not just
+> overplotting, but two different texts overplotted.
+Yes, they have different texts, and the whole plots should've gone 
+into different "%003d.png" files.
+
+>   Are you explicitly drawing the title several times and for the other
+> platforms the text just gets positioned exactly on top of each other,
+> or are you sure you are only drawing the text once (this is impossible
+> to tell from your snippet)?  
+Plotting code is identical for all platforms. The full snippet is at
+https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/xcms/R/xcmsEIC.R
+You see that I (or rather the original author :-) "uses" 
+an plot(0, 0, type = "n", main = "Extracted ...", xlim=...)
+to setup the plot including axes and title. My guess was that 
+axes and main was not cleared between two consecutive "%003d.png",
+which might explain the platform dependency.
+
+Should I put in an explicit plot.new() ? 
+I'd though that was done implicitely by plot() ?
+
+Yours,
+Steffen
+
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From sfalcon at fhcrc.org  Mon Jan 11 18:19:29 2010
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 11 Jan 2010 09:19:29 -0800
+Subject: [Bioc-devel] push changes to devel
+In-Reply-To: <923240A3-C9A6-4889-AC1C-5A7B3512BB63@stat.berkeley.edu>
+References: <3CCDA0A3-A06E-44BF-84EC-E3186BF48212@stat.berkeley.edu>	<4B47CD96.2040805@fhcrc.org>
+	<923240A3-C9A6-4889-AC1C-5A7B3512BB63@stat.berkeley.edu>
+Message-ID: <4B4B5DA1.4060006@fhcrc.org>
+
+On 1/10/10 2:55 PM, Kasper Daniel Hansen wrote:
+> Thanks for the clarifications.  As is evident from my original email,
+> this works a bit differently than I expected.
+>
+> Leaving aside my current issues that are easily resolvable,  I would
+> find it more natural that R CMD check on package A (which depends on
+> package B) uses the version of package B obtainable by biocLite.  But
+> if this is the first time this issue has appeared in the last many
+> years, it is probably not worth spending any more time on.
+
+My impression is that  this sort of issue does not arise often.  If 
+others see it differently, please speak up and we will see if we can 
+address the issue.
+
+Perhaps an advantage of the current setup is that it helped you find the 
+incompatibility sooner than you might have had the build system had the 
+additional complexity to test your package against repo versions of its 
+Depends.
+
++ seth
+
+-- 
+Seth Falcon
+Bioconductor Core Team | FHCRC
+
+
+From whuber at embl.de  Mon Jan 11 19:21:01 2010
+From: whuber at embl.de (Wolfgang Huber)
+Date: Mon, 11 Jan 2010 19:21:01 +0100
+Subject: [Bioc-devel] R_CheckUserInterrupt in IRanges
+Message-ID: <4B4B6C0D.5080907@embl.de>
+
+
+Hi all,
+
+I noted that some functions in IRanges, e.g. 'runq', can take a long 
+time to terminate; that interrupting the evaluation e.g. by Ctrl-C does 
+not seem to be possible; and that in the C code of that package, the 
+function R_CheckUserInterrupt is never used.
+
+Are these conscious design decisions? Are there (should there be) 
+general recommendations from the project regarding use of that function 
+(or possibly equivalent functionality)?
+
+Various other packages (Biostrings, Biobase, ShortRead, vsn, puma, 
+limma) do use it in various places.
+
+Best wishes
+      Wolfgang
+
+
+--
+Wolfgang Huber
+EMBL
+http://www.embl.de/research/units/genome_biology/huber/contact
+
+
+From sneumann at ipb-halle.de  Mon Jan 11 20:33:14 2010
+From: sneumann at ipb-halle.de (Neumann, Steffen)
+Date: Mon, 11 Jan 2010 20:33:14 +0100
+Subject: [Bioc-devel] reproducible quartz only PNG Graphics overwrite
+	problem on MacOSX
+References: <84a0ccc70912111204q4ef96ddaxaf47705c70c5c73a@mail.gmail.com><84a0ccc71001071907q1f10ce25wba93652ce9b4b556@mail.gmail.com><9264FE63AD0A634995D25D233D701BAD01D6DAFD@ipb-exchange.ipb-halle.de><F6662472-82A8-4AE6-B24E-68C21B61F657@imperial.ac.uk><d33e26951001081142t762136a4t55216e7c180ea4fe@mail.gmail.com><1263223631.4416.461.camel@paddy>
+	<d33e26951001111104y5ebd0fe0od0ba95127b6f5b01@mail.gmail.com>
+Message-ID: <9264FE63AD0A634995D25D233D701BAD01D6DB02@ipb-exchange.ipb-halle.de>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100111/b7e8c10c/attachment.pl>
+
+From paboyoun at fhcrc.org  Mon Jan 11 21:36:26 2010
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Mon, 11 Jan 2010 12:36:26 -0800
+Subject: [Bioc-devel] R_CheckUserInterrupt guidelines (was Re:
+ R_CheckUserInterrupt in IRanges)
+In-Reply-To: <4B4B6C0D.5080907@embl.de>
+References: <4B4B6C0D.5080907@embl.de>
+Message-ID: <4B4B8BCA.1080501@fhcrc.org>
+
+Wolfgang,
+We have been silent on when to add R_CheckUserInterrupt calls at the C 
+level for long running operations and only around 20 BioC packages use 
+it. I added calls to R_CheckUserInterrupt in coverage, run*, and view* 
+methods in IRanges, but more can certainly be added to the interval 
+operations.
+
+For the developer wiki how does the following general rule sound:
+
+C level for loops should include a call to R_CheckUserInterrupt when the 
+total loop time exceeds 10 seconds for a "reasonably sized" job on 
+"reasonable" hardware AND the method is intended for interactive use.
+
+
+Thoughts?
+
+
+Patrick
+
+
+
+Wolfgang Huber wrote:
+>
+> Hi all,
+>
+> I noted that some functions in IRanges, e.g. 'runq', can take a long 
+> time to terminate; that interrupting the evaluation e.g. by Ctrl-C 
+> does not seem to be possible; and that in the C code of that package, 
+> the function R_CheckUserInterrupt is never used.
+>
+> Are these conscious design decisions? Are there (should there be) 
+> general recommendations from the project regarding use of that 
+> function (or possibly equivalent functionality)?
+>
+> Various other packages (Biostrings, Biobase, ShortRead, vsn, puma, 
+> limma) do use it in various places.
+>
+> Best wishes
+>      Wolfgang
+>
+>
+> -- 
+> Wolfgang Huber
+> EMBL
+> http://www.embl.de/research/units/genome_biology/huber/contact
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From whuber at embl.de  Mon Jan 11 21:50:52 2010
+From: whuber at embl.de (Wolfgang Huber)
+Date: Mon, 11 Jan 2010 21:50:52 +0100
+Subject: [Bioc-devel] R_CheckUserInterrupt guidelines (was Re:
+ R_CheckUserInterrupt in IRanges)
+In-Reply-To: <4B4B8BCA.1080501@fhcrc.org>
+References: <4B4B6C0D.5080907@embl.de> <4B4B8BCA.1080501@fhcrc.org>
+Message-ID: <4B4B8F2C.3010705@embl.de>
+
+Hi Patrick
+
+I suggest:
+
+> We have been silent on when to add R_CheckUserInterrupt calls at the C 
+> level for long running operations and only around 20 BioC packages use 
+> it. I added calls to R_CheckUserInterrupt in coverage, run*, and view* 
+> methods in IRanges, but more can certainly be added to the interval 
+> operations.
+> 
+> For the developer wiki how does the following general rule sound:
+> 
+> C level for loops should include a call to R_CheckUserInterrupt when the 
+> total loop time exceeds 10 seconds for a "reasonably sized" job on 
+> "reasonable" hardware AND the method is intended for interactive use.
+
+C level loops should include a call to R_CheckUserInterrupt when there 
+is any chance that they may not terminate for certain parameter 
+constellations, or when their run time exceeds 10 seconds with typical 
+parameters and the method is intended for interactive use.
+
+/*
+The notion "reasonable hardware" is difficult, since it may just be on 
+unreasonable hardware (like a netbook) where people experience the 
+greatest need for interrupting a carelessly called function. Also, even
+reasonable hardware can become unreasonable when there is competition 
+for memory and it starts swapping. Unless there is a substantial cost 
+for calling R_CheckUserInterrupt, I don't see why not to be liberal with it.
+*/
+
+
+	Best wishes
+	Wolfgang
+
+> Thoughts?
+> 
+> 
+> Patrick
+> 
+> 
+> 
+> Wolfgang Huber wrote:
+>>
+>> Hi all,
+>>
+>> I noted that some functions in IRanges, e.g. 'runq', can take a long 
+>> time to terminate; that interrupting the evaluation e.g. by Ctrl-C 
+>> does not seem to be possible; and that in the C code of that package, 
+>> the function R_CheckUserInterrupt is never used.
+>>
+>> Are these conscious design decisions? Are there (should there be) 
+>> general recommendations from the project regarding use of that 
+>> function (or possibly equivalent functionality)?
+>>
+>> Various other packages (Biostrings, Biobase, ShortRead, vsn, puma, 
+>> limma) do use it in various places.
+>>
+>> Best wishes
+>>      Wolfgang
+>>
+>>
+>> -- 
+>> Wolfgang Huber
+>> EMBL
+>> http://www.embl.de/research/units/genome_biology/huber/contact
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+
+-- 
+
+Best wishes
+      Wolfgang
+
+
+--
+Wolfgang Huber
+EMBL
+http://www.embl.de/research/units/genome_biology/huber/contact
+
+
+From paboyoun at fhcrc.org  Mon Jan 11 22:31:16 2010
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Mon, 11 Jan 2010 13:31:16 -0800
+Subject: [Bioc-devel] R_CheckUserInterrupt guidelines (was Re:
+ R_CheckUserInterrupt in IRanges)
+In-Reply-To: <4B4B8F2C.3010705@embl.de>
+References: <4B4B6C0D.5080907@embl.de> <4B4B8BCA.1080501@fhcrc.org>
+	<4B4B8F2C.3010705@embl.de>
+Message-ID: <4B4B98A4.8020101@fhcrc.org>
+
+I just modified the C or Fortran code section of package guidelines to 
+reflect this new entry:
+
+http://wiki.fhcrc.org/bioc/Package_Guidelines#c-or-fortran-code
+
+
+Patrick
+
+
+Wolfgang Huber wrote:
+> Hi Patrick
+>
+> I suggest:
+>
+>> We have been silent on when to add R_CheckUserInterrupt calls at the 
+>> C level for long running operations and only around 20 BioC packages 
+>> use it. I added calls to R_CheckUserInterrupt in coverage, run*, and 
+>> view* methods in IRanges, but more can certainly be added to the 
+>> interval operations.
+>>
+>> For the developer wiki how does the following general rule sound:
+>>
+>> C level for loops should include a call to R_CheckUserInterrupt when 
+>> the total loop time exceeds 10 seconds for a "reasonably sized" job 
+>> on "reasonable" hardware AND the method is intended for interactive use.
+>
+> C level loops should include a call to R_CheckUserInterrupt when there 
+> is any chance that they may not terminate for certain parameter 
+> constellations, or when their run time exceeds 10 seconds with typical 
+> parameters and the method is intended for interactive use.
+>
+> /*
+> The notion "reasonable hardware" is difficult, since it may just be on 
+> unreasonable hardware (like a netbook) where people experience the 
+> greatest need for interrupting a carelessly called function. Also, even
+> reasonable hardware can become unreasonable when there is competition 
+> for memory and it starts swapping. Unless there is a substantial cost 
+> for calling R_CheckUserInterrupt, I don't see why not to be liberal 
+> with it.
+> */
+>
+>
+>     Best wishes
+>     Wolfgang
+>
+>> Thoughts?
+>>
+>>
+>> Patrick
+>>
+>>
+>>
+>> Wolfgang Huber wrote:
+>>>
+>>> Hi all,
+>>>
+>>> I noted that some functions in IRanges, e.g. 'runq', can take a long 
+>>> time to terminate; that interrupting the evaluation e.g. by Ctrl-C 
+>>> does not seem to be possible; and that in the C code of that 
+>>> package, the function R_CheckUserInterrupt is never used.
+>>>
+>>> Are these conscious design decisions? Are there (should there be) 
+>>> general recommendations from the project regarding use of that 
+>>> function (or possibly equivalent functionality)?
+>>>
+>>> Various other packages (Biostrings, Biobase, ShortRead, vsn, puma, 
+>>> limma) do use it in various places.
+>>>
+>>> Best wishes
+>>>      Wolfgang
+>>>
+>>>
+>>> -- 
+>>> Wolfgang Huber
+>>> EMBL
+>>> http://www.embl.de/research/units/genome_biology/huber/contact
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+>
+
+
+From khansen at stat.berkeley.edu  Mon Jan 11 23:36:06 2010
+From: khansen at stat.berkeley.edu (Kasper Daniel Hansen)
+Date: Mon, 11 Jan 2010 17:36:06 -0500
+Subject: [Bioc-devel] reproducible quartz only PNG Graphics overwrite
+	problem on MacOSX
+In-Reply-To: <9264FE63AD0A634995D25D233D701BAD01D6DB02@ipb-exchange.ipb-halle.de>
+References: <84a0ccc70912111204q4ef96ddaxaf47705c70c5c73a@mail.gmail.com><84a0ccc71001071907q1f10ce25wba93652ce9b4b556@mail.gmail.com><9264FE63AD0A634995D25D233D701BAD01D6DAFD@ipb-exchange.ipb-halle.de><F6662472-82A8-4AE6-B24E-68C21B61F657@imperial.ac.uk><d33e26951001081142t762136a4t55216e7c180ea4fe@mail.gmail.com><1263223631.4416.461.camel@paddy>
+	<d33e26951001111104y5ebd0fe0od0ba95127b6f5b01@mail.gmail.com>
+	<9264FE63AD0A634995D25D233D701BAD01D6DB02@ipb-exchange.ipb-halle.de>
+Message-ID: <92D6D735-356A-45DF-8CC6-6F17310B3073@stat.berkeley.edu>
+
+There is clearly a bug in the quartz driver for png I would say (although when you report it you might want to be careful about where you claim the bug to be since it is not clear that the bug is in R - it could be the rendering code).  I also think that there seems to be a funny issue for type = "cairo" since one can see a difference between the box and the axis line - but that could again be a rendering issue, not an R issue (it would still be nice if it was worked around).  The reproducible example is very nice.
+
+You need to report this to either R-devel or R-sig-mac or to the bug report system.
+
+I would refrain from hardcoding type = "Xlib" in your package code, but that is just my opinion.
+
+Kasper
+
+On Jan 11, 2010, at 14:33 PM, Neumann, Steffen wrote:
+
+> Hi,
+> 
+> I think this qualifies either as a Bug 
+> in the Quartz png() driver, of abuse of plot(0,0, type="n")
+> beyond what is specified. See below for the test script.
+> 
+> Yours,
+> Steffen
+> 
+> -----Original Message-----
+> From:	owner-xcms at scripps.edu on behalf of GUILLOU Claude
+> Sent:	Mon 1/11/2010 20:04
+> To:	xcms at scripps.edu
+> Cc:	
+> Subject:	Re: EIC png creation problem with diffreport
+> 
+> Hi Steffen,
+> 
+> on my Mac test_cairo_plot00x.png and test_Xlib_plot00x.png have the same
+> size (4KB) and seem almost identical.
+> 
+> test_quartz_plot001.png is 16K starts as well as  test_quartz_plot002.png,
+> but test_quartz_plot003.png is 20K.
+> The overlap of both x and y axes starts with test_quartz_plot002.png.
+> 
+> Although Cairo and Xlib png outputs look similar, Xlib seem cleaner: the
+> segment between the extreme ticks show some overlap but the scale remain
+> correct.
+> Do you want me to send the images?
+> 
+> Obviously it seems in our case  we should impose to use type  ="Xlib" for
+> X11 display as explained in the png() R documentation.
+> 
+> Thanks a lot for this hint. That was really annoying. I will correct my
+> scripts accordingly and return to the pleasure of using my Macbook for data
+> processing :-)
+> 
+> Claude
+> 
+> 2010/1/11 Steffen Neumann <sneumann at ipb-halle.de>
+> 
+>> Hi Claude and Daniel,
+>> 
+>> could you two Mac guys do me a favor and try the script below ?
+>> 
+>> It will create 3*3=9 plots, please look at e.g. the *003.png variants
+>> and check for our problem. Also check the file sizes
+>> between the subtypes, e.g. on Linux test_quartz_plot003.png
+>> and test_Xlib_plot003.png have the same size/are identical.
+>> 
+>> Thanks for your time.
+>> 
+>> Yours,
+>> Steffen
+> 
+> capabilities("png")
+> 
+> for (subtype in c("cairo", "Xlib", "quartz")) {
+> png(filename=paste("test",subtype,"plot%003d.png", sep="_"),
+>     width = 640, height = 480, type=subtype)
+> for (i in c(1,2,3)) {
+>   plot(0,0, type="n", main=i,
+>        xlim=c(-1 + 0.1*i, +1 + 0.1*i),
+>        ylim=c(-1 + 0.1*i, +1 + 0.1*i),
+>        xlab="xlab",ylab="ylab")
+>   points(0.1*i, 0.1*i , col=i)
+>   Sys.sleep(1)
+> }
+> dev.off()
+> }
+> 
+> 
+>> On Fri, 2010-01-08 at 20:42 +0100, GUILLOU Claude wrote:
+>>> I confirm this problem observed by Daniel on the EIC png images.
+>>> Actually It it was on my Macbook that Steffen observed that problem
+>>> last July.
+>>> In the mean time we installed XCMS on both Linux and windows machines
+>>> where this bug does not appear.
+>> ...
+>>> As regards the Mac I could not find a fix. In fact  I hoped that
+>>> installation of Snow Leopard ,  full reinstallation with latest R
+>>> release version  R 2.10.0 GUI 1.30 Leopard build 64-bit of last
+>>> october together with the  latest XCMS package might solve the
+>>> problem.
+>> 
+>> 
+>> 
+>> 
+>> --
+>> IPB Halle                    AG Massenspektrometrie & Bioinformatik
+>> Dr. Steffen Neumann          http://www.IPB-Halle.DE
+>> Weinberg 3                   http://msbi.bic-gh.de
+>> 06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+>>                                 +49 (0) 345 5582 - 0
+>> sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+>> 
+>> 
+> 
+> 
+> 
+> 
+> 
+> 	[[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From sfalcon at fhcrc.org  Tue Jan 12 00:50:46 2010
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 11 Jan 2010 15:50:46 -0800
+Subject: [Bioc-devel] R_CheckUserInterrupt guidelines (was Re:
+ R_CheckUserInterrupt in IRanges)
+In-Reply-To: <4B4B98A4.8020101@fhcrc.org>
+References: <4B4B6C0D.5080907@embl.de>
+	<4B4B8BCA.1080501@fhcrc.org>	<4B4B8F2C.3010705@embl.de>
+	<4B4B98A4.8020101@fhcrc.org>
+Message-ID: <4B4BB956.3080307@fhcrc.org>
+
+On 1/11/10 1:31 PM, Patrick Aboyoun wrote:
+> I just modified the C or Fortran code section of package guidelines to
+> reflect this new entry:
+>
+> http://wiki.fhcrc.org/bioc/Package_Guidelines#c-or-fortran-code
+
+This looks reasonable.
+
+It is worth noting, however, that calling R_CheckUserInterrupt is not 
+entirely free.  If you have a tight loop it might make more sense to 
+check at intervals rather than each time through and the choice of when 
+to check will depend very much on the computation.
+
+Here's an example using the inline package (code is at the bottom) with 
+a silly double loop to compare checking vs not:
+
+With R_CheckUserInterrupt inner loop:
+
+ > system.time(z <- funx(10000L, TRUE))
+    user  system elapsed
+   1.310   0.001   1.313
+
+No checking:
+
+system.time(z <- funx(10000L, FALSE))
+    user  system elapsed
+    0.08    0.00    0.08
+
+Now this may be completely unrealistic, but I suspect that a sensible 
+take away message is that we should be making sure our C code that loops 
+does call R_CheckUserInterrupt, but depending on the computation, not at 
+every loop iteration.
+
++ seth
+
+
+## example code is below.
+
+library("inline")
+
+code <- "
+int i, j, sum = 0, int n = INTEGER(max)[0];
+int check_inter = LOGICAL(do_check)[0];
+SEXP ans;
+PROTECT(ans = allocVector(INTSXP, n));
+for (i = 0; i < n; i++) {
+     INTEGER(ans)[i] = i;
+     for (j = 0; j < n; j++) {
+         sum = i + j;
+         if (check_inter) {
+             R_CheckUserInterrupt();
+         }
+     }
+}
+UNPROTECT(1);
+return ans;
+"
+
+funx <- cfunction(signature(max="integer", do_check="logical"), code)
+
+system.time(z <- funx(10000L, TRUE))
+system.time(z <- funx(10000L, FALSE))
+
+
+-- 
+Seth Falcon
+Bioconductor Core Team | FHCRC
+
+
+From whuber at embl.de  Tue Jan 12 00:59:11 2010
+From: whuber at embl.de (Wolfgang Huber)
+Date: Tue, 12 Jan 2010 00:59:11 +0100
+Subject: [Bioc-devel] R_CheckUserInterrupt guidelines (was Re:
+ R_CheckUserInterrupt in IRanges)
+In-Reply-To: <4B4BB956.3080307@fhcrc.org>
+References: <4B4B6C0D.5080907@embl.de>	<4B4B8BCA.1080501@fhcrc.org>	<4B4B8F2C.3010705@embl.de>	<4B4B98A4.8020101@fhcrc.org>
+	<4B4BB956.3080307@fhcrc.org>
+Message-ID: <4B4BBB4F.3080802@embl.de>
+
+Hi Seth
+
+Yes. I would hope that someone who goes to the trouble of writing C code 
+understands that.
+
+	Best wishes
+	Wolfgang
+
+
+Seth Falcon wrote:
+> On 1/11/10 1:31 PM, Patrick Aboyoun wrote:
+>> I just modified the C or Fortran code section of package guidelines to
+>> reflect this new entry:
+>>
+>> http://wiki.fhcrc.org/bioc/Package_Guidelines#c-or-fortran-code
+> 
+> This looks reasonable.
+> 
+> It is worth noting, however, that calling R_CheckUserInterrupt is not 
+> entirely free.  If you have a tight loop it might make more sense to 
+> check at intervals rather than each time through and the choice of when 
+> to check will depend very much on the computation.
+> 
+> Here's an example using the inline package (code is at the bottom) with 
+> a silly double loop to compare checking vs not:
+> 
+> With R_CheckUserInterrupt inner loop:
+> 
+>  > system.time(z <- funx(10000L, TRUE))
+>    user  system elapsed
+>   1.310   0.001   1.313
+> 
+> No checking:
+> 
+> system.time(z <- funx(10000L, FALSE))
+>    user  system elapsed
+>    0.08    0.00    0.08
+> 
+> Now this may be completely unrealistic, but I suspect that a sensible 
+> take away message is that we should be making sure our C code that loops 
+> does call R_CheckUserInterrupt, but depending on the computation, not at 
+> every loop iteration.
+> 
+> + seth
+> 
+> 
+> ## example code is below.
+> 
+> library("inline")
+> 
+> code <- "
+> int i, j, sum = 0, int n = INTEGER(max)[0];
+> int check_inter = LOGICAL(do_check)[0];
+> SEXP ans;
+> PROTECT(ans = allocVector(INTSXP, n));
+> for (i = 0; i < n; i++) {
+>     INTEGER(ans)[i] = i;
+>     for (j = 0; j < n; j++) {
+>         sum = i + j;
+>         if (check_inter) {
+>             R_CheckUserInterrupt();
+>         }
+>     }
+> }
+> UNPROTECT(1);
+> return ans;
+> "
+> 
+> funx <- cfunction(signature(max="integer", do_check="logical"), code)
+> 
+> system.time(z <- funx(10000L, TRUE))
+> system.time(z <- funx(10000L, FALSE))
+> 
+> 
+
+-- 
+
+Best wishes
+      Wolfgang
+
+
+--
+Wolfgang Huber
+EMBL
+http://www.embl.de/research/units/genome_biology/huber/contact
+
+
+From hb at stat.berkeley.edu  Tue Jan 12 05:07:31 2010
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Mon, 11 Jan 2010 20:07:31 -0800
+Subject: [Bioc-devel] R_CheckUserInterrupt guidelines (was Re:
+	R_CheckUserInterrupt in IRanges)
+In-Reply-To: <4B4BB956.3080307@fhcrc.org>
+References: <4B4B6C0D.5080907@embl.de> <4B4B8BCA.1080501@fhcrc.org>
+	<4B4B8F2C.3010705@embl.de> <4B4B98A4.8020101@fhcrc.org>
+	<4B4BB956.3080307@fhcrc.org>
+Message-ID: <59d7961d1001112007w646fffb3h6879d4d4b77267c3@mail.gmail.com>
+
+To 2nd what Seth's says, I think it is worth showing an explicit
+example of how to check at regular intervals, e.g.  for (i = 0; i < n;
+i++) { if (i %% 100 == 0) R_CheckUserInterrupt(); ... }
+
+/Henrik
+
+On Mon, Jan 11, 2010 at 3:50 PM, Seth Falcon <sfalcon at fhcrc.org> wrote:
+> On 1/11/10 1:31 PM, Patrick Aboyoun wrote:
+>>
+>> I just modified the C or Fortran code section of package guidelines to
+>> reflect this new entry:
+>>
+>> http://wiki.fhcrc.org/bioc/Package_Guidelines#c-or-fortran-code
+>
+> This looks reasonable.
+>
+> It is worth noting, however, that calling R_CheckUserInterrupt is not
+> entirely free. ?If you have a tight loop it might make more sense to check
+> at intervals rather than each time through and the choice of when to check
+> will depend very much on the computation.
+>
+> Here's an example using the inline package (code is at the bottom) with a
+> silly double loop to compare checking vs not:
+>
+> With R_CheckUserInterrupt inner loop:
+>
+>> system.time(z <- funx(10000L, TRUE))
+> ? user ?system elapsed
+> ?1.310 ? 0.001 ? 1.313
+>
+> No checking:
+>
+> system.time(z <- funx(10000L, FALSE))
+> ? user ?system elapsed
+> ? 0.08 ? ?0.00 ? ?0.08
+>
+> Now this may be completely unrealistic, but I suspect that a sensible take
+> away message is that we should be making sure our C code that loops does
+> call R_CheckUserInterrupt, but depending on the computation, not at every
+> loop iteration.
+>
+> + seth
+>
+>
+> ## example code is below.
+>
+> library("inline")
+>
+> code <- "
+> int i, j, sum = 0, int n = INTEGER(max)[0];
+> int check_inter = LOGICAL(do_check)[0];
+> SEXP ans;
+> PROTECT(ans = allocVector(INTSXP, n));
+> for (i = 0; i < n; i++) {
+> ? ?INTEGER(ans)[i] = i;
+> ? ?for (j = 0; j < n; j++) {
+> ? ? ? ?sum = i + j;
+> ? ? ? ?if (check_inter) {
+> ? ? ? ? ? ?R_CheckUserInterrupt();
+> ? ? ? ?}
+> ? ?}
+> }
+> UNPROTECT(1);
+> return ans;
+> "
+>
+> funx <- cfunction(signature(max="integer", do_check="logical"), code)
+>
+> system.time(z <- funx(10000L, TRUE))
+> system.time(z <- funx(10000L, FALSE))
+>
+>
+> --
+> Seth Falcon
+> Bioconductor Core Team | FHCRC
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From robert.castelo at upf.edu  Tue Jan 12 09:26:09 2010
+From: robert.castelo at upf.edu (Robert Castelo)
+Date: Tue, 12 Jan 2010 09:26:09 +0100
+Subject: [Bioc-devel] R_CheckUserInterrupt guidelines (was
+	Re:	R_CheckUserInterrupt in IRanges)
+In-Reply-To: <59d7961d1001112007w646fffb3h6879d4d4b77267c3@mail.gmail.com>
+References: <4B4B6C0D.5080907@embl.de> <4B4B8BCA.1080501@fhcrc.org>
+	<4B4B8F2C.3010705@embl.de> <4B4B98A4.8020101@fhcrc.org>
+	<4B4BB956.3080307@fhcrc.org>
+	<59d7961d1001112007w646fffb3h6879d4d4b77267c3@mail.gmail.com>
+Message-ID: <1263284769.1222.10.camel@llull.imim.es>
+
+hi, let me take the chance that you're talking about this to check
+whether anybody finds anything odd in the following strategy. in the
+package i develop (qpgraph - devel version) for the computationally
+intensive C-loops i calculate the percentage of progress and each time
+this percentage changes in one integer unit i call
+R_CheckUserInterrupt() and i also take the chance to process
+window-system events with R_ProcessEvents() (if i understand correctly
+this is what this function does). here is the code snippet:
+
+ppct=-1;
+k=0;
+
+for (i = 0; i < l_int-1; i++) {
+  int i2 = INTEGER(pairup_ij_int)[i] - 1;
+
+  for (j = i+1; j < l_int; j++) {
+    int j2 = INTEGER(pairup_ij_int)[j] - 1;
+
+    REAL(nrrMatrix)[i2+j2*n_var] = qp_edge_nrr(REAL(S),n_var,
+INTEGER(N)[0], i2, j2, q, INTEGER(nTests)[0],REAL(alpha)[0]);
+
+    REAL(nrrMatrix)[j2+i2*n_var] = REAL(nrrMatrix)[i2+j2*n_var];
+    k++;
+    pct = (int) ((k * 100) / n_adj);
+    if (pct != ppct) {
+      if (INTEGER(verbose)[0]) { ## show progress when
+        if (pct % 10 == 0)       ## verbose=TRUE
+          Rprintf("%d",pct);
+        else
+          Rprintf(".",pct);
+        R_FlushConsole();
+      }
+      R_CheckUserInterrupt();
+#ifdef Win32
+      R_ProcessEvents();
+#endif
+#ifdef HAVE_AQUA
+      R_ProcessEvents();
+#endif
+      ppct = pct;
+    }
+  }
+}
+
+let me clarify that the double nested loop iterates more or less through
+every pair of variables and thus this computation grows quadratically in
+the number of input variables in the dataset.
+
+robert.
+
+On Mon, 2010-01-11 at 20:07 -0800, Henrik Bengtsson wrote:
+> To 2nd what Seth's says, I think it is worth showing an explicit
+> example of how to check at regular intervals, e.g.  for (i = 0; i < n;
+> i++) { if (i %% 100 == 0) R_CheckUserInterrupt(); ... }
+> 
+> /Henrik
+> 
+> On Mon, Jan 11, 2010 at 3:50 PM, Seth Falcon <sfalcon at fhcrc.org> wrote:
+> > On 1/11/10 1:31 PM, Patrick Aboyoun wrote:
+> >>
+> >> I just modified the C or Fortran code section of package guidelines to
+> >> reflect this new entry:
+> >>
+> >> http://wiki.fhcrc.org/bioc/Package_Guidelines#c-or-fortran-code
+> >
+> > This looks reasonable.
+> >
+> > It is worth noting, however, that calling R_CheckUserInterrupt is not
+> > entirely free.  If you have a tight loop it might make more sense to check
+> > at intervals rather than each time through and the choice of when to check
+> > will depend very much on the computation.
+> >
+> > Here's an example using the inline package (code is at the bottom) with a
+> > silly double loop to compare checking vs not:
+> >
+> > With R_CheckUserInterrupt inner loop:
+> >
+> >> system.time(z <- funx(10000L, TRUE))
+> >   user  system elapsed
+> >  1.310   0.001   1.313
+> >
+> > No checking:
+> >
+> > system.time(z <- funx(10000L, FALSE))
+> >   user  system elapsed
+> >   0.08    0.00    0.08
+> >
+> > Now this may be completely unrealistic, but I suspect that a sensible take
+> > away message is that we should be making sure our C code that loops does
+> > call R_CheckUserInterrupt, but depending on the computation, not at every
+> > loop iteration.
+> >
+> > + seth
+> >
+> >
+> > ## example code is below.
+> >
+> > library("inline")
+> >
+> > code <- "
+> > int i, j, sum = 0, int n = INTEGER(max)[0];
+> > int check_inter = LOGICAL(do_check)[0];
+> > SEXP ans;
+> > PROTECT(ans = allocVector(INTSXP, n));
+> > for (i = 0; i < n; i++) {
+> >    INTEGER(ans)[i] = i;
+> >    for (j = 0; j < n; j++) {
+> >        sum = i + j;
+> >        if (check_inter) {
+> >            R_CheckUserInterrupt();
+> >        }
+> >    }
+> > }
+> > UNPROTECT(1);
+> > return ans;
+> > "
+> >
+> > funx <- cfunction(signature(max="integer", do_check="logical"), code)
+> >
+> > system.time(z <- funx(10000L, TRUE))
+> > system.time(z <- funx(10000L, FALSE))
+> >
+> >
+> > --
+> > Seth Falcon
+> > Bioconductor Core Team | FHCRC
+> >
+> > _______________________________________________
+> > Bioc-devel at stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From bates at stat.wisc.edu  Tue Jan 12 16:34:27 2010
+From: bates at stat.wisc.edu (Douglas Bates)
+Date: Tue, 12 Jan 2010 09:34:27 -0600
+Subject: [Bioc-devel] R_CheckUserInterrupt guidelines (was Re:
+	R_CheckUserInterrupt in IRanges)
+In-Reply-To: <1263284769.1222.10.camel@llull.imim.es>
+References: <4B4B6C0D.5080907@embl.de> <4B4B8BCA.1080501@fhcrc.org>
+	<4B4B8F2C.3010705@embl.de> <4B4B98A4.8020101@fhcrc.org>
+	<4B4BB956.3080307@fhcrc.org>
+	<59d7961d1001112007w646fffb3h6879d4d4b77267c3@mail.gmail.com>
+	<1263284769.1222.10.camel@llull.imim.es>
+Message-ID: <40e66e0b1001120734u2fabe4fbwa024730850fd1705@mail.gmail.com>
+
+This is a bit off-topic but one idiom that I see in this code is the
+use of INTEGER() or REAL() inside potentially long loops.  This is not
+a good idea.  In packages INTEGER(), REAL(), etc. are implemented as
+functions, not macros.  It is best to assign a pointer outside the
+loop and work with that, avoiding the function call overhead.  I
+realize this could be a minuscule change but if what you do with that
+pointer within the loop is trivial it is best not to add the function
+call overhead.
+
+On Tue, Jan 12, 2010 at 2:26 AM, Robert Castelo <robert.castelo at upf.edu> wrote:
+> hi, let me take the chance that you're talking about this to check
+> whether anybody finds anything odd in the following strategy. in the
+> package i develop (qpgraph - devel version) for the computationally
+> intensive C-loops i calculate the percentage of progress and each time
+> this percentage changes in one integer unit i call
+> R_CheckUserInterrupt() and i also take the chance to process
+> window-system events with R_ProcessEvents() (if i understand correctly
+> this is what this function does). here is the code snippet:
+>
+> ppct=-1;
+> k=0;
+>
+> for (i = 0; i < l_int-1; i++) {
+> ?int i2 = INTEGER(pairup_ij_int)[i] - 1;
+>
+> ?for (j = i+1; j < l_int; j++) {
+> ? ?int j2 = INTEGER(pairup_ij_int)[j] - 1;
+>
+> ? ?REAL(nrrMatrix)[i2+j2*n_var] = qp_edge_nrr(REAL(S),n_var,
+> INTEGER(N)[0], i2, j2, q, INTEGER(nTests)[0],REAL(alpha)[0]);
+>
+> ? ?REAL(nrrMatrix)[j2+i2*n_var] = REAL(nrrMatrix)[i2+j2*n_var];
+> ? ?k++;
+> ? ?pct = (int) ((k * 100) / n_adj);
+> ? ?if (pct != ppct) {
+> ? ? ?if (INTEGER(verbose)[0]) { ## show progress when
+> ? ? ? ?if (pct % 10 == 0) ? ? ? ## verbose=TRUE
+> ? ? ? ? ?Rprintf("%d",pct);
+> ? ? ? ?else
+> ? ? ? ? ?Rprintf(".",pct);
+> ? ? ? ?R_FlushConsole();
+> ? ? ?}
+> ? ? ?R_CheckUserInterrupt();
+> #ifdef Win32
+> ? ? ?R_ProcessEvents();
+> #endif
+> #ifdef HAVE_AQUA
+> ? ? ?R_ProcessEvents();
+> #endif
+> ? ? ?ppct = pct;
+> ? ?}
+> ?}
+> }
+>
+> let me clarify that the double nested loop iterates more or less through
+> every pair of variables and thus this computation grows quadratically in
+> the number of input variables in the dataset.
+>
+> robert.
+>
+> On Mon, 2010-01-11 at 20:07 -0800, Henrik Bengtsson wrote:
+>> To 2nd what Seth's says, I think it is worth showing an explicit
+>> example of how to check at regular intervals, e.g. ?for (i = 0; i < n;
+>> i++) { if (i %% 100 == 0) R_CheckUserInterrupt(); ... }
+>>
+>> /Henrik
+>>
+>> On Mon, Jan 11, 2010 at 3:50 PM, Seth Falcon <sfalcon at fhcrc.org> wrote:
+>> > On 1/11/10 1:31 PM, Patrick Aboyoun wrote:
+>> >>
+>> >> I just modified the C or Fortran code section of package guidelines to
+>> >> reflect this new entry:
+>> >>
+>> >> http://wiki.fhcrc.org/bioc/Package_Guidelines#c-or-fortran-code
+>> >
+>> > This looks reasonable.
+>> >
+>> > It is worth noting, however, that calling R_CheckUserInterrupt is not
+>> > entirely free. ?If you have a tight loop it might make more sense to check
+>> > at intervals rather than each time through and the choice of when to check
+>> > will depend very much on the computation.
+>> >
+>> > Here's an example using the inline package (code is at the bottom) with a
+>> > silly double loop to compare checking vs not:
+>> >
+>> > With R_CheckUserInterrupt inner loop:
+>> >
+>> >> system.time(z <- funx(10000L, TRUE))
+>> > ? user ?system elapsed
+>> > ?1.310 ? 0.001 ? 1.313
+>> >
+>> > No checking:
+>> >
+>> > system.time(z <- funx(10000L, FALSE))
+>> > ? user ?system elapsed
+>> > ? 0.08 ? ?0.00 ? ?0.08
+>> >
+>> > Now this may be completely unrealistic, but I suspect that a sensible take
+>> > away message is that we should be making sure our C code that loops does
+>> > call R_CheckUserInterrupt, but depending on the computation, not at every
+>> > loop iteration.
+>> >
+>> > + seth
+>> >
+>> >
+>> > ## example code is below.
+>> >
+>> > library("inline")
+>> >
+>> > code <- "
+>> > int i, j, sum = 0, int n = INTEGER(max)[0];
+>> > int check_inter = LOGICAL(do_check)[0];
+>> > SEXP ans;
+>> > PROTECT(ans = allocVector(INTSXP, n));
+>> > for (i = 0; i < n; i++) {
+>> > ? ?INTEGER(ans)[i] = i;
+>> > ? ?for (j = 0; j < n; j++) {
+>> > ? ? ? ?sum = i + j;
+>> > ? ? ? ?if (check_inter) {
+>> > ? ? ? ? ? ?R_CheckUserInterrupt();
+>> > ? ? ? ?}
+>> > ? ?}
+>> > }
+>> > UNPROTECT(1);
+>> > return ans;
+>> > "
+>> >
+>> > funx <- cfunction(signature(max="integer", do_check="logical"), code)
+>> >
+>> > system.time(z <- funx(10000L, TRUE))
+>> > system.time(z <- funx(10000L, FALSE))
+>> >
+>> >
+>> > --
+>> > Seth Falcon
+>> > Bioconductor Core Team | FHCRC
+>> >
+>> > _______________________________________________
+>> > Bioc-devel at stat.math.ethz.ch mailing list
+>> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>> >
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From robert.castelo at upf.edu  Wed Jan 13 19:50:36 2010
+From: robert.castelo at upf.edu (Robert Castelo)
+Date: Wed, 13 Jan 2010 19:50:36 +0100
+Subject: [Bioc-devel] R_CheckUserInterrupt guidelines (was Re:
+	R_CheckUserInterrupt in IRanges)
+In-Reply-To: <40e66e0b1001120734u2fabe4fbwa024730850fd1705@mail.gmail.com>
+References: <4B4B6C0D.5080907@embl.de> <4B4B8BCA.1080501@fhcrc.org>
+	<4B4B8F2C.3010705@embl.de> <4B4B98A4.8020101@fhcrc.org>
+	<4B4BB956.3080307@fhcrc.org>
+	<59d7961d1001112007w646fffb3h6879d4d4b77267c3@mail.gmail.com>
+	<1263284769.1222.10.camel@llull.imim.es>
+	<40e66e0b1001120734u2fabe4fbwa024730850fd1705@mail.gmail.com>
+Message-ID: <1263408636.8966.127.camel@llull.imim.es>
+
+thanks for the hint, i thought they were macros indeed. given that the
+two nested loops may take a long time and there are these R_*() calls in
+between, do you think i should PROTECT or PROTECT_WITH_INDEX before
+assigning pointers outside these loops?
+
+thanks,
+robert.
+
+
+On Tue, 2010-01-12 at 09:34 -0600, Douglas Bates wrote:
+> This is a bit off-topic but one idiom that I see in this code is the
+> use of INTEGER() or REAL() inside potentially long loops.  This is not
+> a good idea.  In packages INTEGER(), REAL(), etc. are implemented as
+> functions, not macros.  It is best to assign a pointer outside the
+> loop and work with that, avoiding the function call overhead.  I
+> realize this could be a minuscule change but if what you do with that
+> pointer within the loop is trivial it is best not to add the function
+> call overhead.
+> 
+> On Tue, Jan 12, 2010 at 2:26 AM, Robert Castelo <robert.castelo at upf.edu> wrote:
+> > hi, let me take the chance that you're talking about this to check
+> > whether anybody finds anything odd in the following strategy. in the
+> > package i develop (qpgraph - devel version) for the computationally
+> > intensive C-loops i calculate the percentage of progress and each time
+> > this percentage changes in one integer unit i call
+> > R_CheckUserInterrupt() and i also take the chance to process
+> > window-system events with R_ProcessEvents() (if i understand correctly
+> > this is what this function does). here is the code snippet:
+> >
+> > ppct=-1;
+> > k=0;
+> >
+> > for (i = 0; i < l_int-1; i++) {
+> >  int i2 = INTEGER(pairup_ij_int)[i] - 1;
+> >
+> >  for (j = i+1; j < l_int; j++) {
+> >    int j2 = INTEGER(pairup_ij_int)[j] - 1;
+> >
+> >    REAL(nrrMatrix)[i2+j2*n_var] = qp_edge_nrr(REAL(S),n_var,
+> > INTEGER(N)[0], i2, j2, q, INTEGER(nTests)[0],REAL(alpha)[0]);
+> >
+> >    REAL(nrrMatrix)[j2+i2*n_var] = REAL(nrrMatrix)[i2+j2*n_var];
+> >    k++;
+> >    pct = (int) ((k * 100) / n_adj);
+> >    if (pct != ppct) {
+> >      if (INTEGER(verbose)[0]) { ## show progress when
+> >        if (pct % 10 == 0)       ## verbose=TRUE
+> >          Rprintf("%d",pct);
+> >        else
+> >          Rprintf(".",pct);
+> >        R_FlushConsole();
+> >      }
+> >      R_CheckUserInterrupt();
+> > #ifdef Win32
+> >      R_ProcessEvents();
+> > #endif
+> > #ifdef HAVE_AQUA
+> >      R_ProcessEvents();
+> > #endif
+> >      ppct = pct;
+> >    }
+> >  }
+> > }
+> >
+> > let me clarify that the double nested loop iterates more or less through
+> > every pair of variables and thus this computation grows quadratically in
+> > the number of input variables in the dataset.
+> >
+> > robert.
+> >
+> > On Mon, 2010-01-11 at 20:07 -0800, Henrik Bengtsson wrote:
+> >> To 2nd what Seth's says, I think it is worth showing an explicit
+> >> example of how to check at regular intervals, e.g.  for (i = 0; i < n;
+> >> i++) { if (i %% 100 == 0) R_CheckUserInterrupt(); ... }
+> >>
+> >> /Henrik
+> >>
+> >> On Mon, Jan 11, 2010 at 3:50 PM, Seth Falcon <sfalcon at fhcrc.org> wrote:
+> >> > On 1/11/10 1:31 PM, Patrick Aboyoun wrote:
+> >> >>
+> >> >> I just modified the C or Fortran code section of package guidelines to
+> >> >> reflect this new entry:
+> >> >>
+> >> >> http://wiki.fhcrc.org/bioc/Package_Guidelines#c-or-fortran-code
+> >> >
+> >> > This looks reasonable.
+> >> >
+> >> > It is worth noting, however, that calling R_CheckUserInterrupt is not
+> >> > entirely free.  If you have a tight loop it might make more sense to check
+> >> > at intervals rather than each time through and the choice of when to check
+> >> > will depend very much on the computation.
+> >> >
+> >> > Here's an example using the inline package (code is at the bottom) with a
+> >> > silly double loop to compare checking vs not:
+> >> >
+> >> > With R_CheckUserInterrupt inner loop:
+> >> >
+> >> >> system.time(z <- funx(10000L, TRUE))
+> >> >   user  system elapsed
+> >> >  1.310   0.001   1.313
+> >> >
+> >> > No checking:
+> >> >
+> >> > system.time(z <- funx(10000L, FALSE))
+> >> >   user  system elapsed
+> >> >   0.08    0.00    0.08
+> >> >
+> >> > Now this may be completely unrealistic, but I suspect that a sensible take
+> >> > away message is that we should be making sure our C code that loops does
+> >> > call R_CheckUserInterrupt, but depending on the computation, not at every
+> >> > loop iteration.
+> >> >
+> >> > + seth
+> >> >
+> >> >
+> >> > ## example code is below.
+> >> >
+> >> > library("inline")
+> >> >
+> >> > code <- "
+> >> > int i, j, sum = 0, int n = INTEGER(max)[0];
+> >> > int check_inter = LOGICAL(do_check)[0];
+> >> > SEXP ans;
+> >> > PROTECT(ans = allocVector(INTSXP, n));
+> >> > for (i = 0; i < n; i++) {
+> >> >    INTEGER(ans)[i] = i;
+> >> >    for (j = 0; j < n; j++) {
+> >> >        sum = i + j;
+> >> >        if (check_inter) {
+> >> >            R_CheckUserInterrupt();
+> >> >        }
+> >> >    }
+> >> > }
+> >> > UNPROTECT(1);
+> >> > return ans;
+> >> > "
+> >> >
+> >> > funx <- cfunction(signature(max="integer", do_check="logical"), code)
+> >> >
+> >> > system.time(z <- funx(10000L, TRUE))
+> >> > system.time(z <- funx(10000L, FALSE))
+> >> >
+> >> >
+> >> > --
+> >> > Seth Falcon
+> >> > Bioconductor Core Team | FHCRC
+> >> >
+> >> > _______________________________________________
+> >> > Bioc-devel at stat.math.ethz.ch mailing list
+> >> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >> >
+> >>
+> >> _______________________________________________
+> >> Bioc-devel at stat.math.ethz.ch mailing list
+> >> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >>
+> >
+> > _______________________________________________
+> > Bioc-devel at stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >
+>
+
+
+From bates at stat.wisc.edu  Wed Jan 13 20:23:52 2010
+From: bates at stat.wisc.edu (Douglas Bates)
+Date: Wed, 13 Jan 2010 13:23:52 -0600
+Subject: [Bioc-devel] R_CheckUserInterrupt guidelines (was Re:
+	R_CheckUserInterrupt in IRanges)
+In-Reply-To: <1263408636.8966.127.camel@llull.imim.es>
+References: <4B4B6C0D.5080907@embl.de> <4B4B8BCA.1080501@fhcrc.org>
+	<4B4B8F2C.3010705@embl.de> <4B4B98A4.8020101@fhcrc.org>
+	<4B4BB956.3080307@fhcrc.org>
+	<59d7961d1001112007w646fffb3h6879d4d4b77267c3@mail.gmail.com>
+	<1263284769.1222.10.camel@llull.imim.es>
+	<40e66e0b1001120734u2fabe4fbwa024730850fd1705@mail.gmail.com>
+	<1263408636.8966.127.camel@llull.imim.es>
+Message-ID: <40e66e0b1001131123k6938257ah86e6744fb4bbeac@mail.gmail.com>
+
+On Wed, Jan 13, 2010 at 12:50 PM, Robert Castelo <robert.castelo at upf.edu> wrote:
+> thanks for the hint, i thought they were macros indeed. given that the
+> two nested loops may take a long time and there are these R_*() calls in
+> between, do you think i should PROTECT or PROTECT_WITH_INDEX before
+> assigning pointers outside these loops?
+
+If the SEXPs from which you are extracting pointers are arguments in a
+.Call from R then they are already protected.  Also, when you are
+using a scalar value passed from R then you can assign the value to an
+int or a doubler in your C code and you don't need to worry about
+garbage collection.  It may be that a pointer from an SEXP can be
+reassigned as a result of garbage collection but Robert or Seth (or
+Luke) would be better able to answer that question than I.  Most of
+the code that I write doesn't call R routines after the initial setup
+so I count on the pointers as being fixed.
+
+Another approach, which is used within the Rcpp package, is to copy
+the contents of the pointer into dynamically allocated storage on
+entry so you are insulated from garbage collection.  Here is how I
+would rewrite your code fragment (including replacing the R-style
+comments with C comments :-)
+
+double *nrr = REAL(nrrMatrix),
+    *ss = REAL(S),
+    alph = *REAL(alpha);
+
+int *pair = INTEGER(pairup_ij_int),
+    NN = *INTEGER(N),
+    ntest = *INTEGER(nTests),
+    verb = *INTEGER(verbose),
+			
+ppct=-1;
+k=0;
+			
+for (i = 0; i < l_int-1; i++) {
+ int i2 = pair[i] - 1;
+
+ for (j = i+1; j < l_int; j++) {
+   int j2 = pair[j] - 1;
+
+   nrr[i2+j2*n_var] = qp_edge_nrr(ss, n_var, NN, i2, j2, q, ntest, alph);
+
+   nrr[j2+i2*n_var] = nrr[i2+j2*n_var];
+   k++;
+   pct = (int) ((k * 100) / n_adj);
+   if (pct != ppct) {
+       if (verb) {		/* show progress when */
+       if (pct % 10 == 0)       /* verbose=TRUE */
+         Rprintf("%d",pct);
+       else
+         Rprintf(".",pct);
+       R_FlushConsole();
+     }
+     R_CheckUserInterrupt();
+#ifdef Win32
+     R_ProcessEvents();
+#endif
+#ifdef HAVE_AQUA
+     R_ProcessEvents();
+#endif
+     ppct = pct;
+   }
+ }
+}
+
+ >
+> thanks,
+> robert.
+>
+>
+> On Tue, 2010-01-12 at 09:34 -0600, Douglas Bates wrote:
+>> This is a bit off-topic but one idiom that I see in this code is the
+>> use of INTEGER() or REAL() inside potentially long loops. ?This is not
+>> a good idea. ?In packages INTEGER(), REAL(), etc. are implemented as
+>> functions, not macros. ?It is best to assign a pointer outside the
+>> loop and work with that, avoiding the function call overhead. ?I
+>> realize this could be a minuscule change but if what you do with that
+>> pointer within the loop is trivial it is best not to add the function
+>> call overhead.
+>>
+>> On Tue, Jan 12, 2010 at 2:26 AM, Robert Castelo <robert.castelo at upf.edu> wrote:
+>> > hi, let me take the chance that you're talking about this to check
+>> > whether anybody finds anything odd in the following strategy. in the
+>> > package i develop (qpgraph - devel version) for the computationally
+>> > intensive C-loops i calculate the percentage of progress and each time
+>> > this percentage changes in one integer unit i call
+>> > R_CheckUserInterrupt() and i also take the chance to process
+>> > window-system events with R_ProcessEvents() (if i understand correctly
+>> > this is what this function does). here is the code snippet:
+>> >
+>> > ppct=-1;
+>> > k=0;
+>> >
+>> > for (i = 0; i < l_int-1; i++) {
+>> > ?int i2 = INTEGER(pairup_ij_int)[i] - 1;
+>> >
+>> > ?for (j = i+1; j < l_int; j++) {
+>> > ? ?int j2 = INTEGER(pairup_ij_int)[j] - 1;
+>> >
+>> > ? ?REAL(nrrMatrix)[i2+j2*n_var] = qp_edge_nrr(REAL(S),n_var,
+>> > INTEGER(N)[0], i2, j2, q, INTEGER(nTests)[0],REAL(alpha)[0]);
+>> >
+>> > ? ?REAL(nrrMatrix)[j2+i2*n_var] = REAL(nrrMatrix)[i2+j2*n_var];
+>> > ? ?k++;
+>> > ? ?pct = (int) ((k * 100) / n_adj);
+>> > ? ?if (pct != ppct) {
+>> > ? ? ?if (INTEGER(verbose)[0]) { ## show progress when
+>> > ? ? ? ?if (pct % 10 == 0) ? ? ? ## verbose=TRUE
+>> > ? ? ? ? ?Rprintf("%d",pct);
+>> > ? ? ? ?else
+>> > ? ? ? ? ?Rprintf(".",pct);
+>> > ? ? ? ?R_FlushConsole();
+>> > ? ? ?}
+>> > ? ? ?R_CheckUserInterrupt();
+>> > #ifdef Win32
+>> > ? ? ?R_ProcessEvents();
+>> > #endif
+>> > #ifdef HAVE_AQUA
+>> > ? ? ?R_ProcessEvents();
+>> > #endif
+>> > ? ? ?ppct = pct;
+>> > ? ?}
+>> > ?}
+>> > }
+>> >
+>> > let me clarify that the double nested loop iterates more or less through
+>> > every pair of variables and thus this computation grows quadratically in
+>> > the number of input variables in the dataset.
+>> >
+>> > robert.
+>> >
+>> > On Mon, 2010-01-11 at 20:07 -0800, Henrik Bengtsson wrote:
+>> >> To 2nd what Seth's says, I think it is worth showing an explicit
+>> >> example of how to check at regular intervals, e.g. ?for (i = 0; i < n;
+>> >> i++) { if (i %% 100 == 0) R_CheckUserInterrupt(); ... }
+>> >>
+>> >> /Henrik
+>> >>
+>> >> On Mon, Jan 11, 2010 at 3:50 PM, Seth Falcon <sfalcon at fhcrc.org> wrote:
+>> >> > On 1/11/10 1:31 PM, Patrick Aboyoun wrote:
+>> >> >>
+>> >> >> I just modified the C or Fortran code section of package guidelines to
+>> >> >> reflect this new entry:
+>> >> >>
+>> >> >> http://wiki.fhcrc.org/bioc/Package_Guidelines#c-or-fortran-code
+>> >> >
+>> >> > This looks reasonable.
+>> >> >
+>> >> > It is worth noting, however, that calling R_CheckUserInterrupt is not
+>> >> > entirely free. ?If you have a tight loop it might make more sense to check
+>> >> > at intervals rather than each time through and the choice of when to check
+>> >> > will depend very much on the computation.
+>> >> >
+>> >> > Here's an example using the inline package (code is at the bottom) with a
+>> >> > silly double loop to compare checking vs not:
+>> >> >
+>> >> > With R_CheckUserInterrupt inner loop:
+>> >> >
+>> >> >> system.time(z <- funx(10000L, TRUE))
+>> >> > ? user ?system elapsed
+>> >> > ?1.310 ? 0.001 ? 1.313
+>> >> >
+>> >> > No checking:
+>> >> >
+>> >> > system.time(z <- funx(10000L, FALSE))
+>> >> > ? user ?system elapsed
+>> >> > ? 0.08 ? ?0.00 ? ?0.08
+>> >> >
+>> >> > Now this may be completely unrealistic, but I suspect that a sensible take
+>> >> > away message is that we should be making sure our C code that loops does
+>> >> > call R_CheckUserInterrupt, but depending on the computation, not at every
+>> >> > loop iteration.
+>> >> >
+>> >> > + seth
+>> >> >
+>> >> >
+>> >> > ## example code is below.
+>> >> >
+>> >> > library("inline")
+>> >> >
+>> >> > code <- "
+>> >> > int i, j, sum = 0, int n = INTEGER(max)[0];
+>> >> > int check_inter = LOGICAL(do_check)[0];
+>> >> > SEXP ans;
+>> >> > PROTECT(ans = allocVector(INTSXP, n));
+>> >> > for (i = 0; i < n; i++) {
+>> >> > ? ?INTEGER(ans)[i] = i;
+>> >> > ? ?for (j = 0; j < n; j++) {
+>> >> > ? ? ? ?sum = i + j;
+>> >> > ? ? ? ?if (check_inter) {
+>> >> > ? ? ? ? ? ?R_CheckUserInterrupt();
+>> >> > ? ? ? ?}
+>> >> > ? ?}
+>> >> > }
+>> >> > UNPROTECT(1);
+>> >> > return ans;
+>> >> > "
+>> >> >
+>> >> > funx <- cfunction(signature(max="integer", do_check="logical"), code)
+>> >> >
+>> >> > system.time(z <- funx(10000L, TRUE))
+>> >> > system.time(z <- funx(10000L, FALSE))
+>> >> >
+>> >> >
+>> >> > --
+>> >> > Seth Falcon
+>> >> > Bioconductor Core Team | FHCRC
+>> >> >
+>> >> > _______________________________________________
+>> >> > Bioc-devel at stat.math.ethz.ch mailing list
+>> >> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>> >> >
+>> >>
+>> >> _______________________________________________
+>> >> Bioc-devel at stat.math.ethz.ch mailing list
+>> >> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>> >>
+>> >
+>> > _______________________________________________
+>> > Bioc-devel at stat.math.ethz.ch mailing list
+>> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>> >
+>>
+>
+>
+
+
+From keith at wehi.EDU.AU  Tue Jan 12 09:15:37 2010
+From: keith at wehi.EDU.AU (Keith Satterley)
+Date: Tue, 12 Jan 2010 19:15:37 +1100
+Subject: [Bioc-devel] tkrplot not available on pitt(Mac OS X
+	Tiger(10.4.11)/i386
+Message-ID: <4B4C2FA9.8040707@wehi.edu.au>
+
+Hi Bioconductor platform maintainers,
+
+I am the maintainer of affylmGUI (and limmaGUI also). I have been on 
+leave for a couple of weeks and I find that I have been getting 
+automatically generated emails as follows:
+
+According to the "Multiple platform build/check report" for BioC 2.5,
+the affylmGUI package has the following problem(s):
+
+  o ERROR for 'R CMD check' on pitt. See the details here:
+      http://bioconductor.org/checkResults/2.5/bioc-LATEST/affylmGUI/pitt-checksrc.html
+
+
+On checking the report, the key lines are:
+
+* checking for file 'affylmGUI/DESCRIPTION' ... OK
+* this is package 'affylmGUI' version '1.20.0'
+* checking package name space information ... OK
+* checking package dependencies ... ERROR
+Packages required but not available:
+  tkrplot
+
+
+The package compiles and checks on the other platforms correctly. I 
+presume pitt needs tkrplot installed (or perhaps located appropriately 
+if it is already there). The same error is occurring for my limmaGUI 
+package.
+
+There are similar messages for the Bioc 2.6 build/check report.
+
+Could someone check tkrplot on the pitt host please,
+
+cheers,
+
+Keith
+
+========================
+Keith Satterley
+Bioinformatics Division
+The Walter and Eliza Hall Institute of Medical Research
+Parkville, Melbourne,
+Victoria, Australia
+=======================
+
+
+______________________________________________________________________
+The information in this email is confidential and intend...{{dropped:4}}
+
+
+From cstrato at aon.at  Thu Jan 14 22:48:27 2010
+From: cstrato at aon.at (cstrato)
+Date: Thu, 14 Jan 2010 22:48:27 +0100
+Subject: [Bioc-devel] Bioconductor Changelog?
+Message-ID: <4B4F912B.9030002@aon.at>
+
+Dear all,
+
+Do you know what happened to the "Bioconductor Changelog"?
+It was a great way to stay updated about the latest changes in the 
+Bioconductor packages.
+
+It seems that it is no longer updated, see:
+http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi
+
+Is there an alternative possibility to see the latest changes in the 
+Bioconductor packages?
+
+Best regards
+Christian
+_._._._._._._._._._._._._._._._._._
+C.h.r.i.s.t.i.a.n   S.t.r.a.t.o.w.a
+V.i.e.n.n.a           A.u.s.t.r.i.a
+e.m.a.i.l:        cstrato at aon.at
+_._._._._._._._._._._._._._._._._._
+
+
+From mtmorgan at fhcrc.org  Thu Jan 14 22:59:34 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 14 Jan 2010 13:59:34 -0800
+Subject: [Bioc-devel] Bioconductor Changelog?
+In-Reply-To: <4B4F912B.9030002@aon.at>
+References: <4B4F912B.9030002@aon.at>
+Message-ID: <4B4F93C6.5050603@fhcrc.org>
+
+cstrato wrote:
+> Dear all,
+> 
+> Do you know what happened to the "Bioconductor Changelog"?
+> It was a great way to stay updated about the latest changes in the
+> Bioconductor packages.
+> 
+> It seems that it is no longer updated, see:
+> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi
+
+server issues at umich (IIRC), with other obligations putting this at a
+lower priority for us here in Seattle.
+
+> Is there an alternative possibility to see the latest changes in the
+> Bioconductor packages?
+
+svn log -v https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks \
+   | less
+
+perhaps (for those without an SVN account) with user name and password
+'readonly' as described here
+
+  http://wiki.fhcrc.org/bioc/SvnHowTo
+
+Martin
+
+> 
+> Best regards
+> Christian
+> _._._._._._._._._._._._._._._._._._
+> C.h.r.i.s.t.i.a.n   S.t.r.a.t.o.w.a
+> V.i.e.n.n.a           A.u.s.t.r.i.a
+> e.m.a.i.l:        cstrato at aon.at
+> _._._._._._._._._._._._._._._._._._
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From jmacdon at med.umich.edu  Thu Jan 14 23:11:29 2010
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Thu, 14 Jan 2010 17:11:29 -0500
+Subject: [Bioc-devel] Bioconductor Changelog?
+In-Reply-To: <4B4F912B.9030002@aon.at>
+References: <4B4F912B.9030002@aon.at>
+Message-ID: <4B4F9691.7070801@med.umich.edu>
+
+Hi Christian,
+
+cstrato wrote:
+> Dear all,
+> 
+> Do you know what happened to the "Bioconductor Changelog"?
+> It was a great way to stay updated about the latest changes in the 
+> Bioconductor packages.
+> 
+> It seems that it is no longer updated, see:
+> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi
+
+You are correct. I was maintaining the changelogs until late last year, 
+but the server I was using is not under my control and is being used for 
+other purposes that were having adverse effects on the changelog, so I 
+asked the folks in Seattle to move it there.
+
+Unfortunately, on a fun scale of 1:10, setting it up rates a -1, so I 
+think it has taken a back seat to things like sweet new next-gen 
+functions and such. And you are only the second person to mention that 
+it is dormant.
+
+But if an up-swelling of interest occurs, maybe Patrick (cough, slacker, 
+cough) will get 'er done ;-D
+
+
+> 
+> Is there an alternative possibility to see the latest changes in the 
+> Bioconductor packages?
+
+Yes.
+
+svn co https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks
+
+then each day (an example being tomorrow)
+
+cd Rpacks
+svn update
+svn log -v -r {2010-01-15}:{2010-01-14} > svnlog_2010-01-15.txt
+
+But yeah... that would not be fun. I used to parse that by hand every 
+month and mail it to the list. That rates a -1e100 on a fun scale of 1:10.
+
+Best,
+
+Jim
+
+
+> 
+> Best regards
+> Christian
+> _._._._._._._._._._._._._._._._._._
+> C.h.r.i.s.t.i.a.n   S.t.r.a.t.o.w.a
+> V.i.e.n.n.a           A.u.s.t.r.i.a
+> e.m.a.i.l:        cstrato at aon.at
+> _._._._._._._._._._._._._._._._._._
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Douglas Lab
+University of Michigan
+Department of Human Genetics
+5912 Buhl
+1241 E. Catherine St.
+Ann Arbor MI 48109-5618
+734-615-7826
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues 
+
+
+From sfalcon at fhcrc.org  Thu Jan 14 23:25:55 2010
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 14 Jan 2010 14:25:55 -0800
+Subject: [Bioc-devel] Bioconductor Changelog?
+In-Reply-To: <4B4F9691.7070801@med.umich.edu>
+References: <4B4F912B.9030002@aon.at> <4B4F9691.7070801@med.umich.edu>
+Message-ID: <4B4F99F3.9040303@fhcrc.org>
+
+On 1/14/10 2:11 PM, James W. MacDonald wrote:
+> Hi Christian,
+>
+> cstrato wrote:
+>> Dear all,
+>>
+>> Do you know what happened to the "Bioconductor Changelog"?
+>> It was a great way to stay updated about the latest changes in the
+>> Bioconductor packages.
+>>
+>> It seems that it is no longer updated, see:
+>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi
+>
+> You are correct. I was maintaining the changelogs until late last year,
+> but the server I was using is not under my control and is being used for
+> other purposes that were having adverse effects on the changelog, so I
+> asked the folks in Seattle to move it there.
+>
+> Unfortunately, on a fun scale of 1:10, setting it up rates a -1, so I
+> think it has taken a back seat to things like sweet new next-gen
+> functions and such. And you are only the second person to mention that
+> it is dormant.
+>
+> But if an up-swelling of interest occurs, maybe Patrick (cough, slacker,
+> cough) will get 'er done ;-D
+>
+>
+>>
+>> Is there an alternative possibility to see the latest changes in the
+>> Bioconductor packages?
+>
+> Yes.
+>
+> svn co https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks
+>
+> then each day (an example being tomorrow)
+>
+> cd Rpacks
+> svn update
+> svn log -v -r {2010-01-15}:{2010-01-14} > svnlog_2010-01-15.txt
+
+Note that you do not need a local working copy to run the log command. 
+Here's an example:
+
+
+svn log -r{2010-01-13}:{2010-01-14} -v \
+   https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks
+
++ seth
+
+-- 
+Seth Falcon
+Bioconductor Core Team | FHCRC
+
+
+From cstrato at aon.at  Thu Jan 14 23:34:10 2010
+From: cstrato at aon.at (cstrato)
+Date: Thu, 14 Jan 2010 23:34:10 +0100
+Subject: [Bioc-devel] Bioconductor Changelog?
+In-Reply-To: <4B4F9691.7070801@med.umich.edu>
+References: <4B4F912B.9030002@aon.at> <4B4F9691.7070801@med.umich.edu>
+Message-ID: <4B4F9BE2.8030305@aon.at>
+
+Dear Jim, dear Martin,
+
+Thank you for your replies, I have just tested:
+svn log -v https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks | 
+less
+and in principle it works.
+
+However, I must admit that it is not the same as Jim's really great 
+Changelog, where you could not only browse around but also select a 
+certain package and check all changes that were made.
+
+It would be really great to see this web-site working again, and I 
+assume that many other people were using it, too, and would be glad to 
+have it again.
+
+Maybe, even more people would use it if the official web-site for each 
+package would not only have a link to the "Download Stats" (which is 
+also great to have), but also a link to the "Bioconductor Changelog" for 
+this package.
+
+Best regards
+Christian
+
+
+James W. MacDonald wrote:
+> Hi Christian,
+>
+> cstrato wrote:
+>> Dear all,
+>>
+>> Do you know what happened to the "Bioconductor Changelog"?
+>> It was a great way to stay updated about the latest changes in the 
+>> Bioconductor packages.
+>>
+>> It seems that it is no longer updated, see:
+>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi
+>
+> You are correct. I was maintaining the changelogs until late last 
+> year, but the server I was using is not under my control and is being 
+> used for other purposes that were having adverse effects on the 
+> changelog, so I asked the folks in Seattle to move it there.
+>
+> Unfortunately, on a fun scale of 1:10, setting it up rates a -1, so I 
+> think it has taken a back seat to things like sweet new next-gen 
+> functions and such. And you are only the second person to mention that 
+> it is dormant.
+>
+> But if an up-swelling of interest occurs, maybe Patrick (cough, 
+> slacker, cough) will get 'er done ;-D
+>
+>
+>>
+>> Is there an alternative possibility to see the latest changes in the 
+>> Bioconductor packages?
+>
+> Yes.
+>
+> svn co https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks
+>
+> then each day (an example being tomorrow)
+>
+> cd Rpacks
+> svn update
+> svn log -v -r {2010-01-15}:{2010-01-14} > svnlog_2010-01-15.txt
+>
+> But yeah... that would not be fun. I used to parse that by hand every 
+> month and mail it to the list. That rates a -1e100 on a fun scale of 
+> 1:10.
+>
+> Best,
+>
+> Jim
+>
+>
+>>
+>> Best regards
+>> Christian
+>> _._._._._._._._._._._._._._._._._._
+>> C.h.r.i.s.t.i.a.n   S.t.r.a.t.o.w.a
+>> V.i.e.n.n.a           A.u.s.t.r.i.a
+>> e.m.a.i.l:        cstrato at aon.at
+>> _._._._._._._._._._._._._._._._._._
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From paboyoun at fhcrc.org  Thu Jan 14 23:44:49 2010
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Thu, 14 Jan 2010 14:44:49 -0800
+Subject: [Bioc-devel] tkrplot not available on pitt(Mac OS
+	X	Tiger(10.4.11)/i386
+In-Reply-To: <4B4C2FA9.8040707@wehi.edu.au>
+References: <4B4C2FA9.8040707@wehi.edu.au>
+Message-ID: <4B4F9E61.1020506@fhcrc.org>
+
+Keith,
+There was a libtk issue on pitt that needed to be addressed. This is 
+fixed and affylmGUI will build again.
+
+
+Patrick
+
+
+Keith Satterley wrote:
+> Hi Bioconductor platform maintainers,
+>
+> I am the maintainer of affylmGUI (and limmaGUI also). I have been on 
+> leave for a couple of weeks and I find that I have been getting 
+> automatically generated emails as follows:
+>
+> According to the "Multiple platform build/check report" for BioC 2.5,
+> the affylmGUI package has the following problem(s):
+>
+>  o ERROR for 'R CMD check' on pitt. See the details here:
+>      
+> http://bioconductor.org/checkResults/2.5/bioc-LATEST/affylmGUI/pitt-checksrc.html 
+>
+>
+>
+> On checking the report, the key lines are:
+>
+> * checking for file 'affylmGUI/DESCRIPTION' ... OK
+> * this is package 'affylmGUI' version '1.20.0'
+> * checking package name space information ... OK
+> * checking package dependencies ... ERROR
+> Packages required but not available:
+>  tkrplot
+>
+>
+> The package compiles and checks on the other platforms correctly. I 
+> presume pitt needs tkrplot installed (or perhaps located appropriately 
+> if it is already there). The same error is occurring for my limmaGUI 
+> package.
+>
+> There are similar messages for the Bioc 2.6 build/check report.
+>
+> Could someone check tkrplot on the pitt host please,
+>
+> cheers,
+>
+> Keith
+>
+> ========================
+> Keith Satterley
+> Bioinformatics Division
+> The Walter and Eliza Hall Institute of Medical Research
+> Parkville, Melbourne,
+> Victoria, Australia
+> =======================
+>
+>
+> ______________________________________________________________________
+> The information in this email is confidential and inte...{{dropped:6}}
+
+
+From mtmorgan at fhcrc.org  Thu Jan 14 23:49:10 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 14 Jan 2010 14:49:10 -0800
+Subject: [Bioc-devel] Bioconductor Changelog?
+In-Reply-To: <4B4F9BE2.8030305@aon.at>
+References: <4B4F912B.9030002@aon.at> <4B4F9691.7070801@med.umich.edu>
+	<4B4F9BE2.8030305@aon.at>
+Message-ID: <4B4F9F66.4000401@fhcrc.org>
+
+cstrato wrote:
+> Dear Jim, dear Martin,
+> 
+> Thank you for your replies, I have just tested:
+> svn log -v https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks |
+> less
+> and in principle it works.
+> 
+> However, I must admit that it is not the same as Jim's really great
+> Changelog, where you could not only browse around but also select a
+> certain package and check all changes that were made.
+
+add the package name to the end of the URL.
+
+> It would be really great to see this web-site working again, and I
+> assume that many other people were using it, too, and would be glad to
+> have it again.
+> 
+> Maybe, even more people would use it if the official web-site for each
+> package would not only have a link to the "Download Stats" (which is
+> also great to have), but also a link to the "Bioconductor Changelog" for
+> this package.
+
+The link was removed from that location when the change log became out
+of date (see the 2.3 release pages, for instance); in some ways a
+package NEWS file is the appropriate location for end-user information
+(though I realize that many packages don't provide a NEWS file, and that
+facilities for accessing a NEWS file are not as convenient as one might
+like).
+
+Martin
+
+> 
+> Best regards
+> Christian
+> 
+> 
+> James W. MacDonald wrote:
+>> Hi Christian,
+>>
+>> cstrato wrote:
+>>> Dear all,
+>>>
+>>> Do you know what happened to the "Bioconductor Changelog"?
+>>> It was a great way to stay updated about the latest changes in the
+>>> Bioconductor packages.
+>>>
+>>> It seems that it is no longer updated, see:
+>>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi
+>>
+>> You are correct. I was maintaining the changelogs until late last
+>> year, but the server I was using is not under my control and is being
+>> used for other purposes that were having adverse effects on the
+>> changelog, so I asked the folks in Seattle to move it there.
+>>
+>> Unfortunately, on a fun scale of 1:10, setting it up rates a -1, so I
+>> think it has taken a back seat to things like sweet new next-gen
+>> functions and such. And you are only the second person to mention that
+>> it is dormant.
+>>
+>> But if an up-swelling of interest occurs, maybe Patrick (cough,
+>> slacker, cough) will get 'er done ;-D
+>>
+>>
+>>>
+>>> Is there an alternative possibility to see the latest changes in the
+>>> Bioconductor packages?
+>>
+>> Yes.
+>>
+>> svn co https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks
+>>
+>> then each day (an example being tomorrow)
+>>
+>> cd Rpacks
+>> svn update
+>> svn log -v -r {2010-01-15}:{2010-01-14} > svnlog_2010-01-15.txt
+>>
+>> But yeah... that would not be fun. I used to parse that by hand every
+>> month and mail it to the list. That rates a -1e100 on a fun scale of
+>> 1:10.
+>>
+>> Best,
+>>
+>> Jim
+>>
+>>
+>>>
+>>> Best regards
+>>> Christian
+>>> _._._._._._._._._._._._._._._._._._
+>>> C.h.r.i.s.t.i.a.n   S.t.r.a.t.o.w.a
+>>> V.i.e.n.n.a           A.u.s.t.r.i.a
+>>> e.m.a.i.l:        cstrato at aon.at
+>>> _._._._._._._._._._._._._._._._._._
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+> 
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From cstrato at aon.at  Fri Jan 15 23:48:43 2010
+From: cstrato at aon.at (cstrato)
+Date: Fri, 15 Jan 2010 23:48:43 +0100
+Subject: [Bioc-devel] Bioconductor Changelog?
+In-Reply-To: <4B4F9F66.4000401@fhcrc.org>
+References: <4B4F912B.9030002@aon.at> <4B4F9691.7070801@med.umich.edu>
+	<4B4F9BE2.8030305@aon.at> <4B4F9F66.4000401@fhcrc.org>
+Message-ID: <4B50F0CB.50308@aon.at>
+
+Martin Morgan wrote:
+> cstrato wrote:
+>   
+>> Dear Jim, dear Martin,
+>>
+>> Thank you for your replies, I have just tested:
+>> svn log -v https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks |
+>> less
+>> and in principle it works.
+>>
+>> However, I must admit that it is not the same as Jim's really great
+>> Changelog, where you could not only browse around but also select a
+>> certain package and check all changes that were made.
+>>     
+>
+> add the package name to the end of the URL.
+>   
+Thank you, this works, although it is still not as convenient as the 
+Changelog.
+
+Best regards
+Christian
+>   
+>> It would be really great to see this web-site working again, and I
+>> assume that many other people were using it, too, and would be glad to
+>> have it again.
+>>
+>> Maybe, even more people would use it if the official web-site for each
+>> package would not only have a link to the "Download Stats" (which is
+>> also great to have), but also a link to the "Bioconductor Changelog" for
+>> this package.
+>>     
+>
+> The link was removed from that location when the change log became out
+> of date (see the 2.3 release pages, for instance); in some ways a
+> package NEWS file is the appropriate location for end-user information
+> (though I realize that many packages don't provide a NEWS file, and that
+> facilities for accessing a NEWS file are not as convenient as one might
+> like).
+>
+> Martin
+>
+>   
+>> Best regards
+>> Christian
+>>
+>>
+>> James W. MacDonald wrote:
+>>     
+>>> Hi Christian,
+>>>
+>>> cstrato wrote:
+>>>       
+>>>> Dear all,
+>>>>
+>>>> Do you know what happened to the "Bioconductor Changelog"?
+>>>> It was a great way to stay updated about the latest changes in the
+>>>> Bioconductor packages.
+>>>>
+>>>> It seems that it is no longer updated, see:
+>>>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi
+>>>>         
+>>> You are correct. I was maintaining the changelogs until late last
+>>> year, but the server I was using is not under my control and is being
+>>> used for other purposes that were having adverse effects on the
+>>> changelog, so I asked the folks in Seattle to move it there.
+>>>
+>>> Unfortunately, on a fun scale of 1:10, setting it up rates a -1, so I
+>>> think it has taken a back seat to things like sweet new next-gen
+>>> functions and such. And you are only the second person to mention that
+>>> it is dormant.
+>>>
+>>> But if an up-swelling of interest occurs, maybe Patrick (cough,
+>>> slacker, cough) will get 'er done ;-D
+>>>
+>>>
+>>>       
+>>>> Is there an alternative possibility to see the latest changes in the
+>>>> Bioconductor packages?
+>>>>         
+>>> Yes.
+>>>
+>>> svn co https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks
+>>>
+>>> then each day (an example being tomorrow)
+>>>
+>>> cd Rpacks
+>>> svn update
+>>> svn log -v -r {2010-01-15}:{2010-01-14} > svnlog_2010-01-15.txt
+>>>
+>>> But yeah... that would not be fun. I used to parse that by hand every
+>>> month and mail it to the list. That rates a -1e100 on a fun scale of
+>>> 1:10.
+>>>
+>>> Best,
+>>>
+>>> Jim
+>>>
+>>>
+>>>       
+>>>> Best regards
+>>>> Christian
+>>>> _._._._._._._._._._._._._._._._._._
+>>>> C.h.r.i.s.t.i.a.n   S.t.r.a.t.o.w.a
+>>>> V.i.e.n.n.a           A.u.s.t.r.i.a
+>>>> e.m.a.i.l:        cstrato at aon.at
+>>>> _._._._._._._._._._._._._._._._._._
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>         
+>
+>
+>
+
+
+From sneumann at ipb-halle.de  Sat Jan 16 11:30:54 2010
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Sat, 16 Jan 2010 11:30:54 +0100
+Subject: [Bioc-devel] Bioconductor Changelog?
+In-Reply-To: <4B50F0CB.50308@aon.at>
+References: <4B4F912B.9030002@aon.at> <4B4F9691.7070801@med.umich.edu>
+	<4B4F9BE2.8030305@aon.at> <4B4F9F66.4000401@fhcrc.org>
+	<4B50F0CB.50308@aon.at>
+Message-ID: <1263637854.23165.13.camel@paddy>
+
+On Fri, 2010-01-15 at 23:48 +0100, cstrato wrote:
+> Thank you, this works, although it is still not as convenient as the 
+> Changelog.
+The old one could be integrated into your favourite RSS reader,
+for example.
+
+> >>> Unfortunately, on a fun scale of 1:10, setting it up rates a -1, so I
+Is there an alternative to bloxsom that is less pain ?
+
+> >>> functions and such. And you are only the second person to mention that
+> >>> it is dormant.
+Yes, I was the other one. Still hoping, though.
+
+Yours,
+Steffen
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From seth at userprimary.net  Thu Jan 21 20:34:15 2010
+From: seth at userprimary.net (Seth Falcon)
+Date: Thu, 21 Jan 2010 11:34:15 -0800
+Subject: [Bioc-devel] Bioconductor using 64-bit R build
+In-Reply-To: <048401ca8e58$a4aba8e0$ee02faa0$@edu>
+References: <048401ca8e58$a4aba8e0$ee02faa0$@edu>
+Message-ID: <4B58AC37.4050803@userprimary.net>
+
+Hi Fraser,
+
+
+On 1/5/10 2:44 PM, Fraser Sim wrote:
+> Dear all,
+>
+> I realize this is completely unsupported but wanted to give it a try. I
+> downloaded the compiled version of Windows 64-bit R that Gong Yu recently
+> posted details on in the [Rd] mailing list. It starts fine on my version of
+> Vista. I was able to run the demo(graphics) so I thought I'd try
+> Bioconductor. Here is the sessionInfo().
+
+As previously noted, the issue was that RSQLite was not able to be 
+installed on WIN64.  I've received some help from Brian Ripley on what 
+is required to make things work.  A new version of RSQLite has been 
+uploaded to CRAN that compiles on WIN64.
+
+If you want to test this before it hits CRAN, you can checkout the 
+RSQLite sources:
+
+svn co --username=readonly --password=readonly \
+   https://hedgehog.fhcrc.org/compbio/r-dbi/trunk/SQLite/RSQLite
+
++ seth
+
+>
+>> sessionInfo()
+> R version 2.11.0 Under development (unstable) (2006-00-00 r00000)
+> x86_64-pc-mingw64
+>
+> locale:
+> [1] LC_COLLATE=English_United States.1252
+> [2] LC_CTYPE=English_United States.1252
+> [3] LC_MONETARY=English_United States.1252
+> [4] LC_NUMERIC=C
+> [5] LC_TIME=English_United States.1252
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> other attached packages:
+> [1] limma_3.3.5   Biobase_2.7.3
+>
+> loaded via a namespace (and not attached):
+> [1] tools_2.11.0
+>
+> I tried installing Bioconductor from source using biocLite("Biobase", type =
+> 'source'). This worked when I used the 64-bit MINGW mentioned by Gong. I am
+> able to load the Biobase library.
+>
+> I then tried to compile limma which also worked fine. See the sessionInfo
+> for confirmation. Unfortunately, when I tried to compile genefilter, it
+> failed when compiling the RSQLite package.
+>
+> Here is the output.
+>
+>> biocLite("RSQLite", type = 'source')
+> Using R version 2.11.0 (R-devel), biocinstall version 2.6.4.
+> Installing Bioconductor version 2.6 packages:
+> [1] "RSQLite"
+> Please wait...
+>
+> trying URL 'http://cran.fhcrc.org/src/contrib/RSQLite_0.8-0.tar.gz'
+> Content type 'application/x-gzip' length 1179466 bytes (1.1 Mb)
+> opened URL
+> downloaded 1.1 Mb
+>
+> * installing *source* package 'RSQLite' ...
+>
+>     **********************************************
+>     WARNING: this package has a configure script
+>           It probably needs manual configuration
+>     **********************************************
+>
+>
+> ** libs
+>    making DLL ...
+> gcc -I"C:/Users/fjsim/DOWNLO~1/R-64BI~1/include"
+> -DRSQLITE_USE_BUNDLED_SQLITE       -O3 -Wall  -std=gnu99 -c RS-DBI.c -o
+> RS-DBI.o
+> In file included from RS-DBI.c:19:0:
+> RS-DBI.h:45:7: error: conflicting types for 'getpid'
+> d:\rtools\mingw64\bin\../lib/gcc/x86_64-pc-mingw32/4.5.0/../../../../x86_64-
+> pc-mingw32/include/process.h:150:15: note: previous declaration of 'getpid'
+> was here
+> make: *** [RS-DBI.o] Error 1
+>    ... done
+> ERROR: compilation failed for package 'RSQLite'
+> * removing 'C:/Users/fjsim/Downloads/R-64Bit-for-Win64/library/RSQLite'
+>
+> The downloaded packages are in
+>          'C:\Users\fjsim\AppData\Local\Temp\Rtmpr8pCxb\downloaded_packages'
+> Warning message:
+> In install.packages(pkgs = pkgs, repos = repos, ...) :
+>    installation of package 'RSQLite' had non-zero exit status
+>
+> Any ideas what I should try next to get RSQLite? It would be great to have
+> R/Bioconductor working on 64-bit Windows and I'm willing to help out.
+>
+> Cheers,
+> Fraser
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Seth Falcon | @sfalcon | http://userprimary.net/user
+
+
+From beniltoncarvalho at gmail.com  Sat Jan 23 11:54:58 2010
+From: beniltoncarvalho at gmail.com (Benilton Carvalho)
+Date: Sat, 23 Jan 2010 10:54:58 +0000
+Subject: [Bioc-devel] warning with R CMD check
+Message-ID: <e71a39ea1001230254x469f005ao469b4ef75ff72846@mail.gmail.com>
+
+Hi everyone,
+
+is there anything I can do to get rid of the
+
+Warning: replacing previous import 'complete.cases' when loading 'IRanges'
+
+warning when checking my package (which Imports Biostrings)?
+
+Thanks,
+
+b
+
+
+From henning.red at googlemail.com  Mon Jan 25 01:52:35 2010
+From: henning.red at googlemail.com (Henning Redestig)
+Date: Mon, 25 Jan 2010 09:52:35 +0900
+Subject: [Bioc-devel] Rcpp on the Mac test servers
+Message-ID: <d4d592db1001241652v48d31579n419c38547ee7a6cb@mail.gmail.com>
+
+Hi,
+
+I started to use the very convenient Rcpp package in pcaMethods and
+got compilation to work on the Linux and Mac bioconductor test servers
+but Mac is reporting that it can not find Rcpp even though it seems to
+be installed. Build gets stuck on the following error:
+
+
+** libs
+** arch - i386
+g++ -arch i386 -I/Library/Frameworks/R.framework/Versions/2.11/Resources/include
+-I/Library/Frameworks/R.framework/Versions/2.11/Resources/include/i386
+-I/Library/Frameworks/R.framework/Versions/2.11/Resources/library/Rcpp/lib/i386
+-I/usr/local/include    -fPIC  -g -O2 -Wall -c nipals.cpp -o nipals.o
+g++ -arch i386 -dynamiclib -Wl,-headerpad_max_install_names
+-mmacosx-version-min=10.4 -undefined dynamic_lookup -single_module
+-multiply_defined suppress -L/usr/local/lib -o pcaMethods.so nipals.o
+-L/Library/Frameworks/R.framework/Versions/2.11/Resources/library/Rcpp/lib/i386
+-lRcpp -F/Library/Frameworks/R.framework/.. -framework R
+-Wl,-framework -Wl,CoreFoundation
+** arch - ppc
+Error in library.dynam(lib, package, package.lib) :
+  shared library 'Rcpp' not found
+Calls: ::: ... tryCatch -> tryCatc
+
+Apparently the Makevars script sets the path to Rcpp header files correctly,
+
+-L/Library/Frameworks/R.framework/Versions/2.11/Resources/library/Rcpp/lib/i386
+
+but still no luck. Does anyone have an idea on how to make Rcpp work
+on Mac? Or does the path above not contain Rcpp.h?
+
+Regards,
+
+
+-- 
+/Henning Redestig
+
+Metabolome Informatics Unit | Yokohama RIKEN Plant Science Center
+
+
+From robert.castelo at upf.edu  Mon Jan 25 20:37:23 2010
+From: robert.castelo at upf.edu (Robert Castelo)
+Date: Mon, 25 Jan 2010 20:37:23 +0100
+Subject: [Bioc-devel] NAs into accessory table
+In-Reply-To: <4AF1E038.10304@fhcrc.org>
+References: <mailman.21.1257246006.9376.bioc-devel@stat.math.ethz.ch>
+	<AAF1EDED-532E-4F3D-8ADB-7995F64C2AB1@jhu.edu>
+	<4AF1170A.9020406@userprimary.net>
+	<1257339955.14684.21.camel@llull.imim.es>  <4AF1E038.10304@fhcrc.org>
+Message-ID: <1264448243.15399.19.camel@llull.imim.es>
+
+dear Marc and the rest of the bioc-devel list,
+
+this is about a message from a few months ago where you explained to me
+how to introduce NAs as values associated to valid probe identifiers of
+an accessory table with extra information about the probes of a custom
+array platform that would form part of an annotation package. you told
+me to simply put blank values in the flat file but at that time i
+couldn't try it out because i at that moment i could not put my hands on
+re-doing the package, now i'm redoing it to make it work for the latest
+devel version of R and BioC and i'm finding that it doesn't work or at
+least i didn't completely understand your suggestion, please see below.
+
+On Wed, 2009-11-04 at 12:12 -0800, Marc Carlson wrote:
+> And to answer Roberts question:  To get an NA back (in R) from one of
+> these accessory tables you are adding, you should only have to have null
+> values in the relevant fields after the import.  No need to put NA
+> strings into your input files as that will result in NA strings being
+> stored in the DB.  Just leaving those portions of the input table blank
+> should result in null values in your database table, which should give
+> you the results you want when you look at those from R using
+> AnnotationDbi (meaning NAs). 
+> 
+> So basically your database table should look like this when you query it:
+> 
+> whateverkey|
+> 
+> 
+> Please let me know if I need to clarify that.
+
+i've generated a flat file with
+
+whateverkey|\n
+
+where '\n' is the newline character so that the associated value is
+blank (i'm interpreting blank as the empty string). however, once the
+package is built i get the following output for cases like the ones i
+show here where the probe IDs refer to control probes for which these
+extra information does not exist and the package should provide NAs:
+
+tail(unlist(as.list(myCustomPkgPROBESTART)))
+43334 43335 43336 43337 43338 43339 
+   ""    ""    ""    ""    ""    "" 
+
+so the empty string is provided (which is in fact what i put into the
+flat file) instead of NAs.
+
+the SQL code that creates such a table is the following:
+
+CREATE TABLE prbStart (
+          probe_id VARCHAR(80) NOT NULL,
+          probe_start VARCHAR(32) NOT NULL,
+          FOREIGN KEY (probe_id) REFERENCES probes (probe_id) ) ;
+
+just in case this issue needs to be addressed in the table creation
+statements. any idea will be very appreciated.
+
+thanks!
+robert.
+
+
+> 
+>   Marc
+> 
+> 
+> 
+> 
+> Robert Castelo wrote:
+> > hi Seth and rest of the list,
+> >
+> > never thought about this till i saw your email and in particular this
+> > clarification:
+> >
+> >   
+> >> When you call get() or otherwise retrieve a value from an annotation 
+> >> package object using a key, like a probe ID, there are three situations:
+> >>
+> >> 1. The probe ID is valid and maps to a value in the given object.
+> >> 2. The probe ID is valid, but does not map to a value so NA is returned.
+> >> 3. The probe ID is not valid, an error is raised.
+> >>     
+> >
+> > i've built an annotation package for a custom array to which i've added
+> > a few new sql tables to provide additional mappings to various
+> > non-standard annotations on the probes (following section 3 -how to add
+> > extra data into your packages- from vignette SQLForge of AnnotationDbi).
+> > the way in which i add these data is by creating a flat file with the
+> > "records" and importing them into the SQL database of the package
+> > through the unix shell with
+> >
+> > sqlite3 dbName << EOF
+> > import newdata.txt newtable
+> > .exit
+> > EOF
+> >
+> > where dbName should be the .sqlite file created by popXXXCHIPDB(),
+> > newdata.txt is the flat file with the data of this new mapping and
+> > newtable is the SQL table i've specifically created on the .sqlite file
+> > to support the mapping in my annotation package.
+> >
+> > however, in this way i don't know how to implement the second situation
+> > you describe. i tried to associate NA's to valid keys having lines
+> >
+> > ..
+> > whateverkey|NA
+> > ..
+> >
+> > in the flat file that is imported later but then this NA is not
+> > interpreted as an NA value but as a string "NA". then i concluded that
+> > the way i had to do it was to remove those lines and having the user to
+> > specify the parametere ifnotfound=NA in their get/mget commands.
+> >
+> >
+> > so now my question would be (either for you or for whoever in the list
+> > knows about this). how do i introduce a new mapping into my annotation
+> > package such that a key is valid but it does not map to a value so that
+> > NA is returned?
+> >
+> >
+> > thanks!
+> > robert.
+> >
+> > _______________________________________________
+> > Bioc-devel at stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >
+> >   
+> 
+>
+
+
+From mcarlson at fhcrc.org  Mon Jan 25 21:31:23 2010
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Mon, 25 Jan 2010 12:31:23 -0800
+Subject: [Bioc-devel] NAs into accessory table
+In-Reply-To: <1264448243.15399.19.camel@llull.imim.es>
+References: <mailman.21.1257246006.9376.bioc-devel@stat.math.ethz.ch>	
+	<AAF1EDED-532E-4F3D-8ADB-7995F64C2AB1@jhu.edu>	
+	<4AF1170A.9020406@userprimary.net>	
+	<1257339955.14684.21.camel@llull.imim.es>
+	<4AF1E038.10304@fhcrc.org>
+	<1264448243.15399.19.camel@llull.imim.es>
+Message-ID: <4B5DFF9B.6030909@fhcrc.org>
+
+Hi Robert,
+
+I am having trouble reproducing this.  When I run this I get the
+behavior that I described before.  But perhaps you need to make sure
+that the flat file is tab delimited?  Annotation packages have always
+been generated from tab delimited files as described in the SQLForge
+vignette.  It was a long time ago so I no longer recall if I was typing
+a pipe to represent a tab abstractly, if this was how the thread was
+discussing it, or if somehow my email client converted \t into |, but
+hopefully I have not confused you into thinking these things should be
+pipe delimited.  Anyhow, I suspect that is not actually the problem, so
+it would be helpful to me if you could send me a small example file that
+you are trying to use, and also include your sessionInfo().
+
+my input file looks like this:
+
+anykey\tID1
+anykey2\t
+anykey3\tID2
+
+etc.
+
+  Marc
+
+
+
+Robert Castelo wrote:
+> dear Marc and the rest of the bioc-devel list,
+>
+> this is about a message from a few months ago where you explained to me
+> how to introduce NAs as values associated to valid probe identifiers of
+> an accessory table with extra information about the probes of a custom
+> array platform that would form part of an annotation package. you told
+> me to simply put blank values in the flat file but at that time i
+> couldn't try it out because i at that moment i could not put my hands on
+> re-doing the package, now i'm redoing it to make it work for the latest
+> devel version of R and BioC and i'm finding that it doesn't work or at
+> least i didn't completely understand your suggestion, please see below.
+>
+> On Wed, 2009-11-04 at 12:12 -0800, Marc Carlson wrote:
+>   
+>> And to answer Roberts question:  To get an NA back (in R) from one of
+>> these accessory tables you are adding, you should only have to have null
+>> values in the relevant fields after the import.  No need to put NA
+>> strings into your input files as that will result in NA strings being
+>> stored in the DB.  Just leaving those portions of the input table blank
+>> should result in null values in your database table, which should give
+>> you the results you want when you look at those from R using
+>> AnnotationDbi (meaning NAs). 
+>>
+>> So basically your database table should look like this when you query it:
+>>
+>> whateverkey|
+>>
+>>
+>> Please let me know if I need to clarify that.
+>>     
+>
+> i've generated a flat file with
+>
+> whateverkey|\n
+>
+> where '\n' is the newline character so that the associated value is
+> blank (i'm interpreting blank as the empty string). however, once the
+> package is built i get the following output for cases like the ones i
+> show here where the probe IDs refer to control probes for which these
+> extra information does not exist and the package should provide NAs:
+>
+> tail(unlist(as.list(myCustomPkgPROBESTART)))
+> 43334 43335 43336 43337 43338 43339 
+>    ""    ""    ""    ""    ""    "" 
+>
+> so the empty string is provided (which is in fact what i put into the
+> flat file) instead of NAs.
+>
+> the SQL code that creates such a table is the following:
+>
+> CREATE TABLE prbStart (
+>           probe_id VARCHAR(80) NOT NULL,
+>           probe_start VARCHAR(32) NOT NULL,
+>           FOREIGN KEY (probe_id) REFERENCES probes (probe_id) ) ;
+>
+> just in case this issue needs to be addressed in the table creation
+> statements. any idea will be very appreciated.
+>
+> thanks!
+> robert.
+>
+>
+>   
+>>   Marc
+>>
+>>
+>>
+>>
+>> Robert Castelo wrote:
+>>     
+>>> hi Seth and rest of the list,
+>>>
+>>> never thought about this till i saw your email and in particular this
+>>> clarification:
+>>>
+>>>   
+>>>       
+>>>> When you call get() or otherwise retrieve a value from an annotation 
+>>>> package object using a key, like a probe ID, there are three situations:
+>>>>
+>>>> 1. The probe ID is valid and maps to a value in the given object.
+>>>> 2. The probe ID is valid, but does not map to a value so NA is returned.
+>>>> 3. The probe ID is not valid, an error is raised.
+>>>>     
+>>>>         
+>>> i've built an annotation package for a custom array to which i've added
+>>> a few new sql tables to provide additional mappings to various
+>>> non-standard annotations on the probes (following section 3 -how to add
+>>> extra data into your packages- from vignette SQLForge of AnnotationDbi).
+>>> the way in which i add these data is by creating a flat file with the
+>>> "records" and importing them into the SQL database of the package
+>>> through the unix shell with
+>>>
+>>> sqlite3 dbName << EOF
+>>> import newdata.txt newtable
+>>> .exit
+>>> EOF
+>>>
+>>> where dbName should be the .sqlite file created by popXXXCHIPDB(),
+>>> newdata.txt is the flat file with the data of this new mapping and
+>>> newtable is the SQL table i've specifically created on the .sqlite file
+>>> to support the mapping in my annotation package.
+>>>
+>>> however, in this way i don't know how to implement the second situation
+>>> you describe. i tried to associate NA's to valid keys having lines
+>>>
+>>> ..
+>>> whateverkey|NA
+>>> ..
+>>>
+>>> in the flat file that is imported later but then this NA is not
+>>> interpreted as an NA value but as a string "NA". then i concluded that
+>>> the way i had to do it was to remove those lines and having the user to
+>>> specify the parametere ifnotfound=NA in their get/mget commands.
+>>>
+>>>
+>>> so now my question would be (either for you or for whoever in the list
+>>> knows about this). how do i introduce a new mapping into my annotation
+>>> package such that a key is valid but it does not map to a value so that
+>>> NA is returned?
+>>>
+>>>
+>>> thanks!
+>>> robert.
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>>   
+>>>       
+>>     
+>
+>
+>
+
+

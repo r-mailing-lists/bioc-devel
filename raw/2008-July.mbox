@@ -1,0 +1,3438 @@
+From hb at stat.berkeley.edu  Tue Jul  1 02:03:54 2008
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Mon, 30 Jun 2008 17:03:54 -0700
+Subject: [Bioc-devel] affypdnn: Request for moving "Depends" packages to
+	"Suggests"
+Message-ID: <59d7961d0806301703x26543ce3hee27608dcccf8b24@mail.gmail.com>
+
+Hi,
+
+this one is mainly for the maintainer (Laurent Gautier), but I post it
+to bioc-devel also as request to minimize package dependencies in R
+and BioC in general:
+
+The current DESCRIPTION of 'affypdnn' is:
+
+Package: affypdnn
+Version: 1.14.3
+Depends: R (>= 2.3.0), affy (>= 1.5), affydata, hgu95av2probe
+
+Could you please update this to:
+
+Package: affypdnn
+Version: 1.14.3
+Depends: R (>= 2.3.0), affy (>= 1.5)
+Suggests: affydata, hgu95av2probe
+
+and use request("affydata") and request("hgu95av2probe") where those
+two are actually needed?
+
+Cheers
+
+Henrik
+
+
+From rgentlem at fhcrc.org  Tue Jul  1 09:21:59 2008
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Tue, 01 Jul 2008 00:21:59 -0700
+Subject: [Bioc-devel] affypdnn: Request for moving "Depends" packages
+ to	"Suggests"
+In-Reply-To: <59d7961d0806301703x26543ce3hee27608dcccf8b24@mail.gmail.com>
+References: <59d7961d0806301703x26543ce3hee27608dcccf8b24@mail.gmail.com>
+Message-ID: <4869DB17.7030508@fhcrc.org>
+
+I would certainly like to second that view - in general folks should 
+spend some time, before each release looking at dependencies and trying 
+to reduce them, if at all possible.
+Of course some of the issues are caused by the rather over aggressive 
+way that R CMD check deals with some-time dependencies, but there are no 
+easy ways (yet) to deal with that.
+
+best wishes
+   Robert
+
+
+Henrik Bengtsson wrote:
+> Hi,
+> 
+> this one is mainly for the maintainer (Laurent Gautier), but I post it
+> to bioc-devel also as request to minimize package dependencies in R
+> and BioC in general:
+> 
+> The current DESCRIPTION of 'affypdnn' is:
+> 
+> Package: affypdnn
+> Version: 1.14.3
+> Depends: R (>= 2.3.0), affy (>= 1.5), affydata, hgu95av2probe
+> 
+> Could you please update this to:
+> 
+> Package: affypdnn
+> Version: 1.14.3
+> Depends: R (>= 2.3.0), affy (>= 1.5)
+> Suggests: affydata, hgu95av2probe
+> 
+> and use request("affydata") and request("hgu95av2probe") where those
+> two are actually needed?
+> 
+> Cheers
+> 
+> Henrik
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From richard.pearson at postgrad.manchester.ac.uk  Tue Jul  1 11:49:58 2008
+From: richard.pearson at postgrad.manchester.ac.uk (Richard Pearson)
+Date: Tue, 01 Jul 2008 10:49:58 +0100
+Subject: [Bioc-devel] affypdnn: Request for moving "Depends" packages
+ to	"Suggests"
+In-Reply-To: <59d7961d0806301703x26543ce3hee27608dcccf8b24@mail.gmail.com>
+References: <59d7961d0806301703x26543ce3hee27608dcccf8b24@mail.gmail.com>
+Message-ID: <4869FDC6.5070002@postgrad.manchester.ac.uk>
+
+Hi
+
+I guess you mean require() here, or is there a request() function that I'm not aware of?
+
+I'm sorry to say I'm still a little confused as to the effects of moving something from Depends to Suggests. I realise that one effect of this is that the package in Suggests won't get loaded until needed, which is generally a good thing. However, isn't a side effect of this that the package in Suggests won't get installed by biocLite()?
+
+Lets say I'm developing a package foop which has a function foo(). foo() uses the function bar() from package barp. Many users use foop without ever using foo(). Therefore it would seem sensible to put barp in Suggests so it doesn't get loaded all the time, but rarely used. However, if a user installs foop on a fresh R installation using biocLite(), they will get an error when trying to use foo(). A non-expert user might at this point simply think that foop is broken and give up. What's the recommended strategy in this scenario? If barp has a namespace, should I put barp in Imports (so it gets installed by biocLite), and then access bar() using barp::bar()? What should I do if barp has no namespace? Should I recommend to the barp maintainer that they add one? More likely, have I completely misunderstood Depends/Suggests/Imports/biocLite...?
+
+No doubt this is covered in documentation someplace, any pointers appreciated!
+
+Thanks
+
+Richard.
+
+
+Henrik Bengtsson wrote:
+> Hi,
+> 
+> this one is mainly for the maintainer (Laurent Gautier), but I post it
+> to bioc-devel also as request to minimize package dependencies in R
+> and BioC in general:
+> 
+> The current DESCRIPTION of 'affypdnn' is:
+> 
+> Package: affypdnn
+> Version: 1.14.3
+> Depends: R (>= 2.3.0), affy (>= 1.5), affydata, hgu95av2probe
+> 
+> Could you please update this to:
+> 
+> Package: affypdnn
+> Version: 1.14.3
+> Depends: R (>= 2.3.0), affy (>= 1.5)
+> Suggests: affydata, hgu95av2probe
+> 
+> and use request("affydata") and request("hgu95av2probe") where those
+> two are actually needed?
+> 
+> Cheers
+> 
+> Henrik
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+-- 
+Richard D. Pearson             richard.pearson at postgrad.manchester.ac.uk
+School of Computer Science,    http://www.cs.man.ac.uk/~pearsonr
+University of Manchester,      Tel: +44 161 275 6178
+Oxford Road,                   Mob: +44 7971 221181
+Manchester M13 9PL, UK.        Fax: +44 161 275 6204
+
+
+From lgautier at gmail.com  Tue Jul  1 12:07:05 2008
+From: lgautier at gmail.com (Laurent Gautier)
+Date: Tue, 1 Jul 2008 12:07:05 +0200
+Subject: [Bioc-devel] affypdnn: Request for moving "Depends" packages to
+	"Suggests"
+In-Reply-To: <59d7961d0806301703x26543ce3hee27608dcccf8b24@mail.gmail.com>
+References: <59d7961d0806301703x26543ce3hee27608dcccf8b24@mail.gmail.com>
+Message-ID: <27d1e6020807010307u373fdf32rad5ed9ef794824e2@mail.gmail.com>
+
+Trying to minimize hard package dependencies is commendable, but there
+points to keep in mind.
+
+Just case the mere thought of seeing one day their name between
+parenthesis right behind "the maintainer" in an email otherwise
+addressed to all is not enough to make innoncent bystanders feel
+concerned about their package and what is happening here, I'll make a
+short list of what it means to have a package listed in the "Depends"
+field, and what are possible reasons for having a package in
+"Depends".
+
+The usage of the field "Suggests" came out of the need for a gradation
+in dependencies between packages, differing from "Depends" with:
+- loading the package not contingent on the presence of dependencies
+- the dependencies not being loaded
+
+(I that suspect the feature was used for tcltk-based GUIs causing R
+installs without tcltk, and a number of things nor working properly
+under Win32 at the time).
+
+In my view, or may be that was the general view at the time the
+package incriminated was written, being able to run examples justified
+having a dependency listed in "Depends".
+I agree that this can be discussed, and the particular case discussed,
+the dependencies listed can be moved to "Suggests" (there is a chance
+that the pack was written before "Suggests" was in use, or just about
+the time it appeared). Still, there are many ways to decide on whether
+a package should be in "Depends" or in "Suggests", and all can
+probably be justified; there is a need for common/public guidelines
+(that I might have missed if they exist).
+
+I'd also like to point that dependencies can be good, and that there
+are in my view currently not enough of them and the call for
+minimizing them should not be taken to the extreme.
+There is a fair amount of duplication in functionalities within
+bioconductor packages (count the FASTA parsers, for example), and it
+would be good if we could have
+more cross-talks between packages.
+
+As an emerging guideline, would it be acceptable to say that "data"
+packages used for examples should be in "Suggests" unless there is
+good reason ?
+
+Cheers,
+
+L.
+
+PS: I have not found the function "request", I assume that "require" was meant.
+
+PPS: Nothing personal about FASTA, I took the example because I own
+one of the parsers ;-)
+
+
+
+2008/7/1 Henrik Bengtsson <hb at stat.berkeley.edu>:
+> Hi,
+>
+> this one is mainly for the maintainer (Laurent Gautier), but I post it
+> to bioc-devel also as request to minimize package dependencies in R
+> and BioC in general:
+>
+> The current DESCRIPTION of 'affypdnn' is:
+>
+> Package: affypdnn
+> Version: 1.14.3
+> Depends: R (>= 2.3.0), affy (>= 1.5), affydata, hgu95av2probe
+>
+> Could you please update this to:
+>
+> Package: affypdnn
+> Version: 1.14.3
+> Depends: R (>= 2.3.0), affy (>= 1.5)
+> Suggests: affydata, hgu95av2probe
+>
+> and use request("affydata") and request("hgu95av2probe") where those
+> two are actually needed?
+>
+> Cheers
+>
+> Henrik
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From rgentlem at fhcrc.org  Tue Jul  1 12:22:55 2008
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Tue, 01 Jul 2008 03:22:55 -0700
+Subject: [Bioc-devel] affypdnn: Request for moving "Depends" packages
+ to	"Suggests"
+In-Reply-To: <4869FDC6.5070002@postgrad.manchester.ac.uk>
+References: <59d7961d0806301703x26543ce3hee27608dcccf8b24@mail.gmail.com>
+	<4869FDC6.5070002@postgrad.manchester.ac.uk>
+Message-ID: <486A057F.5020602@fhcrc.org>
+
+Hi Richard,
+
+Richard Pearson wrote:
+> Hi
+> 
+> I guess you mean require() here, or is there a request() function that 
+> I'm not aware of?
+> 
+> I'm sorry to say I'm still a little confused as to the effects of moving 
+> something from Depends to Suggests. I realise that one effect of this is 
+> that the package in Suggests won't get loaded until needed, which is 
+> generally a good thing. However, isn't a side effect of this that the 
+> package in Suggests won't get installed by biocLite()?
+
+  Yes, and so it should only be used if the functionality is for fairly 
+specialized tasks that are not likely to be carried out by all users. 
+The network of Dependencies can get very large, and the number of 
+packages a user has to install that they never use should be minimized 
+if possible (whence the Lite in biocLite).
+
+  However, a review of Suggests, Depends, and package size is something 
+that package developers should be carrying out regularly.  There are 
+some examples where the need for dependencies has essentially gone away 
+but the package has never been cleaned up to reflect that. Or where 
+Dependencies would be better handled via imports.
+
+> 
+> Lets say I'm developing a package foop which has a function foo(). foo() 
+> uses the function bar() from package barp. Many users use foop without 
+> ever using foo(). Therefore it would seem sensible to put barp in 
+> Suggests so it doesn't get loaded all the time, but rarely used. 
+> However, if a user installs foop on a fresh R installation using 
+> biocLite(), they will get an error when trying to use foo(). A 
+> non-expert user might at this point simply think that foop is broken and 
+> give up. What's the recommended strategy in this scenario? If barp has a 
+
+    One certainly hopes that even naive users could see and interpret 
+the corresponding error message. And you as the developer of foop could 
+intervene directly, by either printing a specific warning, or as some 
+have done (not always very well) automatically downloading the needed 
+package at run time (possibly after asking the user).
+
+> namespace, should I put barp in Imports (so it gets installed by 
+> biocLite), and then access bar() using barp::bar()? What should I do if 
+> barp has no namespace? Should I recommend to the barp maintainer that 
+> they add one? More likely, have I completely misunderstood 
+> Depends/Suggests/Imports/biocLite...?
+
+  There is also the issue that some packages Depend on foop, when indeed 
+they really only want to Import from foop.  This is also something that 
+could be cleaned up. Both Depends and Suggests have the effect of 
+attaching the package to the searchpath and that can have unwanted 
+effects.  Cleaning up a number of these instances would also help.
+
+   For namespaces Luke Tierney's R News article is the only real 
+reference I know of.  Other issues are discussed in the R Extensions 
+manual, and on-line man pages.
+
+   best wishes
+     Robert
+
+> 
+> No doubt this is covered in documentation someplace, any pointers 
+> appreciated!
+> 
+> Thanks
+> 
+> Richard.
+> 
+> 
+> Henrik Bengtsson wrote:
+>> Hi,
+>>
+>> this one is mainly for the maintainer (Laurent Gautier), but I post it
+>> to bioc-devel also as request to minimize package dependencies in R
+>> and BioC in general:
+>>
+>> The current DESCRIPTION of 'affypdnn' is:
+>>
+>> Package: affypdnn
+>> Version: 1.14.3
+>> Depends: R (>= 2.3.0), affy (>= 1.5), affydata, hgu95av2probe
+>>
+>> Could you please update this to:
+>>
+>> Package: affypdnn
+>> Version: 1.14.3
+>> Depends: R (>= 2.3.0), affy (>= 1.5)
+>> Suggests: affydata, hgu95av2probe
+>>
+>> and use request("affydata") and request("hgu95av2probe") where those
+>> two are actually needed?
+>>
+>> Cheers
+>>
+>> Henrik
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+> 
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From lgautier at gmail.com  Tue Jul  1 19:05:16 2008
+From: lgautier at gmail.com (Laurent Gautier)
+Date: Tue, 1 Jul 2008 19:05:16 +0200
+Subject: [Bioc-devel] normalize.loess effizient method
+In-Reply-To: <485F5A36.8050308@ibe.med.uni-muenchen.de>
+References: <485F5A36.8050308@ibe.med.uni-muenchen.de>
+Message-ID: <27d1e6020807011005u6ce78ce3hc71bbfc85249140a@mail.gmail.com>
+
+Markus,
+
+Thanks for your patch. It is available in the development branch
+(future release 2.3).
+
+
+L.
+
+
+
+2008/6/23 Markus Schmidberger <schmidb at ibe.med.uni-muenchen.de>:
+> Hello,
+>
+> I parallelized the normalize loess function (see affyPara package). Thereby
+> I found a memory inefficient implementation of normalize.loess.
+> The matrices fs and newdata are of the size of the complete intensity matrix
+> and not necessary.  I removed this two matrices and the oldfs matrix.
+> Attached the changed code.
+>
+> Best
+> Markus
+>
+>
+> normalize.loess <- function(mat, subset=sample(1:(dim(mat)[1]), min(c(5000,
+> nrow(mat)))),
+>       epsilon=10^-2, maxit=1, log.it=TRUE, verbose=TRUE, span=2/3,
+>       family.loess="symmetric"){
+>     J <- dim(mat)[2]
+>   II <- dim(mat)[1]
+>   if(log.it)
+>       mat <- log2(mat)
+>     change <- epsilon +1
+>   iter <- 0
+>   w <- c(0, rep(1,length(subset)), 0) ##this way we give 0 weight to the
+>   ##extremes added so that we can interpolate
+>     while(iter < maxit){
+>       iter <- iter + 1
+>       means <- matrix(0,II,J) ##contains temp of what we substract
+>             for (j in 1:(J-1)){
+>           for (k in (j+1):J){
+>               y <- mat[,j] - mat[,k]
+>               x <- (mat[,j] + mat[,k]) / 2
+>               index <- c(order(x)[1], subset, order(-x)[1])
+>               ##put endpoints in so we can interpolate
+>               xx <- x[index]
+>               yy <- y[index]
+>               aux <-loess(yy~xx, span=span, degree=1, weights=w,
+> family=family.loess)
+>               aux <- predict(aux, data.frame(xx=x)) / J
+>               means[, j] <- means[, j] + aux
+>               means[, k] <- means[, k] - aux
+>               if (verbose)
+>                   cat("Done with",j,"vs",k," in iteration ",iter,"\n")
+>           }
+>       }
+>       mat <- mat - means
+>       change <- max(colMeans((means[subset,])^2))
+>             if(verbose)
+>           cat(iter, change,"\n")
+>     }
+>     if ((change > epsilon) & (maxit > 1))
+>       warning(paste("No convergence after", maxit, "iterations.\n"))
+>     if(log.it) {
+>       return(2^mat)
+>   } else
+>       return(mat)
+> }
+>
+> --
+> Dipl.-Tech. Math. Markus Schmidberger
+>
+> Ludwig-Maximilians-Universit?t M?nchen
+> IBE - Institut f?r medizinische Informationsverarbeitung,
+> Biometrie und Epidemiologie
+> Marchioninistr. 15, D-81377 Muenchen
+> URL: http://ibe.web.med.uni-muenchen.de Mail: Markus.Schmidberger [at]
+> ibe.med.uni-muenchen.de
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From hb at stat.berkeley.edu  Tue Jul  1 22:33:20 2008
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Tue, 1 Jul 2008 13:33:20 -0700
+Subject: [Bioc-devel] affypdnn: Request for moving "Depends" packages to
+	"Suggests"
+In-Reply-To: <486A057F.5020602@fhcrc.org>
+References: <59d7961d0806301703x26543ce3hee27608dcccf8b24@mail.gmail.com>
+	<4869FDC6.5070002@postgrad.manchester.ac.uk>
+	<486A057F.5020602@fhcrc.org>
+Message-ID: <59d7961d0807011333t6e5df9b2p3fbe3c785dd8ff4c@mail.gmail.com>
+
+Hi,
+
+my comment below on users not able to install missing packages.
+
+On Tue, Jul 1, 2008 at 3:22 AM, Robert Gentleman <rgentlem at fhcrc.org> wrote:
+> Hi Richard,
+>
+> Richard Pearson wrote:
+>>
+>> Hi
+>>
+>> I guess you mean require() here, or is there a request() function that I'm
+>> not aware of?
+>>
+>> I'm sorry to say I'm still a little confused as to the effects of moving
+>> something from Depends to Suggests. I realise that one effect of this is
+>> that the package in Suggests won't get loaded until needed, which is
+>> generally a good thing. However, isn't a side effect of this that the
+>> package in Suggests won't get installed by biocLite()?
+>
+>  Yes, and so it should only be used if the functionality is for fairly
+> specialized tasks that are not likely to be carried out by all users. The
+> network of Dependencies can get very large, and the number of packages a
+> user has to install that they never use should be minimized if possible
+> (whence the Lite in biocLite).
+>
+>  However, a review of Suggests, Depends, and package size is something that
+> package developers should be carrying out regularly.  There are some
+> examples where the need for dependencies has essentially gone away but the
+> package has never been cleaned up to reflect that. Or where Dependencies
+> would be better handled via imports.
+>
+>>
+>> Lets say I'm developing a package foop which has a function foo(). foo()
+>> uses the function bar() from package barp. Many users use foop without ever
+>> using foo(). Therefore it would seem sensible to put barp in Suggests so it
+>> doesn't get loaded all the time, but rarely used. However, if a user
+>> installs foop on a fresh R installation using biocLite(), they will get an
+>> error when trying to use foo(). A non-expert user might at this point simply
+>> think that foop is broken and give up. What's the recommended strategy in
+>> this scenario? If barp has a
+>
+>   One certainly hopes that even naive users could see and interpret the
+> corresponding error message. And you as the developer of foop could
+> intervene directly, by either printing a specific warning, or as some have
+> done (not always very well) automatically downloading the needed package at
+> run time (possibly after asking the user).
+
+I second this.
+
+It would also not be hard to have library()/require() throw errors of
+a specific class, say MissingPackageError, and then have an exception
+handling that do what ever the user/developer prefers.  If such an
+error reaches the "user/prompt", there could be user options() saying
+what to do, e.g. today's error message is display, a prompt (text or
+GUI) is display asking the user if s/he wants to download and install
+the missing package, or install the package automatically, and then
+continue.
+
+/Henrik
+
+>
+>> namespace, should I put barp in Imports (so it gets installed by
+>> biocLite), and then access bar() using barp::bar()? What should I do if barp
+>> has no namespace? Should I recommend to the barp maintainer that they add
+>> one? More likely, have I completely misunderstood
+>> Depends/Suggests/Imports/biocLite...?
+>
+>  There is also the issue that some packages Depend on foop, when indeed they
+> really only want to Import from foop.  This is also something that could be
+> cleaned up. Both Depends and Suggests have the effect of attaching the
+> package to the searchpath and that can have unwanted effects.  Cleaning up a
+> number of these instances would also help.
+>
+>  For namespaces Luke Tierney's R News article is the only real reference I
+> know of.  Other issues are discussed in the R Extensions manual, and on-line
+> man pages.
+>
+>  best wishes
+>    Robert
+>
+>>
+>> No doubt this is covered in documentation someplace, any pointers
+>> appreciated!
+>>
+>> Thanks
+>>
+>> Richard.
+>>
+>>
+>> Henrik Bengtsson wrote:
+>>>
+>>> Hi,
+>>>
+>>> this one is mainly for the maintainer (Laurent Gautier), but I post it
+>>> to bioc-devel also as request to minimize package dependencies in R
+>>> and BioC in general:
+>>>
+>>> The current DESCRIPTION of 'affypdnn' is:
+>>>
+>>> Package: affypdnn
+>>> Version: 1.14.3
+>>> Depends: R (>= 2.3.0), affy (>= 1.5), affydata, hgu95av2probe
+>>>
+>>> Could you please update this to:
+>>>
+>>> Package: affypdnn
+>>> Version: 1.14.3
+>>> Depends: R (>= 2.3.0), affy (>= 1.5)
+>>> Suggests: affydata, hgu95av2probe
+>>>
+>>> and use request("affydata") and request("hgu95av2probe") where those
+>>> two are actually needed?
+>>>
+>>> Cheers
+>>>
+>>> Henrik
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>
+> --
+> Robert Gentleman, PhD
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M2-B876
+> PO Box 19024
+> Seattle, Washington 98109-1024
+> 206-667-7700
+> rgentlem at fhcrc.org
+>
+
+
+From hb at stat.berkeley.edu  Tue Jul  1 23:17:16 2008
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Tue, 1 Jul 2008 14:17:16 -0700
+Subject: [Bioc-devel] affypdnn: Request for moving "Depends" packages to
+	"Suggests"
+In-Reply-To: <27d1e6020807010307u373fdf32rad5ed9ef794824e2@mail.gmail.com>
+References: <59d7961d0806301703x26543ce3hee27608dcccf8b24@mail.gmail.com>
+	<27d1e6020807010307u373fdf32rad5ed9ef794824e2@mail.gmail.com>
+Message-ID: <59d7961d0807011417l41999f0dibf7eaadff5d366af@mail.gmail.com>
+
+Hi.
+
+On Tue, Jul 1, 2008 at 3:07 AM, Laurent Gautier <lgautier at gmail.com> wrote:
+> Trying to minimize hard package dependencies is commendable, but there
+> points to keep in mind.
+>
+> Just case the mere thought of seeing one day their name between
+> parenthesis right behind "the maintainer" in an email otherwise
+> addressed to all is not enough to make innoncent bystanders feel
+> concerned about their package and what is happening here, I'll make a
+> short list of what it means to have a package listed in the "Depends"
+> field, and what are possible reasons for having a package in
+> "Depends".
+>
+> The usage of the field "Suggests" came out of the need for a gradation
+> in dependencies between packages, differing from "Depends" with:
+> - loading the package not contingent on the presence of dependencies
+> - the dependencies not being loaded
+>
+> (I that suspect the feature was used for tcltk-based GUIs causing R
+> installs without tcltk, and a number of things nor working properly
+> under Win32 at the time).
+>
+> In my view, or may be that was the general view at the time the
+> package incriminated was written, being able to run examples justified
+> having a dependency listed in "Depends".
+> I agree that this can be discussed, and the particular case discussed,
+> the dependencies listed can be moved to "Suggests" (there is a chance
+> that the pack was written before "Suggests" was in use, or just about
+> the time it appeared). Still, there are many ways to decide on whether
+> a package should be in "Depends" or in "Suggests", and all can
+> probably be justified; there is a need for common/public guidelines
+> (that I might have missed if they exist).
+>
+> I'd also like to point that dependencies can be good, and that there
+> are in my view currently not enough of them and the call for
+> minimizing them should not be taken to the extreme.
+> There is a fair amount of duplication in functionalities within
+> bioconductor packages (count the FASTA parsers, for example), and it
+> would be good if we could have
+> more cross-talks between packages.
+
+I fully agree with this and this is what I also mean by minimize
+(reduce).  Design and code should be reused and not reimplemented.
+However, if the "weight" of a package is too large, that is, too many
+packages needs to be installed (and/or loaded) in order to reuse a
+function, then there is a great risk a given function is
+reimplemented/cut'n'pasted instead of "imported" (I guess this is the
+downside with GNU source code).  I have many favorite examples of
+this, but one is definitely the function smoothScatter() of the
+'geneplotter' package.  To tell someone to use it, or for me to make
+use of that single function in one of my packages, here is the
+Depends: hierarchy (packages within asterisks are the ones that does
+not come with R):
+
+Package: geneplotter
+Depends: *Biobase*, methods, lattice, *annotate*
+
+Package: Biobase
+Depends: R (>= 2.7.0), tools, methods, utils
+
+Package: annotate
+Depends: R (>= 2.4.0), methods, *Biobase*, *AnnotationDbi* (>= 0.1.15), *xtable*
+
+Package: AnnotationDbi
+Depends: R (>= 2.7.0), methods, utils, *Biobase* (>= 1.17.0), *DBI*
+(>= 0.2-4), *RSQLite* (>= 0.6-4)
+
+Package: DBI
+Depends: 	R (? 2.3.0), methods
+
+Package: RSQLite
+Depends: 	R (? 2.6.0), methods, DBI (? 0.2-3)
+
+Package: xtable
+Depends: 	R (? 2.6.0)
+
+Now, try suggest to someone not doing bioinformatics, that there is
+this great smoothScatter() function they can use to plot high-density
+scatter plots.  I should point out that things got a lot better over
+the last few release cycles.
+
+I believe that if the developer is more careful specifying what
+packages are really required (Depends) and what packages are more or
+less optional (Suggests), then it is more likely that the code is
+modularized further (some functions are moved to other packages etc)
+and code is reused by others.
+
+In relation to make it easier to reuse code, I would also like to
+suggest that developers identify cases where an algorithm can be
+implemented using basic R data types (matrices, vectors, lists) and
+then have wrapper functions for high-level classes (AffyBatch, eSet,
+...) calling this.  Not always, but it is often the case that the core
+of an algorithm cannot be reused because it is hardwired to a
+Bioconductor/platform specific data type.  With the above setup it is
+also easier to maintain the code when, for instance, new BioC classes
+appear, and to identify what parts can be optimized, say, by rewriting
+it in native code.  This way implementations of algorithms may be
+generalized and eventually even be migrated to CRAN where the user
+base is much greater (increasing CPU-mileage, quality, ...).
+
+>
+> As an emerging guideline, would it be acceptable to say that "data"
+> packages used for examples should be in "Suggests" unless there is
+> good reason ?
+
+I'd say that is a good rule of thumb.  There are different kinds of
+data, for instance example data and annotation data, but I'd say the
+rule is more likely to apply than not to apply.
+
+>
+> Cheers,
+>
+> L.
+>
+> PS: I have not found the function "request", I assume that "require" was meant.
+
+My bad, but I could always create a package with that function calling
+require() to cover my mistake ;)
+
+Cheers
+
+/Henrik
+
+
+>
+> PPS: Nothing personal about FASTA, I took the example because I own
+> one of the parsers ;-)
+>
+>
+>
+> 2008/7/1 Henrik Bengtsson <hb at stat.berkeley.edu>:
+>> Hi,
+>>
+>> this one is mainly for the maintainer (Laurent Gautier), but I post it
+>> to bioc-devel also as request to minimize package dependencies in R
+>> and BioC in general:
+>>
+>> The current DESCRIPTION of 'affypdnn' is:
+>>
+>> Package: affypdnn
+>> Version: 1.14.3
+>> Depends: R (>= 2.3.0), affy (>= 1.5), affydata, hgu95av2probe
+>>
+>> Could you please update this to:
+>>
+>> Package: affypdnn
+>> Version: 1.14.3
+>> Depends: R (>= 2.3.0), affy (>= 1.5)
+>> Suggests: affydata, hgu95av2probe
+>>
+>> and use request("affydata") and request("hgu95av2probe") where those
+>> two are actually needed?
+>>
+>> Cheers
+>>
+>> Henrik
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+
+From hb at stat.berkeley.edu  Sun Jul  6 02:14:37 2008
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Sat, 5 Jul 2008 17:14:37 -0700
+Subject: [Bioc-devel] Tip of the day: unlist(...,
+	use.names=FALSE) often saves lots of memory
+Message-ID: <59d7961d0807051714i3168fa67p28a691aa2bb7382c@mail.gmail.com>
+
+Hi,
+
+I just wanna share an seldom used feature of unlist():
+
+  Using argument 'use.names=FALSE' when calling unlist() often saves
+lots of memory.
+
+The names vector of the list will be expanded to each element and can
+often consume much more memory than the actually data.  So, unless you
+really need the 'names' attributes, please consider using unlist(...,
+use.names=FALSE) in your package(s).  It is also faster.
+
+A common example using an AffyBatch object:
+
+> affyBatch
+AffyBatch object
+size of arrays=1164x1164 features (7 kb)
+cdf=HG-U133_Plus_2 (54675 affyids)
+number of samples=1
+number of genes=54675
+annotation=hgu133plus2
+notes=
+
+> pmIndex <- indexProbes(affyBatch[,1], "pm")
+> object.size(pmIndex)
+[1] 6572776
+
+> cells <- unlist(pmIndex)
+> object.size(cells)
+[1] 29018704
+
+> cells2 <- unlist(pmIndex, use.names=FALSE)
+> object.size(cells2)
+[1] 2417056
+
+# The names consumes 92% of the memory
+> object.size(cells2)/object.size(cells)
+[1] 0.08329304
+
+It is much cheaper to pass around 'cells2' compared with 'cells'.
+
+/Henrik
+
+
+From mtmorgan at fhcrc.org  Sun Jul  6 03:48:56 2008
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Sat, 05 Jul 2008 18:48:56 -0700
+Subject: [Bioc-devel] Tip of the day: unlist(...,
+ use.names=FALSE) often saves lots of memory
+In-Reply-To: <59d7961d0807051714i3168fa67p28a691aa2bb7382c@mail.gmail.com>
+	(Henrik Bengtsson's message of "Sat, 5 Jul 2008 17:14:37 -0700")
+References: <59d7961d0807051714i3168fa67p28a691aa2bb7382c@mail.gmail.com>
+Message-ID: <6phk5fzwznb.fsf@lamprey.fhcrc.org>
+
+Hi Henrik --
+
+"Henrik Bengtsson" <hb at stat.berkeley.edu> writes:
+
+> Hi,
+>
+> I just wanna share an seldom used feature of unlist():
+>
+>   Using argument 'use.names=FALSE' when calling unlist() often saves
+> lots of memory.
+
+Actually, thanks to some cleverness introduced largely by Seth, the
+savings might be less than you think...
+
+> The names vector of the list will be expanded to each element and can
+> often consume much more memory than the actually data.  So, unless you
+> really need the 'names' attributes, please consider using unlist(...,
+> use.names=FALSE) in your package(s).  It is also faster.
+>
+> A common example using an AffyBatch object:
+>
+>> affyBatch
+> AffyBatch object
+> size of arrays=1164x1164 features (7 kb)
+> cdf=HG-U133_Plus_2 (54675 affyids)
+> number of samples=1
+> number of genes=54675
+> annotation=hgu133plus2
+> notes=
+
+affyBatch already has a copy of each probe name. R has made an
+internal hash of all unique character strings (this will always be
+true when use.names=FALSE might be useful -- the names will already
+exist), so here...
+
+>> pmIndex <- indexProbes(affyBatch[,1], "pm")
+
+...you make copies of the references to the names, not of the names
+themselves. And ...
+
+>> object.size(pmIndex)
+> [1] 6572776
+>
+>> cells <- unlist(pmIndex)
+>> object.size(cells)
+> [1] 29018704
+
+... here R is counting the size of the object and the size of the
+names in the cache, even though the memory footprint of the cached
+names are in some sense amortized over affyBatch, pmIndex, and
+cells. A different estimate of the cost would be to compare
+
+cells3 <- cells2
+names(cells3) <- ""
+object.size(cells3) / object.size(cells2)
+
+This reflects the cost of the underlying pointer to the character
+string, with the character string itself costing almost nothing.
+
+On the 64 bit machine I'm working on now,
+
+> object.size(character(1024^2)) / object.size(integer(1024^2))
+[1] 2.000002
+
+so an element of a character vector takes up about twice as much space
+as an element of an integer vector. I'd expect the ratio of the sizes
+of cells3 / cells2 to be about (1 + 2) / 1 = 3, so adding names
+triples the object size. On my 32 bit laptop or if cells were numeric,
+the size only doubles.
+
+>> cells2 <- unlist(pmIndex, use.names=FALSE)
+>> object.size(cells2)
+> [1] 2417056
+>
+> # The names consumes 92% of the memory
+>> object.size(cells2)/object.size(cells)
+> [1] 0.08329304
+
+> It is much cheaper to pass around 'cells2' compared with 'cells'.
+
+... R's approximate copy on change semantics makes it quite difficult
+to know whether this is really true or not -- a variable passed to a
+function and used in a read-only fashion is unlikely to be copied, so
+'passing around' is really light-weight (this changes with S4, but
+that is an implementation issue that might some day be fully
+resolved).
+
+On the other hand, dropping names makes, in my experience, subsetting
+and other data coordination errors significantly more likely, and I've
+usually regretted trying to be efficient in this way -- it's working
+against the software, instead of with it.
+
+Creation of new names, or checking whether new names need to be
+created, can be quite time-consuming, for instance when data frame row
+names are created (during, e.g., write.table), or numeric values
+converted to characters (e.g., comparing integer and character
+values). In your example above, I found that using unlist(pmIndex,
+use.names=FALSE) actually lead to a 10x speedup, but since this was
+from 0.1 to 0.01 seconds. I don't know that this is worth it for
+interactive calculation on data the size of 'standard' expression
+arrays. Perhaps in a heavily used function where I know that the
+nameless entity will not come back to get me, or when data gets truly
+big; definitely there are situations where use.names=FALSE seems to be
+a big help.
+
+Martin
+
+>
+> /Henrik
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M2 B169
+Phone: (206) 667-2793
+
+
+From Christian.Kohler at klinik.uni-regensburg.de  Mon Jul  7 12:08:39 2008
+From: Christian.Kohler at klinik.uni-regensburg.de (Christian Kohler)
+Date: Mon, 07 Jul 2008 12:08:39 +0200
+Subject: [Bioc-devel] Current BioC 2.3: Multiple platform build/check report
+	from 2008-07-02
+Message-ID: <4871EB27.6060108@klinik.uni-regensburg.de>
+
+Dear Developers,
+sorry for asking this rather picky question but as i checked the BioC
+2.3: Multiple platform build/check report today (2008-07-07), the report
+from Wednesday 2008-07-02 is still shown.
+
+Did I miss an earlier announcement in this regard?
+
+
+Regards, Christian
+
+
+-- 
+
+Christian Kohler
+Institute of Functional Genomics
+Computational Diagnostics
+University of Regensburg (BioPark I)
+D-93147 Regensburg (Germany)
+
+Tel. +49 941 943 5055
+Fax  +49 941 943 5020
+christian.kohler at klinik.uni-regensburg.de
+
+
+From paboyoun at fhcrc.org  Mon Jul  7 19:02:15 2008
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Mon, 07 Jul 2008 10:02:15 -0700
+Subject: [Bioc-devel] Current BioC 2.3: Multiple platform build/check
+ report	from 2008-07-02
+In-Reply-To: <4871EB27.6060108@klinik.uni-regensburg.de>
+References: <4871EB27.6060108@klinik.uni-regensburg.de>
+Message-ID: <48724C17.9010402@fhcrc.org>
+
+Christian,
+We had problems on our Windows build machine and it was preventing the 
+generation of the build reports I removed the Windows build machine so 
+the report can be generated. The Windows build machine is back on line 
+and will be included in tomorrow's BioC 2.3 report.
+
+
+Patrick
+
+
+
+Christian Kohler wrote:
+> Dear Developers,
+> sorry for asking this rather picky question but as i checked the BioC
+> 2.3: Multiple platform build/check report today (2008-07-07), the report
+> from Wednesday 2008-07-02 is still shown.
+>
+> Did I miss an earlier announcement in this regard?
+>
+>
+> Regards, Christian
+>
+>
+>
+
+
+From hb at stat.berkeley.edu  Mon Jul  7 21:04:21 2008
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Mon, 7 Jul 2008 12:04:21 -0700
+Subject: [Bioc-devel] Tip of the day: unlist(...,
+	use.names=FALSE) often saves lots of memory
+In-Reply-To: <6phk5fzwznb.fsf@lamprey.fhcrc.org>
+References: <59d7961d0807051714i3168fa67p28a691aa2bb7382c@mail.gmail.com>
+	<6phk5fzwznb.fsf@lamprey.fhcrc.org>
+Message-ID: <59d7961d0807071204q7a45777cv9abfebe52423c20a@mail.gmail.com>
+
+Hi Martin,
+
+thanks for your important comments.  I knew it was coming - I am aware
+of Seth's addition of string suffix trees, which indeed saves lots of
+memory and some overhead.  However, I have some comments below.
+
+On Sat, Jul 5, 2008 at 6:48 PM, Martin Morgan <mtmorgan at fhcrc.org> wrote:
+> Hi Henrik --
+>
+> "Henrik Bengtsson" <hb at stat.berkeley.edu> writes:
+>
+>> Hi,
+>>
+>> I just wanna share an seldom used feature of unlist():
+>>
+>>   Using argument 'use.names=FALSE' when calling unlist() often saves
+>> lots of memory.
+>
+> Actually, thanks to some cleverness introduced largely by Seth, the
+> savings might be less than you think...
+>
+>> The names vector of the list will be expanded to each element and can
+>> often consume much more memory than the actually data.  So, unless you
+>> really need the 'names' attributes, please consider using unlist(...,
+>> use.names=FALSE) in your package(s).  It is also faster.
+>>
+>> A common example using an AffyBatch object:
+>>
+>>> affyBatch
+>> AffyBatch object
+>> size of arrays=1164x1164 features (7 kb)
+>> cdf=HG-U133_Plus_2 (54675 affyids)
+>> number of samples=1
+>> number of genes=54675
+>> annotation=hgu133plus2
+>> notes=
+>
+> affyBatch already has a copy of each probe name. R has made an
+> internal hash of all unique character strings (this will always be
+> true when use.names=FALSE might be useful -- the names will already
+> exist), so here...
+
+I just used the AffyBatch class as an example, so I don't really want
+to dig into details about that class.  Here is a more general example:
+
+> x <- list(a=1:4, b=6:7)
+> unlist(x)
+a1 a2 a3 a4 b1 b2
+ 1  2  3  4  6  7
+
+The names attribute of 'x' is two strings, but when unlist():ed the
+names are expanded, used a prefixes and enumerated.  A suffix tree
+will of course save some memory here, but it will still require new
+strings to be created.
+
+About AffyBatch, does it actually store these "extended" names:
+
+> head(names(unlist(pmIndex)), 20)
+ [1] "1007_s_at1"  "1007_s_at2"  "1007_s_at3"  "1007_s_at4"  "1007_s_at5"
+ [6] "1007_s_at6"  "1007_s_at7"  "1007_s_at8"  "1007_s_at9"  "1007_s_at10"
+[11] "1007_s_at11" "1007_s_at12" "1007_s_at13" "1007_s_at14" "1007_s_at15"
+[16] "1007_s_at16" "1053_at1"    "1053_at2"    "1053_at3"    "1053_at4"
+
+or just the probeset names:
+
+> head(names(pmIndex))
+[1] "1007_s_at" "1053_at"   "117_at"    "121_at"    "1255_g_at" "1294_at"
+
+>
+>>> pmIndex <- indexProbes(affyBatch[,1], "pm")
+>
+> ...you make copies of the references to the names, not of the names
+> themselves. And ...
+>
+>>> object.size(pmIndex)
+>> [1] 6572776
+>>
+>>> cells <- unlist(pmIndex)
+>>> object.size(cells)
+>> [1] 29018704
+>
+> ... here R is counting the size of the object and the size of the
+> names in the cache, even though the memory footprint of the cached
+> names are in some sense amortized over affyBatch, pmIndex, and
+> cells. A different estimate of the cost would be to compare
+>
+> cells3 <- cells2
+> names(cells3) <- ""
+> object.size(cells3) / object.size(cells2)
+>
+> This reflects the cost of the underlying pointer to the character
+> string, with the character string itself costing almost nothing.
+>
+> On the 64 bit machine I'm working on now,
+>
+>> object.size(character(1024^2)) / object.size(integer(1024^2))
+> [1] 2.000002
+>
+> so an element of a character vector takes up about twice as much space
+> as an element of an integer vector. I'd expect the ratio of the sizes
+> of cells3 / cells2 to be about (1 + 2) / 1 = 3, so adding names
+> triples the object size. On my 32 bit laptop or if cells were numeric,
+> the size only doubles.
+>
+>>> cells2 <- unlist(pmIndex, use.names=FALSE)
+>>> object.size(cells2)
+>> [1] 2417056
+>>
+>> # The names consumes 92% of the memory
+>>> object.size(cells2)/object.size(cells)
+>> [1] 0.08329304
+>
+>> It is much cheaper to pass around 'cells2' compared with 'cells'.
+>
+> ... R's approximate copy on change semantics makes it quite difficult
+> to know whether this is really true or not -- a variable passed to a
+> function and used in a read-only fashion is unlikely to be copied, so
+> 'passing around' is really light-weight (this changes with S4, but
+> that is an implementation issue that might some day be fully
+> resolved).
+>
+> On the other hand, dropping names makes, in my experience, subsetting
+> and other data coordination errors significantly more likely, and I've
+> usually regretted trying to be efficient in this way -- it's working
+> against the software, instead of with it.
+>
+> Creation of new names, or checking whether new names need to be
+> created, can be quite time-consuming, for instance when data frame row
+> names are created (during, e.g., write.table), or numeric values
+> converted to characters (e.g., comparing integer and character
+> values). In your example above, I found that using unlist(pmIndex,
+> use.names=FALSE) actually lead to a 10x speedup, but since this was
+> from 0.1 to 0.01 seconds. I don't know that this is worth it for
+> interactive calculation on data the size of 'standard' expression
+> arrays. Perhaps in a heavily used function where I know that the
+> nameless entity will not come back to get me, or when data gets truly
+> big; definitely there are situations where use.names=FALSE seems to be
+> a big help.
+
+In our experience developing/using aroma.affymetrix, we (not the royal
+one this time) found that unlist(..., use.names=FALSE) saves a lot of
+memory and seems to speed things up, e.g. when working with nested CDF
+list structures from affxparser.  Also, we found by looking at the
+internal code that we very rarely used the names attributes so we
+found that discarding them ASAP to be a better strategy.  All our
+indexing is done by integer indices and never by names; that was an
+early design decision.  We have other ways to validate the correctness
+of our algorithms.  When I look at BioC code (and elsewhere), it is
+not-uncommon that the names attributes are not used for anything good,
+and sometimes they are discarded *at the very end* whereas they
+equally well could have been discarded from the beginning.
+
+Cheers
+
+Henrik
+
+>
+> Martin
+>
+>>
+>> /Henrik
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> --
+> Martin Morgan
+> Computational Biology / Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N.
+> PO Box 19024 Seattle, WA 98109
+>
+> Location: Arnold Building M2 B169
+> Phone: (206) 667-2793
+>
+
+
+From hpages at fhcrc.org  Mon Jul  7 23:48:10 2008
+From: hpages at fhcrc.org (Herve Pages)
+Date: Mon, 07 Jul 2008 14:48:10 -0700
+Subject: [Bioc-devel] Tip of the day: unlist(...,
+ use.names=FALSE) often saves lots of memory
+In-Reply-To: <59d7961d0807071204q7a45777cv9abfebe52423c20a@mail.gmail.com>
+References: <59d7961d0807051714i3168fa67p28a691aa2bb7382c@mail.gmail.com>	<6phk5fzwznb.fsf@lamprey.fhcrc.org>
+	<59d7961d0807071204q7a45777cv9abfebe52423c20a@mail.gmail.com>
+Message-ID: <48728F1A.8000507@fhcrc.org>
+
+Hi Henrik,
+
+Henrik Bengtsson wrote:
+> Hi Martin,
+> 
+> thanks for your important comments.  I knew it was coming - I am aware
+> of Seth's addition of string suffix trees, which indeed saves lots of
+> memory and some overhead.
+
+Just to clarify (even if I don't know much about the details) I don't think
+that Seth's patch has something to do with suffix trees. The CHARSXP cache
+is a global (hash) table where all the strings are uniquely stored so the
+same string is never represented twice in memory. From the NEWS file:
+
+     o	There is now a global CHARSXP cache, R_StringHash.  CHARSXPs
+	are no longer duplicated and must not be modified in place.
+	Developers should strive to only use mkChar (and mkString) for
+	creating new CHARSXPs and avoid use of allocString.  A new
+	macro, CallocCharBuf, can be used to obtain a temporary char
+	buffer for manipulating character data.	 This patch was
+	written by Seth Falcon.
+
+Otherwise I agree that the usefulness of unlist()'ing a list with
+use.names=TRUE seems indeed very limited. I wonder if there is a lot of
+situations where ending up with these mangled names is actually
+useful except maybe when one works interactively and on a short list
+(in this case the user might like to see where things are coming from
+but how often will s/he make programmatic use of this information?).
+
+Cheers,
+H.
+
+
+>  However, I have some comments below.
+> 
+> On Sat, Jul 5, 2008 at 6:48 PM, Martin Morgan <mtmorgan at fhcrc.org> wrote:
+>> Hi Henrik --
+>>
+>> "Henrik Bengtsson" <hb at stat.berkeley.edu> writes:
+>>
+>>> Hi,
+>>>
+>>> I just wanna share an seldom used feature of unlist():
+>>>
+>>>   Using argument 'use.names=FALSE' when calling unlist() often saves
+>>> lots of memory.
+>> Actually, thanks to some cleverness introduced largely by Seth, the
+>> savings might be less than you think...
+>>
+>>> The names vector of the list will be expanded to each element and can
+>>> often consume much more memory than the actually data.  So, unless you
+>>> really need the 'names' attributes, please consider using unlist(...,
+>>> use.names=FALSE) in your package(s).  It is also faster.
+>>>
+>>> A common example using an AffyBatch object:
+>>>
+>>>> affyBatch
+>>> AffyBatch object
+>>> size of arrays=1164x1164 features (7 kb)
+>>> cdf=HG-U133_Plus_2 (54675 affyids)
+>>> number of samples=1
+>>> number of genes=54675
+>>> annotation=hgu133plus2
+>>> notes=
+>> affyBatch already has a copy of each probe name. R has made an
+>> internal hash of all unique character strings (this will always be
+>> true when use.names=FALSE might be useful -- the names will already
+>> exist), so here...
+> 
+> I just used the AffyBatch class as an example, so I don't really want
+> to dig into details about that class.  Here is a more general example:
+> 
+>> x <- list(a=1:4, b=6:7)
+>> unlist(x)
+> a1 a2 a3 a4 b1 b2
+>  1  2  3  4  6  7
+> 
+> The names attribute of 'x' is two strings, but when unlist():ed the
+> names are expanded, used a prefixes and enumerated.  A suffix tree
+> will of course save some memory here, but it will still require new
+> strings to be created.
+> 
+> About AffyBatch, does it actually store these "extended" names:
+> 
+>> head(names(unlist(pmIndex)), 20)
+>  [1] "1007_s_at1"  "1007_s_at2"  "1007_s_at3"  "1007_s_at4"  "1007_s_at5"
+>  [6] "1007_s_at6"  "1007_s_at7"  "1007_s_at8"  "1007_s_at9"  "1007_s_at10"
+> [11] "1007_s_at11" "1007_s_at12" "1007_s_at13" "1007_s_at14" "1007_s_at15"
+> [16] "1007_s_at16" "1053_at1"    "1053_at2"    "1053_at3"    "1053_at4"
+> 
+> or just the probeset names:
+> 
+>> head(names(pmIndex))
+> [1] "1007_s_at" "1053_at"   "117_at"    "121_at"    "1255_g_at" "1294_at"
+> 
+>>>> pmIndex <- indexProbes(affyBatch[,1], "pm")
+>> ...you make copies of the references to the names, not of the names
+>> themselves. And ...
+>>
+>>>> object.size(pmIndex)
+>>> [1] 6572776
+>>>
+>>>> cells <- unlist(pmIndex)
+>>>> object.size(cells)
+>>> [1] 29018704
+>> ... here R is counting the size of the object and the size of the
+>> names in the cache, even though the memory footprint of the cached
+>> names are in some sense amortized over affyBatch, pmIndex, and
+>> cells. A different estimate of the cost would be to compare
+>>
+>> cells3 <- cells2
+>> names(cells3) <- ""
+>> object.size(cells3) / object.size(cells2)
+>>
+>> This reflects the cost of the underlying pointer to the character
+>> string, with the character string itself costing almost nothing.
+>>
+>> On the 64 bit machine I'm working on now,
+>>
+>>> object.size(character(1024^2)) / object.size(integer(1024^2))
+>> [1] 2.000002
+>>
+>> so an element of a character vector takes up about twice as much space
+>> as an element of an integer vector. I'd expect the ratio of the sizes
+>> of cells3 / cells2 to be about (1 + 2) / 1 = 3, so adding names
+>> triples the object size. On my 32 bit laptop or if cells were numeric,
+>> the size only doubles.
+>>
+>>>> cells2 <- unlist(pmIndex, use.names=FALSE)
+>>>> object.size(cells2)
+>>> [1] 2417056
+>>>
+>>> # The names consumes 92% of the memory
+>>>> object.size(cells2)/object.size(cells)
+>>> [1] 0.08329304
+>>> It is much cheaper to pass around 'cells2' compared with 'cells'.
+>> ... R's approximate copy on change semantics makes it quite difficult
+>> to know whether this is really true or not -- a variable passed to a
+>> function and used in a read-only fashion is unlikely to be copied, so
+>> 'passing around' is really light-weight (this changes with S4, but
+>> that is an implementation issue that might some day be fully
+>> resolved).
+>>
+>> On the other hand, dropping names makes, in my experience, subsetting
+>> and other data coordination errors significantly more likely, and I've
+>> usually regretted trying to be efficient in this way -- it's working
+>> against the software, instead of with it.
+>>
+>> Creation of new names, or checking whether new names need to be
+>> created, can be quite time-consuming, for instance when data frame row
+>> names are created (during, e.g., write.table), or numeric values
+>> converted to characters (e.g., comparing integer and character
+>> values). In your example above, I found that using unlist(pmIndex,
+>> use.names=FALSE) actually lead to a 10x speedup, but since this was
+>> from 0.1 to 0.01 seconds. I don't know that this is worth it for
+>> interactive calculation on data the size of 'standard' expression
+>> arrays. Perhaps in a heavily used function where I know that the
+>> nameless entity will not come back to get me, or when data gets truly
+>> big; definitely there are situations where use.names=FALSE seems to be
+>> a big help.
+> 
+> In our experience developing/using aroma.affymetrix, we (not the royal
+> one this time) found that unlist(..., use.names=FALSE) saves a lot of
+> memory and seems to speed things up, e.g. when working with nested CDF
+> list structures from affxparser.  Also, we found by looking at the
+> internal code that we very rarely used the names attributes so we
+> found that discarding them ASAP to be a better strategy.  All our
+> indexing is done by integer indices and never by names; that was an
+> early design decision.  We have other ways to validate the correctness
+> of our algorithms.  When I look at BioC code (and elsewhere), it is
+> not-uncommon that the names attributes are not used for anything good,
+> and sometimes they are discarded *at the very end* whereas they
+> equally well could have been discarded from the beginning.
+> 
+> Cheers
+> 
+> Henrik
+> 
+>> Martin
+>>
+>>> /Henrik
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>> --
+>> Martin Morgan
+>> Computational Biology / Fred Hutchinson Cancer Research Center
+>> 1100 Fairview Ave. N.
+>> PO Box 19024 Seattle, WA 98109
+>>
+>> Location: Arnold Building M2 B169
+>> Phone: (206) 667-2793
+>>
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From hb at stat.berkeley.edu  Tue Jul  8 02:20:34 2008
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Mon, 7 Jul 2008 17:20:34 -0700
+Subject: [Bioc-devel] Tip of the day: unlist(...,
+	use.names=FALSE) often saves lots of memory
+In-Reply-To: <48728F1A.8000507@fhcrc.org>
+References: <59d7961d0807051714i3168fa67p28a691aa2bb7382c@mail.gmail.com>
+	<6phk5fzwznb.fsf@lamprey.fhcrc.org>
+	<59d7961d0807071204q7a45777cv9abfebe52423c20a@mail.gmail.com>
+	<48728F1A.8000507@fhcrc.org>
+Message-ID: <59d7961d0807071720j54cd4b41gdb05928ecf9c4e40@mail.gmail.com>
+
+Hi.
+
+On Mon, Jul 7, 2008 at 2:48 PM, Herve Pages <hpages at fhcrc.org> wrote:
+> Hi Henrik,
+>
+> Henrik Bengtsson wrote:
+>>
+>> Hi Martin,
+>>
+>> thanks for your important comments.  I knew it was coming - I am aware
+>> of Seth's addition of string suffix trees, which indeed saves lots of
+>> memory and some overhead.
+>
+> Just to clarify (even if I don't know much about the details) I don't think
+> that Seth's patch has something to do with suffix trees. The CHARSXP cache
+> is a global (hash) table where all the strings are uniquely stored so the
+> same string is never represented twice in memory. From the NEWS file:
+>
+>    o   There is now a global CHARSXP cache, R_StringHash.  CHARSXPs
+>        are no longer duplicated and must not be modified in place.
+>        Developers should strive to only use mkChar (and mkString) for
+>        creating new CHARSXPs and avoid use of allocString.  A new
+>        macro, CallocCharBuf, can be used to obtain a temporary char
+>        buffer for manipulating character data.  This patch was
+>        written by Seth Falcon.
+
+I think the only source I have for believing it was a suffix tree
+solution, was during a chat at the BioC devel meeting 2007 (2006?) in
+Seattle; I haven't looked at the source code so you could definitely
+be right.
+
+>
+> Otherwise I agree that the usefulness of unlist()'ing a list with
+> use.names=TRUE seems indeed very limited. I wonder if there is a lot of
+> situations where ending up with these mangled names is actually
+> useful except maybe when one works interactively and on a short list
+> (in this case the user might like to see where things are coming from
+> but how often will s/he make programmatic use of this information?).
+
+I'm not sure if you say that these mangled names should be kept around or not.
+
+I'm thinking of internal data structures, not objects returned by the
+public API.  There are tons of use cases when reading in CDF and
+CDF-structured CEL data via affxparser, where you get nested list with
+names.  Here is another random example from the gcrma package (I don't
+want to pick on this package per se):
+
+> gcrma::base.profiles.mm
+function (object, verbose = TRUE)
+{
+    cleancdf <- cleancdfname(cdfName(object), addcdf = FALSE)
+    cdfpackagename <- paste(cleancdf, "cdf", sep = "")
+    probepackagename <- paste(cleancdf, "probe", sep = "")
+    getCDF(cdfpackagename)
+    getProbePackage(probepackagename)
+    p <- get(probepackagename)
+    seqs = p$seq
+    seqs = complementSeq(seqs, start = 13, stop = 13)
+    pmIndex <- unlist(indexProbes(object, "pm"))
+    mmIndex <- unlist(indexProbes(object, "mm"))
+    subIndex <- match(xy2indices(p$x, p$y, cdf = cdfpackagename),
+        pmIndex)
+    bgy <- as.matrix(intensity(object)[mmIndex[subIndex], ])
+    affinity.spline.coefs <- base.profiles(bgy, seqs)
+    affinity.spline.coefs
+}
+<environment: namespace:gcrma>
+
+Note how the names of 'pmIndex' and 'mmIndex' are not used at all, but
+taking up RAM (FYI, base.profiles() is not making use of the row names
+in 'bgy');
+
+> object
+AffyBatch object
+size of arrays=1164x1164 features (7 kb)
+cdf=HG-U133_Plus_2 (54675 affyids)
+number of samples=1
+number of genes=54675
+annotation=hgu133plus2
+notes=
+
+> object.size(pmIndex)
+[1] 29018704
+> object.size(unname(pmIndex))
+[1] 2417056
+> object.size(names(pmIndex))
+[1] 26601592
+
+(the recent R updates on strings, make 'mmIndex' reuse the strings of
+'pmIndex').
+
+And,
+
+> object.size(bgy)
+[1] 26587576
+> object.size(unname(bgy))
+[1] 4834176
+> object.size(dimnames(bgy))
+[1] 21753344
+
+That is using 12x (and 5x) the memory required, i.e. 27MB (and 21MB)
+of no use at all.  This is for a rather small chip type.  The later
+Affymetrix chips have >5x more probes, so there we would allocate
+135+MB (and 105+MB) for no use at all.  Then, when we pass down this
+to other functions, we don't know how these non-needed attributes will
+allocate further memory.  Also, this can add up quick quickly when the
+call stack is deep.  It is not only that we allocate memory and then
+later get it back, we also increase the risk of defragmenting the
+memory.
+
+I think it is our responsibility as developers to not waste memory
+like this.  My point is that when it is obvious that one can save a
+bit of memory, say via simple tricks like unlist(..., use.names=TRUE),
+and rm(foo) when 'foo' is no longer needed (see above code for a use
+case), then we should be obliged to do so.  In our field, we (or one
+of the users) will always be short of memory regardless how much RAM
+we put in.  I speak from experience on developing aroma.affymetrix and
+I've seen how much less memory one can work with if one is careful,
+and doing it allows more people to work with larger data sets/chip
+types.
+
+Cheers
+
+HB
+
+
+>
+> Cheers,
+> H.
+>
+>
+>>  However, I have some comments below.
+>>
+>> On Sat, Jul 5, 2008 at 6:48 PM, Martin Morgan <mtmorgan at fhcrc.org> wrote:
+>>>
+>>> Hi Henrik --
+>>>
+>>> "Henrik Bengtsson" <hb at stat.berkeley.edu> writes:
+>>>
+>>>> Hi,
+>>>>
+>>>> I just wanna share an seldom used feature of unlist():
+>>>>
+>>>>  Using argument 'use.names=FALSE' when calling unlist() often saves
+>>>> lots of memory.
+>>>
+>>> Actually, thanks to some cleverness introduced largely by Seth, the
+>>> savings might be less than you think...
+>>>
+>>>> The names vector of the list will be expanded to each element and can
+>>>> often consume much more memory than the actually data.  So, unless you
+>>>> really need the 'names' attributes, please consider using unlist(...,
+>>>> use.names=FALSE) in your package(s).  It is also faster.
+>>>>
+>>>> A common example using an AffyBatch object:
+>>>>
+>>>>> affyBatch
+>>>>
+>>>> AffyBatch object
+>>>> size of arrays=1164x1164 features (7 kb)
+>>>> cdf=HG-U133_Plus_2 (54675 affyids)
+>>>> number of samples=1
+>>>> number of genes=54675
+>>>> annotation=hgu133plus2
+>>>> notes=
+>>>
+>>> affyBatch already has a copy of each probe name. R has made an
+>>> internal hash of all unique character strings (this will always be
+>>> true when use.names=FALSE might be useful -- the names will already
+>>> exist), so here...
+>>
+>> I just used the AffyBatch class as an example, so I don't really want
+>> to dig into details about that class.  Here is a more general example:
+>>
+>>> x <- list(a=1:4, b=6:7)
+>>> unlist(x)
+>>
+>> a1 a2 a3 a4 b1 b2
+>>  1  2  3  4  6  7
+>>
+>> The names attribute of 'x' is two strings, but when unlist():ed the
+>> names are expanded, used a prefixes and enumerated.  A suffix tree
+>> will of course save some memory here, but it will still require new
+>> strings to be created.
+>>
+>> About AffyBatch, does it actually store these "extended" names:
+>>
+>>> head(names(unlist(pmIndex)), 20)
+>>
+>>  [1] "1007_s_at1"  "1007_s_at2"  "1007_s_at3"  "1007_s_at4"  "1007_s_at5"
+>>  [6] "1007_s_at6"  "1007_s_at7"  "1007_s_at8"  "1007_s_at9"  "1007_s_at10"
+>> [11] "1007_s_at11" "1007_s_at12" "1007_s_at13" "1007_s_at14" "1007_s_at15"
+>> [16] "1007_s_at16" "1053_at1"    "1053_at2"    "1053_at3"    "1053_at4"
+>>
+>> or just the probeset names:
+>>
+>>> head(names(pmIndex))
+>>
+>> [1] "1007_s_at" "1053_at"   "117_at"    "121_at"    "1255_g_at" "1294_at"
+>>
+>>>>> pmIndex <- indexProbes(affyBatch[,1], "pm")
+>>>
+>>> ...you make copies of the references to the names, not of the names
+>>> themselves. And ...
+>>>
+>>>>> object.size(pmIndex)
+>>>>
+>>>> [1] 6572776
+>>>>
+>>>>> cells <- unlist(pmIndex)
+>>>>> object.size(cells)
+>>>>
+>>>> [1] 29018704
+>>>
+>>> ... here R is counting the size of the object and the size of the
+>>> names in the cache, even though the memory footprint of the cached
+>>> names are in some sense amortized over affyBatch, pmIndex, and
+>>> cells. A different estimate of the cost would be to compare
+>>>
+>>> cells3 <- cells2
+>>> names(cells3) <- ""
+>>> object.size(cells3) / object.size(cells2)
+>>>
+>>> This reflects the cost of the underlying pointer to the character
+>>> string, with the character string itself costing almost nothing.
+>>>
+>>> On the 64 bit machine I'm working on now,
+>>>
+>>>> object.size(character(1024^2)) / object.size(integer(1024^2))
+>>>
+>>> [1] 2.000002
+>>>
+>>> so an element of a character vector takes up about twice as much space
+>>> as an element of an integer vector. I'd expect the ratio of the sizes
+>>> of cells3 / cells2 to be about (1 + 2) / 1 = 3, so adding names
+>>> triples the object size. On my 32 bit laptop or if cells were numeric,
+>>> the size only doubles.
+>>>
+>>>>> cells2 <- unlist(pmIndex, use.names=FALSE)
+>>>>> object.size(cells2)
+>>>>
+>>>> [1] 2417056
+>>>>
+>>>> # The names consumes 92% of the memory
+>>>>>
+>>>>> object.size(cells2)/object.size(cells)
+>>>>
+>>>> [1] 0.08329304
+>>>> It is much cheaper to pass around 'cells2' compared with 'cells'.
+>>>
+>>> ... R's approximate copy on change semantics makes it quite difficult
+>>> to know whether this is really true or not -- a variable passed to a
+>>> function and used in a read-only fashion is unlikely to be copied, so
+>>> 'passing around' is really light-weight (this changes with S4, but
+>>> that is an implementation issue that might some day be fully
+>>> resolved).
+>>>
+>>> On the other hand, dropping names makes, in my experience, subsetting
+>>> and other data coordination errors significantly more likely, and I've
+>>> usually regretted trying to be efficient in this way -- it's working
+>>> against the software, instead of with it.
+>>>
+>>> Creation of new names, or checking whether new names need to be
+>>> created, can be quite time-consuming, for instance when data frame row
+>>> names are created (during, e.g., write.table), or numeric values
+>>> converted to characters (e.g., comparing integer and character
+>>> values). In your example above, I found that using unlist(pmIndex,
+>>> use.names=FALSE) actually lead to a 10x speedup, but since this was
+>>> from 0.1 to 0.01 seconds. I don't know that this is worth it for
+>>> interactive calculation on data the size of 'standard' expression
+>>> arrays. Perhaps in a heavily used function where I know that the
+>>> nameless entity will not come back to get me, or when data gets truly
+>>> big; definitely there are situations where use.names=FALSE seems to be
+>>> a big help.
+>>
+>> In our experience developing/using aroma.affymetrix, we (not the royal
+>> one this time) found that unlist(..., use.names=FALSE) saves a lot of
+>> memory and seems to speed things up, e.g. when working with nested CDF
+>> list structures from affxparser.  Also, we found by looking at the
+>> internal code that we very rarely used the names attributes so we
+>> found that discarding them ASAP to be a better strategy.  All our
+>> indexing is done by integer indices and never by names; that was an
+>> early design decision.  We have other ways to validate the correctness
+>> of our algorithms.  When I look at BioC code (and elsewhere), it is
+>> not-uncommon that the names attributes are not used for anything good,
+>> and sometimes they are discarded *at the very end* whereas they
+>> equally well could have been discarded from the beginning.
+>>
+>> Cheers
+>>
+>> Henrik
+>>
+>>> Martin
+>>>
+>>>> /Henrik
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>> --
+>>> Martin Morgan
+>>> Computational Biology / Fred Hutchinson Cancer Research Center
+>>> 1100 Fairview Ave. N.
+>>> PO Box 19024 Seattle, WA 98109
+>>>
+>>> Location: Arnold Building M2 B169
+>>> Phone: (206) 667-2793
+>>>
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+From eskeww at yahoo.com  Tue Jul  8 17:20:23 2008
+From: eskeww at yahoo.com (eskeatnaf mulugeta)
+Date: Tue, 8 Jul 2008 08:20:23 -0700 (PDT)
+Subject: [Bioc-devel] unable to find an inherited method for function
+	"probeNames", for signature "ExpressionFeatureSet", oligo Package
+Message-ID: <384647.40600.qm@web51707.mail.re2.yahoo.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080708/b96b2b28/attachment.pl>
+
+From huber at ebi.ac.uk  Fri Jul 11 12:58:05 2008
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Fri, 11 Jul 2008 11:58:05 +0100
+Subject: [Bioc-devel] Package Home Pages
+Message-ID: <48773CBD.3000401@ebi.ac.uk>
+
+Hi all,
+
+I like the package overview pages, such as
+http://www.bioconductor.org/packages/devel/bioc/html/cellHTS2.html
+
+Would it be possible that they also link to the output of, for example:
+
+svn log --username readonly --password readonly \
+https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/gcrma
+
+which any of our users can run (but I assume most wouldn't know how to)?
+
+This additional service to our users may also encourage pkg developers
+to be more precise in their svn log entries :)
+
+Best wishes
+ Wolfgang
+
+------------------------------------------------------------------
+Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber
+
+
+From sdavis2 at mail.nih.gov  Fri Jul 11 13:21:00 2008
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Fri, 11 Jul 2008 07:21:00 -0400
+Subject: [Bioc-devel] Package Home Pages
+In-Reply-To: <48773CBD.3000401@ebi.ac.uk>
+References: <48773CBD.3000401@ebi.ac.uk>
+Message-ID: <264855a00807110421i67176817u12573714786400a7@mail.gmail.com>
+
+On Fri, Jul 11, 2008 at 6:58 AM, Wolfgang Huber <huber at ebi.ac.uk> wrote:
+> Hi all,
+>
+> I like the package overview pages, such as
+> http://www.bioconductor.org/packages/devel/bioc/html/cellHTS2.html
+>
+> Would it be possible that they also link to the output of, for example:
+>
+> svn log --username readonly --password readonly \
+> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/gcrma
+>
+> which any of our users can run (but I assume most wouldn't know how to)?
+>
+> This additional service to our users may also encourage pkg developers
+> to be more precise in their svn log entries :)
+
+Hi, Wolfgang.  I agree this would be a simple and useful addition for
+the devel archives.  Since we already have the bioconductor change log
+in place, it would be trivial to change the HTML on the devel pages to
+include a link like:
+
+http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/cellHTS2
+
+Sean
+
+
+From paboyoun at fhcrc.org  Fri Jul 11 18:12:24 2008
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Fri, 11 Jul 2008 09:12:24 -0700
+Subject: [Bioc-devel] Package Home Pages
+In-Reply-To: <264855a00807110421i67176817u12573714786400a7@mail.gmail.com>
+References: <48773CBD.3000401@ebi.ac.uk>
+	<264855a00807110421i67176817u12573714786400a7@mail.gmail.com>
+Message-ID: <48778668.7070300@fhcrc.org>
+
+Sean and Wolfgang,
+I think these two enhancements to the bioconductor.org website would be 
+very useful and not too much work to implement. I'll add them on the 
+website task list and send out a message to this group when they are 
+implemented. If there are any other related ideas, keep them coming. It 
+is easier to implement them all at once, rather than one at a time.
+
+
+Patrick
+
+
+Sean Davis wrote:
+> On Fri, Jul 11, 2008 at 6:58 AM, Wolfgang Huber <huber at ebi.ac.uk> wrote:
+>   
+>> Hi all,
+>>
+>> I like the package overview pages, such as
+>> http://www.bioconductor.org/packages/devel/bioc/html/cellHTS2.html
+>>
+>> Would it be possible that they also link to the output of, for example:
+>>
+>> svn log --username readonly --password readonly \
+>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/gcrma
+>>
+>> which any of our users can run (but I assume most wouldn't know how to)?
+>>
+>> This additional service to our users may also encourage pkg developers
+>> to be more precise in their svn log entries :)
+>>     
+>
+> Hi, Wolfgang.  I agree this would be a simple and useful addition for
+> the devel archives.  Since we already have the bioconductor change log
+> in place, it would be trivial to change the HTML on the devel pages to
+> include a link like:
+>
+> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/cellHTS2
+>
+> Sean
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From eskeww at yahoo.com  Tue Jul 15 13:07:45 2008
+From: eskeww at yahoo.com (eskeatnaf mulugeta)
+Date: Tue, 15 Jul 2008 04:07:45 -0700 (PDT)
+Subject: [Bioc-devel] Oligo-package, R-2.7.1,
+	Error in geometry(get(pkgname)) : no slot of name "geometry" for
+	this object of class "platformDesign"
+Message-ID: <794427.45042.qm@web51701.mail.re2.yahoo.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080715/df48e1ad/attachment.pl>
+
+From paboyoun at fhcrc.org  Fri Jul 18 00:54:38 2008
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Thu, 17 Jul 2008 15:54:38 -0700
+Subject: [Bioc-devel] Package Home Pages
+In-Reply-To: <48778668.7070300@fhcrc.org>
+References: <48773CBD.3000401@ebi.ac.uk>	<264855a00807110421i67176817u12573714786400a7@mail.gmail.com>
+	<48778668.7070300@fhcrc.org>
+Message-ID: <487FCDAE.8020104@fhcrc.org>
+
+I just modified the build system to add "Bioconductor Changelog" links 
+to the "Multiple platform build/check report" pages. To see an example 
+of these links go to
+
+http://bioconductor.org/checkResults/2.2/bioc-LATEST/
+
+and look for the Bioconductor Changelog links. Similar links will be 
+added to the BioC 2.3 report when it is created later tonight.
+
+Given that the changelog is geared towards developers, I did not include 
+a link in the package home pages that Wolfgang referred to because it 
+could fall into the category of too much information for a general user 
+of the package. If the Bioconductor development community believes we 
+should include a link on the package home pages as well, I will add 
+them. It doesn't take much effort to change the infrastructure.
+
+
+Cheers,
+Patrick
+
+
+
+Patrick Aboyoun wrote:
+> Sean and Wolfgang,
+> I think these two enhancements to the bioconductor.org website would 
+> be very useful and not too much work to implement. I'll add them on 
+> the website task list and send out a message to this group when they 
+> are implemented. If there are any other related ideas, keep them 
+> coming. It is easier to implement them all at once, rather than one at 
+> a time.
+>
+>
+> Patrick
+>
+>
+> Sean Davis wrote:
+>> On Fri, Jul 11, 2008 at 6:58 AM, Wolfgang Huber <huber at ebi.ac.uk> wrote:
+>>  
+>>> Hi all,
+>>>
+>>> I like the package overview pages, such as
+>>> http://www.bioconductor.org/packages/devel/bioc/html/cellHTS2.html
+>>>
+>>> Would it be possible that they also link to the output of, for example:
+>>>
+>>> svn log --username readonly --password readonly \
+>>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/gcrma
+>>>
+>>> which any of our users can run (but I assume most wouldn't know how 
+>>> to)?
+>>>
+>>> This additional service to our users may also encourage pkg developers
+>>> to be more precise in their svn log entries :)
+>>>     
+>>
+>> Hi, Wolfgang.  I agree this would be a simple and useful addition for
+>> the devel archives.  Since we already have the bioconductor change log
+>> in place, it would be trivial to change the HTML on the devel pages to
+>> include a link like:
+>>
+>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/cellHTS2
+>>
+>> Sean
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From hb at stat.berkeley.edu  Fri Jul 18 01:21:50 2008
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Thu, 17 Jul 2008 16:21:50 -0700
+Subject: [Bioc-devel] Package Home Pages
+In-Reply-To: <487FCDAE.8020104@fhcrc.org>
+References: <48773CBD.3000401@ebi.ac.uk>
+	<264855a00807110421i67176817u12573714786400a7@mail.gmail.com>
+	<48778668.7070300@fhcrc.org> <487FCDAE.8020104@fhcrc.org>
+Message-ID: <59d7961d0807171621v5ad62297t3c672c0529187249@mail.gmail.com>
+
+Thanks. Looks good.
+
+FYI, when I go to the package specifics for aroma.light
+[http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma.light/] there is a
+somewhat poetic message delivered in red:
+
+"Error: I'm afraid this is the first I've heard of a "light" flavoured
+Blosxom. Try dropping the "/+light" bit from the end of the URL."
+
+/Henrik
+
+
+On Thu, Jul 17, 2008 at 3:54 PM, Patrick Aboyoun <paboyoun at fhcrc.org> wrote:
+> I just modified the build system to add "Bioconductor Changelog" links to
+> the "Multiple platform build/check report" pages. To see an example of these
+> links go to
+>
+> http://bioconductor.org/checkResults/2.2/bioc-LATEST/
+>
+> and look for the Bioconductor Changelog links. Similar links will be added
+> to the BioC 2.3 report when it is created later tonight.
+>
+> Given that the changelog is geared towards developers, I did not include a
+> link in the package home pages that Wolfgang referred to because it could
+> fall into the category of too much information for a general user of the
+> package. If the Bioconductor development community believes we should
+> include a link on the package home pages as well, I will add them. It
+> doesn't take much effort to change the infrastructure.
+>
+>
+> Cheers,
+> Patrick
+>
+>
+>
+> Patrick Aboyoun wrote:
+>>
+>> Sean and Wolfgang,
+>> I think these two enhancements to the bioconductor.org website would be
+>> very useful and not too much work to implement. I'll add them on the website
+>> task list and send out a message to this group when they are implemented. If
+>> there are any other related ideas, keep them coming. It is easier to
+>> implement them all at once, rather than one at a time.
+>>
+>>
+>> Patrick
+>>
+>>
+>> Sean Davis wrote:
+>>>
+>>> On Fri, Jul 11, 2008 at 6:58 AM, Wolfgang Huber <huber at ebi.ac.uk> wrote:
+>>>
+>>>>
+>>>> Hi all,
+>>>>
+>>>> I like the package overview pages, such as
+>>>> http://www.bioconductor.org/packages/devel/bioc/html/cellHTS2.html
+>>>>
+>>>> Would it be possible that they also link to the output of, for example:
+>>>>
+>>>> svn log --username readonly --password readonly \
+>>>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/gcrma
+>>>>
+>>>> which any of our users can run (but I assume most wouldn't know how to)?
+>>>>
+>>>> This additional service to our users may also encourage pkg developers
+>>>> to be more precise in their svn log entries :)
+>>>>
+>>>
+>>> Hi, Wolfgang.  I agree this would be a simple and useful addition for
+>>> the devel archives.  Since we already have the bioconductor change log
+>>> in place, it would be trivial to change the HTML on the devel pages to
+>>> include a link like:
+>>>
+>>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/cellHTS2
+>>>
+>>> Sean
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From paboyoun at fhcrc.org  Fri Jul 18 01:42:05 2008
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Thu, 17 Jul 2008 16:42:05 -0700
+Subject: [Bioc-devel] Package Home Pages
+In-Reply-To: <59d7961d0807171621v5ad62297t3c672c0529187249@mail.gmail.com>
+References: <48773CBD.3000401@ebi.ac.uk>	
+	<264855a00807110421i67176817u12573714786400a7@mail.gmail.com>	
+	<48778668.7070300@fhcrc.org> <487FCDAE.8020104@fhcrc.org>
+	<59d7961d0807171621v5ad62297t3c672c0529187249@mail.gmail.com>
+Message-ID: <487FD8CD.1030205@fhcrc.org>
+
+Henrik,
+I provided links to the existing Bioconductor changelog blosxom blog at 
+the University of Michigan. With the Bioconductor manifest growing at 
+such a rapid pace, my guess is that the newer packages haven't yet made 
+the blog.
+
+
+Patrick
+
+
+
+Henrik Bengtsson wrote:
+> Thanks. Looks good.
+>
+> FYI, when I go to the package specifics for aroma.light
+> [http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma.light/] there is a
+> somewhat poetic message delivered in red:
+>
+> "Error: I'm afraid this is the first I've heard of a "light" flavoured
+> Blosxom. Try dropping the "/+light" bit from the end of the URL."
+>
+> /Henrik
+>
+>
+> On Thu, Jul 17, 2008 at 3:54 PM, Patrick Aboyoun <paboyoun at fhcrc.org> wrote:
+>   
+>> I just modified the build system to add "Bioconductor Changelog" links to
+>> the "Multiple platform build/check report" pages. To see an example of these
+>> links go to
+>>
+>> http://bioconductor.org/checkResults/2.2/bioc-LATEST/
+>>
+>> and look for the Bioconductor Changelog links. Similar links will be added
+>> to the BioC 2.3 report when it is created later tonight.
+>>
+>> Given that the changelog is geared towards developers, I did not include a
+>> link in the package home pages that Wolfgang referred to because it could
+>> fall into the category of too much information for a general user of the
+>> package. If the Bioconductor development community believes we should
+>> include a link on the package home pages as well, I will add them. It
+>> doesn't take much effort to change the infrastructure.
+>>
+>>
+>> Cheers,
+>> Patrick
+>>
+>>
+>>
+>> Patrick Aboyoun wrote:
+>>     
+>>> Sean and Wolfgang,
+>>> I think these two enhancements to the bioconductor.org website would be
+>>> very useful and not too much work to implement. I'll add them on the website
+>>> task list and send out a message to this group when they are implemented. If
+>>> there are any other related ideas, keep them coming. It is easier to
+>>> implement them all at once, rather than one at a time.
+>>>
+>>>
+>>> Patrick
+>>>
+>>>
+>>> Sean Davis wrote:
+>>>       
+>>>> On Fri, Jul 11, 2008 at 6:58 AM, Wolfgang Huber <huber at ebi.ac.uk> wrote:
+>>>>
+>>>>         
+>>>>> Hi all,
+>>>>>
+>>>>> I like the package overview pages, such as
+>>>>> http://www.bioconductor.org/packages/devel/bioc/html/cellHTS2.html
+>>>>>
+>>>>> Would it be possible that they also link to the output of, for example:
+>>>>>
+>>>>> svn log --username readonly --password readonly \
+>>>>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/gcrma
+>>>>>
+>>>>> which any of our users can run (but I assume most wouldn't know how to)?
+>>>>>
+>>>>> This additional service to our users may also encourage pkg developers
+>>>>> to be more precise in their svn log entries :)
+>>>>>
+>>>>>           
+>>>> Hi, Wolfgang.  I agree this would be a simple and useful addition for
+>>>> the devel archives.  Since we already have the bioconductor change log
+>>>> in place, it would be trivial to change the HTML on the devel pages to
+>>>> include a link like:
+>>>>
+>>>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/cellHTS2
+>>>>
+>>>> Sean
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>>>         
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>       
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>
+
+
+From diez at kuicr.kyoto-u.ac.jp  Fri Jul 18 02:07:33 2008
+From: diez at kuicr.kyoto-u.ac.jp (Diego Diez)
+Date: Fri, 18 Jul 2008 09:07:33 +0900
+Subject: [Bioc-devel] Package Home Pages
+In-Reply-To: <487FD8CD.1030205@fhcrc.org>
+References: <48773CBD.3000401@ebi.ac.uk>
+	<264855a00807110421i67176817u12573714786400a7@mail.gmail.com>
+	<48778668.7070300@fhcrc.org> <487FCDAE.8020104@fhcrc.org>
+	<59d7961d0807171621v5ad62297t3c672c0529187249@mail.gmail.com>
+	<487FD8CD.1030205@fhcrc.org>
+Message-ID: <f53197870807171707vd7fc649u77a74bd702da13ba@mail.gmail.com>
+
+Hi, just noticed that this works:
+
+http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma
+
+i.e. without the ".light" and also in that page there is a strange
+reference to a .light package:
+
+http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma/.light
+
+i guess there is some issue with the dot character.
+
+Diego
+
+On Fri, Jul 18, 2008 at 8:42 AM, Patrick Aboyoun <paboyoun at fhcrc.org> wrote:
+> Henrik,
+> I provided links to the existing Bioconductor changelog blosxom blog at the
+> University of Michigan. With the Bioconductor manifest growing at such a
+> rapid pace, my guess is that the newer packages haven't yet made the blog.
+>
+>
+> Patrick
+>
+>
+>
+> Henrik Bengtsson wrote:
+>>
+>> Thanks. Looks good.
+>>
+>> FYI, when I go to the package specifics for aroma.light
+>> [http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma.light/] there is a
+>> somewhat poetic message delivered in red:
+>>
+>> "Error: I'm afraid this is the first I've heard of a "light" flavoured
+>> Blosxom. Try dropping the "/+light" bit from the end of the URL."
+>>
+>> /Henrik
+>>
+>>
+>> On Thu, Jul 17, 2008 at 3:54 PM, Patrick Aboyoun <paboyoun at fhcrc.org>
+>> wrote:
+>>
+>>>
+>>> I just modified the build system to add "Bioconductor Changelog" links to
+>>> the "Multiple platform build/check report" pages. To see an example of
+>>> these
+>>> links go to
+>>>
+>>> http://bioconductor.org/checkResults/2.2/bioc-LATEST/
+>>>
+>>> and look for the Bioconductor Changelog links. Similar links will be
+>>> added
+>>> to the BioC 2.3 report when it is created later tonight.
+>>>
+>>> Given that the changelog is geared towards developers, I did not include
+>>> a
+>>> link in the package home pages that Wolfgang referred to because it could
+>>> fall into the category of too much information for a general user of the
+>>> package. If the Bioconductor development community believes we should
+>>> include a link on the package home pages as well, I will add them. It
+>>> doesn't take much effort to change the infrastructure.
+>>>
+>>>
+>>> Cheers,
+>>> Patrick
+>>>
+>>>
+>>>
+>>> Patrick Aboyoun wrote:
+>>>
+>>>>
+>>>> Sean and Wolfgang,
+>>>> I think these two enhancements to the bioconductor.org website would be
+>>>> very useful and not too much work to implement. I'll add them on the
+>>>> website
+>>>> task list and send out a message to this group when they are
+>>>> implemented. If
+>>>> there are any other related ideas, keep them coming. It is easier to
+>>>> implement them all at once, rather than one at a time.
+>>>>
+>>>>
+>>>> Patrick
+>>>>
+>>>>
+>>>> Sean Davis wrote:
+>>>>
+>>>>>
+>>>>> On Fri, Jul 11, 2008 at 6:58 AM, Wolfgang Huber <huber at ebi.ac.uk>
+>>>>> wrote:
+>>>>>
+>>>>>
+>>>>>>
+>>>>>> Hi all,
+>>>>>>
+>>>>>> I like the package overview pages, such as
+>>>>>> http://www.bioconductor.org/packages/devel/bioc/html/cellHTS2.html
+>>>>>>
+>>>>>> Would it be possible that they also link to the output of, for
+>>>>>> example:
+>>>>>>
+>>>>>> svn log --username readonly --password readonly \
+>>>>>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/gcrma
+>>>>>>
+>>>>>> which any of our users can run (but I assume most wouldn't know how
+>>>>>> to)?
+>>>>>>
+>>>>>> This additional service to our users may also encourage pkg developers
+>>>>>> to be more precise in their svn log entries :)
+>>>>>>
+>>>>>>
+>>>>>
+>>>>> Hi, Wolfgang.  I agree this would be a simple and useful addition for
+>>>>> the devel archives.  Since we already have the bioconductor change log
+>>>>> in place, it would be trivial to change the HTML on the devel pages to
+>>>>> include a link like:
+>>>>>
+>>>>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/cellHTS2
+>>>>>
+>>>>> Sean
+>>>>>
+>>>>> _______________________________________________
+>>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>>
+>>>>>
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+
+-- 
+Diego Diez, Ph
+Bioinformatics center,
+Institute for Chemical Research,
+Kyoto University.
+Gokasho, Uji, Kyoto 611-0011 JAPAN
+diez at kuicr.kyoto-u.ac.jp
+
+
+From lgautier at gmail.com  Fri Jul 18 07:36:46 2008
+From: lgautier at gmail.com (Laurent Gautier)
+Date: Fri, 18 Jul 2008 07:36:46 +0200
+Subject: [Bioc-devel] Package Home Pages
+In-Reply-To: <f53197870807171707vd7fc649u77a74bd702da13ba@mail.gmail.com>
+References: <48773CBD.3000401@ebi.ac.uk>
+	<264855a00807110421i67176817u12573714786400a7@mail.gmail.com>
+	<48778668.7070300@fhcrc.org> <487FCDAE.8020104@fhcrc.org>
+	<59d7961d0807171621v5ad62297t3c672c0529187249@mail.gmail.com>
+	<487FD8CD.1030205@fhcrc.org>
+	<f53197870807171707vd7fc649u77a74bd702da13ba@mail.gmail.com>
+Message-ID: <27d1e6020807172236v33692950v90a23134683fb759@mail.gmail.com>
+
+There seems to be at least one other issue with names:
+
+http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/GSEA
+
+returns information for all packages with a name starting with GSEA.
+Same story with affy.
+
+L.
+
+
+2008/7/18 Diego Diez <diez at kuicr.kyoto-u.ac.jp>:
+> Hi, just noticed that this works:
+>
+> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma
+>
+> i.e. without the ".light" and also in that page there is a strange
+> reference to a .light package:
+>
+> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma/.light
+>
+> i guess there is some issue with the dot character.
+>
+> Diego
+>
+> On Fri, Jul 18, 2008 at 8:42 AM, Patrick Aboyoun <paboyoun at fhcrc.org> wrote:
+>> Henrik,
+>> I provided links to the existing Bioconductor changelog blosxom blog at the
+>> University of Michigan. With the Bioconductor manifest growing at such a
+>> rapid pace, my guess is that the newer packages haven't yet made the blog.
+>>
+>>
+>> Patrick
+>>
+>>
+>>
+>> Henrik Bengtsson wrote:
+>>>
+>>> Thanks. Looks good.
+>>>
+>>> FYI, when I go to the package specifics for aroma.light
+>>> [http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma.light/] there is a
+>>> somewhat poetic message delivered in red:
+>>>
+>>> "Error: I'm afraid this is the first I've heard of a "light" flavoured
+>>> Blosxom. Try dropping the "/+light" bit from the end of the URL."
+>>>
+>>> /Henrik
+>>>
+>>>
+>>> On Thu, Jul 17, 2008 at 3:54 PM, Patrick Aboyoun <paboyoun at fhcrc.org>
+>>> wrote:
+>>>
+>>>>
+>>>> I just modified the build system to add "Bioconductor Changelog" links to
+>>>> the "Multiple platform build/check report" pages. To see an example of
+>>>> these
+>>>> links go to
+>>>>
+>>>> http://bioconductor.org/checkResults/2.2/bioc-LATEST/
+>>>>
+>>>> and look for the Bioconductor Changelog links. Similar links will be
+>>>> added
+>>>> to the BioC 2.3 report when it is created later tonight.
+>>>>
+>>>> Given that the changelog is geared towards developers, I did not include
+>>>> a
+>>>> link in the package home pages that Wolfgang referred to because it could
+>>>> fall into the category of too much information for a general user of the
+>>>> package. If the Bioconductor development community believes we should
+>>>> include a link on the package home pages as well, I will add them. It
+>>>> doesn't take much effort to change the infrastructure.
+>>>>
+>>>>
+>>>> Cheers,
+>>>> Patrick
+>>>>
+>>>>
+>>>>
+>>>> Patrick Aboyoun wrote:
+>>>>
+>>>>>
+>>>>> Sean and Wolfgang,
+>>>>> I think these two enhancements to the bioconductor.org website would be
+>>>>> very useful and not too much work to implement. I'll add them on the
+>>>>> website
+>>>>> task list and send out a message to this group when they are
+>>>>> implemented. If
+>>>>> there are any other related ideas, keep them coming. It is easier to
+>>>>> implement them all at once, rather than one at a time.
+>>>>>
+>>>>>
+>>>>> Patrick
+>>>>>
+>>>>>
+>>>>> Sean Davis wrote:
+>>>>>
+>>>>>>
+>>>>>> On Fri, Jul 11, 2008 at 6:58 AM, Wolfgang Huber <huber at ebi.ac.uk>
+>>>>>> wrote:
+>>>>>>
+>>>>>>
+>>>>>>>
+>>>>>>> Hi all,
+>>>>>>>
+>>>>>>> I like the package overview pages, such as
+>>>>>>> http://www.bioconductor.org/packages/devel/bioc/html/cellHTS2.html
+>>>>>>>
+>>>>>>> Would it be possible that they also link to the output of, for
+>>>>>>> example:
+>>>>>>>
+>>>>>>> svn log --username readonly --password readonly \
+>>>>>>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/gcrma
+>>>>>>>
+>>>>>>> which any of our users can run (but I assume most wouldn't know how
+>>>>>>> to)?
+>>>>>>>
+>>>>>>> This additional service to our users may also encourage pkg developers
+>>>>>>> to be more precise in their svn log entries :)
+>>>>>>>
+>>>>>>>
+>>>>>>
+>>>>>> Hi, Wolfgang.  I agree this would be a simple and useful addition for
+>>>>>> the devel archives.  Since we already have the bioconductor change log
+>>>>>> in place, it would be trivial to change the HTML on the devel pages to
+>>>>>> include a link like:
+>>>>>>
+>>>>>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/cellHTS2
+>>>>>>
+>>>>>> Sean
+>>>>>>
+>>>>>> _______________________________________________
+>>>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>>>
+>>>>>>
+>>>>>
+>>>>> _______________________________________________
+>>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>>
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>>>
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+>
+>
+> --
+> Diego Diez, Ph
+> Bioinformatics center,
+> Institute for Chemical Research,
+> Kyoto University.
+> Gokasho, Uji, Kyoto 611-0011 JAPAN
+> diez at kuicr.kyoto-u.ac.jp
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From jmacdon at med.umich.edu  Fri Jul 18 16:36:48 2008
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Fri, 18 Jul 2008 10:36:48 -0400
+Subject: [Bioc-devel] Package Home Pages
+In-Reply-To: <487FD8CD.1030205@fhcrc.org>
+References: <48773CBD.3000401@ebi.ac.uk>		<264855a00807110421i67176817u12573714786400a7@mail.gmail.com>		<48778668.7070300@fhcrc.org>
+	<487FCDAE.8020104@fhcrc.org>	<59d7961d0807171621v5ad62297t3c672c0529187249@mail.gmail.com>
+	<487FD8CD.1030205@fhcrc.org>
+Message-ID: <4880AA80.9030608@med.umich.edu>
+
+Actually, the blosxom software that I use for the changelog thinks that 
+things like aroma.light are 'flavours' which control the look and feel 
+of the site. Since I haven't instituted such a flavour it errors out on 
+Henrik's package.
+
+Since the xxx.yyy paradigm is central to how the output of bloxsom is 
+controlled, and aroma.light is the only package that has a period in its 
+name, I have never taken the time to delve deeper into the bloxsom code 
+to fix this one infelicity. And I am not sure I could if I did.
+
+Best,
+
+Jim
+
+
+
+Patrick Aboyoun wrote:
+> Henrik,
+> I provided links to the existing Bioconductor changelog blosxom blog at 
+> the University of Michigan. With the Bioconductor manifest growing at 
+> such a rapid pace, my guess is that the newer packages haven't yet made 
+> the blog.
+> 
+> 
+> Patrick
+> 
+> 
+> 
+> Henrik Bengtsson wrote:
+>> Thanks. Looks good.
+>>
+>> FYI, when I go to the package specifics for aroma.light
+>> [http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma.light/] there is a
+>> somewhat poetic message delivered in red:
+>>
+>> "Error: I'm afraid this is the first I've heard of a "light" flavoured
+>> Blosxom. Try dropping the "/+light" bit from the end of the URL."
+>>
+>> /Henrik
+>>
+>>
+>> On Thu, Jul 17, 2008 at 3:54 PM, Patrick Aboyoun <paboyoun at fhcrc.org> 
+>> wrote:
+>>  
+>>> I just modified the build system to add "Bioconductor Changelog" 
+>>> links to
+>>> the "Multiple platform build/check report" pages. To see an example 
+>>> of these
+>>> links go to
+>>>
+>>> http://bioconductor.org/checkResults/2.2/bioc-LATEST/
+>>>
+>>> and look for the Bioconductor Changelog links. Similar links will be 
+>>> added
+>>> to the BioC 2.3 report when it is created later tonight.
+>>>
+>>> Given that the changelog is geared towards developers, I did not 
+>>> include a
+>>> link in the package home pages that Wolfgang referred to because it 
+>>> could
+>>> fall into the category of too much information for a general user of the
+>>> package. If the Bioconductor development community believes we should
+>>> include a link on the package home pages as well, I will add them. It
+>>> doesn't take much effort to change the infrastructure.
+>>>
+>>>
+>>> Cheers,
+>>> Patrick
+>>>
+>>>
+>>>
+>>> Patrick Aboyoun wrote:
+>>>    
+>>>> Sean and Wolfgang,
+>>>> I think these two enhancements to the bioconductor.org website would be
+>>>> very useful and not too much work to implement. I'll add them on the 
+>>>> website
+>>>> task list and send out a message to this group when they are 
+>>>> implemented. If
+>>>> there are any other related ideas, keep them coming. It is easier to
+>>>> implement them all at once, rather than one at a time.
+>>>>
+>>>>
+>>>> Patrick
+>>>>
+>>>>
+>>>> Sean Davis wrote:
+>>>>      
+>>>>> On Fri, Jul 11, 2008 at 6:58 AM, Wolfgang Huber <huber at ebi.ac.uk> 
+>>>>> wrote:
+>>>>>
+>>>>>        
+>>>>>> Hi all,
+>>>>>>
+>>>>>> I like the package overview pages, such as
+>>>>>> http://www.bioconductor.org/packages/devel/bioc/html/cellHTS2.html
+>>>>>>
+>>>>>> Would it be possible that they also link to the output of, for 
+>>>>>> example:
+>>>>>>
+>>>>>> svn log --username readonly --password readonly \
+>>>>>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/gcrma
+>>>>>>
+>>>>>> which any of our users can run (but I assume most wouldn't know 
+>>>>>> how to)?
+>>>>>>
+>>>>>> This additional service to our users may also encourage pkg 
+>>>>>> developers
+>>>>>> to be more precise in their svn log entries :)
+>>>>>>
+>>>>>>           
+>>>>> Hi, Wolfgang.  I agree this would be a simple and useful addition for
+>>>>> the devel archives.  Since we already have the bioconductor change log
+>>>>> in place, it would be trivial to change the HTML on the devel pages to
+>>>>> include a link like:
+>>>>>
+>>>>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/cellHTS2
+>>>>>
+>>>>> Sean
+>>>>>
+>>>>> _______________________________________________
+>>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>>
+>>>>>         
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>       
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>>
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Hildebrandt Lab
+8220D MSRB III
+1150 W. Medical Center Drive
+Ann Arbor MI 48109-0646
+734-936-8662
+
+
+From jmacdon at med.umich.edu  Fri Jul 18 16:49:42 2008
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Fri, 18 Jul 2008 10:49:42 -0400
+Subject: [Bioc-devel] Package Home Pages
+In-Reply-To: <27d1e6020807172236v33692950v90a23134683fb759@mail.gmail.com>
+References: <48773CBD.3000401@ebi.ac.uk>	<264855a00807110421i67176817u12573714786400a7@mail.gmail.com>	<48778668.7070300@fhcrc.org>
+	<487FCDAE.8020104@fhcrc.org>	<59d7961d0807171621v5ad62297t3c672c0529187249@mail.gmail.com>	<487FD8CD.1030205@fhcrc.org>	<f53197870807171707vd7fc649u77a74bd702da13ba@mail.gmail.com>
+	<27d1e6020807172236v33692950v90a23134683fb759@mail.gmail.com>
+Message-ID: <4880AD86.1010002@med.umich.edu>
+
+
+
+Laurent Gautier wrote:
+> There seems to be at least one other issue with names:
+> 
+> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/GSEA
+> 
+> returns information for all packages with a name starting with GSEA.
+> Same story with affy.
+
+Yes. Blosxom is just a simple set of Perl scripts that uses the 
+directory structure of its home directory to decide what to put on 
+screen. So if you did
+
+http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/G
+
+you would get everything from all sub-directories that start with G. 
+This is a feature of the software.
+
+Best,
+
+Jim
+
+
+
+> 
+> L.
+> 
+> 
+> 2008/7/18 Diego Diez <diez at kuicr.kyoto-u.ac.jp>:
+>> Hi, just noticed that this works:
+>>
+>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma
+>>
+>> i.e. without the ".light" and also in that page there is a strange
+>> reference to a .light package:
+>>
+>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma/.light
+>>
+>> i guess there is some issue with the dot character.
+>>
+>> Diego
+>>
+>> On Fri, Jul 18, 2008 at 8:42 AM, Patrick Aboyoun <paboyoun at fhcrc.org> wrote:
+>>> Henrik,
+>>> I provided links to the existing Bioconductor changelog blosxom blog at the
+>>> University of Michigan. With the Bioconductor manifest growing at such a
+>>> rapid pace, my guess is that the newer packages haven't yet made the blog.
+>>>
+>>>
+>>> Patrick
+>>>
+>>>
+>>>
+>>> Henrik Bengtsson wrote:
+>>>> Thanks. Looks good.
+>>>>
+>>>> FYI, when I go to the package specifics for aroma.light
+>>>> [http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma.light/] there is a
+>>>> somewhat poetic message delivered in red:
+>>>>
+>>>> "Error: I'm afraid this is the first I've heard of a "light" flavoured
+>>>> Blosxom. Try dropping the "/+light" bit from the end of the URL."
+>>>>
+>>>> /Henrik
+>>>>
+>>>>
+>>>> On Thu, Jul 17, 2008 at 3:54 PM, Patrick Aboyoun <paboyoun at fhcrc.org>
+>>>> wrote:
+>>>>
+>>>>> I just modified the build system to add "Bioconductor Changelog" links to
+>>>>> the "Multiple platform build/check report" pages. To see an example of
+>>>>> these
+>>>>> links go to
+>>>>>
+>>>>> http://bioconductor.org/checkResults/2.2/bioc-LATEST/
+>>>>>
+>>>>> and look for the Bioconductor Changelog links. Similar links will be
+>>>>> added
+>>>>> to the BioC 2.3 report when it is created later tonight.
+>>>>>
+>>>>> Given that the changelog is geared towards developers, I did not include
+>>>>> a
+>>>>> link in the package home pages that Wolfgang referred to because it could
+>>>>> fall into the category of too much information for a general user of the
+>>>>> package. If the Bioconductor development community believes we should
+>>>>> include a link on the package home pages as well, I will add them. It
+>>>>> doesn't take much effort to change the infrastructure.
+>>>>>
+>>>>>
+>>>>> Cheers,
+>>>>> Patrick
+>>>>>
+>>>>>
+>>>>>
+>>>>> Patrick Aboyoun wrote:
+>>>>>
+>>>>>> Sean and Wolfgang,
+>>>>>> I think these two enhancements to the bioconductor.org website would be
+>>>>>> very useful and not too much work to implement. I'll add them on the
+>>>>>> website
+>>>>>> task list and send out a message to this group when they are
+>>>>>> implemented. If
+>>>>>> there are any other related ideas, keep them coming. It is easier to
+>>>>>> implement them all at once, rather than one at a time.
+>>>>>>
+>>>>>>
+>>>>>> Patrick
+>>>>>>
+>>>>>>
+>>>>>> Sean Davis wrote:
+>>>>>>
+>>>>>>> On Fri, Jul 11, 2008 at 6:58 AM, Wolfgang Huber <huber at ebi.ac.uk>
+>>>>>>> wrote:
+>>>>>>>
+>>>>>>>
+>>>>>>>> Hi all,
+>>>>>>>>
+>>>>>>>> I like the package overview pages, such as
+>>>>>>>> http://www.bioconductor.org/packages/devel/bioc/html/cellHTS2.html
+>>>>>>>>
+>>>>>>>> Would it be possible that they also link to the output of, for
+>>>>>>>> example:
+>>>>>>>>
+>>>>>>>> svn log --username readonly --password readonly \
+>>>>>>>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/gcrma
+>>>>>>>>
+>>>>>>>> which any of our users can run (but I assume most wouldn't know how
+>>>>>>>> to)?
+>>>>>>>>
+>>>>>>>> This additional service to our users may also encourage pkg developers
+>>>>>>>> to be more precise in their svn log entries :)
+>>>>>>>>
+>>>>>>>>
+>>>>>>> Hi, Wolfgang.  I agree this would be a simple and useful addition for
+>>>>>>> the devel archives.  Since we already have the bioconductor change log
+>>>>>>> in place, it would be trivial to change the HTML on the devel pages to
+>>>>>>> include a link like:
+>>>>>>>
+>>>>>>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/cellHTS2
+>>>>>>>
+>>>>>>> Sean
+>>>>>>>
+>>>>>>> _______________________________________________
+>>>>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>>>>
+>>>>>>>
+>>>>>> _______________________________________________
+>>>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>>>
+>>>>> _______________________________________________
+>>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>>
+>>>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>>
+>> --
+>> Diego Diez, Ph
+>> Bioinformatics center,
+>> Institute for Chemical Research,
+>> Kyoto University.
+>> Gokasho, Uji, Kyoto 611-0011 JAPAN
+>> diez at kuicr.kyoto-u.ac.jp
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Hildebrandt Lab
+8220D MSRB III
+1150 W. Medical Center Drive
+Ann Arbor MI 48109-0646
+734-936-8662
+
+
+From mattia.pelizzola at gmail.com  Tue Jul 29 00:23:49 2008
+From: mattia.pelizzola at gmail.com (mattia pelizzola)
+Date: Mon, 28 Jul 2008 18:23:49 -0400
+Subject: [Bioc-devel] compiling C code in distributed packages
+Message-ID: <996031a10807281523g1f54f49bk580c4b7ccc3c072b@mail.gmail.com>
+
+Hi,
+
+I'm new in using C code into R packages, so I apologize if my question
+looks silly.
+I'm testing a library containing C code. It works fine on the Linux
+system where I created it, and I can easily install and use it into a
+Windows system that has been set up to build packages. Rather, when I
+try to install it into a Mac, I get an error message presumably  since
+the system is lacking C/C++ compilers:
+
+* Installing *source* package 'foo' ...
+** libs
+** arch - i386
+/Library/Frameworks/R.framework/Resources/bin/SHLIB: line 1: make:
+command not found
+chmod: /Library/Frameworks/R.framework/Versions/2.7/Resources/library/foo/libs/i386/*:
+No such file or directory
+** arch - ppc
+/Library/Frameworks/R.framework/Resources/bin/SHLIB: line 1: make:
+command not found
+chmod: /Library/Frameworks/R.framework/Versions/2.7/Resources/library/foo/libs/ppc/*:
+No such file or directory
+ERROR: compilation failed for package 'foo'
+** Removing '/Library/Frameworks/R.framework/Versions/2.7/Resources/library/foo'
+** Restoring previous
+'/Library/Frameworks/R.framework/Versions/2.7/Resources/library/foo'
+.
+
+Does this mean that additional software is always required to use R
+libraries with embedded C code ? (the Xcode that would be necessary in
+Mac is 1Gb..)
+This sounds weird to me since I know that many libraries use C code
+and I already installed them on many computers without having the
+requirement of installing developmental software.
+
+Are the packages with C code released from R or Bioconductor different
+from the one that I'm building by my self?
+
+Thanks for you help,
+
+mattia
+
+
+From sdavis2 at mail.nih.gov  Tue Jul 29 00:53:58 2008
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Mon, 28 Jul 2008 18:53:58 -0400
+Subject: [Bioc-devel] compiling C code in distributed packages
+In-Reply-To: <996031a10807281523g1f54f49bk580c4b7ccc3c072b@mail.gmail.com>
+References: <996031a10807281523g1f54f49bk580c4b7ccc3c072b@mail.gmail.com>
+Message-ID: <264855a00807281553j65c4c7f3t8fd798eeed43f0aa@mail.gmail.com>
+
+On Mon, Jul 28, 2008 at 6:23 PM, mattia pelizzola
+<mattia.pelizzola at gmail.com> wrote:
+> Hi,
+>
+> I'm new in using C code into R packages, so I apologize if my question
+> looks silly.
+> I'm testing a library containing C code. It works fine on the Linux
+> system where I created it, and I can easily install and use it into a
+> Windows system that has been set up to build packages. Rather, when I
+> try to install it into a Mac, I get an error message presumably  since
+> the system is lacking C/C++ compilers:
+>
+> * Installing *source* package 'foo' ...
+> ** libs
+> ** arch - i386
+> /Library/Frameworks/R.framework/Resources/bin/SHLIB: line 1: make:
+> command not found
+> chmod: /Library/Frameworks/R.framework/Versions/2.7/Resources/library/foo/libs/i386/*:
+> No such file or directory
+> ** arch - ppc
+> /Library/Frameworks/R.framework/Resources/bin/SHLIB: line 1: make:
+> command not found
+> chmod: /Library/Frameworks/R.framework/Versions/2.7/Resources/library/foo/libs/ppc/*:
+> No such file or directory
+> ERROR: compilation failed for package 'foo'
+> ** Removing '/Library/Frameworks/R.framework/Versions/2.7/Resources/library/foo'
+> ** Restoring previous
+> '/Library/Frameworks/R.framework/Versions/2.7/Resources/library/foo'
+> .
+>
+> Does this mean that additional software is always required to use R
+> libraries with embedded C code ? (the Xcode that would be necessary in
+> Mac is 1Gb..)
+> This sounds weird to me since I know that many libraries use C code
+> and I already installed them on many computers without having the
+> requirement of installing developmental software.
+>
+> Are the packages with C code released from R or Bioconductor different
+> from the one that I'm building by my self?
+
+Yes.  To build from source, you will need to install Xcode.  The
+packages you download from bioconductor and CRAN are typically built
+as binary packages, so no source compiling needs to be done.
+
+Sean
+
+
+From mattia.pelizzola at gmail.com  Tue Jul 29 19:51:06 2008
+From: mattia.pelizzola at gmail.com (mattia pelizzola)
+Date: Tue, 29 Jul 2008 13:51:06 -0400
+Subject: [Bioc-devel] library checking: question on require/depends
+Message-ID: <996031a10807291051r783dc275x3bd9e3ca00bf1dbd@mail.gmail.com>
+
+Hi,
+
+I'm working on a new package. The 'build' is ok, but when running
+'check' I get a warning that I'm not sure on how to eliminate it.
+The warning is :
+
+* checking for unstated dependencies in R code ... WARNING
+'library' or 'require' calls not declared from:
+  BSgenome.Hsapiens.UCSC.hg17 BSgenome.Hsapiens.UCSC.hg18
+
+The reason of course is that I'm using the require function and I'm
+not adding these libraries in 'Depends' or 'Suggests'. The point is
+that I would not like to oblige users to install both hg17 and hg18
+libraries, since they are huge (800Mb). This is going to be even more
+important if I would support many other annotation libraries. The idea
+was then to use require to load only the one requested from the user
+(either hg17 or hg18).
+
+I'm going to submit this library to Bioconductor. Can I ignore this
+warning, should I add all the annotation libraries in 'Depends', or is
+there another way to fix this warning?
+
+Many thanks,
+
+mattia
+
+
+From sdavis2 at mail.nih.gov  Tue Jul 29 20:14:28 2008
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Tue, 29 Jul 2008 14:14:28 -0400
+Subject: [Bioc-devel] library checking: question on require/depends
+In-Reply-To: <996031a10807291051r783dc275x3bd9e3ca00bf1dbd@mail.gmail.com>
+References: <996031a10807291051r783dc275x3bd9e3ca00bf1dbd@mail.gmail.com>
+Message-ID: <264855a00807291114j603dfacak4f42dd508019cdf9@mail.gmail.com>
+
+On Tue, Jul 29, 2008 at 1:51 PM, mattia pelizzola
+<mattia.pelizzola at gmail.com> wrote:
+> Hi,
+>
+> I'm working on a new package. The 'build' is ok, but when running
+> 'check' I get a warning that I'm not sure on how to eliminate it.
+> The warning is :
+>
+> * checking for unstated dependencies in R code ... WARNING
+> 'library' or 'require' calls not declared from:
+>  BSgenome.Hsapiens.UCSC.hg17 BSgenome.Hsapiens.UCSC.hg18
+>
+> The reason of course is that I'm using the require function and I'm
+> not adding these libraries in 'Depends' or 'Suggests'. The point is
+> that I would not like to oblige users to install both hg17 and hg18
+> libraries, since they are huge (800Mb). This is going to be even more
+> important if I would support many other annotation libraries. The idea
+> was then to use require to load only the one requested from the user
+> (either hg17 or hg18).
+>
+> I'm going to submit this library to Bioconductor. Can I ignore this
+> warning, should I add all the annotation libraries in 'Depends', or is
+> there another way to fix this warning?
+
+This is what "Suggests" is for.
+
+Sean
+
+
+From mattia.pelizzola at gmail.com  Tue Jul 29 20:24:02 2008
+From: mattia.pelizzola at gmail.com (mattia pelizzola)
+Date: Tue, 29 Jul 2008 14:24:02 -0400
+Subject: [Bioc-devel] biocViews and DNA-methylation
+Message-ID: <996031a10807291124u3f689027j2a895b2f984ef152@mail.gmail.com>
+
+Hi,
+
+I'm going to submit to Bioconductor a package for the estimation of
+absolute and relative DNA-methylation levels from MeDIP enrichment
+measures. MeDIP is a methodology based on an antibody specific for
+5-methyl-Cytosines (Weber et al, 2005).
+I'm confused about the choice of the biocViews  terms. The library has
+been developed based on MeDIP-enrichment measures derived from
+two-channel arrays. Nevertheless, there are people working with it
+with enrichment measures determined by one-channel technologies.
+Moreover, the library is not strictly dependent on microarray data.
+Even next gen sequencing data could be potentially suitable. All that
+is necessary is enrichment measures associated with genomic positions.
+For these reason I do not know if to choose any of the terms related
+to microarray. Also Microarray/CpGIsland is not really appropriate.
+Maybe Technology/Genetics. Is it finally necessary to add new term(s)
+related with epigenetics / DNA-methylation?
+
+Thanks for your help,
+
+mattia
+
+
+From lgautier at gmail.com  Tue Jul 29 20:43:15 2008
+From: lgautier at gmail.com (Laurent Gautier)
+Date: Tue, 29 Jul 2008 20:43:15 +0200
+Subject: [Bioc-devel] library checking: question on require/depends
+In-Reply-To: <264855a00807291114j603dfacak4f42dd508019cdf9@mail.gmail.com>
+References: <996031a10807291051r783dc275x3bd9e3ca00bf1dbd@mail.gmail.com>
+	<264855a00807291114j603dfacak4f42dd508019cdf9@mail.gmail.com>
+Message-ID: <27d1e6020807291143y5f1734c6vf123b3686461c3ba@mail.gmail.com>
+
+Adding it in "Suggests" will keep R CMD check happy, as Sean told it.
+
+One question, still:
+Are you using the those packages in examples ? In that case, using a
+smaller dataset might be a good idea.
+If there is not any suitable smaller dataset currently avalaible, it
+could be nice to create a demo-oriented one, with one chromosome for
+example. This could also be used by other packages needing full
+genome.
+
+
+2008/7/29 Sean Davis <sdavis2 at mail.nih.gov>:
+> On Tue, Jul 29, 2008 at 1:51 PM, mattia pelizzola
+> <mattia.pelizzola at gmail.com> wrote:
+>> Hi,
+>>
+>> I'm working on a new package. The 'build' is ok, but when running
+>> 'check' I get a warning that I'm not sure on how to eliminate it.
+>> The warning is :
+>>
+>> * checking for unstated dependencies in R code ... WARNING
+>> 'library' or 'require' calls not declared from:
+>>  BSgenome.Hsapiens.UCSC.hg17 BSgenome.Hsapiens.UCSC.hg18
+>>
+>> The reason of course is that I'm using the require function and I'm
+>> not adding these libraries in 'Depends' or 'Suggests'. The point is
+>> that I would not like to oblige users to install both hg17 and hg18
+>> libraries, since they are huge (800Mb). This is going to be even more
+>> important if I would support many other annotation libraries. The idea
+>> was then to use require to load only the one requested from the user
+>> (either hg17 or hg18).
+>>
+>> I'm going to submit this library to Bioconductor. Can I ignore this
+>> warning, should I add all the annotation libraries in 'Depends', or is
+>> there another way to fix this warning?
+>
+> This is what "Suggests" is for.
+>
+> Sean
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From mattia.pelizzola at gmail.com  Tue Jul 29 21:40:47 2008
+From: mattia.pelizzola at gmail.com (mattia pelizzola)
+Date: Tue, 29 Jul 2008 15:40:47 -0400
+Subject: [Bioc-devel] library checking: question on require/depends
+In-Reply-To: <27d1e6020807291143y5f1734c6vf123b3686461c3ba@mail.gmail.com>
+References: <996031a10807291051r783dc275x3bd9e3ca00bf1dbd@mail.gmail.com>
+	<264855a00807291114j603dfacak4f42dd508019cdf9@mail.gmail.com>
+	<27d1e6020807291143y5f1734c6vf123b3686461c3ba@mail.gmail.com>
+Message-ID: <996031a10807291240m6664884buf5096a0445165393@mail.gmail.com>
+
+Hi,
+
+On Tue, Jul 29, 2008 at 2:43 PM, Laurent Gautier <lgautier at gmail.com> wrote:
+> Adding it in "Suggests" will keep R CMD check happy, as Sean told it.
+>
+
+Thanks, I just did not know that still I needed to have all the
+"Suggests" library installed. Now the warning is gone.
+
+> One question, still:
+> Are you using the those packages in examples ? In that case, using a
+> smaller dataset might be a good idea.
+> If there is not any suitable smaller dataset currently avalaible, it
+> could be nice to create a demo-oriented one, with one chromosome for
+> example. This could also be used by other packages needing full
+> genome.
+>
+
+Yes, I'm using one of the suggested packages in the examples and I'm
+releasing a small dataset with the library, just for demonstration
+purposes.
+
+Thanks,
+
+mattia
+
+>
+> 2008/7/29 Sean Davis <sdavis2 at mail.nih.gov>:
+>> On Tue, Jul 29, 2008 at 1:51 PM, mattia pelizzola
+>> <mattia.pelizzola at gmail.com> wrote:
+>>> Hi,
+>>>
+>>> I'm working on a new package. The 'build' is ok, but when running
+>>> 'check' I get a warning that I'm not sure on how to eliminate it.
+>>> The warning is :
+>>>
+>>> * checking for unstated dependencies in R code ... WARNING
+>>> 'library' or 'require' calls not declared from:
+>>>  BSgenome.Hsapiens.UCSC.hg17 BSgenome.Hsapiens.UCSC.hg18
+>>>
+>>> The reason of course is that I'm using the require function and I'm
+>>> not adding these libraries in 'Depends' or 'Suggests'. The point is
+>>> that I would not like to oblige users to install both hg17 and hg18
+>>> libraries, since they are huge (800Mb). This is going to be even more
+>>> important if I would support many other annotation libraries. The idea
+>>> was then to use require to load only the one requested from the user
+>>> (either hg17 or hg18).
+>>>
+>>> I'm going to submit this library to Bioconductor. Can I ignore this
+>>> warning, should I add all the annotation libraries in 'Depends', or is
+>>> there another way to fix this warning?
+>>
+>> This is what "Suggests" is for.
+>>
+>> Sean
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+
+
+From sdavis2 at mail.nih.gov  Tue Jul 29 23:19:27 2008
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Tue, 29 Jul 2008 17:19:27 -0400
+Subject: [Bioc-devel] library checking: question on require/depends
+In-Reply-To: <996031a10807291240m6664884buf5096a0445165393@mail.gmail.com>
+References: <996031a10807291051r783dc275x3bd9e3ca00bf1dbd@mail.gmail.com>
+	<264855a00807291114j603dfacak4f42dd508019cdf9@mail.gmail.com>
+	<27d1e6020807291143y5f1734c6vf123b3686461c3ba@mail.gmail.com>
+	<996031a10807291240m6664884buf5096a0445165393@mail.gmail.com>
+Message-ID: <264855a00807291419o19599c56w7edfd536e14feaef@mail.gmail.com>
+
+On Tue, Jul 29, 2008 at 3:40 PM, mattia pelizzola
+<mattia.pelizzola at gmail.com> wrote:
+> Hi,
+>
+> On Tue, Jul 29, 2008 at 2:43 PM, Laurent Gautier <lgautier at gmail.com> wrote:
+>> Adding it in "Suggests" will keep R CMD check happy, as Sean told it.
+>>
+>
+> Thanks, I just did not know that still I needed to have all the
+> "Suggests" library installed. Now the warning is gone.
+
+Just to clarify, the "Suggests" libraries do NOT need to be installed.
+ That is the difference between Suggests and Depends; all libraries in
+Depends must be installed for the new package to be installed.
+
+>> One question, still:
+>> Are you using the those packages in examples ? In that case, using a
+>> smaller dataset might be a good idea.
+>> If there is not any suitable smaller dataset currently avalaible, it
+>> could be nice to create a demo-oriented one, with one chromosome for
+>> example. This could also be used by other packages needing full
+>> genome.
+>>
+>
+> Yes, I'm using one of the suggested packages in the examples and I'm
+> releasing a small dataset with the library, just for demonstration
+> purposes.
+
+>> 2008/7/29 Sean Davis <sdavis2 at mail.nih.gov>:
+>>> On Tue, Jul 29, 2008 at 1:51 PM, mattia pelizzola
+>>> <mattia.pelizzola at gmail.com> wrote:
+>>>> Hi,
+>>>>
+>>>> I'm working on a new package. The 'build' is ok, but when running
+>>>> 'check' I get a warning that I'm not sure on how to eliminate it.
+>>>> The warning is :
+>>>>
+>>>> * checking for unstated dependencies in R code ... WARNING
+>>>> 'library' or 'require' calls not declared from:
+>>>>  BSgenome.Hsapiens.UCSC.hg17 BSgenome.Hsapiens.UCSC.hg18
+>>>>
+>>>> The reason of course is that I'm using the require function and I'm
+>>>> not adding these libraries in 'Depends' or 'Suggests'. The point is
+>>>> that I would not like to oblige users to install both hg17 and hg18
+>>>> libraries, since they are huge (800Mb). This is going to be even more
+>>>> important if I would support many other annotation libraries. The idea
+>>>> was then to use require to load only the one requested from the user
+>>>> (either hg17 or hg18).
+>>>>
+>>>> I'm going to submit this library to Bioconductor. Can I ignore this
+>>>> warning, should I add all the annotation libraries in 'Depends', or is
+>>>> there another way to fix this warning?
+>>>
+>>> This is what "Suggests" is for.
+>>>
+>>> Sean
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From sdavis2 at mail.nih.gov  Tue Jul 29 23:22:34 2008
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Tue, 29 Jul 2008 17:22:34 -0400
+Subject: [Bioc-devel] biocViews and DNA-methylation
+In-Reply-To: <996031a10807291124u3f689027j2a895b2f984ef152@mail.gmail.com>
+References: <996031a10807291124u3f689027j2a895b2f984ef152@mail.gmail.com>
+Message-ID: <264855a00807291422o3a62436dp3ff8ac8b5ef3f961@mail.gmail.com>
+
+On Tue, Jul 29, 2008 at 2:24 PM, mattia pelizzola
+<mattia.pelizzola at gmail.com> wrote:
+> Hi,
+>
+> I'm going to submit to Bioconductor a package for the estimation of
+> absolute and relative DNA-methylation levels from MeDIP enrichment
+> measures. MeDIP is a methodology based on an antibody specific for
+> 5-methyl-Cytosines (Weber et al, 2005).
+> I'm confused about the choice of the biocViews  terms. The library has
+> been developed based on MeDIP-enrichment measures derived from
+> two-channel arrays. Nevertheless, there are people working with it
+> with enrichment measures determined by one-channel technologies.
+> Moreover, the library is not strictly dependent on microarray data.
+> Even next gen sequencing data could be potentially suitable. All that
+> is necessary is enrichment measures associated with genomic positions.
+> For these reason I do not know if to choose any of the terms related
+> to microarray. Also Microarray/CpGIsland is not really appropriate.
+> Maybe Technology/Genetics. Is it finally necessary to add new term(s)
+> related with epigenetics / DNA-methylation?
+
+Hi, Mattia.  I would include all the terms that might be relevant.
+That said, we could consider adding terms for epigenetics or dna
+methylation.
+
+Sean
+
+
+From XueLi at coh.org  Wed Jul 30 16:55:29 2008
+From: XueLi at coh.org (Li, Xuejun)
+Date: Wed, 30 Jul 2008 07:55:29 -0700
+Subject: [Bioc-devel] deadline for submitting a new package
+Message-ID: <E9FE064718786E44B2130B7100DB6C75021D59BA@EXCH-VS1.coh.org>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080730/710134f6/attachment.pl>
+
+From ernest.turro at ic.ac.uk  Thu Jul 31 01:46:37 2008
+From: ernest.turro at ic.ac.uk (Ernest Turro)
+Date: Thu, 31 Jul 2008 00:46:37 +0100
+Subject: [Bioc-devel] ReadAffy and path expansion
+Message-ID: <E3CDA6FE-9DC7-4450-8CDA-66C4EE29E9FA@ic.ac.uk>
+
+In most recent version of affy, I find this new behaviour:
+
+ > d <- ReadAffy("~/Desktop/Foo.CEL") # used to work
+Error in read.affybatch(filenames = l$filenames, phenoData = l 
+$phenoData,  :
+   Could not open file ~/Desktop/Foo.CEL
+ > path.expand("~/Desktop/Foo.CEL")
+[1] "/Users/telos/Desktop/Foo.CEL"
+ > d <- ReadAffy("/Users/telos/Desktop/Foo.CEL") # works
+
+Is this a bug?
+
+---
+
+
+$platform
+[1] "i386-apple-darwin8.10.1"
+
+$arch
+[1] "i386"
+
+$os
+[1] "darwin8.10.1"
+
+$system
+[1] "i386, darwin8.10.1"
+
+$status
+[1] ""
+
+$major
+[1] "2"
+
+$minor
+[1] "7.1"
+
+$year
+[1] "2008"
+
+$month
+[1] "06"
+
+$day
+[1] "23"
+
+$`svn rev`
+[1] "45970"
+
+$language
+[1] "R"
+
+$version.string
+[1] "R version 2.7.1 (2008-06-23)"
+
+

@@ -1,0 +1,716 @@
+From CMiller at PICR.man.ac.uk  Tue Apr 13 13:44:48 2004
+From: CMiller at PICR.man.ac.uk (Crispin Miller)
+Date: Tue Apr 13 13:44:51 2004
+Subject: [Bioc-devel] Subsetting affybatch and exprset objects
+Message-ID: <BAA35444B19AD940997ED02A6996AAE00B1594@sanmail.picr.man.ac.uk>
+
+Hi,
+Apologies if I should have sent this to the main bioconductor list...
+and tell me if you'd have preferred it there! ;-)
+
+I've noticed an issue with subsetting ExprSet and AffyBatch objects -
+and wondered what what peoples' thoughts were:
+If I do a subsetting operation of an exprSet with 6 chips in, I get
+this:
+
+> eset.mas[1,]
+Expression Set (exprSet) with 
+
+   1 genes
+   6 samples
+
+> eset.mas[,1]
+...
+   22283 genes
+  1 samples
+
+
+However, if I do the same with AffyBatch I get this:
+
+> eset[1,]
+AffyBatch object
+...
+Number of samples=1
+Number of genes=22283
+
+>eset[,1]
+AffyBatch object
+Number of samples=6
+Number of genes=22283
+
+
+Soooo, to subset and exprSet by chip I have to type eset[,x], but for an
+AffyBatch I must type: eset[x,], which is particularly confusing since
+AffyBatch is a subtype of exprSet... Would it be possible/a good idea,
+to make these two incantations the same for both classes?
+
+Crispin
+ 
+--------------------------------------------------------
+
+ 
+This email is confidential and intended solely for the use o...{{dropped}}
+
+From ririzarr at jhsph.edu  Tue Apr 13 16:18:56 2004
+From: ririzarr at jhsph.edu (Rafael A. Irizarry)
+Date: Tue Apr 13 16:20:34 2004
+Subject: [Bioc-devel] Subsetting affybatch and exprset objects
+In-Reply-To: <BAA35444B19AD940997ED02A6996AAE00B1594@sanmail.picr.man.ac.uk>
+Message-ID: <Pine.LNX.4.44.0404131016250.28780-100000@blinux08.biostat.jhsph.edu>
+
+the problem is th if you subset eset by the first dimension then you 
+loose the position structure, and as a consequence the locations of pms
+and mms held in the cdfenv are no longer meaningful. if there are any 
+suggestions on what eset[i,] should return id be happy to consider them.
+
+On Tue, 13 Apr 2004, Crispin Miller wrote:
+
+> Hi,
+> Apologies if I should have sent this to the main bioconductor list...
+> and tell me if you'd have preferred it there! ;-)
+> 
+> I've noticed an issue with subsetting ExprSet and AffyBatch objects -
+> and wondered what what peoples' thoughts were:
+> If I do a subsetting operation of an exprSet with 6 chips in, I get
+> this:
+> 
+> > eset.mas[1,]
+> Expression Set (exprSet) with 
+> 
+>    1 genes
+>    6 samples
+> 
+> > eset.mas[,1]
+> ...
+>    22283 genes
+>   1 samples
+> 
+> 
+> However, if I do the same with AffyBatch I get this:
+> 
+> > eset[1,]
+> AffyBatch object
+> ...
+> Number of samples=1
+> Number of genes=22283
+> 
+> >eset[,1]
+> AffyBatch object
+> Number of samples=6
+> Number of genes=22283
+> 
+> 
+> Soooo, to subset and exprSet by chip I have to type eset[,x], but for an
+> AffyBatch I must type: eset[x,], which is particularly confusing since
+> AffyBatch is a subtype of exprSet... Would it be possible/a good idea,
+> to make these two incantations the same for both classes?
+> 
+> Crispin
+>  
+> --------------------------------------------------------
+> 
+>  
+> This email is confidential and intended solely for the use o...{{dropped}}
+> 
+> _______________________________________________
+> Bioc-devel@stat.math.ethz.ch mailing list
+> https://www.stat.math.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+From rossini at blindglobe.net  Tue Apr 13 16:55:15 2004
+From: rossini at blindglobe.net (A.J. Rossini)
+Date: Tue Apr 13 16:55:35 2004
+Subject: [Bioc-devel] Subsetting affybatch and exprset objects
+In-Reply-To: <Pine.LNX.4.44.0404131016250.28780-100000@blinux08.biostat.jhsph.edu>
+	(Rafael
+	A. Irizarry's message of "Tue, 13 Apr 2004 10:18:56 -0400 (EDT)")
+References: <Pine.LNX.4.44.0404131016250.28780-100000@blinux08.biostat.jhsph.edu>
+Message-ID: <85y8p0udv0.fsf@servant.blindglobe.net>
+
+
+Would it be worth distinguishing between probesets and probes?  i.e. 
+
+afbatch[ ]  indexing genes (and hence probesets) rather than probes?
+
+(and I can't recall what [[ is indexing, but perhaps probes if it
+isn't?)
+
+(don't shoot me if I'm being stupid, I still havn't had coffee this
+morning). 
+
+best,
+-tony
+
+
+
+"Rafael A. Irizarry" <ririzarr@jhsph.edu> writes:
+
+> the problem is th if you subset eset by the first dimension then you 
+> loose the position structure, and as a consequence the locations of pms
+> and mms held in the cdfenv are no longer meaningful. if there are any 
+> suggestions on what eset[i,] should return id be happy to consider them.
+>
+> On Tue, 13 Apr 2004, Crispin Miller wrote:
+>
+>> Hi,
+>> Apologies if I should have sent this to the main bioconductor list...
+>> and tell me if you'd have preferred it there! ;-)
+>> 
+>> I've noticed an issue with subsetting ExprSet and AffyBatch objects -
+>> and wondered what what peoples' thoughts were:
+>> If I do a subsetting operation of an exprSet with 6 chips in, I get
+>> this:
+>> 
+>> > eset.mas[1,]
+>> Expression Set (exprSet) with 
+>> 
+>>    1 genes
+>>    6 samples
+>> 
+>> > eset.mas[,1]
+>> ...
+>>    22283 genes
+>>   1 samples
+>> 
+>> 
+>> However, if I do the same with AffyBatch I get this:
+>> 
+>> > eset[1,]
+>> AffyBatch object
+>> ...
+>> Number of samples=1
+>> Number of genes=22283
+>> 
+>> >eset[,1]
+>> AffyBatch object
+>> Number of samples=6
+>> Number of genes=22283
+>> 
+>> 
+>> Soooo, to subset and exprSet by chip I have to type eset[,x], but for an
+>> AffyBatch I must type: eset[x,], which is particularly confusing since
+>> AffyBatch is a subtype of exprSet... Would it be possible/a good idea,
+>> to make these two incantations the same for both classes?
+>> 
+>> Crispin
+>>  
+>> --------------------------------------------------------
+>> 
+>>  
+>> This email is confidential and intended solely for the use o...{{dropped}}
+>> 
+>> _______________________________________________
+>> Bioc-devel@stat.math.ethz.ch mailing list
+>> https://www.stat.math.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+> _______________________________________________
+> Bioc-devel@stat.math.ethz.ch mailing list
+> https://www.stat.math.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+-- 
+rossini@u.washington.edu            http://www.analytics.washington.edu/ 
+Biomedical and Health Informatics   University of Washington
+Biostatistics, SCHARP/HVTN          Fred Hutchinson Cancer Research Center
+UW (Tu/Th/F): 206-616-7630 FAX=206-543-3461 | Voicemail is unreliable
+FHCRC  (M/W): 206-667-7025 FAX=206-667-4812 | use Email
+
+CONFIDENTIALITY NOTICE: This e-mail message and any attachme...{{dropped}}
+
+From ririzarr at jhsph.edu  Tue Apr 13 17:24:20 2004
+From: ririzarr at jhsph.edu (Rafael A. Irizarry)
+Date: Tue Apr 13 17:25:58 2004
+Subject: [Bioc-devel] Subsetting affybatch and exprset objects
+In-Reply-To: <85y8p0udv0.fsf@servant.blindglobe.net>
+Message-ID: <Pine.LNX.4.44.0404131119080.28780-100000@blinux08.biostat.jhsph.edu>
+
+that would be a possibility. but its still hard because a lot of things 
+need to be changed. remember we want [] to be a closed operation so one 
+would have to return an AffyBAtch with a new cdfenv created and 
+stored somehwer or 
+new slot saying which probes to keep. also, we could have [[]] return 
+lists of instances of probeset. but this all seems like too much trobule for 
+something no-one seems to be needing. im currently leaning to permitting 
+subsetting of the exprs slow with the first dimension but issuing a waring 
+saying how few functions will work properly unless a new cdfenv is 
+created. 
+
+
+On Tue, 13 Apr 2004, A.J. Rossini 
+wrote:
+
+> 
+> Would it be worth distinguishing between probesets and probes?  i.e. 
+> 
+> afbatch[ ]  indexing genes (and hence probesets) rather than probes?
+> 
+> (and I can't recall what [[ is indexing, but perhaps probes if it
+> isn't?)
+> 
+> (don't shoot me if I'm being stupid, I still havn't had coffee this
+> morning). 
+> 
+> best,
+> -tony
+> 
+> 
+> 
+> "Rafael A. Irizarry" <ririzarr@jhsph.edu> writes:
+> 
+> > the problem is th if you subset eset by the first dimension then you 
+> > loose the position structure, and as a consequence the locations of pms
+> > and mms held in the cdfenv are no longer meaningful. if there are any 
+> > suggestions on what eset[i,] should return id be happy to consider them.
+> >
+> > On Tue, 13 Apr 2004, Crispin Miller wrote:
+> >
+> >> Hi,
+> >> Apologies if I should have sent this to the main bioconductor list...
+> >> and tell me if you'd have preferred it there! ;-)
+> >> 
+> >> I've noticed an issue with subsetting ExprSet and AffyBatch objects -
+> >> and wondered what what peoples' thoughts were:
+> >> If I do a subsetting operation of an exprSet with 6 chips in, I get
+> >> this:
+> >> 
+> >> > eset.mas[1,]
+> >> Expression Set (exprSet) with 
+> >> 
+> >>    1 genes
+> >>    6 samples
+> >> 
+> >> > eset.mas[,1]
+> >> ...
+> >>    22283 genes
+> >>   1 samples
+> >> 
+> >> 
+> >> However, if I do the same with AffyBatch I get this:
+> >> 
+> >> > eset[1,]
+> >> AffyBatch object
+> >> ...
+> >> Number of samples=1
+> >> Number of genes=22283
+> >> 
+> >> >eset[,1]
+> >> AffyBatch object
+> >> Number of samples=6
+> >> Number of genes=22283
+> >> 
+> >> 
+> >> Soooo, to subset and exprSet by chip I have to type eset[,x], but for an
+> >> AffyBatch I must type: eset[x,], which is particularly confusing since
+> >> AffyBatch is a subtype of exprSet... Would it be possible/a good idea,
+> >> to make these two incantations the same for both classes?
+> >> 
+> >> Crispin
+> >>  
+> >> --------------------------------------------------------
+> >> 
+> >>  
+> >> This email is confidential and intended solely for the use o...{{dropped}}
+> >> 
+> >> _______________________________________________
+> >> Bioc-devel@stat.math.ethz.ch mailing list
+> >> https://www.stat.math.ethz.ch/mailman/listinfo/bioc-devel
+> >>
+> >
+> > _______________________________________________
+> > Bioc-devel@stat.math.ethz.ch mailing list
+> > https://www.stat.math.ethz.ch/mailman/listinfo/bioc-devel
+> >
+> 
+>
+
+From stvjc at channing.harvard.edu  Tue Apr 13 18:00:20 2004
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Tue Apr 13 18:00:23 2004
+Subject: [Bioc-devel] Subsetting affybatch and exprset objects
+In-Reply-To: <Pine.LNX.4.44.0404131016250.28780-100000@blinux08.biostat.jhsph.edu>
+References: <Pine.LNX.4.44.0404131016250.28780-100000@blinux08.biostat.jhsph.edu>
+Message-ID: <Pine.GSO.4.58.0404131143260.12548@capecod.bwh.harvard.edu>
+
+
+> the problem is th if you subset eset by the first dimension then you
+> loose the position structure, and as a consequence the locations of pms
+> and mms held in the cdfenv are no longer meaningful. if there are any
+> suggestions on what eset[i,] should return id be happy to consider them.
+
+at this time i would suggest for an AffyBatch eset: eset[i,] should fail
+with a notice that subsetting by probe is not supported; eset[,j] should
+succeed as it keeps the analogy to exprSet indexing; and eset[j] should
+fail with wrong number of dimensions.
+
+i think that comma-less subscripting of exprSets should fail too -- but
+currently if eset is an exprSet, eset[j] corresponds to gene-level
+subsetting.  do we really need that?
+
+From ririzarr at jhsph.edu  Tue Apr 13 18:16:16 2004
+From: ririzarr at jhsph.edu (Rafael A. Irizarry)
+Date: Tue Apr 13 18:18:07 2004
+Subject: [Bioc-devel] Subsetting affybatch and exprset objects
+In-Reply-To: <Pine.GSO.4.58.0404131143260.12548@capecod.bwh.harvard.edu>
+Message-ID: <Pine.LNX.4.44.0404131215280.28780-100000@blinux08.biostat.jhsph.edu>
+
+even better. unless there are other concerns ill put this on my todo list.
+
+On Tue, 13 Apr 2004, Vincent Carey 525-2265 wrote:
+
+> 
+> > the problem is th if you subset eset by the first dimension then you
+> > loose the position structure, and as a consequence the locations of pms
+> > and mms held in the cdfenv are no longer meaningful. if there are any
+> > suggestions on what eset[i,] should return id be happy to consider them.
+> 
+> at this time i would suggest for an AffyBatch eset: eset[i,] should fail
+> with a notice that subsetting by probe is not supported; eset[,j] should
+> succeed as it keeps the analogy to exprSet indexing; and eset[j] should
+> fail with wrong number of dimensions.
+> 
+> i think that comma-less subscripting of exprSets should fail too -- but
+> currently if eset is an exprSet, eset[j] corresponds to gene-level
+> subsetting.  do we really need that?
+> 
+>
+
+From jgentry at jimmy.harvard.edu  Wed Apr 14 22:49:18 2004
+From: jgentry at jimmy.harvard.edu (Jeff Gentry)
+Date: Wed Apr 14 22:48:46 2004
+Subject: [Bioc-devel] Release 1.4 information
+Message-ID: <Pine.SOL.4.20.0404141648300.25107-100000@santiam.dfci.harvard.edu>
+
+Hello,
+
+Many of you have seen the roadmap for the Bioconductor 1.4 release,
+which was sent out about a month ago.  Due to circumstances beyond our
+control (the delay of the R release as well as the same issues
+which delayed R) we will be delaying our release for two weeks.
+
+Several of you have asked me about the state of the package reviews.
+Tony will be contacting people by tommorow afternoon in regards to
+this issue.
+
+All contributions for packages need to be sent in to me by April 21st,
+and all package reviews should be completed by April 26th.
+
+If you have any questions, please do not hesitate to contact myself or
+Tony Rossini.
+
+Thanks
+-Jeff
+
+From rossini at blindglobe.net  Thu Apr 22 18:05:16 2004
+From: rossini at blindglobe.net (A.J. Rossini)
+Date: Thu Apr 22 18:05:21 2004
+Subject: [Bioc-devel] Final Release Plans
+Message-ID: <85smewf16r.fsf@servant.blindglobe.net>
+
+
+I've been having computing disasters related to a too-warm lab room.
+Apologies for all delays.  I hate troubleshooting RAID arrays, video
+cards, and monitors when it's not really my job :-(.
+
+I've contacted a few of you about reviews, we've gotten a few back
+(thanks!) and I need to contact more of you about reviews.   Ideally,
+we'd get them from you early next week.   See the important dates for
+what I have planned, and what activities need to be done over the next
+few weeks.
+
+Yesterday was the last day to check in new packages for release, and
+they need to pass R CMD check NEXT FRIDAY.  
+
+Here are the updated timelines.
+
+IMPORTANT DATES AND TIME-LINES:
+
+
+    * March 15 -- April 26, review packages for: Usage (UI and API)
+     and bugs. (open to everyone, with some particular
+     assignments). This should focus on usage rather than
+     correctness.
+
+    * April 26 -- May 7, last chance for major changes during these 2
+     weeks.
+
+    * May 7 -- 12, bug finding and fixing, only changes to code
+     required for bug fixes allowed
+
+    * May 14 -- May 21, NO CHANGES TO CODE WITHOUT VERIFYING FROM JEFF
+     GENTRY OR TONY ROSSINI (this doesn't mean not to change, but
+     don't commit to the repository, send changes to Jeff or Tony)
+
+    * May 21 -- branch the 1.4 version, and back to regularly
+     scheduled development and research.
+
+PLEASE NOTE THAT WE HAVE SOME PLANNED POST-RELEASE SLACKTIME FOR POTENTIAL BUGS
+
+The important dates are
+
+    * April 21 -- Last day to check in new packages for the 1.4 release
+    * April 26 -- FEATURE FREEZE, bug finding and fixing starts.
+    * April 30 -- All Packages should pass R CMD Check or will be
+                  taken out
+    * May 7    -- CODE FREEZE and validation.
+    * May 12   -- Distribution construction.
+    * May 15   -- Planned Release.
+
+
+-- 
+rossini@u.washington.edu            http://www.analytics.washington.edu/ 
+Biomedical and Health Informatics   University of Washington
+Biostatistics, SCHARP/HVTN          Fred Hutchinson Cancer Research Center
+UW (Tu/Th/F): 206-616-7630 FAX=206-543-3461 | Voicemail is unreliable
+FHCRC  (M/W): 206-667-7025 FAX=206-667-4812 | use Email
+
+CONFIDENTIALITY NOTICE: This e-mail message and any attachme...{{dropped}}
+
+From jgentry at jimmy.harvard.edu  Tue Apr 27 23:17:31 2004
+From: jgentry at jimmy.harvard.edu (Jeff Gentry)
+Date: Tue Apr 27 23:16:49 2004
+Subject: [Bioc-devel] Testing
+Message-ID: <Pine.SOL.4.20.0404271717130.4248-100000@santiam.dfci.harvard.edu>
+
+
+Just a test
+
+-J
+
+From jgentry at jimmy.harvard.edu  Tue Apr 27 23:26:45 2004
+From: jgentry at jimmy.harvard.edu (Jeff Gentry)
+Date: Tue Apr 27 23:26:09 2004
+Subject: [Bioc-devel] Final Release Plans (fwd)
+Message-ID: <Pine.SOL.4.20.0404271725560.4248-100000@santiam.dfci.harvard.edu>
+
+Since several people have now alerted me that they never received Tony's
+release timeline that he sent out on Thursday, I'm sending it back out
+again.  Note the line that states that packages must pass check by this
+Friday.
+
+---------- Forwarded message ----------
+Date: Thu, 22 Apr 2004 09:05:16 -0700
+From: A.J. Rossini <rossini@blindglobe.net>
+Reply-To: rossini@u.washington.edu
+To: bioc-devel@stat.math.ethz.ch
+Subject: [Bioc-devel] Final Release Plans
+
+
+I've been having computing disasters related to a too-warm lab room.
+Apologies for all delays.  I hate troubleshooting RAID arrays, video
+cards, and monitors when it's not really my job :-(.
+
+I've contacted a few of you about reviews, we've gotten a few back
+(thanks!) and I need to contact more of you about reviews.   Ideally,
+we'd get them from you early next week.   See the important dates for
+what I have planned, and what activities need to be done over the next
+few weeks.
+
+Yesterday was the last day to check in new packages for release, and
+they need to pass R CMD check NEXT FRIDAY.  
+
+Here are the updated timelines.
+
+IMPORTANT DATES AND TIME-LINES:
+
+
+    * March 15 -- April 26, review packages for: Usage (UI and API)
+     and bugs. (open to everyone, with some particular
+     assignments). This should focus on usage rather than
+     correctness.
+
+    * April 26 -- May 7, last chance for major changes during these 2
+     weeks.
+
+    * May 7 -- 12, bug finding and fixing, only changes to code
+     required for bug fixes allowed
+
+    * May 14 -- May 21, NO CHANGES TO CODE WITHOUT VERIFYING FROM JEFF
+     GENTRY OR TONY ROSSINI (this doesn't mean not to change, but
+     don't commit to the repository, send changes to Jeff or Tony)
+
+    * May 21 -- branch the 1.4 version, and back to regularly
+     scheduled development and research.
+
+PLEASE NOTE THAT WE HAVE SOME PLANNED POST-RELEASE SLACKTIME FOR POTENTIAL BUGS
+
+The important dates are
+
+    * April 21 -- Last day to check in new packages for the 1.4 release
+    * April 26 -- FEATURE FREEZE, bug finding and fixing starts.
+    * April 30 -- All Packages should pass R CMD Check or will be
+                  taken out
+    * May 7    -- CODE FREEZE and validation.
+    * May 12   -- Distribution construction.
+    * May 15   -- Planned Release.
+
+
+-- 
+rossini@u.washington.edu            http://www.analytics.washington.edu/ 
+Biomedical and Health Informatics   University of Washington
+Biostatistics, SCHARP/HVTN          Fred Hutchinson Cancer Research Center
+UW (Tu/Th/F): 206-616-7630 FAX=206-543-3461 | Voicemail is unreliable
+FHCRC  (M/W): 206-667-7025 FAX=206-667-4812 | use Email
+
+CONFIDENTIALITY NOTICE: This e-mail message and any attachme...{{dropped}}
+
+_______________________________________________
+Bioc-devel@stat.math.ethz.ch mailing list
+https://www.stat.math.ethz.ch/mailman/listinfo/bioc-devel
+
+From rossini at blindglobe.net  Tue Apr 27 23:42:26 2004
+From: rossini at blindglobe.net (A.J. Rossini)
+Date: Tue Apr 27 23:42:30 2004
+Subject: [Bioc-devel] Final Release Plans (fwd)
+In-Reply-To: <Pine.SOL.4.20.0404271725560.4248-100000@santiam.dfci.harvard.edu>
+	(Jeff Gentry's message of "Tue, 27 Apr 2004 17:26:45 -0400 (EDT)")
+References: <Pine.SOL.4.20.0404271725560.4248-100000@santiam.dfci.harvard.edu>
+Message-ID: <85llkhf67x.fsf@servant.blindglobe.net>
+
+
+You might get this twice, but please note, we've entered FEATURE
+FREEZE.  Which means that you should work hard to make sure that your
+packages pass "R CMD check" by Friday.  If you need help, please
+contact Jeff or myself.  I'll be in DC for trials meetings next week
+(Sun-Thurs) so will both have more time (during meetings) and less
+connectivity.
+
+I've got some reviews to pass around, and I have some people who I
+need to get reviews from, and I have some people that I need to talk
+with to do reviews.  If you've not done one or have not talked with me
+about doing one and would prefer some choice, mail me with what you'd
+like to do.  Otherwise, I'll be contacting you real soon.
+
+Most of what lies ahead is documentation.
+
+best,
+-tony
+
+
+
+Jeff Gentry <jgentry@jimmy.harvard.edu> writes:
+
+> Since several people have now alerted me that they never received Tony's
+> release timeline that he sent out on Thursday, I'm sending it back out
+> again.  Note the line that states that packages must pass check by this
+> Friday.
+>
+> ---------- Forwarded message ----------
+> Date: Thu, 22 Apr 2004 09:05:16 -0700
+> From: A.J. Rossini <rossini@blindglobe.net>
+> Reply-To: rossini@u.washington.edu
+> To: bioc-devel@stat.math.ethz.ch
+> Subject: [Bioc-devel] Final Release Plans
+>
+>
+> I've been having computing disasters related to a too-warm lab room.
+> Apologies for all delays.  I hate troubleshooting RAID arrays, video
+> cards, and monitors when it's not really my job :-(.
+>
+> I've contacted a few of you about reviews, we've gotten a few back
+> (thanks!) and I need to contact more of you about reviews.   Ideally,
+> we'd get them from you early next week.   See the important dates for
+> what I have planned, and what activities need to be done over the next
+> few weeks.
+>
+> Yesterday was the last day to check in new packages for release, and
+> they need to pass R CMD check NEXT FRIDAY.  
+>
+> Here are the updated timelines.
+>
+> IMPORTANT DATES AND TIME-LINES:
+>
+>
+>     * March 15 -- April 26, review packages for: Usage (UI and API)
+>      and bugs. (open to everyone, with some particular
+>      assignments). This should focus on usage rather than
+>      correctness.
+>
+>     * April 26 -- May 7, last chance for major changes during these 2
+>      weeks.
+>
+>     * May 7 -- 12, bug finding and fixing, only changes to code
+>      required for bug fixes allowed
+>
+>     * May 14 -- May 21, NO CHANGES TO CODE WITHOUT VERIFYING FROM JEFF
+>      GENTRY OR TONY ROSSINI (this doesn't mean not to change, but
+>      don't commit to the repository, send changes to Jeff or Tony)
+>
+>     * May 21 -- branch the 1.4 version, and back to regularly
+>      scheduled development and research.
+>
+> PLEASE NOTE THAT WE HAVE SOME PLANNED POST-RELEASE SLACKTIME FOR POTENTIAL BUGS
+>
+> The important dates are
+>
+>     * April 21 -- Last day to check in new packages for the 1.4 release
+>     * April 26 -- FEATURE FREEZE, bug finding and fixing starts.
+>     * April 30 -- All Packages should pass R CMD Check or will be
+>                   taken out
+>     * May 7    -- CODE FREEZE and validation.
+>     * May 12   -- Distribution construction.
+>     * May 15   -- Planned Release.
+>
+>
+> -- 
+> rossini@u.washington.edu            http://www.analytics.washington.edu/ 
+> Biomedical and Health Informatics   University of Washington
+> Biostatistics, SCHARP/HVTN          Fred Hutchinson Cancer Research Center
+> UW (Tu/Th/F): 206-616-7630 FAX=206-543-3461 | Voicemail is unreliable
+> FHCRC  (M/W): 206-667-7025 FAX=206-667-4812 | use Email
+>
+> CONFIDENTIALITY NOTICE: This e-mail message and any attachme...{{dropped}}
+>
+> _______________________________________________
+> Bioc-devel@stat.math.ethz.ch mailing list
+> https://www.stat.math.ethz.ch/mailman/listinfo/bioc-devel
+>
+> _______________________________________________
+> Bioc-devel@stat.math.ethz.ch mailing list
+> https://www.stat.math.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+-- 
+rossini@u.washington.edu            http://www.analytics.washington.edu/ 
+Biomedical and Health Informatics   University of Washington
+Biostatistics, SCHARP/HVTN          Fred Hutchinson Cancer Research Center
+UW (Tu/Th/F): 206-616-7630 FAX=206-543-3461 | Voicemail is unreliable
+FHCRC  (M/W): 206-667-7025 FAX=206-667-4812 | use Email
+
+CONFIDENTIALITY NOTICE: This e-mail message and any attachme...{{dropped}}
+
+From ririzarr at jhsph.edu  Fri Apr 30 04:47:06 2004
+From: ririzarr at jhsph.edu (Rafael A. Irizarry)
+Date: Fri Apr 30 04:44:17 2004
+Subject: [Bioc-devel] Subsetting affybatch and exprset objects
+In-Reply-To: <Pine.GSO.4.58.0404131143260.12548@capecod.bwh.harvard.edu>
+Message-ID: <Pine.GSO.4.10.10404292243480.5866-100000@athena.biostat.jhsph.edu>
+
+ive just made this change (not commited yet). however, instead of an error
+im giving a "decrepit" warning cause i suspect many people use abatch[1]
+(since its in the vignette). in the next release ill make it an error.
+
+abatch[,j] now does waht is expected.
+-r
+
+
+
+On Tue, 13 Apr 2004, Vincent Carey 525-2265 wrote:
+
+> 
+> > the problem is th if you subset eset by the first dimension then you
+> > loose the position structure, and as a consequence the locations of pms
+> > and mms held in the cdfenv are no longer meaningful. if there are any
+> > suggestions on what eset[i,] should return id be happy to consider them.
+> 
+> at this time i would suggest for an AffyBatch eset: eset[i,] should fail
+> with a notice that subsetting by probe is not supported; eset[,j] should
+> succeed as it keeps the analogy to exprSet indexing; and eset[j] should
+> fail with wrong number of dimensions.
+> 
+> i think that comma-less subscripting of exprSets should fail too -- but
+> currently if eset is an exprSet, eset[j] corresponds to gene-level
+> subsetting.  do we really need that?
+> 
+>
+

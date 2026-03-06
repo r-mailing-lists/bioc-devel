@@ -1,0 +1,4158 @@
+From sfalcon at fhcrc.org  Mon Apr  3 04:43:51 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Sun, 02 Apr 2006 19:43:51 -0700
+Subject: [Bioc-devel] The Bioconductor Wiki
+Message-ID: <m2ek0fl6oo.fsf@ziti.local>
+
+Hi Folks,
+
+We've setup a general purpose wiki system for Bioconductor and I've
+moved the developer documentation onto it from its previous location
+on the Bioc website.
+
+Main page: http://wiki.fhcrc.org/bioc/FrontPage
+Developer docs: http://wiki.fhcrc.org/bioc/DeveloperPage
+
+I invite you to check it out and to contribute to it.  See `this
+page`__ to get started.
+
+__ http://wiki.fhcrc.org/bioc/HowTo/Edit_Page_On_This_Wiki
+
+
+Best,
+
++ seth
+
+
+From huber at ebi.ac.uk  Wed Apr  5 19:17:42 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Wed, 05 Apr 2006 18:17:42 +0100
+Subject: [Bioc-devel] HAVE_ZLIB in affyio (breaking matchprobes)
+Message-ID: <4433FBB6.4080003@ebi.ac.uk>
+
+Hi Ben, Herve,
+
+can affyio be fixed such that the code that is conditionally compiled 
+with #if defined(HAVE_ZLIB) preprocessor commands is indeed used if the 
+machine does have zlib (which I think is standard on most modern systems).
+
+Currently, this is breaking the build of matchprobes on the machines in 
+Seattle:
+http://www.bioconductor.org/checkResults/1.8/html/gopher5/matchprobes.buildsrc.html
+since the example CEL files that the vignettes uses are gzipped, and 
+affy::read.affybatch (via affyio/src/read_abatch.c) refuses to read it 
+because it was apparently compiled without HAVE_ZLIB defined.
+
+When I manually define HAVE_ZLIB in affyio/src/read_abatch.c, the 
+matchprobes package passes R CMD check.
+
+1. Can somebody (Ben?) add a configure.ac (or whatever helps) to affyio 
+so that HAVE_ZLIB is defined?
+
+2. Herve, can you make sure the build machines do install a version of 
+affyio that supports compressed files?
+
+Beyond fixing matchprobes, I think being able to read compressed CEL 
+files is a good thing for everybody. Or am I missing sth?
+
+Best regards
+   Wolfgang
+
+-------------------------------------
+Wolfgang Huber
+European Bioinformatics Institute
+European Molecular Biology Laboratory
+Cambridge CB10 1SD
+England
+Phone: +44 1223 494642
+Fax:   +44 1223 494486
+Http:  www.ebi.ac.uk/huber
+
+
+From bmb at bmbolstad.com  Wed Apr  5 19:13:57 2006
+From: bmb at bmbolstad.com (Ben Bolstad)
+Date: Wed, 05 Apr 2006 10:13:57 -0700
+Subject: [Bioc-devel] HAVE_ZLIB in affyio (breaking matchprobes)
+In-Reply-To: <4433FBB6.4080003@ebi.ac.uk>
+References: <4433FBB6.4080003@ebi.ac.uk>
+Message-ID: <1144257237.8716.5.camel@localhost.localdomain>
+
+Wolfgang,
+
+Sorry about that I'll fix up my part promptly. I do agree that
+supporting compressed CEL files is a good idea and should remain
+supported (though they have historically been used by only an extremely
+small part of the userbase).
+
+Ben
+
+
+
+
+
+On Wed, 2006-04-05 at 18:17 +0100, Wolfgang Huber wrote:
+> Hi Ben, Herve,
+> 
+> can affyio be fixed such that the code that is conditionally compiled 
+> with #if defined(HAVE_ZLIB) preprocessor commands is indeed used if the 
+> machine does have zlib (which I think is standard on most modern systems).
+> 
+> Currently, this is breaking the build of matchprobes on the machines in 
+> Seattle:
+> http://www.bioconductor.org/checkResults/1.8/html/gopher5/matchprobes.buildsrc.html
+> since the example CEL files that the vignettes uses are gzipped, and 
+> affy::read.affybatch (via affyio/src/read_abatch.c) refuses to read it 
+> because it was apparently compiled without HAVE_ZLIB defined.
+> 
+> When I manually define HAVE_ZLIB in affyio/src/read_abatch.c, the 
+> matchprobes package passes R CMD check.
+> 
+> 1. Can somebody (Ben?) add a configure.ac (or whatever helps) to affyio 
+> so that HAVE_ZLIB is defined?
+> 
+> 2. Herve, can you make sure the build machines do install a version of 
+> affyio that supports compressed files?
+> 
+> Beyond fixing matchprobes, I think being able to read compressed CEL 
+> files is a good thing for everybody. Or am I missing sth?
+> 
+> Best regards
+>    Wolfgang
+> 
+> -------------------------------------
+> Wolfgang Huber
+> European Bioinformatics Institute
+> European Molecular Biology Laboratory
+> Cambridge CB10 1SD
+> England
+> Phone: +44 1223 494642
+> Fax:   +44 1223 494486
+> Http:  www.ebi.ac.uk/huber
+> -------------------------------------
+
+
+From hpages at fhcrc.org  Wed Apr  5 22:31:07 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Wed, 05 Apr 2006 13:31:07 -0700
+Subject: [Bioc-devel] HAVE_ZLIB in affyio (breaking matchprobes)
+In-Reply-To: <1144257237.8716.5.camel@localhost.localdomain>
+References: <4433FBB6.4080003@ebi.ac.uk>
+	<1144257237.8716.5.camel@localhost.localdomain>
+Message-ID: <4434290B.1040605@fhcrc.org>
+
+Hi,
+
+I just "R CMD build/check" matchprobes on gopher5 (our main build machine)
+with the last affyio version that Ben committed to svn today (v 0.99.1).
+Since everything went fine, I conclude that the new affyio was automatically
+installed with support for compressed files (with no manual 
+configuration required).
+So expect to see some green for the matchprobes result in tomorrow's
+build/check report...
+Cheers,
+
+H.
+ 
+Ben Bolstad wrote:
+
+>Wolfgang,
+>
+>Sorry about that I'll fix up my part promptly. I do agree that
+>supporting compressed CEL files is a good idea and should remain
+>supported (though they have historically been used by only an extremely
+>small part of the userbase).
+>
+>Ben
+>
+>
+>
+>
+>
+>On Wed, 2006-04-05 at 18:17 +0100, Wolfgang Huber wrote:
+>  
+>
+>>Hi Ben, Herve,
+>>
+>>can affyio be fixed such that the code that is conditionally compiled 
+>>with #if defined(HAVE_ZLIB) preprocessor commands is indeed used if the 
+>>machine does have zlib (which I think is standard on most modern systems).
+>>
+>>Currently, this is breaking the build of matchprobes on the machines in 
+>>Seattle:
+>>http://www.bioconductor.org/checkResults/1.8/html/gopher5/matchprobes.buildsrc.html
+>>since the example CEL files that the vignettes uses are gzipped, and 
+>>affy::read.affybatch (via affyio/src/read_abatch.c) refuses to read it 
+>>because it was apparently compiled without HAVE_ZLIB defined.
+>>
+>>When I manually define HAVE_ZLIB in affyio/src/read_abatch.c, the 
+>>matchprobes package passes R CMD check.
+>>
+>>1. Can somebody (Ben?) add a configure.ac (or whatever helps) to affyio 
+>>so that HAVE_ZLIB is defined?
+>>
+>>2. Herve, can you make sure the build machines do install a version of 
+>>affyio that supports compressed files?
+>>
+>>Beyond fixing matchprobes, I think being able to read compressed CEL 
+>>files is a good thing for everybody. Or am I missing sth?
+>>
+>>Best regards
+>>   Wolfgang
+>>
+>>-------------------------------------
+>>Wolfgang Huber
+>>European Bioinformatics Institute
+>>European Molecular Biology Laboratory
+>>Cambridge CB10 1SD
+>>England
+>>Phone: +44 1223 494642
+>>Fax:   +44 1223 494486
+>>Http:  www.ebi.ac.uk/huber
+>>-------------------------------------
+>>    
+>>
+>
+>  
+>
+
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+ Phone: (206) 667-5791
+   Fax: (206) 667-1319
+
+
+From hpages at fhcrc.org  Fri Apr  7 21:01:10 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Fri, 07 Apr 2006 12:01:10 -0700
+Subject: [Bioc-devel] New repos layout
+Message-ID: <4436B6F6.8080000@fhcrc.org>
+
+Hi all,
+
+Starting with Bioconductor 1.8, we are using a new layout for
+our package repositories.
+
+All our repos were and are still under this place:
+
+     http://bioconductor.org/packages/
+
+(don't try this URL, it doesn't work since there is no
+index.html file here).
+Each version of Bioconductor consists of a family of repositories
+that contain the packages that are supposed to work together.
+
+For Bioconductor 1.7 (and earlier versions) we were using (and
+are still using) the following layout:
+
+     http://bioconductor.org/packages/
+
+         bioc/1.7/src/contrib/html/
+         data/annotation/1.7/src/contrib/html/
+         data/experiment/1.7/src/contrib/html/
+         omegahat/1.7/src/contrib/html/
+         lindsey/1.7/src/contrib/html/
+
+Starting with Bioconductor 1.8 (the current devel version), we are
+using this new layout:
+
+
+     http://bioconductor.org/packages/1.8/
+
+         bioc/
+         data/annotation/
+         data/experiment/
+         omegahat/
+         lindsey/
+
+
+For now, the repos under http://bioconductor.org/packages/1.8/ can be
+browsed individually. For example
+
+     http://bioconductor.org/packages/1.8/bioc/
+
+displays the package index for this repos (you should see your
+package  here!)
+And
+
+     http://bioconductor.org/packages/1.8/bioc/TaskViews.html
+
+is the entry point for the "per-view" browsing.
+
+In the near future, we plan to make
+
+     http://bioconductor.org/packages/1.8/
+
+directly accessible, with some global info here (e.g. list of repos,
+global index.html, global TaskViews.html, links to the per-repos
+indexes, etc...). This way you will need to bookmark just one link
+in order to remember the entry point to all the Bioconductor 1.8 repos.
+
+Our Mirror HOWTO page has been updated to reflect this change:
+
+    http://bioconductor.org/download/mirrors/mirror-howto.html
+
+so if you are mirroring (or plan to mirror) Bioconductor 1.8,
+please have a look at it.
+
+Regards,
+
+H.
+
+PS: We still have to update our links in our Plone website
+
+     http://bioconductor.org/
+
+Please don't hesitate to report broken links, suggestions, etc...
+All feedback is welcome. Thanks!
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+Phone: (206) 667-5791
+   Fax: (206) 667-1319
+
+
+From sfalcon at fhcrc.org  Fri Apr  7 23:31:43 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 07 Apr 2006 14:31:43 -0700
+Subject: [Bioc-devel] Tip for Bioc developers: use Collate with S4
+Message-ID: <m2d5ftvzr4.fsf@ziti.local>
+
+Hello developers,
+
+If your package defines S4 classes or methods, I'd like to encourage
+you to add a Collate field to your package's DESCRIPTION file.  Why?
+What does the Collate field do?
+
+The Collate field allows you to specify the order in which your .R
+files get parsed (see the Writing R Extensions manual for details).
+With S4 you generally want the following order:
+
+1. class definitions
+2. generic function definitions
+3. method definitions
+4. everything else
+
+Most of the time, when you get the order wrong, your package simply
+won't load.  But there are more subtle issues as well.  Details below
+for the curious.
+
+To summarize: if you define S4 classes or methods, specify a Collate
+field in the DESCRIPTION file and use the above suggestion for loading
+order.
+
+Based on the above, I will profer a suggested organization of .R files
+(just a suggestion that I've recently been finding useful):
+
+    AllClasses.R 
+        contains all calls to setClass and nothing else.
+    
+    AllGenerics.R 
+        contains all calls to setGeneric and nothing else.
+    
+    somegeneric-methods.R 
+        contains setMethod("somegeneric", ...) calls and helper
+        functions.
+
+
+Best,
+
++ seth
+
+PS: Here's the sort of subtle issue you can run into if you don't
+provide a Collate field:
+
+If you define a method for plot (which is an S3 generic), but your
+setMethod comes after code that calls plot(yourObj), then sometimes
+you end up getting the default plot method instead of yours.
+
+
+From sfalcon at fhcrc.org  Sat Apr  8 00:28:39 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 07 Apr 2006 15:28:39 -0700
+Subject: [Bioc-devel] New repos layout
+In-Reply-To: <4436B6F6.8080000@fhcrc.org> (Herve Pages's message of "Fri,
+	07 Apr 2006 12:01:10 -0700")
+References: <4436B6F6.8080000@fhcrc.org>
+Message-ID: <m2irpluijs.fsf@ziti.local>
+
+Herve Pages <hpages at fhcrc.org> writes:
+> Starting with Bioconductor 1.8, we are using a new layout for
+> our package repositories.
+>
+> Starting with Bioconductor 1.8 (the current devel version), we are
+> using this new layout:
+>
+>
+>      http://bioconductor.org/packages/1.8/
+>
+>          bioc/
+>          data/annotation/
+>          data/experiment/
+>          omegahat/
+>          lindsey/
+
+Thanks for thinking of and implementing this.  I think the new layout
+is cleaner and will be easier to maintain, etc.
+
+Best,
+
++ seth
+
+
+From sfalcon at fhcrc.org  Tue Apr 11 05:28:21 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 10 Apr 2006 20:28:21 -0700
+Subject: [Bioc-devel] Bioc 1.8 release status: code freeze
+Message-ID: <m23bgkn63u.fsf@ziti.local>
+
+Hi all,
+
+An update on the release process...
+
+Code Freeze
+-----------
+
+Today is the start of the code freeze for the Bioc 1.8 release.  
+
+* No API changes or feature additions.
+
+* It is OK to fix bugs, improve vignettes, and add/edit documentation.
+
+
+R is beta testing
+-----------------
+
+If you are updating your R sources from svn, you need to switch to the
+2.3 release branch.  Given a checkout of the svn trunk, you can
+do the following:
+
+   cd ~/src/R-2.3
+   svn switch https://svn.r-project.org/R/branches/R-2-3-patches
+
+
+NEW Deadline for passing R CMD check without errors
+---------------------------------------------------
+
+The check results are here:
+http://www.bioconductor.org/checkResults/1.8/html/report.html
+
+A number of packages are failing to build or to pass check.  If you
+see red for one of your packages, please take some time to try to
+address the issue.
+
+We would like to give package developers a few more days to fix up
+their packages so that we can put them in the release.  The new
+deadline is 17 April.  Packages with errors on the 17th
+will be dropped from the release.  The 17th is still the deadline for
+removing warnings.
+
+
+Notes on common errors and warnings
+-----------------------------------
+
+Errors
+~~~~~~
+
+Biobase has new validation code for exprSets that ensures that the
+column names of the expression matrix align with the row names of the
+phenoData data frame.  Many errors I see in the check results are
+related to this.  The solution is to update your example data and make
+sure it is a valid exprSet.
+
+Warnings
+~~~~~~~~
+
+Most of the warnings are documentation related.  These are _easy_ to
+fix, but we need your help.  Please take a few minutes to review the
+warnings for your package and update the documentation.
+
+
+Finally, if you have questions or need help figuring out what is
+wrong, please post to bioc-devel and we will do our best to respond in
+a timely fashion.
+
+Best Wishes,
+
++ seth
+
+
+From xnyang at seu.edu.cn  Wed Apr 12 18:37:35 2006
+From: xnyang at seu.edu.cn (xinan yang)
+Date: Wed, 12 Apr 2006 12:37:35 -0400
+Subject: [Bioc-devel] MCRestimate 1.2.6,   stratify bug
+Message-ID: <443D2CCF.8020005@seu.edu.cn>
+
+Hi, everyone,
+
+I use  MCRestimate 1.2.6,
+but failed to set the parameter "stratify=TRUE", which call 
+balanced.folds to cut the samples into folds.
+
+the samples I used are 28 in classed and 29 in another class.
+
+It is as below:
+
+res.cv <- MCRestimate(eset,
++                  class.column="class",
++                  variableSel.fun = "varSel.highest.t.stat",
++                  classification.fun ="SVM.wrap",
++                  poss.parameters=list(kernel="linear"),
++                  cross.outer=10,
++                  cross.repeat=2,
++                  cross.inner=5,
++                  stratify=TRUE)
+12Error in sampleOfFolds[[sample]] : subscript out of bounds
+ >
+
+
+Anyone can give me a hint?
+
+thanks,
+
+xinan
+
+
+From m.ruschhaupt at dkfz-heidelberg.de  Wed Apr 12 14:01:20 2006
+From: m.ruschhaupt at dkfz-heidelberg.de (Markus Ruschhaupt)
+Date: Wed, 12 Apr 2006 14:01:20 +0200
+Subject: [Bioc-devel] MCRestimate 1.2.6,   stratify bug
+In-Reply-To: <443D2CCF.8020005@seu.edu.cn>
+References: <443D2CCF.8020005@seu.edu.cn>
+Message-ID: <443CEC10.8060509@dkfz-heidelberg.de>
+
+Hi,
+
+
+> I use  MCRestimate 1.2.6,
+> but failed to set the parameter "stratify=TRUE", which call 
+> balanced.folds to cut the samples into folds.
+> 
+> the samples I used are 28 in classed and 29 in another class.
+> 
+> It is as below:
+> 
+> res.cv <- MCRestimate(eset,
+> +                  class.column="class",
+> +                  variableSel.fun = "varSel.highest.t.stat",
+> +                  classification.fun ="SVM.wrap",
+> +                  poss.parameters=list(kernel="linear"),
+> +                  cross.outer=10,
+> +                  cross.repeat=2,
+> +                  cross.inner=5,
+> +                  stratify=TRUE)
+> 12Error in sampleOfFolds[[sample]] : subscript out of bounds
+>  >
+> 
+> 
+> Anyone can give me a hint?
+
+I tried to reproduce your error and created a random data set with 28 
+samples in one group and 29 samples in the other group. But in my case 
+everything worked fine. So first you might try to update all the 
+packages you use (especially the pamr and the e1071 package).
+
+Best
+  Markus
+
+
+From xnyang at seu.edu.cn  Thu Apr 13 17:27:30 2006
+From: xnyang at seu.edu.cn (xinan yang)
+Date: Thu, 13 Apr 2006 11:27:30 -0400
+Subject: [Bioc-devel] MCRestimate 1.2.6,   stratify bug
+In-Reply-To: <443CEC10.8060509@dkfz-heidelberg.de>
+References: <443D2CCF.8020005@seu.edu.cn> <443CEC10.8060509@dkfz-heidelberg.
+	de>
+Message-ID: <443E6DE2.9070608@seu.edu.cn>
+
+Thanks Markus,
+
+I update the related packages, and it works now.
+
+xinan
+
+Markus Ruschhaupt wrote:
+
+> Hi,
+>
+>
+>> I use  MCRestimate 1.2.6,
+>> but failed to set the parameter "stratify=TRUE", which call 
+>> balanced.folds to cut the samples into folds.
+>>
+>> the samples I used are 28 in classed and 29 in another class.
+>>
+>> It is as below:
+>>
+>> res.cv <- MCRestimate(eset,
+>> +                  class.column="class",
+>> +                  variableSel.fun = "varSel.highest.t.stat",
+>> +                  classification.fun ="SVM.wrap",
+>> +                  poss.parameters=list(kernel="linear"),
+>> +                  cross.outer=10,
+>> +                  cross.repeat=2,
+>> +                  cross.inner=5,
+>> +                  stratify=TRUE)
+>> 12Error in sampleOfFolds[[sample]] : subscript out of bounds
+>>  >
+>>
+>>
+>> Anyone can give me a hint?
+>
+>
+> I tried to reproduce your error and created a random data set with 28 
+> samples in one group and 29 samples in the other group. But in my case 
+> everything worked fine. So first you might try to update all the 
+> packages you use (especially the pamr and the e1071 package).
+>
+> Best
+>  Markus
+>
+>
+
+
+From mtmorgan at fhcrc.org  Thu Apr 13 08:25:40 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 12 Apr 2006 23:25:40 -0700
+Subject: [Bioc-devel] Biobase / eSet changes for this release
+Message-ID: <6phk69u2dqz.fsf@gopher3.fhcrc.org>
+
+Biobase/eSet developers,
+
+Here is a brief summary of the version of eSet to be included in the
+this release; the code builds and checks without error, though missing
+documentation (to be corrected within the week) mean that there are
+still warning messages during check.  The most recent changes are in
+svn.
+
+There is one very recent change, to the overall class structure, that
+we agonized over a great deal before making at the last moment.  We
+recognize that this is very unfortunate timing, and that it will cause
+needless work for bioconductors; we will help out as much as possible.
+
+
+There are three major changes:
+
+1. Change in class structure.
+
+eSet -- VIRTUAL
+  ExpressionSet
+  SnpSet
+  (TilingSet -- not implemented)
+
+The main functionality of eSet is to coordinate assayData, phenoData,
+experimentData, and the annoation.  eSet is also a generalized
+container, with high-throughput data stored in the assayData
+slot. eSet is a VIRTUAL class; if you want to store and manipulate a
+consistent set of elements in the assay data slot you should create a
+subclass of eSet. An example of how to do this is below.
+
+ExpressionSet requires that the assayData slot contain matrix element
+'exprs'; other elements (of dimension identical to exprs) are
+permitted. as(exprSet, "ExpressionSet") coerces exprSet objects to
+ExpressionSet, perhaps issuing warnings if ambiguities arise.
+
+library(Biobase)
+data(sample.exprSet)
+obj <- as(sample.exprSet, "ExpressionSet")
+obj
+
+SnpSet is meant to contain SNP data in a manner analogous to
+ExpressionSet; 'call' and 'callProbability' are required assayData
+elements providing information on the call and a statement of
+confidence in the call. The exact structure of these matricies is not
+specified, but the idea is that 'call' encodes diploid genotypes.
+
+2. Change in assayData storage
+
+The assayData slot is an AssayData class union of 'list' and
+'environment'; as a class union, there is no 'initialize'
+method. Instead, the list or environment can be populated with
+elements using a call to assayDataNew(...).
+
+An innovation is the storageMode method, which can be used to change
+how elements in assayData are stored. In particular the storageMode
+can be 'lockedEnvironment', and indeed this is the default. An
+environment is locked in the sense that new elements cannot be added
+to the environment, and existing elements cannot be changed. This
+means that the pass-by-reference semantics of environments will not
+catch users off-guard:
+
+obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+storageMode(obj) <- "environment"
+obj1 <- obj
+exprs(obj1) <- exprs(obj1)[1:10,1:5]
+dims(obj) # yikes! obj exprs dimensions changed!
+
+obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+storageMode(obj) <- "environment"
+obj1 <- obj
+exprs(obj1) <- log(exprs(obj))
+identical(exprs(obj1),exprs(obj)) # TRUE: yikes again!
+
+obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+obj1 <- obj
+exprs(obj1) <- log(exprs(obj1))
+identical(exprs(obj1),exprs(obj)) # FALSE: good!
+
+Note that attempts to directly change slots in locked environments
+cause an error
+
+> assayData(obj1)$exprs <- NULL
+Error: cannot change value of a locked binding. 
+
+The setReplaceMethod for exprs (and assayData) succeeds by performing
+a deep copy of the entire environment. Becaue this is very
+inefficient, the recommended paradigm to update an element in a
+lockedEnvironment is to extract it, make many changes, and then
+reassign it, e.g.,
+
+ex <- exprs(obj1)
+# many changes, ex <- log(ex), ...
+exprs(obj1) <- ex
+
+lockedEnvironment offers some efficiency in copying objects, because
+the environment is not copied during function calls. This is not
+completely satisfactory, though
+
+func <- function(assayData) # good: contents of env will not be copied
+  max(exprs(assayData)) # not so good: exprs copied from environment
+
+
+3. Changes in other slots
+
+Other slots have been changed to treat variable metadata more
+efficiently (in the AnnotatedDataFrame class of slot phenoData) and to
+simplify the type of data stored as experimentData. These changes are
+mostly in line with the web discussions.
+
+
+
+In making these changes, I have tried not to break the existing
+interface beyond what is necessary for the new functionality (e.g.,
+pData still returns the 'data' part of phenoData). One difference,
+though, is that the methods dim, ncol, etc return a vector of
+dimensions reflecting the shared dimensionality of the assayData
+memebers; dims returns an array of dimensions of each element.
+
+These changes affect eSets; any difficulties you might have with
+exprSet probably reflect changes made several months ago to validity
+checking.
+
+Please let me know of any feedback,
+
+Martin
+--
+
+The original 'sample.eSet' contains four elements in the assayData
+slot: R, G, Rb, Gb. To derive a class from eSet for this data, create
+a class, and provide initializaation and validation
+methods. Optionally, update previous eSet data structures to your new
+class. For instance,
+
+setClass("SwirlSet", contains="eSet")
+
+setMethod("initialize", "SwirlSet",
+          function(.Object,
+                   phenoData = new("AnnotatedDataFrame"),
+                   experimentData = new("MIAME"),
+                   annotation = character(),
+                   R = new("matrix"),
+                   G = new("matrix"),
+                   Rb = new("matrix"),
+                   Gb = new("matrix"),
+                   ... ) {
+            callNextMethod(.Object,
+                           assayData = assayDataNew(
+                             R=R, G=G, Rb=Rb, Gb=Gb,
+                             ...),
+                           phenoData = phenoData,
+                           experimentData = experimentData,
+                           annotation = annotation)
+          })
+
+setValidity("SwirlSet", function(object) {
+  assayDataValidMembers(assayData(object), c("R", "G", "Rb", "Gb"))
+})
+
+data(sample.eSet)
+obj <- updateOldESet(sample.eSet,"SwirlSet")
+
+
+From fhahne at gmx.de  Thu Apr 13 09:49:21 2006
+From: fhahne at gmx.de (Florian Hahne)
+Date: Thu, 13 Apr 2006 09:49:21 +0200
+Subject: [Bioc-devel] prada package and eSet in Biobase
+In-Reply-To: <6ph7j5u2cvc.fsf@gopher3.fhcrc.org>
+References: <m2vethphk4.fsf@ziti.local> <6ph7j5u2cvc.fsf@gopher3.fhcrc.org>
+Message-ID: <443E0281.8010308@gmx.de>
+
+Hi Martin,
+thanks, I've already seen it on the biocDevel mailinglist. The bad thing
+is that I changed my code two days ago to make it work with your
+MultiExpressionSet subclass but now this has been kicked out again. So I
+guess I will build my own subclass instead, bad luck...
+Although I think that this would be a useful thing to be provided by
+Biobase, there seem to be many use cases for this and I don't see the
+benefit in implementing it over and over again. I do see that having
+such a general subclass makes validation of the instantiated objects
+extremely hard. So what were the considerations for dropping
+MultiExpressionSet from Biobase?
+Regards,
+Florian
+
+
+Martin Morgan schrieb:
+> Hi Florian -- Seth had forwarded an email of his to you about eSets. I
+> wanted to make sure you were aware of some last minute changes that
+> had to be made, as well as the overall revisions to the
+> class. Attached is a summary of changes made. You might find the
+> example at the end (extending eSet) to be useful for your
+> situation. Let me know if I can be of any assistance.
+>
+> Martin
+> --------
+> Biobase/eSet developers,
+>
+> Here is a brief summary of the version of eSet to be included in the
+> this release; the code builds and checks without error, though missing
+> documentation (to be corrected within the week) mean that there are
+> still warning messages during check.  The most recent changes are in
+> svn.
+>
+> There is one very recent change, to the overall class structure, that
+> we agonized over a great deal before making at the last moment.  We
+> recognize that this is very unfortunate timing, and that it will cause
+> needless work for bioconductors; we will help out as much as possible.
+>
+>
+> There are three major changes:
+>
+> 1. Change in class structure.
+>
+> eSet -- VIRTUAL
+>   ExpressionSet
+>   SnpSet
+>   (TilingSet -- not implemented)
+>
+> The main functionality of eSet is to coordinate assayData, phenoData,
+> experimentData, and the annoation.  eSet is also a generalized
+> container, with high-throughput data stored in the assayData
+> slot. eSet is a VIRTUAL class; if you want to store and manipulate a
+> consistent set of elements in the assay data slot you should create a
+> subclass of eSet. An example of how to do this is below.
+>
+> ExpressionSet requires that the assayData slot contain matrix element
+> 'exprs'; other elements (of dimension identical to exprs) are
+> permitted. as(exprSet, "ExpressionSet") coerces exprSet objects to
+> ExpressionSet, perhaps issuing warnings if ambiguities arise.
+>
+> library(Biobase)
+> data(sample.exprSet)
+> obj <- as(sample.exprSet, "ExpressionSet")
+> obj
+>
+> SnpSet is meant to contain SNP data in a manner analogous to
+> ExpressionSet; 'call' and 'callProbability' are required assayData
+> elements providing information on the call and a statement of
+> confidence in the call. The exact structure of these matricies is not
+> specified, but the idea is that 'call' encodes diploid genotypes.
+>
+> 2. Change in assayData storage
+>
+> The assayData slot is an AssayData class union of 'list' and
+> 'environment'; as a class union, there is no 'initialize'
+> method. Instead, the list or environment can be populated with
+> elements using a call to assayDataNew(...).
+>
+> An innovation is the storageMode method, which can be used to change
+> how elements in assayData are stored. In particular the storageMode
+> can be 'lockedEnvironment', and indeed this is the default. An
+> environment is locked in the sense that new elements cannot be added
+> to the environment, and existing elements cannot be changed. This
+> means that the pass-by-reference semantics of environments will not
+> catch users off-guard:
+>
+> obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+> storageMode(obj) <- "environment"
+> obj1 <- obj
+> exprs(obj1) <- exprs(obj1)[1:10,1:5]
+> dims(obj) # yikes! obj exprs dimensions changed!
+>
+> obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+> storageMode(obj) <- "environment"
+> obj1 <- obj
+> exprs(obj1) <- log(exprs(obj))
+> identical(exprs(obj1),exprs(obj)) # TRUE: yikes again!
+>
+> obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+> obj1 <- obj
+> exprs(obj1) <- log(exprs(obj1))
+> identical(exprs(obj1),exprs(obj)) # FALSE: good!
+>
+> Note that attempts to directly change slots in locked environments
+> cause an error
+>
+>   
+>> assayData(obj1)$exprs <- NULL
+>>     
+> Error: cannot change value of a locked binding. 
+>
+> The setReplaceMethod for exprs (and assayData) succeeds by performing
+> a deep copy of the entire environment. Becaue this is very
+> inefficient, the recommended paradigm to update an element in a
+> lockedEnvironment is to extract it, make many changes, and then
+> reassign it, e.g.,
+>
+> ex <- exprs(obj1)
+> # many changes, ex <- log(ex), ...
+> exprs(obj1) <- ex
+>
+> lockedEnvironment offers some efficiency in copying objects, because
+> the environment is not copied during function calls. This is not
+> completely satisfactory, though
+>
+> func <- function(assayData) # good: contents of env will not be copied
+>   max(exprs(assayData)) # not so good: exprs copied from environment
+>
+>
+> 3. Changes in other slots
+>
+> Other slots have been changed to treat variable metadata more
+> efficiently (in the AnnotatedDataFrame class of slot phenoData) and to
+> simplify the type of data stored as experimentData. These changes are
+> mostly in line with the web discussions.
+>
+>
+>
+> In making these changes, I have tried not to break the existing
+> interface beyond what is necessary for the new functionality (e.g.,
+> pData still returns the 'data' part of phenoData). One difference,
+> though, is that the methods dim, ncol, etc return a vector of
+> dimensions reflecting the shared dimensionality of the assayData
+> memebers; dims returns an array of dimensions of each element.
+>
+> These changes affect eSets; any difficulties you might have with
+> exprSet probably reflect changes made several months ago to validity
+> checking.
+>
+> Please let me know of any feedback,
+>
+> Martin
+> --
+>
+> The original 'sample.eSet' contains four elements in the assayData
+> slot: R, G, Rb, Gb. To derive a class from eSet for this data, create
+> a class, and provide initializaation and validation
+> methods. Optionally, update previous eSet data structures to your new
+> class. For instance,
+>
+> setClass("SwirlSet", contains="eSet")
+>
+> setMethod("initialize", "SwirlSet",
+>           function(.Object,
+>                    phenoData = new("AnnotatedDataFrame"),
+>                    experimentData = new("MIAME"),
+>                    annotation = character(),
+>                    R = new("matrix"),
+>                    G = new("matrix"),
+>                    Rb = new("matrix"),
+>                    Gb = new("matrix"),
+>                    ... ) {
+>             callNextMethod(.Object,
+>                            assayData = assayDataNew(
+>                              R=R, G=G, Rb=Rb, Gb=Gb,
+>                              ...),
+>                            phenoData = phenoData,
+>                            experimentData = experimentData,
+>                            annotation = annotation)
+>           })
+>
+> setValidity("SwirlSet", function(object) {
+>   assayDataValidMembers(assayData(object), c("R", "G", "Rb", "Gb"))
+> })
+>
+> data(sample.eSet)
+> obj <- updateOldESet(sample.eSet,"SwirlSet")
+>
+> Seth Falcon <sfalcon at fhcrc.org> writes:
+>
+>   
+>> Hi Florian,
+>>
+>> As you may have noticed, the prada package is not building against the
+>> new Biobase code.
+>>
+>> My apologies for not keeping you more in the loop regarding the
+>> refactoring of Biobase and eSet in particular.
+>>
+>> Here's the story:
+>>
+>> There has been a consensus for awhile that exprSet is not general
+>> enough to handle the new chip technologies that are emerging.  eSet
+>> was proposed (awhile ago) as a replacement, but its design has been
+>> provisional.  I know you have been using it.  
+>>
+>> We've recently had time to revisit the design.  For the gory details,
+>> see the discussion here:
+>> http://wiki.fhcrc.org/bioc/Core_Bioconductor_Classes_Discussion
+>>
+>> Martin Morgan (cc'd) has implemented a refactored eSet along with some
+>> subclasses.  See the latest Biobase svn for details.
+>>
+>> Briefly, the idea is that eSet is now an abstract superclass and that
+>> for each technology we will have concrete subclasses.
+>>
+>> So to make prada work, I suspect you will need to create a subclass of
+>> eSet of your own, unless one of Martin's subclasses will work for you.
+>>
+>> I realize this may not have been the news your were hoping for.
+>> Please have a look at the changes and feel free to ask me or Martin
+>> any questions (might be good to send the questions to bioc-devel,
+>> however).
+>>
+>> Thanks,
+>>
+>> -- 
+>> + seth
+>>     
+
+
+-- 
+Florian Hahne
+Abt. Molekulare Genomanalyse (B050)
+Deutsches Krebsforschungszentrum (DKFZ)
+Im Neuenheimer Feld 580
+D-69120 Heidelberg
+phone: 0049 6221 424764
+fax: 0049 6221 422399
+web: www.dkfz.de/mga
+
+
+From ririzarr at jhsph.edu  Thu Apr 13 15:17:26 2006
+From: ririzarr at jhsph.edu (Rafael A Irizarry)
+Date: Thu, 13 Apr 2006 09:17:26 -0400
+Subject: [Bioc-devel] Biobase / eSet changes for this release
+In-Reply-To: <6phk69u2dqz.fsf@gopher3.fhcrc.org>
+References: <6phk69u2dqz.fsf@gopher3.fhcrc.org>
+Message-ID: <443E4F66.2090607@jhsph.edu>
+
+Hi!
+
+Looks good.
+
+One comment:
+Typically, SnpSet will have more than just the allele calls and p-values.
+It will aslo have a copy number estimate and it's measure of 
+uncertainty. How hard is it to add these?
+You would need one more array  just like the one you used for the 
+genotype calls.
+
+-r
+
+Martin Morgan wrote:
+
+>Biobase/eSet developers,
+>
+>Here is a brief summary of the version of eSet to be included in the
+>this release; the code builds and checks without error, though missing
+>documentation (to be corrected within the week) mean that there are
+>still warning messages during check.  The most recent changes are in
+>svn.
+>
+>There is one very recent change, to the overall class structure, that
+>we agonized over a great deal before making at the last moment.  We
+>recognize that this is very unfortunate timing, and that it will cause
+>needless work for bioconductors; we will help out as much as possible.
+>
+>
+>There are three major changes:
+>
+>1. Change in class structure.
+>
+>eSet -- VIRTUAL
+>  ExpressionSet
+>  SnpSet
+>  (TilingSet -- not implemented)
+>
+>The main functionality of eSet is to coordinate assayData, phenoData,
+>experimentData, and the annoation.  eSet is also a generalized
+>container, with high-throughput data stored in the assayData
+>slot. eSet is a VIRTUAL class; if you want to store and manipulate a
+>consistent set of elements in the assay data slot you should create a
+>subclass of eSet. An example of how to do this is below.
+>
+>ExpressionSet requires that the assayData slot contain matrix element
+>'exprs'; other elements (of dimension identical to exprs) are
+>permitted. as(exprSet, "ExpressionSet") coerces exprSet objects to
+>ExpressionSet, perhaps issuing warnings if ambiguities arise.
+>
+>library(Biobase)
+>data(sample.exprSet)
+>obj <- as(sample.exprSet, "ExpressionSet")
+>obj
+>
+>SnpSet is meant to contain SNP data in a manner analogous to
+>ExpressionSet; 'call' and 'callProbability' are required assayData
+>elements providing information on the call and a statement of
+>confidence in the call. The exact structure of these matricies is not
+>specified, but the idea is that 'call' encodes diploid genotypes.
+>
+>2. Change in assayData storage
+>
+>The assayData slot is an AssayData class union of 'list' and
+>'environment'; as a class union, there is no 'initialize'
+>method. Instead, the list or environment can be populated with
+>elements using a call to assayDataNew(...).
+>
+>An innovation is the storageMode method, which can be used to change
+>how elements in assayData are stored. In particular the storageMode
+>can be 'lockedEnvironment', and indeed this is the default. An
+>environment is locked in the sense that new elements cannot be added
+>to the environment, and existing elements cannot be changed. This
+>means that the pass-by-reference semantics of environments will not
+>catch users off-guard:
+>
+>obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+>storageMode(obj) <- "environment"
+>obj1 <- obj
+>exprs(obj1) <- exprs(obj1)[1:10,1:5]
+>dims(obj) # yikes! obj exprs dimensions changed!
+>
+>obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+>storageMode(obj) <- "environment"
+>obj1 <- obj
+>exprs(obj1) <- log(exprs(obj))
+>identical(exprs(obj1),exprs(obj)) # TRUE: yikes again!
+>
+>obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+>obj1 <- obj
+>exprs(obj1) <- log(exprs(obj1))
+>identical(exprs(obj1),exprs(obj)) # FALSE: good!
+>
+>Note that attempts to directly change slots in locked environments
+>cause an error
+>
+>  
+>
+>>assayData(obj1)$exprs <- NULL
+>>    
+>>
+>Error: cannot change value of a locked binding. 
+>
+>The setReplaceMethod for exprs (and assayData) succeeds by performing
+>a deep copy of the entire environment. Becaue this is very
+>inefficient, the recommended paradigm to update an element in a
+>lockedEnvironment is to extract it, make many changes, and then
+>reassign it, e.g.,
+>
+>ex <- exprs(obj1)
+># many changes, ex <- log(ex), ...
+>exprs(obj1) <- ex
+>
+>lockedEnvironment offers some efficiency in copying objects, because
+>the environment is not copied during function calls. This is not
+>completely satisfactory, though
+>
+>func <- function(assayData) # good: contents of env will not be copied
+>  max(exprs(assayData)) # not so good: exprs copied from environment
+>
+>
+>3. Changes in other slots
+>
+>Other slots have been changed to treat variable metadata more
+>efficiently (in the AnnotatedDataFrame class of slot phenoData) and to
+>simplify the type of data stored as experimentData. These changes are
+>mostly in line with the web discussions.
+>
+>
+>
+>In making these changes, I have tried not to break the existing
+>interface beyond what is necessary for the new functionality (e.g.,
+>pData still returns the 'data' part of phenoData). One difference,
+>though, is that the methods dim, ncol, etc return a vector of
+>dimensions reflecting the shared dimensionality of the assayData
+>memebers; dims returns an array of dimensions of each element.
+>
+>These changes affect eSets; any difficulties you might have with
+>exprSet probably reflect changes made several months ago to validity
+>checking.
+>
+>Please let me know of any feedback,
+>
+>Martin
+>--
+>
+>The original 'sample.eSet' contains four elements in the assayData
+>slot: R, G, Rb, Gb. To derive a class from eSet for this data, create
+>a class, and provide initializaation and validation
+>methods. Optionally, update previous eSet data structures to your new
+>class. For instance,
+>
+>setClass("SwirlSet", contains="eSet")
+>
+>setMethod("initialize", "SwirlSet",
+>          function(.Object,
+>                   phenoData = new("AnnotatedDataFrame"),
+>                   experimentData = new("MIAME"),
+>                   annotation = character(),
+>                   R = new("matrix"),
+>                   G = new("matrix"),
+>                   Rb = new("matrix"),
+>                   Gb = new("matrix"),
+>                   ... ) {
+>            callNextMethod(.Object,
+>                           assayData = assayDataNew(
+>                             R=R, G=G, Rb=Rb, Gb=Gb,
+>                             ...),
+>                           phenoData = phenoData,
+>                           experimentData = experimentData,
+>                           annotation = annotation)
+>          })
+>
+>setValidity("SwirlSet", function(object) {
+>  assayDataValidMembers(assayData(object), c("R", "G", "Rb", "Gb"))
+>})
+>
+>data(sample.eSet)
+>obj <- updateOldESet(sample.eSet,"SwirlSet")
+>
+>_______________________________________________
+>Bioc-devel at stat.math.ethz.ch mailing list
+>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>  
+>
+
+
+From sfalcon at fhcrc.org  Thu Apr 13 16:51:37 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 13 Apr 2006 07:51:37 -0700
+Subject: [Bioc-devel] prada package and eSet in Biobase
+In-Reply-To: <443E0281.8010308@gmx.de> (Florian Hahne's message of "Thu,
+	13 Apr 2006 09:49:21 +0200")
+References: <m2vethphk4.fsf@ziti.local> <6ph7j5u2cvc.fsf@gopher3.fhcrc.org>
+	<443E0281.8010308@gmx.de>
+Message-ID: <m2vetd1qbq.fsf@ziti.fhcrc.org>
+
+Hi Florian, all,
+
+Florian Hahne <fhahne at gmx.de> writes:
+> thanks, I've already seen it on the biocDevel mailinglist. The bad
+> thing is that I changed my code two days ago to make it work with
+> your MultiExpressionSet subclass but now this has been kicked out
+> again. So I guess I will build my own subclass instead, bad luck...
+
+We are setting a terrible example.  We are aware of this, we aim to
+improve in the future, and we beg forgiveness :-)  I have hope that
+the refactoring of the core classes is going to make it easier to
+develop interoperable software once we get over the initial pain of
+changing over.
+
+> Although I think that this would be a useful thing to be provided by
+> Biobase, there seem to be many use cases for this and I don't see the
+> benefit in implementing it over and over again. I do see that having
+> such a general subclass makes validation of the instantiated objects
+> extremely hard. So what were the considerations for dropping
+> MultiExpressionSet from Biobase?
+
+Florian, you've cut to the heart of the issue.  Let me explain some of
+the thinking (sorry for the length).
+
+The idea of a MultiExpressionSet is that it (1) ties together
+expression and sample data, and (2) allows arbitrary "stuff" to be
+stored in the assayData slot (storage is list or environment).
+
+As you say, there seem to be many uses cases for this sort of
+structure.  Let's take the example Martin provided of the Swirl data.
+So Martin whats to put four named elements (R, G, Rb, Gb) into the
+assayData slot.  He could use a MultiExpressionSet for this (if avail)
+and then write some methods for MultiExpressionSet to manipulate his
+data and access the R, G, Rb, Gb pieces in assayData.  The problem is,
+there is nothing to guarantee that a particular MultiExpressionSet
+instance has the right stuff inside the assayData slot.  If you are
+good friends with Martin, he might tell you how to create his kind of
+MultiExpressionSet so that you can use the methods he has written.
+And Martin's methods could be written to fail gracefully, but this
+would require a lot of manual checking.  Summary: this approach makes
+it harder to end up with reusable and interoperable software.
+
+Instead, we propose that users like Martin create a subclass of eSet
+with enough supporting infrastructure (initialize method, validity
+checking) to ensure the proper structure is available.  This way, you
+don't have to know Martin very well (you should, he's a great guy), he
+has put everything you need to know into the class definition.  You
+can reuse his code.
+
+That is the core of it.  We want to avoid having lots of
+MultiExpressionSet instances that have their own "special" structure
+not defined or managed in some way by the class system.
+
+Let me explain a bit further...  If we took an entirely object
+oriented approach, we would toss out assayData and require that
+subclasses add as a slot everything they need.  For example,
+ExpressionSet would have an exprs slot and Martin's swirl example
+would have slots for R, G, Rb, and Gb.  This approach has advantages:
+it more strictly defines the data and allows the class system to do
+more of the work for you.  However, it lacks flexibility.  If you end
+up with a number of slots that are only present some of the time, for
+example, the slot-based approach can be more trouble than it is
+worth.  The current design is aiming for a compromise.  It allows
+developers to control what goes in assayData, but _encourages_ the
+creation of subclasses that codifies known structure.  Note also, that
+the current approach does not prevent subclasses from taking a more
+structured and slot-based approach.  Add as many slots as you like and
+add methods for accessing them.  You could even ignore the assayData
+slot entirely, but you will need to override the assayData accessor
+methods to do the Right Thing for your particular class.
+
+Finally, if you are still reading, I would be surprised if your use of
+MultiExpressionSet wouldn't, in the end want to add at least one slot
+of its own in which case you would be subclassing anyway.
+
+
+From stvjc at channing.harvard.edu  Thu Apr 13 18:22:51 2006
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Thu, 13 Apr 2006 12:22:51 -0400 (EDT)
+Subject: [Bioc-devel] prada package and eSet in Biobase
+In-Reply-To: <m2vetd1qbq.fsf@ziti.fhcrc.org>
+References: <m2vethphk4.fsf@ziti.local> <6ph7j5u2cvc.fsf@gopher3.fhcrc.org>
+	<443E0281.8010308@gmx.de> <m2vetd1qbq.fsf@ziti.fhcrc.org>
+Message-ID: <Pine.GSO.4.58.0604131216560.16327@capecod.bwh.harvard.edu>
+
+>
+> Instead, we propose that users like Martin create a subclass of eSet
+> with enough supporting infrastructure (initialize method, validity
+> checking) to ensure the proper structure is available.  This way, you
+> don't have to know Martin very well (you should, he's a great guy), he
+> has put everything you need to know into the class definition.  You
+> can reuse his code.
+
+This is a tremendous step forward.  It is a bit painful to program
+these seemingly purely infrastructural elements (initialize/validity)
+but -- I think it is a reasonable hope, but there is some risk
+involved -- once we get these habits in place, things should work
+together much more reliably.
+
+Now, how can we help in this part of the programming  discipline?
+Is it possible to generate useful stubs?
+
+I really enjoyed reading to the end of Seth's email -- I recommend
+it to the core, and eventually it should be part of a best practices
+document that we serve to the developer community.
+
+(And of course I reserve the right to retract anything I have just written
+at any time.)
+
+
+From EGiorgi at coh.org  Thu Apr 13 20:31:51 2006
+From: EGiorgi at coh.org (Giorgi, Elena)
+Date: Thu, 13 Apr 2006 11:31:51 -0700
+Subject: [Bioc-devel] yet another question on technical replicates...
+Message-ID: <9DD98D4DC1EC5D46A095C8C0EA4DD65302212EF3@EXCH-VS2.coh.org>
+
+
+Dear Board,
+
+I know this topic has been discussed several times, yet I'm still
+confused on how to come up with the right design matrix when technical
+replicates are present, especially when dealing with affy arrays. 
+
+For one thing, I know that when we have the same number of tech reps per
+biological sample, then we can proceed and use the duplicate correlation
+function, correct?
+
+On the other hand, when this is not the case, what's the best strategy
+to use? Averaging is not recommended, yet if we have 2-3 arrays per
+sample, we don't have enough degrees of freedom to be able to include
+the technical replication effect, isn't this so?
+
+One example that came up in our lab was an affy experiment with two
+cell-lines; for group1 we had 5 arrays, one biological replicate each,
+and for group2 we had 4 arrays, 2 tech reps from one sample and 2 tech
+reps from a different sample. 
+
+We used the following design matrix:
+
+1 0 0
+1 0 0
+1 0 0 
+1 0 0 
+1 0 0 
+0 1 0
+0 1 0
+0 0 1
+0 0 1
+
+And, in order to test the differences between the two groups, the
+following contrast: c(-1, 0.5, 0.5).
+
+Does this sound like a reasonable approach? In general, should we
+include a different column in the design matrix for each tech rep group
+and average the contrast coefficients accordingly? Or is this just
+equivalent to averaging the tech reps?
+
+Thanks so much,
+Elena
+
+
+"EMF <COH.ORG>" made the following annotations.
+------------------------------------------------------------------------------
+SECURITY/CONFIDENTIALITY WARNING:  This message and any atta...{{dropped}}
+
+
+From f.hahne at dkfz.de  Thu Apr 13 20:52:32 2006
+From: f.hahne at dkfz.de (Florian Hahne)
+Date: Thu, 13 Apr 2006 20:52:32 +0200
+Subject: [Bioc-devel] prada package and eSet in Biobase
+In-Reply-To: <m2vetd1qbq.fsf@ziti.fhcrc.org>
+References: <m2vethphk4.fsf@ziti.local>
+	<6ph7j5u2cvc.fsf@gopher3.fhcrc.org>	<443E0281.8010308@gmx.de>
+	<m2vetd1qbq.fsf@ziti.fhcrc.org>
+Message-ID: <443E9DF0.5020902@dkfz.de>
+
+Hi Seth & Co,
+thanks for the extensive essay about eSets...
+I totaly agree with the concept of the virtual eSet class and indeed a 
+MultiExpressionSet subclass would be contrary to all the ideas behind 
+it. But as you know, people are lazy and always try to take the path of 
+least resistance...
+Regarding discipline: It isn't that much work to program this stuff and 
+Martin's code stubs are already very helpful. Maybe two or three more 
+sentences what the function calls are doing and it can already be put 
+into a vignette. If you are interested I can try to condense the 
+messages of this thread into a vignette once all the infrastructural 
+stuff is realy finished. But there still remain a couple of open questions:
+
+1.) I prefer to set the validation function already with the class 
+definition. Is there a reason I should not do that and use setValidity 
+instead?
+
+etClass("mytestSet", contains = "eSet",
+         validity = function(object){
+           msg <- TRUE
+           msg <- assayDataValidMembers(assayData(object), c("exprs", 
+"other", "stuff"))
+           #some further validity checks...
+           return(msg)})
+
+setMethod("initialize", "mytestSet",
+          function(.Object,
+                   phenoData = new("AnnotatedDataFrame"),
+                   experimentData = new("MIAME"),
+                   annotation = character(),
+                   exprs = new("matrix"),
+                   other = new("matrix"),
+                   stuff = new("matrix"))
+                   {
+            callNextMethod(.Object,
+                           assayData = assayDataNew(
+                 storage.mode="list",
+                             exprs = exprs,
+                             other = other,
+                             stuff = stuff
+                            ),
+                           phenoData = phenoData,
+                           experimentData = experimentData,
+                           annotation = annotation)
+          })
+
+2.) Does it make sense to program the constructor/initialzer in a way 
+that one has to give all the items of assayData individualy? Wouldn't it 
+be better to accept a predefined assayData object? Or should one just do 
+something like this:
+
+obj  <- new("mytestSet")
+ad <- assayDataNew(storage.mode="list",
+                                  exprs = matrix(1:9, ncol=3),
+                                  other = matrix(1:9, ncol=3),
+                                  stuff = matrix(1:9, ncol=3))
+assayData(obj) <- ad
+
+3.) Shouldn't all of eSet's replacement methods call validObject before 
+they finish? I always find it a waste of time writing validator 
+functions and then by doing a stupid replacement (like the one above) 
+create invalid objects without even noticing.
+
+validObject(obj)
+
+Of course eventualy it will be necessary to overwrite the replacement 
+methods of eSet if your class structure gets sophisticated but for the 
+day to day usage most people will probably rely on the methods provided 
+by eSet.
+
+Hope these questions are not completely stupid but that's what I noticed 
+while playing around with the new stuff.
+
+Cheers,
+Florian
+
+
+From mtmorgan at fhcrc.org  Thu Apr 13 23:15:24 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 13 Apr 2006 14:15:24 -0700
+Subject: [Bioc-devel] prada package and eSet in Biobase
+In-Reply-To: <443E9DF0.5020902@dkfz.de> (Florian Hahne's message of "Thu, 13
+	Apr 2006 20:52:32 +0200")
+References: <m2vethphk4.fsf@ziti.local> <6ph7j5u2cvc.fsf@gopher3.fhcrc.org>
+	<443E0281.8010308@gmx.de> <m2vetd1qbq.fsf@ziti.fhcrc.org>
+	<443E9DF0.5020902@dkfz.de>
+Message-ID: <6phr741b2j7.fsf@gopher3.fhcrc.org>
+
+Hi Florian --
+
+Florian Hahne <f.hahne at dkfz.de> writes:
+
+> 1.) I prefer to set the validation function already with the class
+> definition. Is there a reason I should not do that and use setValidity
+> instead?
+
+It would be fine to define the validation function in the
+class. Sometimes the validity checking function is useful in other
+circumstances, and it would then be less convenient to access and
+reuse it.
+
+> 2.) Does it make sense to program the constructor/initialzer in a way
+> that one has to give all the items of assayData individualy? Wouldn't
+> it be better to accept a predefined assayData object? Or should one
+> just do something like this:
+>
+> obj  <- new("mytestSet")
+> ad <- assayDataNew(storage.mode="list",
+>                                   exprs = matrix(1:9, ncol=3),
+>                                   other = matrix(1:9, ncol=3),
+>                                   stuff = matrix(1:9, ncol=3))
+> assayData(obj) <- ad
+
+Using specific element names makes expectation about what assayData
+should contain clear. It also separates the use of the class from the
+implementation details of the way elements are stored.
+
+More technically, as suggested by assayDataNew (rather than "new"),
+the AssayData class is a little special. It is a class union of list
+and environment. Classes cannot 'contain' environments.
+
+setClass("A", contains="AssayData")
+[1] "A"
+> new("A")
+An object of class "A"
+logical(0)
+> validObject(new("A"))
+Error in validObject(new("A")) : invalid class "A" object: invalid
+object for slot ".Data" in class "A": got class "logical", should be
+or extend class "AssayData"
+
+For this reason, one cannot instantiate or derive useful classes from
+AssayData -- it serves as a predicate to identify objects that can
+occupy the assayData slot, and for method dispatch purposes. Other
+classes can have useful derived subclasses. So for instance one could
+derive a subclass from "AnnotatedDataFrame"
+
+setClass("B", representation(myX="numeric"),contains="AnnotatedDataFrame")
+
+and use that to define a specialized class derived from eSet:
+
+setClass("BSet", representation(phenoData="B"), contains="eSet",
+         prototype(phenoData=new("B")))
+
+setMethod("initialize","BSet", function(.Object, ...) {
+  callNextMethod()
+})
+
+> obj <- new("BSet", phenoData=new("B"))
+> 
+> obj <- new("BSet", phenoData=new("AnnotatedDataFrame"))
+Error in checkSlotAssignment(object, name, value) : 
+	assignment of an object of class "AnnotatedDataFrame" is not valid for slot 'phenoData' in an object of class "BSet"; is(value, "B") is not TRUE
+
+In essence, and in contrast to the other slots, the responsibility for
+controlling initialization of the assayData slot lies with eSet. 
+
+On a related note, probably a slightly better implementation of
+"initialize" for SwirlSet is
+
+setMethod("initialize", "SwirlSet",
+          function(.Object,
+                   phenoData = new("AnnotatedDataFrame"),
+                   experimentData = new("MIAME"),
+                   annotation = character(),
+                   R = new("matrix"),
+                   G = new("matrix"),
+                   Rb = new("matrix"),
+                   Gb = new("matrix"),
+                   ... ) {
+            callNextMethod(.Object,
+                           phenoData = phenoData,
+                           experimentData = experimentData,
+                           annotation = annotation,
+                           R=R, G=G, Rb=Rb, Gb=Gb,
+                           ...)
+          })
+
+> 3.) Shouldn't all of eSet's replacement methods call validObject
+> before they finish? I always find it a waste of time writing validator
+> functions and then by doing a stupid replacement (like the one above)
+> create invalid objects without even noticing.
+
+The problem is exactly the one you noted above: it is not unreasonable
+to expect that a user (or developer of Biobase) might want to alter an
+object in several steps:
+
+myFancyFunction <- function(obj) {
+  assayData(obj) <- fancyAssaydData # obj invalid...
+  phenoData(obj) <- justAsFancyPhenoData # but now valid
+  validObject(obj)
+  obj
+}
+
+This would not be possible if validity were checked at each
+replacement. Probably it would encourage developers to access slots
+directly, and this would be very bad when the underlying reprsentation
+of the class changed. 
+
+> Hope these questions are not completely stupid but that's what I
+> noticed while playing around with the new stuff.
+
+Great questions, and I hope I haven't lied too much in trying to
+answer them.
+
+Martin
+
+
+From mtmorgan at fhcrc.org  Thu Apr 13 23:37:37 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 13 Apr 2006 14:37:37 -0700
+Subject: [Bioc-devel] Biobase / eSet changes for this release
+References: <6phk69u2dqz.fsf@gopher3.fhcrc.org> <443E4F66.2090607@jhsph.edu>
+Message-ID: <6phfykhb1i6.fsf@gopher3.fhcrc.org>
+
+Hi Rafael,
+
+An approach is to create a new class derived from eSet with
+initialization and validation methods to specify the additional
+elements to be stored in assayData. For the additions you suggest, the
+following might be a useful template:
+
+setClass("SnpSetPlus", contains="eSet")
+
+setMethod("initialize", "SnpSetPlus",
+          function(.Object,
+                   phenoData = new("AnnotatedDataFrame"),
+                   experimentData = new("MIAME"),
+                   annotation = character(),
+                   call = new("matrix"),
+                   callProbability = new("matrix"),
+                   copyNumber = new("matrix"),
+                   copyNumberProbability = new("matrix"),
+                   ... ) {
+            callNextMethod(.Object,
+                           phenoData = phenoData,
+                           experimentData = experimentData,
+                           annotation = annotation,
+                           call=call,
+                           callProbability=callProbability,
+                           copyNumber=copyNumber,
+                           copyNumberProbability=copyNumberProbability,
+                           ...)
+          })
+
+setValidity("SnpSetPlus", function(object) {
+  assayDataValidMembers(assayData(object),
+                        c("call","callProbability",
+                          "copyNumber", "copyNumberProbability"))
+})
+
+obj <- new("SnpSetPlus")
+
+Martin
+
+
+Rafael A Irizarry <ririzarr at jhsph.edu> writes:
+
+> Hi!
+>
+> Looks good.
+>
+> One comment:
+> Typically, SnpSet will have more than just the allele calls and p-values.
+> It will aslo have a copy number estimate and it's measure of
+> uncertainty. How hard is it to add these?
+> You would need one more array  just like the one you used for the
+> genotype calls.
+>
+> -r
+>
+> Martin Morgan wrote:
+>
+>>Biobase/eSet developers,
+>>
+>>Here is a brief summary of the version of eSet to be included in the
+>>this release; the code builds and checks without error, though missing
+>>documentation (to be corrected within the week) mean that there are
+>>still warning messages during check.  The most recent changes are in
+>>svn.
+>>
+>>There is one very recent change, to the overall class structure, that
+>>we agonized over a great deal before making at the last moment.  We
+>>recognize that this is very unfortunate timing, and that it will cause
+>>needless work for bioconductors; we will help out as much as possible.
+>>
+>>
+>>There are three major changes:
+>>
+>>1. Change in class structure.
+>>
+>>eSet -- VIRTUAL
+>>  ExpressionSet
+>>  SnpSet
+>>  (TilingSet -- not implemented)
+>>
+>>The main functionality of eSet is to coordinate assayData, phenoData,
+>>experimentData, and the annoation.  eSet is also a generalized
+>>container, with high-throughput data stored in the assayData
+>>slot. eSet is a VIRTUAL class; if you want to store and manipulate a
+>>consistent set of elements in the assay data slot you should create a
+>>subclass of eSet. An example of how to do this is below.
+>>
+>>ExpressionSet requires that the assayData slot contain matrix element
+>>'exprs'; other elements (of dimension identical to exprs) are
+>>permitted. as(exprSet, "ExpressionSet") coerces exprSet objects to
+>>ExpressionSet, perhaps issuing warnings if ambiguities arise.
+>>
+>>library(Biobase)
+>>data(sample.exprSet)
+>>obj <- as(sample.exprSet, "ExpressionSet")
+>>obj
+>>
+>>SnpSet is meant to contain SNP data in a manner analogous to
+>>ExpressionSet; 'call' and 'callProbability' are required assayData
+>>elements providing information on the call and a statement of
+>>confidence in the call. The exact structure of these matricies is not
+>>specified, but the idea is that 'call' encodes diploid genotypes.
+>>
+>>2. Change in assayData storage
+>>
+>>The assayData slot is an AssayData class union of 'list' and
+>>'environment'; as a class union, there is no 'initialize'
+>>method. Instead, the list or environment can be populated with
+>>elements using a call to assayDataNew(...).
+>>
+>>An innovation is the storageMode method, which can be used to change
+>>how elements in assayData are stored. In particular the storageMode
+>>can be 'lockedEnvironment', and indeed this is the default. An
+>>environment is locked in the sense that new elements cannot be added
+>>to the environment, and existing elements cannot be changed. This
+>>means that the pass-by-reference semantics of environments will not
+>>catch users off-guard:
+>>
+>>obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+>>storageMode(obj) <- "environment"
+>>obj1 <- obj
+>>exprs(obj1) <- exprs(obj1)[1:10,1:5]
+>>dims(obj) # yikes! obj exprs dimensions changed!
+>>
+>>obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+>>storageMode(obj) <- "environment"
+>>obj1 <- obj
+>>exprs(obj1) <- log(exprs(obj))
+>>identical(exprs(obj1),exprs(obj)) # TRUE: yikes again!
+>>
+>>obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+>>obj1 <- obj
+>>exprs(obj1) <- log(exprs(obj1))
+>>identical(exprs(obj1),exprs(obj)) # FALSE: good!
+>>
+>>Note that attempts to directly change slots in locked environments
+>>cause an error
+>>
+>>
+>>
+>>>assayData(obj1)$exprs <- NULL
+>>>
+>>>
+>> Error: cannot change value of a locked binding.
+>>
+>>The setReplaceMethod for exprs (and assayData) succeeds by performing
+>>a deep copy of the entire environment. Becaue this is very
+>>inefficient, the recommended paradigm to update an element in a
+>>lockedEnvironment is to extract it, make many changes, and then
+>>reassign it, e.g.,
+>>
+>>ex <- exprs(obj1)
+>># many changes, ex <- log(ex), ...
+>>exprs(obj1) <- ex
+>>
+>>lockedEnvironment offers some efficiency in copying objects, because
+>>the environment is not copied during function calls. This is not
+>>completely satisfactory, though
+>>
+>>func <- function(assayData) # good: contents of env will not be copied
+>>  max(exprs(assayData)) # not so good: exprs copied from environment
+>>
+>>
+>>3. Changes in other slots
+>>
+>>Other slots have been changed to treat variable metadata more
+>>efficiently (in the AnnotatedDataFrame class of slot phenoData) and to
+>>simplify the type of data stored as experimentData. These changes are
+>>mostly in line with the web discussions.
+>>
+>>
+>>
+>>In making these changes, I have tried not to break the existing
+>>interface beyond what is necessary for the new functionality (e.g.,
+>>pData still returns the 'data' part of phenoData). One difference,
+>>though, is that the methods dim, ncol, etc return a vector of
+>>dimensions reflecting the shared dimensionality of the assayData
+>>memebers; dims returns an array of dimensions of each element.
+>>
+>>These changes affect eSets; any difficulties you might have with
+>>exprSet probably reflect changes made several months ago to validity
+>>checking.
+>>
+>>Please let me know of any feedback,
+>>
+>>Martin
+>>--
+>>
+>>The original 'sample.eSet' contains four elements in the assayData
+>>slot: R, G, Rb, Gb. To derive a class from eSet for this data, create
+>>a class, and provide initializaation and validation
+>>methods. Optionally, update previous eSet data structures to your new
+>>class. For instance,
+>>
+>>setClass("SwirlSet", contains="eSet")
+>>
+>>setMethod("initialize", "SwirlSet",
+>>          function(.Object,
+>>                   phenoData = new("AnnotatedDataFrame"),
+>>                   experimentData = new("MIAME"),
+>>                   annotation = character(),
+>>                   R = new("matrix"),
+>>                   G = new("matrix"),
+>>                   Rb = new("matrix"),
+>>                   Gb = new("matrix"),
+>>                   ... ) {
+>>            callNextMethod(.Object,
+>>                           assayData = assayDataNew(
+>>                             R=R, G=G, Rb=Rb, Gb=Gb,
+>>                             ...),
+>>                           phenoData = phenoData,
+>>                           experimentData = experimentData,
+>>                           annotation = annotation)
+>>          })
+>>
+>>setValidity("SwirlSet", function(object) {
+>>  assayDataValidMembers(assayData(object), c("R", "G", "Rb", "Gb"))
+>>})
+>>
+>>data(sample.eSet)
+>>obj <- updateOldESet(sample.eSet,"SwirlSet")
+>>
+>>_______________________________________________
+>>Bioc-devel at stat.math.ethz.ch mailing list
+>>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>
+
+
+From sfalcon at fhcrc.org  Thu Apr 13 23:47:57 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 13 Apr 2006 14:47:57 -0700
+Subject: [Bioc-devel] prada package and eSet in Biobase
+In-Reply-To: <443E9DF0.5020902@dkfz.de> (Florian Hahne's message of "Thu,
+	13 Apr 2006 20:52:32 +0200")
+References: <m2vethphk4.fsf@ziti.local> <6ph7j5u2cvc.fsf@gopher3.fhcrc.org>
+	<443E0281.8010308@gmx.de> <m2vetd1qbq.fsf@ziti.fhcrc.org>
+	<443E9DF0.5020902@dkfz.de>
+Message-ID: <m2zmipxi42.fsf@ziti.fhcrc.org>
+
+Florian Hahne <f.hahne at dkfz.de> writes:
+> thanks for the extensive essay about eSets...
+> I totaly agree with the concept of the virtual eSet class and indeed a
+> MultiExpressionSet subclass would be contrary to all the ideas behind
+> it. But as you know, people are lazy and always try to take the path
+> of least resistance...
+
+I think you are saying that you are "happy" with the latest changes.
+If not, and you have a use case for a MultiExpressionSet type class,
+please give us some details.
+
+> Regarding discipline: It isn't that much work to program this stuff
+> and Martin's code stubs are already very helpful. Maybe two or three
+> more sentences what the function calls are doing and it can already be
+> put into a vignette. If you are interested I can try to condense the
+> messages of this thread into a vignette once all the infrastructural
+> stuff is realy finished. 
+
+Sure!  Contributions of such vignettes are certainly welcome.
+
+> But there still remain a couple of open questions:
+>
+> 1.) I prefer to set the validation function already with the class
+>   definition. Is there a reason I should not do that and use
+>   setValidity instead?
+
+Not that I know of.  I agree with you that setting validity in the
+class definition keeps things all in one place and is to be preferred
+(unless someone can tell us why using setValidity is better).
+
+> 2.) Does it make sense to program the constructor/initialzer in a way
+>   that one has to give all the items of assayData individualy?
+>   Wouldn't it be better to accept a predefined assayData object? Or
+>   should one just do something like this:
+>
+> obj  <- new("mytestSet")
+> ad <- assayDataNew(storage.mode="list",
+>                                   exprs = matrix(1:9, ncol=3),
+>                                   other = matrix(1:9, ncol=3),
+>                                   stuff = matrix(1:9, ncol=3))
+> assayData(obj) <- ad
+
+To answer this, I we need to discuss the two important use cases that
+we are tyring to address...
+
+Case 1: Fixed Components
+------------------------
+
+The data is organized into a (small) number of fixed components.
+Examples:
+
+* Expression data has exprs, se.exprs
+
+* Two-color data has R, G, Rb, Gb
+
+Case 2: Multiple Non-Fixed Components
+-------------------------------------
+
+[I'm less familiar with this use case, but I think it is the one you
+have, so perhaps you can help me explain it.]
+
+The data has a variable number of components.  Fixed names do not make
+sense here.  Examples:
+
+* Matrices of numbers, one for each 96-well plate in some type of
+  experiment.  Plates have ids perhaps, but these change from one
+  instance to another.  I _think_ that one assumes that each matrix is
+  the same measurement but for different "plates".
+
+For the Fixed Components case, I think there is a clear advantage to
+customizing the initialize method such that users can build complete
+and correct instances easily.  Having to specify assayData contents
+separately seems convoluted and error prone; you won't get an error
+message until the eSet subclass' validity check is run.  
+
+For the Multiple Non-Fixed Components case, one doesn't want to have
+to name each element of assayData in the call to new().  Instead, one
+could do as you propose, creating an AssayData instance separately.
+However, as a user, I might appreciate a custom initialize method that
+allowed me to provide a list of matrices so that I don't have to know
+as much about the internals.
+
+Thoughts?  Help clarifying use case #2 (or other important use
+cases?).
+
+> 3.) Shouldn't all of eSet's replacement methods call validObject
+>   before they finish? I always find it a waste of time writing
+>   validator functions and then by doing a stupid replacement (like
+>   the one above) create invalid objects without even noticing.
+
+This is certainly up for discussion.  Validation is an expensive
+(computation time) operation so we need to choose carefully where/when
+we trigger it.
+
+But validating at least in a replacement method on the assayData slot
+makes a fair bit of sense to me and could be worth a try.
+
+> Of course eventualy it will be necessary to overwrite the replacement
+> methods of eSet if your class structure gets sophisticated but for the
+> day to day usage most people will probably rely on the methods
+> provided by eSet.
+>
+> Hope these questions are not completely stupid but that's what I
+> noticed while playing around with the new stuff.
+
+Excellent feedback.  The question are quite far from stupid.  I hope
+other interested folks will chime in with their questions and
+comments.
+
+Best,
+
++ seth
+
+
+From sfalcon at fhcrc.org  Thu Apr 13 23:55:06 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 13 Apr 2006 14:55:06 -0700
+Subject: [Bioc-devel] prada package and eSet in Biobase
+In-Reply-To: <6phr741b2j7.fsf@gopher3.fhcrc.org> (Martin Morgan's message of
+	"Thu, 13 Apr 2006 14:15:24 -0700")
+References: <m2vethphk4.fsf@ziti.local> <6ph7j5u2cvc.fsf@gopher3.fhcrc.org>
+	<443E0281.8010308@gmx.de> <m2vetd1qbq.fsf@ziti.fhcrc.org>
+	<443E9DF0.5020902@dkfz.de> <6phr741b2j7.fsf@gopher3.fhcrc.org>
+Message-ID: <m2u08xxhs5.fsf@ziti.fhcrc.org>
+
+Hi Martin,
+
+Our posts crossed on the wire :-)
+
+Martin Morgan <mtmorgan at fhcrc.org> writes:
+> It would be fine to define the validation function in the
+> class. Sometimes the validity checking function is useful in other
+> circumstances, and it would then be less convenient to access and
+> reuse it.
+
+I think re-use/convenience is a separate issue.  For example:
+
+myAllPurposeValidity <- function(object) {...}
+
+setClass("FOO", ..., 
+         validity=function(object) myAllPurposevalidity(object))
+
+
+> The problem is exactly the one you noted above: it is not unreasonable
+> to expect that a user (or developer of Biobase) might want to alter an
+> object in several steps:
+>
+> myFancyFunction <- function(obj) {
+>   assayData(obj) <- fancyAssaydData # obj invalid...
+>   phenoData(obj) <- justAsFancyPhenoData # but now valid
+>   validObject(obj)
+>   obj
+> }
+>
+> This would not be possible if validity were checked at each
+> replacement. Probably it would encourage developers to access slots
+> directly, and this would be very bad when the underlying reprsentation
+> of the class changed. 
+
+Good point.
+
+
+From ririzarr at jhsph.edu  Fri Apr 14 03:36:55 2006
+From: ririzarr at jhsph.edu (Rafael A. Irizarry)
+Date: Thu, 13 Apr 2006 21:36:55 -0400 (EDT)
+Subject: [Bioc-devel] Biobase / eSet changes for this release
+In-Reply-To: <6phfykhb1i6.fsf@gopher3.fhcrc.org>
+References: <6phk69u2dqz.fsf@gopher3.fhcrc.org> <443E4F66.2090607@jhsph.edu>
+	<6phfykhb1i6.fsf@gopher3.fhcrc.org>
+Message-ID: <Pine.LNX.4.61.0604132134540.8705@enigma.biostat.jhsph.edu>
+
+but most applications will have both genotype call and
+copy number estimates. so why not just make SnpSet like SnpSetPlus below?
+
+Notice that in our software i will only use SpnSetPlus and so will Rob.
+
+-r
+
+
+On Thu, 13 Apr 2006, Martin Morgan wrote:
+
+> Hi Rafael,
+>
+> An approach is to create a new class derived from eSet with
+> initialization and validation methods to specify the additional
+> elements to be stored in assayData. For the additions you suggest, the
+> following might be a useful template:
+>
+> setClass("SnpSetPlus", contains="eSet")
+>
+> setMethod("initialize", "SnpSetPlus",
+>          function(.Object,
+>                   phenoData = new("AnnotatedDataFrame"),
+>                   experimentData = new("MIAME"),
+>                   annotation = character(),
+>                   call = new("matrix"),
+>                   callProbability = new("matrix"),
+>                   copyNumber = new("matrix"),
+>                   copyNumberProbability = new("matrix"),
+>                   ... ) {
+>            callNextMethod(.Object,
+>                           phenoData = phenoData,
+>                           experimentData = experimentData,
+>                           annotation = annotation,
+>                           call=call,
+>                           callProbability=callProbability,
+>                           copyNumber=copyNumber,
+>                           copyNumberProbability=copyNumberProbability,
+>                           ...)
+>          })
+>
+> setValidity("SnpSetPlus", function(object) {
+>  assayDataValidMembers(assayData(object),
+>                        c("call","callProbability",
+>                          "copyNumber", "copyNumberProbability"))
+> })
+>
+> obj <- new("SnpSetPlus")
+>
+> Martin
+>
+>
+> Rafael A Irizarry <ririzarr at jhsph.edu> writes:
+>
+>> Hi!
+>>
+>> Looks good.
+>>
+>> One comment:
+>> Typically, SnpSet will have more than just the allele calls and p-values.
+>> It will aslo have a copy number estimate and it's measure of
+>> uncertainty. How hard is it to add these?
+>> You would need one more array  just like the one you used for the
+>> genotype calls.
+>>
+>> -r
+>>
+>> Martin Morgan wrote:
+>>
+>>> Biobase/eSet developers,
+>>>
+>>> Here is a brief summary of the version of eSet to be included in the
+>>> this release; the code builds and checks without error, though missing
+>>> documentation (to be corrected within the week) mean that there are
+>>> still warning messages during check.  The most recent changes are in
+>>> svn.
+>>>
+>>> There is one very recent change, to the overall class structure, that
+>>> we agonized over a great deal before making at the last moment.  We
+>>> recognize that this is very unfortunate timing, and that it will cause
+>>> needless work for bioconductors; we will help out as much as possible.
+>>>
+>>>
+>>> There are three major changes:
+>>>
+>>> 1. Change in class structure.
+>>>
+>>> eSet -- VIRTUAL
+>>>  ExpressionSet
+>>>  SnpSet
+>>>  (TilingSet -- not implemented)
+>>>
+>>> The main functionality of eSet is to coordinate assayData, phenoData,
+>>> experimentData, and the annoation.  eSet is also a generalized
+>>> container, with high-throughput data stored in the assayData
+>>> slot. eSet is a VIRTUAL class; if you want to store and manipulate a
+>>> consistent set of elements in the assay data slot you should create a
+>>> subclass of eSet. An example of how to do this is below.
+>>>
+>>> ExpressionSet requires that the assayData slot contain matrix element
+>>> 'exprs'; other elements (of dimension identical to exprs) are
+>>> permitted. as(exprSet, "ExpressionSet") coerces exprSet objects to
+>>> ExpressionSet, perhaps issuing warnings if ambiguities arise.
+>>>
+>>> library(Biobase)
+>>> data(sample.exprSet)
+>>> obj <- as(sample.exprSet, "ExpressionSet")
+>>> obj
+>>>
+>>> SnpSet is meant to contain SNP data in a manner analogous to
+>>> ExpressionSet; 'call' and 'callProbability' are required assayData
+>>> elements providing information on the call and a statement of
+>>> confidence in the call. The exact structure of these matricies is not
+>>> specified, but the idea is that 'call' encodes diploid genotypes.
+>>>
+>>> 2. Change in assayData storage
+>>>
+>>> The assayData slot is an AssayData class union of 'list' and
+>>> 'environment'; as a class union, there is no 'initialize'
+>>> method. Instead, the list or environment can be populated with
+>>> elements using a call to assayDataNew(...).
+>>>
+>>> An innovation is the storageMode method, which can be used to change
+>>> how elements in assayData are stored. In particular the storageMode
+>>> can be 'lockedEnvironment', and indeed this is the default. An
+>>> environment is locked in the sense that new elements cannot be added
+>>> to the environment, and existing elements cannot be changed. This
+>>> means that the pass-by-reference semantics of environments will not
+>>> catch users off-guard:
+>>>
+>>> obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+>>> storageMode(obj) <- "environment"
+>>> obj1 <- obj
+>>> exprs(obj1) <- exprs(obj1)[1:10,1:5]
+>>> dims(obj) # yikes! obj exprs dimensions changed!
+>>>
+>>> obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+>>> storageMode(obj) <- "environment"
+>>> obj1 <- obj
+>>> exprs(obj1) <- log(exprs(obj))
+>>> identical(exprs(obj1),exprs(obj)) # TRUE: yikes again!
+>>>
+>>> obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+>>> obj1 <- obj
+>>> exprs(obj1) <- log(exprs(obj1))
+>>> identical(exprs(obj1),exprs(obj)) # FALSE: good!
+>>>
+>>> Note that attempts to directly change slots in locked environments
+>>> cause an error
+>>>
+>>>
+>>>
+>>>> assayData(obj1)$exprs <- NULL
+>>>>
+>>>>
+>>> Error: cannot change value of a locked binding.
+>>>
+>>> The setReplaceMethod for exprs (and assayData) succeeds by performing
+>>> a deep copy of the entire environment. Becaue this is very
+>>> inefficient, the recommended paradigm to update an element in a
+>>> lockedEnvironment is to extract it, make many changes, and then
+>>> reassign it, e.g.,
+>>>
+>>> ex <- exprs(obj1)
+>>> # many changes, ex <- log(ex), ...
+>>> exprs(obj1) <- ex
+>>>
+>>> lockedEnvironment offers some efficiency in copying objects, because
+>>> the environment is not copied during function calls. This is not
+>>> completely satisfactory, though
+>>>
+>>> func <- function(assayData) # good: contents of env will not be copied
+>>>  max(exprs(assayData)) # not so good: exprs copied from environment
+>>>
+>>>
+>>> 3. Changes in other slots
+>>>
+>>> Other slots have been changed to treat variable metadata more
+>>> efficiently (in the AnnotatedDataFrame class of slot phenoData) and to
+>>> simplify the type of data stored as experimentData. These changes are
+>>> mostly in line with the web discussions.
+>>>
+>>>
+>>>
+>>> In making these changes, I have tried not to break the existing
+>>> interface beyond what is necessary for the new functionality (e.g.,
+>>> pData still returns the 'data' part of phenoData). One difference,
+>>> though, is that the methods dim, ncol, etc return a vector of
+>>> dimensions reflecting the shared dimensionality of the assayData
+>>> memebers; dims returns an array of dimensions of each element.
+>>>
+>>> These changes affect eSets; any difficulties you might have with
+>>> exprSet probably reflect changes made several months ago to validity
+>>> checking.
+>>>
+>>> Please let me know of any feedback,
+>>>
+>>> Martin
+>>> --
+>>>
+>>> The original 'sample.eSet' contains four elements in the assayData
+>>> slot: R, G, Rb, Gb. To derive a class from eSet for this data, create
+>>> a class, and provide initializaation and validation
+>>> methods. Optionally, update previous eSet data structures to your new
+>>> class. For instance,
+>>>
+>>> setClass("SwirlSet", contains="eSet")
+>>>
+>>> setMethod("initialize", "SwirlSet",
+>>>          function(.Object,
+>>>                   phenoData = new("AnnotatedDataFrame"),
+>>>                   experimentData = new("MIAME"),
+>>>                   annotation = character(),
+>>>                   R = new("matrix"),
+>>>                   G = new("matrix"),
+>>>                   Rb = new("matrix"),
+>>>                   Gb = new("matrix"),
+>>>                   ... ) {
+>>>            callNextMethod(.Object,
+>>>                           assayData = assayDataNew(
+>>>                             R=R, G=G, Rb=Rb, Gb=Gb,
+>>>                             ...),
+>>>                           phenoData = phenoData,
+>>>                           experimentData = experimentData,
+>>>                           annotation = annotation)
+>>>          })
+>>>
+>>> setValidity("SwirlSet", function(object) {
+>>>  assayDataValidMembers(assayData(object), c("R", "G", "Rb", "Gb"))
+>>> })
+>>>
+>>> data(sample.eSet)
+>>> obj <- updateOldESet(sample.eSet,"SwirlSet")
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>>
+>
+
+
+From sfalcon at fhcrc.org  Mon Apr 17 23:58:50 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 17 Apr 2006 14:58:50 -0700
+Subject: [Bioc-devel] ATTN: maanover maintainer
+Message-ID: <m28xq3oodh.fsf@ziti.fhcrc.org>
+
+Sorry to post to the list with this, but the maintainer's email
+address bounced.  If the current maintainer of maanova could please
+read below and then contact me...
+
+Message for maanova maintainer:
+
+Hi Hao,
+
+We are finalizing the Bioc 1.8 release and there are two warning
+messages from your package maanova that need fixing.
+
+1. Functions transform.rawdata and transform.madata
+
+   The base package defines an S3 generic 'transform'.  Your choice in
+   names creates a potential problem.  S3 objects with class "rawdata"
+   would dispatch to your function.  Hence these warnings
+
+    * checking S3 generic/method consistency ... WARNING
+    transform:
+      function(_data, ...)
+    transform.madata:
+      function(x, method, lolim, uplim, f, iter, degree, cg, cr, n.bin,
+               draw, ...)
+
+   The best short-term solution is to:
+
+   * Add renamed versions of these functions (perhaps replace "." with
+     "_").
+
+   * Deprecate the current ones with .Deprecated() and plan to remove
+     them in the next release.
+
+2. You are using La.svd and this is deprecated.  Please find a
+   suitable alternative.
+
+We'd appreciate your prompt attention to these issues.  Let us know if
+we can answer questions or help in any way.
+
+
+Best,
+
+-- 
++ seth
+
+
+From ririzarr at jhsph.edu  Tue Apr 18 16:19:18 2006
+From: ririzarr at jhsph.edu (Rafael A Irizarry)
+Date: Tue, 18 Apr 2006 10:19:18 -0400
+Subject: [Bioc-devel] Biobase / eSet changes for this release
+In-Reply-To: <6phk69u2dqz.fsf@gopher3.fhcrc.org>
+References: <6phk69u2dqz.fsf@gopher3.fhcrc.org>
+Message-ID: <4444F566.1000808@jhsph.edu>
+
+Martin,
+
+Sorry for taking so long in responding.
+
+We seem to be almost there but I have two concerns:
+
+1) SNPset as it is will not be useful. As far as I know only Rob and me 
+are  developing software that will use snpSet. Both of us need a slot 
+for copynumber. Otherwise we will need to create a new class, which will 
+be the only one used, and we wont get to use the name SnpSet.
+
+2) It seems that in general we will be storing  an esimate (expression, 
+calls, copynumber) and some kind of measure of uncertainty (SE for 
+expression, p-value fo calls, etc..). However, a big chunk fo the apps 
+will not use uncertainty. It would be a shame to have to store a matrix 
+of NAs every single time. How hard would be to have eSet take NULL for 
+some matrices? The validity check can look at everything that is not NULL.
+Notice that the alternative is to define  a new class which means, in my 
+case, Ill need two classes for every class Im defining or having a 
+matrix of NAs, which, given the size of data these days, will be very 
+inneficient.
+
+im cc-ing ingo and rob who maintain SNPscan.
+
+-r
+
+Martin Morgan wrote:
+
+>Biobase/eSet developers,
+>
+>Here is a brief summary of the version of eSet to be included in the
+>this release; the code builds and checks without error, though missing
+>documentation (to be corrected within the week) mean that there are
+>still warning messages during check.  The most recent changes are in
+>svn.
+>
+>There is one very recent change, to the overall class structure, that
+>we agonized over a great deal before making at the last moment.  We
+>recognize that this is very unfortunate timing, and that it will cause
+>needless work for bioconductors; we will help out as much as possible.
+>
+>
+>There are three major changes:
+>
+>1. Change in class structure.
+>
+>eSet -- VIRTUAL
+>  ExpressionSet
+>  SnpSet
+>  (TilingSet -- not implemented)
+>
+>The main functionality of eSet is to coordinate assayData, phenoData,
+>experimentData, and the annoation.  eSet is also a generalized
+>container, with high-throughput data stored in the assayData
+>slot. eSet is a VIRTUAL class; if you want to store and manipulate a
+>consistent set of elements in the assay data slot you should create a
+>subclass of eSet. An example of how to do this is below.
+>
+>ExpressionSet requires that the assayData slot contain matrix element
+>'exprs'; other elements (of dimension identical to exprs) are
+>permitted. as(exprSet, "ExpressionSet") coerces exprSet objects to
+>ExpressionSet, perhaps issuing warnings if ambiguities arise.
+>
+>library(Biobase)
+>data(sample.exprSet)
+>obj <- as(sample.exprSet, "ExpressionSet")
+>obj
+>
+>SnpSet is meant to contain SNP data in a manner analogous to
+>ExpressionSet; 'call' and 'callProbability' are required assayData
+>elements providing information on the call and a statement of
+>confidence in the call. The exact structure of these matricies is not
+>specified, but the idea is that 'call' encodes diploid genotypes.
+>
+>2. Change in assayData storage
+>
+>The assayData slot is an AssayData class union of 'list' and
+>'environment'; as a class union, there is no 'initialize'
+>method. Instead, the list or environment can be populated with
+>elements using a call to assayDataNew(...).
+>
+>An innovation is the storageMode method, which can be used to change
+>how elements in assayData are stored. In particular the storageMode
+>can be 'lockedEnvironment', and indeed this is the default. An
+>environment is locked in the sense that new elements cannot be added
+>to the environment, and existing elements cannot be changed. This
+>means that the pass-by-reference semantics of environments will not
+>catch users off-guard:
+>
+>obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+>storageMode(obj) <- "environment"
+>obj1 <- obj
+>exprs(obj1) <- exprs(obj1)[1:10,1:5]
+>dims(obj) # yikes! obj exprs dimensions changed!
+>
+>obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+>storageMode(obj) <- "environment"
+>obj1 <- obj
+>exprs(obj1) <- log(exprs(obj))
+>identical(exprs(obj1),exprs(obj)) # TRUE: yikes again!
+>
+>obj <- as(sample.exprSet,"ExpressionSet") # default: lockedEnvironment
+>obj1 <- obj
+>exprs(obj1) <- log(exprs(obj1))
+>identical(exprs(obj1),exprs(obj)) # FALSE: good!
+>
+>Note that attempts to directly change slots in locked environments
+>cause an error
+>
+>  
+>
+>>assayData(obj1)$exprs <- NULL
+>>    
+>>
+>Error: cannot change value of a locked binding. 
+>
+>The setReplaceMethod for exprs (and assayData) succeeds by performing
+>a deep copy of the entire environment. Becaue this is very
+>inefficient, the recommended paradigm to update an element in a
+>lockedEnvironment is to extract it, make many changes, and then
+>reassign it, e.g.,
+>
+>ex <- exprs(obj1)
+># many changes, ex <- log(ex), ...
+>exprs(obj1) <- ex
+>
+>lockedEnvironment offers some efficiency in copying objects, because
+>the environment is not copied during function calls. This is not
+>completely satisfactory, though
+>
+>func <- function(assayData) # good: contents of env will not be copied
+>  max(exprs(assayData)) # not so good: exprs copied from environment
+>
+>
+>3. Changes in other slots
+>
+>Other slots have been changed to treat variable metadata more
+>efficiently (in the AnnotatedDataFrame class of slot phenoData) and to
+>simplify the type of data stored as experimentData. These changes are
+>mostly in line with the web discussions.
+>
+>
+>
+>In making these changes, I have tried not to break the existing
+>interface beyond what is necessary for the new functionality (e.g.,
+>pData still returns the 'data' part of phenoData). One difference,
+>though, is that the methods dim, ncol, etc return a vector of
+>dimensions reflecting the shared dimensionality of the assayData
+>memebers; dims returns an array of dimensions of each element.
+>
+>These changes affect eSets; any difficulties you might have with
+>exprSet probably reflect changes made several months ago to validity
+>checking.
+>
+>Please let me know of any feedback,
+>
+>Martin
+>--
+>
+>The original 'sample.eSet' contains four elements in the assayData
+>slot: R, G, Rb, Gb. To derive a class from eSet for this data, create
+>a class, and provide initializaation and validation
+>methods. Optionally, update previous eSet data structures to your new
+>class. For instance,
+>
+>setClass("SwirlSet", contains="eSet")
+>
+>setMethod("initialize", "SwirlSet",
+>          function(.Object,
+>                   phenoData = new("AnnotatedDataFrame"),
+>                   experimentData = new("MIAME"),
+>                   annotation = character(),
+>                   R = new("matrix"),
+>                   G = new("matrix"),
+>                   Rb = new("matrix"),
+>                   Gb = new("matrix"),
+>                   ... ) {
+>            callNextMethod(.Object,
+>                           assayData = assayDataNew(
+>                             R=R, G=G, Rb=Rb, Gb=Gb,
+>                             ...),
+>                           phenoData = phenoData,
+>                           experimentData = experimentData,
+>                           annotation = annotation)
+>          })
+>
+>setValidity("SwirlSet", function(object) {
+>  assayDataValidMembers(assayData(object), c("R", "G", "Rb", "Gb"))
+>})
+>
+>data(sample.eSet)
+>obj <- updateOldESet(sample.eSet,"SwirlSet")
+>
+>_______________________________________________
+>Bioc-devel at stat.math.ethz.ch mailing list
+>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>  
+>
+
+
+From sfalcon at fhcrc.org  Tue Apr 18 18:12:16 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 18 Apr 2006 09:12:16 -0700
+Subject: [Bioc-devel] Biobase / eSet changes for this release
+In-Reply-To: <4444F566.1000808@jhsph.edu> (Rafael A. Irizarry's message of
+	"Tue, 18 Apr 2006 10:19:18 -0400")
+References: <6phk69u2dqz.fsf@gopher3.fhcrc.org> <4444F566.1000808@jhsph.edu>
+Message-ID: <m2y7y2j21r.fsf@ziti.fhcrc.org>
+
+Hi Rafa,
+
+I'm going to answer out of order...
+
+Rafael A Irizarry <ririzarr at jhsph.edu> writes:
+> 2) It seems that in general we will be storing  an esimate (expression, 
+> calls, copynumber) and some kind of measure of uncertainty (SE for 
+> expression, p-value fo calls, etc..). However, a big chunk fo the apps 
+> will not use uncertainty. It would be a shame to have to store a matrix 
+> of NAs every single time. How hard would be to have eSet take NULL for 
+> some matrices? The validity check can look at everything that is not NULL.
+> Notice that the alternative is to define  a new class which means, in my 
+> case, Ill need two classes for every class Im defining or having a 
+> matrix of NAs, which, given the size of data these days, will be very 
+> inneficient.
+
+I think we should define an EmptyMatrix class:
+
+    setClass("EmptyMatrix", contains="matrix")
+
+Why?  Because:
+
+ * new("EmptyMatrix") is small (no elements) 
+ * We can dispatch on it.  I think we might be able to get some
+   propagation of empty similar to how NA works.  This can keep the
+   code from having to do lots of explicit type checking.
+ * NULL can happen by accident and should be an error.  EmptyMatrix
+   won't just "appear" from a calculation.
+ * It will also mean that these values could go in a proper slot of
+   type "matrix" without having to create the matrixOrNull class
+   union.
+
+> 1) SNPset as it is will not be useful. As far as I know only Rob and me 
+> are  developing software that will use snpSet. Both of us need a slot 
+> for copynumber. Otherwise we will need to create a new class, which will 
+> be the only one used, and we wont get to use the name SnpSet.
+
+There is something to be said for reserving the general class names
+for things that will be general.  Perhaps it makes sense to choose a
+slightly more specific name while sorting out the all-purpose use
+cases.
+
+Your RafaSnpSet can become SnpSet.  But if you start with SnpSet and
+go off in a direction that is not useful to others, then there is no
+easy fix.
+
+
+
++ seth
+
+
+From huber at ebi.ac.uk  Tue Apr 18 18:32:39 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Tue, 18 Apr 2006 17:32:39 +0100
+Subject: [Bioc-devel] Biobase / eSet changes for this release
+In-Reply-To: <m2y7y2j21r.fsf@ziti.fhcrc.org>
+References: <6phk69u2dqz.fsf@gopher3.fhcrc.org> <4444F566.1000808@jhsph.edu>
+	<m2y7y2j21r.fsf@ziti.fhcrc.org>
+Message-ID: <444514A7.6060805@ebi.ac.uk>
+
+Hi Seth,
+
+
+I like the idea of "EmptyMatrix".
+Another more pedestrian option would be "matrix" x with
+   all(dim(x)==0)
+such as e.g. the result of new("matrix").
+
+The only (small) advantage is that new users/developers that know R but 
+not bioc might find it less intimidating if our designs are not overly 
+verbose.
+
+I don't mind much, just a suggestion
+
+Cheers
+   Wolfgang
+
+
+
+> I'm going to answer out of order...
+> 
+> Rafael A Irizarry <ririzarr at jhsph.edu> writes:
+> 
+>>2) It seems that in general we will be storing  an esimate (expression, 
+>>calls, copynumber) and some kind of measure of uncertainty (SE for 
+>>expression, p-value fo calls, etc..). However, a big chunk fo the apps 
+>>will not use uncertainty. It would be a shame to have to store a matrix 
+>>of NAs every single time. How hard would be to have eSet take NULL for 
+>>some matrices? The validity check can look at everything that is not NULL.
+>>Notice that the alternative is to define  a new class which means, in my 
+>>case, Ill need two classes for every class Im defining or having a 
+>>matrix of NAs, which, given the size of data these days, will be very 
+>>inneficient.
+> 
+> 
+> I think we should define an EmptyMatrix class:
+> 
+>     setClass("EmptyMatrix", contains="matrix")
+>
+
+
+From sfalcon at fhcrc.org  Tue Apr 18 18:58:04 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 18 Apr 2006 09:58:04 -0700
+Subject: [Bioc-devel] Biobase / eSet changes for this release
+In-Reply-To: <444514A7.6060805@ebi.ac.uk> (Wolfgang Huber's message of "Tue,
+	18 Apr 2006 17:32:39 +0100")
+References: <6phk69u2dqz.fsf@gopher3.fhcrc.org> <4444F566.1000808@jhsph.edu>
+	<m2y7y2j21r.fsf@ziti.fhcrc.org> <444514A7.6060805@ebi.ac.uk>
+Message-ID: <m2d5feizxf.fsf@ziti.fhcrc.org>
+
+Wolfgang Huber <huber at ebi.ac.uk> writes:
+> I like the idea of "EmptyMatrix".
+> Another more pedestrian option would be "matrix" x with
+>    all(dim(x)==0)
+> such as e.g. the result of new("matrix").
+
+That would work, but will always require the explicit check.  With
+EmptyMatrix we can dispatch.  I'm not certain that will be useful, but
+I think it could be...
+
+> The only (small) advantage is that new users/developers that know R
+> but not bioc might find it less intimidating if our designs are not
+> overly verbose.
+
+Certainly a consideration.
+
+
+From rgentlem at fhcrc.org  Tue Apr 18 19:27:24 2006
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Tue, 18 Apr 2006 10:27:24 -0700
+Subject: [Bioc-devel] BioC2006
+Message-ID: <4445217C.4030009@fhcrc.org>
+
+Hi folks,
+   We seem to have relatively few suggestions for tutorials...surely 
+some of you want other people to use your software :-)
+
+   please contact Nianhua Li (nli at fhcrc.org) with suggestions. You can 
+see some examples already on the site.
+
+  thanks
+   Robert
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From sfalcon at fhcrc.org  Tue Apr 18 19:50:10 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 18 Apr 2006 10:50:10 -0700
+Subject: [Bioc-devel] BioC2006
+In-Reply-To: <4445217C.4030009@fhcrc.org> (Robert Gentleman's message of "Tue,
+	18 Apr 2006 10:27:24 -0700")
+References: <4445217C.4030009@fhcrc.org>
+Message-ID: <m2hd4qhiy5.fsf@ziti.fhcrc.org>
+
+Robert Gentleman <rgentlem at fhcrc.org> writes:
+>    please contact Nianhua Li (nli at fhcrc.org) with suggestions. You can 
+> see some examples already on the site.
+
+https://cobra.fhcrc.org/BioC2006/schedule/
+
+
+From mtmorgan at fhcrc.org  Tue Apr 18 21:28:02 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Tue, 18 Apr 2006 12:28:02 -0700
+Subject: [Bioc-devel] Biobase / eSet changes for this release
+In-Reply-To: <m2y7y2j21r.fsf@ziti.fhcrc.org> (Seth Falcon's message of "Tue,
+	18 Apr 2006 09:12:16 -0700")
+References: <6phk69u2dqz.fsf@gopher3.fhcrc.org> <4444F566.1000808@jhsph.edu>
+	<m2y7y2j21r.fsf@ziti.fhcrc.org>
+Message-ID: <6phmzeid6pp.fsf@gopher3.fhcrc.org>
+
+I'll implement EmptyMatrix. I will then update validity checking (and
+other methods, as necessary) to allow for it in place of any/all
+elements in a class. This will take a couple of days to get around to,
+and in the mean time I'll talk with Robert and Seth about what
+elements are actually in SnpSet; in some ways the EmptyMatrix idea
+makes a more flexible approach (specifying several required slots,
+e.g., expression, call, copyNumber, but usually functioning correctly
+if these are occupied by EmptyMatrix) appealing.
+
+It might help for a two-second overview of how 'expression' data might
+be generally useful; I can see how call and copyNumber will feed into
+'downstream' analyses.
+
+Martin
+
+Seth Falcon <sfalcon at fhcrc.org> writes:
+
+> Hi Rafa,
+>
+> I'm going to answer out of order...
+>
+> Rafael A Irizarry <ririzarr at jhsph.edu> writes:
+>> 2) It seems that in general we will be storing  an esimate (expression, 
+>> calls, copynumber) and some kind of measure of uncertainty (SE for 
+>> expression, p-value fo calls, etc..). However, a big chunk fo the apps 
+>> will not use uncertainty. It would be a shame to have to store a matrix 
+>> of NAs every single time. How hard would be to have eSet take NULL for 
+>> some matrices? The validity check can look at everything that is not NULL.
+>> Notice that the alternative is to define  a new class which means, in my 
+>> case, Ill need two classes for every class Im defining or having a 
+>> matrix of NAs, which, given the size of data these days, will be very 
+>> inneficient.
+>
+> I think we should define an EmptyMatrix class:
+>
+>     setClass("EmptyMatrix", contains="matrix")
+>
+> Why?  Because:
+>
+>  * new("EmptyMatrix") is small (no elements) 
+>  * We can dispatch on it.  I think we might be able to get some
+>    propagation of empty similar to how NA works.  This can keep the
+>    code from having to do lots of explicit type checking.
+>  * NULL can happen by accident and should be an error.  EmptyMatrix
+>    won't just "appear" from a calculation.
+>  * It will also mean that these values could go in a proper slot of
+>    type "matrix" without having to create the matrixOrNull class
+>    union.
+>
+>> 1) SNPset as it is will not be useful. As far as I know only Rob and me 
+>> are  developing software that will use snpSet. Both of us need a slot 
+>> for copynumber. Otherwise we will need to create a new class, which will 
+>> be the only one used, and we wont get to use the name SnpSet.
+>
+> There is something to be said for reserving the general class names
+> for things that will be general.  Perhaps it makes sense to choose a
+> slightly more specific name while sorting out the all-purpose use
+> cases.
+>
+> Your RafaSnpSet can become SnpSet.  But if you start with SnpSet and
+> go off in a direction that is not useful to others, then there is no
+> easy fix.
+>
+>
+>
+> + seth
+
+
+From ririzarr at jhsph.edu  Wed Apr 19 01:02:18 2006
+From: ririzarr at jhsph.edu (Rafael A. Irizarry)
+Date: Tue, 18 Apr 2006 19:02:18 -0400 (EDT)
+Subject: [Bioc-devel] Biobase / eSet changes for this release
+In-Reply-To: <6phmzeid6pp.fsf@gopher3.fhcrc.org>
+References: <6phk69u2dqz.fsf@gopher3.fhcrc.org> <4444F566.1000808@jhsph.edu>
+	<m2y7y2j21r.fsf@ziti.fhcrc.org> <6phmzeid6pp.fsf@gopher3.fhcrc.org>
+Message-ID: <Pine.LNX.4.61.0604181852010.10221@enigma.biostat.jhsph.edu>
+
+Martin and Seth,
+
+Thanks for this!
+
+Regarding SnpSet, all applications ive seen are either genotype calling, 
+copy number estimation or both. so i do think that the "minimum" SnpSet 
+should contain 4 matrices. As you point out, we can always leave some 
+of the matrices empty. We could also define: subclasses, e.g., 
+GenoTypeSnpSet and CopyNumberSnpSet.
+
+Once you are done let us know and we will give you feedback within a day.
+
+-r
+
+On Tue, 18 Apr 2006, Martin Morgan wrote:
+
+> I'll implement EmptyMatrix. I will then update validity checking (and
+> other methods, as necessary) to allow for it in place of any/all
+> elements in a class. This will take a couple of days to get around to,
+> and in the mean time I'll talk with Robert and Seth about what
+> elements are actually in SnpSet; in some ways the EmptyMatrix idea
+> makes a more flexible approach (specifying several required slots,
+> e.g., expression, call, copyNumber, but usually functioning correctly
+> if these are occupied by EmptyMatrix) appealing.
+>
+> It might help for a two-second overview of how 'expression' data might
+> be generally useful; I can see how call and copyNumber will feed into
+> 'downstream' analyses.
+>
+> Martin
+>
+> Seth Falcon <sfalcon at fhcrc.org> writes:
+>
+>> Hi Rafa,
+>>
+>> I'm going to answer out of order...
+>>
+>> Rafael A Irizarry <ririzarr at jhsph.edu> writes:
+>>> 2) It seems that in general we will be storing  an esimate (expression,
+>>> calls, copynumber) and some kind of measure of uncertainty (SE for
+>>> expression, p-value fo calls, etc..). However, a big chunk fo the apps
+>>> will not use uncertainty. It would be a shame to have to store a matrix
+>>> of NAs every single time. How hard would be to have eSet take NULL for
+>>> some matrices? The validity check can look at everything that is not NULL.
+>>> Notice that the alternative is to define  a new class which means, in my
+>>> case, Ill need two classes for every class Im defining or having a
+>>> matrix of NAs, which, given the size of data these days, will be very
+>>> inneficient.
+>>
+>> I think we should define an EmptyMatrix class:
+>>
+>>     setClass("EmptyMatrix", contains="matrix")
+>>
+>> Why?  Because:
+>>
+>>  * new("EmptyMatrix") is small (no elements)
+>>  * We can dispatch on it.  I think we might be able to get some
+>>    propagation of empty similar to how NA works.  This can keep the
+>>    code from having to do lots of explicit type checking.
+>>  * NULL can happen by accident and should be an error.  EmptyMatrix
+>>    won't just "appear" from a calculation.
+>>  * It will also mean that these values could go in a proper slot of
+>>    type "matrix" without having to create the matrixOrNull class
+>>    union.
+>>
+>>> 1) SNPset as it is will not be useful. As far as I know only Rob and me
+>>> are  developing software that will use snpSet. Both of us need a slot
+>>> for copynumber. Otherwise we will need to create a new class, which will
+>>> be the only one used, and we wont get to use the name SnpSet.
+>>
+>> There is something to be said for reserving the general class names
+>> for things that will be general.  Perhaps it makes sense to choose a
+>> slightly more specific name while sorting out the all-purpose use
+>> cases.
+>>
+>> Your RafaSnpSet can become SnpSet.  But if you start with SnpSet and
+>> go off in a direction that is not useful to others, then there is no
+>> easy fix.
+>>
+>>
+>>
+>> + seth
+>
+
+
+From huber at ebi.ac.uk  Thu Apr 20 16:23:07 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Thu, 20 Apr 2006 15:23:07 +0100
+Subject: [Bioc-devel] If it looks like a duck, walks like a duck
+Message-ID: <4447994B.1070407@ebi.ac.uk>
+
+Hi all,
+
+I guess I understand and approve the rationale behind this etc., but 
+still for a naive observer this error message might look silly -  is 
+there any chance we can make this look better:
+
+new("ExpressionSet", exprs = ex, phenoData = phenoData(a),
+   sampleNames = ...)
+
+
+Error in checkSlotAssignment(object, name, value) :
+        assignment of an object of class "phenoData" is not valid for 
+slot 'phenoData' in  an object of class "ExpressionSet"; is(value, 
+"AnnotatedDataFrame") is not TRUE
+
+
+
+
+------------------------------------
+ > sessionInfo()
+Version 2.3.0 RC (2006-04-20 r37864)
+x86_64-unknown-linux-gnu
+
+attached base packages:
+  [1] "splines"   "grid"      "tools"     "methods"   "stats"     "graphics"
+  [7] "grDevices" "utils"     "datasets"  "base"
+
+other attached packages:
+  tilingArray  geneplotter     annotate   genefilter     survival 
+    vsn
+     "1.8.21"      "1.9.7"      "1.9.6"      "1.9.7"       "2.24" 
+"1.9.4"
+   colorspace  strucchange     sandwich          zoo RColorBrewer 
+   affy
+        "0.9"     "1.2-12"      "1.1-1"      "1.0-6"      "0.2-3" 
+"1.9.17"
+       affyio      Biobase     fortunes
+     "0.99.3"     "1.9.24"      "1.2-1"
+
+
+Best regards
+   Wolfgang
+
+-------------------------------------
+Wolfgang Huber
+European Bioinformatics Institute
+European Molecular Biology Laboratory
+Cambridge CB10 1SD
+England
+Phone: +44 1223 494642
+Fax:   +44 1223 494486
+Http:  www.ebi.ac.uk/huber
+
+
+From mtmorgan at fhcrc.org  Thu Apr 20 20:12:31 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 20 Apr 2006 11:12:31 -0700
+Subject: [Bioc-devel] If it looks like a duck, walks like a duck
+In-Reply-To: <4447994B.1070407@ebi.ac.uk> (Wolfgang Huber's message of "Thu,
+	20 Apr 2006 15:23:07 +0100")
+References: <4447994B.1070407@ebi.ac.uk>
+Message-ID: <6phodywjeuo.fsf@gopher3.fhcrc.org>
+
+Thanks! I've updated eSet initialize to coerce phenoData objects to
+AnnotatedDataFrame and issue a warning.
+
+Correct:
+
+> obj <- new("ExpressionSet", phenoData=new("AnnotatedDataFrame"))
+> obj <- new("ExpressionSet")
+
+Incorrect, coerced to valid:
+
+> obj <- new("ExpressionSet", phenoData=new("phenoData"))
+Warning message:
+updating phenoData argument to 'AnnotatedDataFrame' 
+> validObject(obj)
+[1] TRUE
+ 
+Martin
+
+Wolfgang Huber <huber at ebi.ac.uk> writes:
+
+> Hi all,
+>
+> I guess I understand and approve the rationale behind this etc., but 
+> still for a naive observer this error message might look silly -  is 
+> there any chance we can make this look better:
+>
+> new("ExpressionSet", exprs = ex, phenoData = phenoData(a),
+>    sampleNames = ...)
+>
+>
+> Error in checkSlotAssignment(object, name, value) :
+>         assignment of an object of class "phenoData" is not valid for 
+> slot 'phenoData' in  an object of class "ExpressionSet"; is(value, 
+> "AnnotatedDataFrame") is not TRUE
+>
+>
+>
+>
+> ------------------------------------
+>  > sessionInfo()
+> Version 2.3.0 RC (2006-04-20 r37864)
+> x86_64-unknown-linux-gnu
+>
+> attached base packages:
+>   [1] "splines"   "grid"      "tools"     "methods"   "stats"     "graphics"
+>   [7] "grDevices" "utils"     "datasets"  "base"
+>
+> other attached packages:
+>   tilingArray  geneplotter     annotate   genefilter     survival 
+>     vsn
+>      "1.8.21"      "1.9.7"      "1.9.6"      "1.9.7"       "2.24" 
+> "1.9.4"
+>    colorspace  strucchange     sandwich          zoo RColorBrewer 
+>    affy
+>         "0.9"     "1.2-12"      "1.1-1"      "1.0-6"      "0.2-3" 
+> "1.9.17"
+>        affyio      Biobase     fortunes
+>      "0.99.3"     "1.9.24"      "1.2-1"
+>
+>
+> Best regards
+>    Wolfgang
+>
+> -------------------------------------
+> Wolfgang Huber
+> European Bioinformatics Institute
+> European Molecular Biology Laboratory
+> Cambridge CB10 1SD
+> England
+> Phone: +44 1223 494642
+> Fax:   +44 1223 494486
+> Http:  www.ebi.ac.uk/huber
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From sfalcon at fhcrc.org  Thu Apr 20 22:36:10 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 20 Apr 2006 13:36:10 -0700
+Subject: [Bioc-devel] Bioc 1.8 release branch...
+Message-ID: <m28xq0dlxh.fsf@ziti.local>
+
+Hi all,
+
+I would like to cut the 1.8 release branch tomorrow, Friday 21 April
+at 14:00 PDT.
+
+Once this is done, development can continue on the trunk.  However,
+any last minutes doc fixes will need to be made on the release branch.
+
+I will send instructions for accessing the release branch once it has
+been created.
+
+Please send any questions to this list.
+
+Cheers,
+
++ seth
+
+
+From sfalcon at fhcrc.org  Fri Apr 21 20:10:58 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 21 Apr 2006 11:10:58 -0700
+Subject: [Bioc-devel] version argument to setClass and serialized instances
+Message-ID: <m2acaebxzh.fsf@ziti.local>
+
+I have a few questions and thoughts regarding class versioning and
+serialized S4 class instances.
+
+How is the version argument to setClass is intended to work?  It
+appears to want an externalptr, but that seems odd to me.
+
+    setClass("FOO", representation(x="numeric"), version="1.2.3")
+
+    Error in validObject(.Object) : invalid class
+    "classRepresentation" object: invalid object for slot "versionKey"
+    in class "classRepresentation": got class "character", should be
+    or extend class "externalptr"
+
+The use case I'm interested in is: 
+
+  A user has a serialized instance foo of class FOO in old.rda.  The
+  class definition lives in FooPkg.  
+
+  Suppose the class definition of FOO in FooPkg changes.  When the
+  user loads the new version of FooPkg and then loads their old.rda
+  file, how can the user identify the instance as one belonging to an
+  old class def version?
+
+
+Some thoughts:
+
+* A related issue is how to load the appropriate class definition when
+  loading a serialized S4 instance.  It makes sense to me that a
+  side-effect of load("foo.rda") is that FooPkg gets loaded so that
+  the instance "makes sense".  More generally, it would be cool to
+  have hooks into serialization and deserialization.  That could allow
+  much more robust handling of serialized instances of old definitions
+  (even if it would have to happen on a class-by-class basis).
+
+* A class definition version id might have to be an instance slot.
+  One possible simple-minded implementation is to force a slot with
+  some mangled name like '.class_def_version_string'.  But perhaps
+  there is a more elegant approach.
+
+One more question:
+
+Is there a convenient way to introspect an _instance_?  The
+slotNames() method seems to get data from the class definition and
+doesn't report the right info for an instance that is out of date
+w.r.t. to the current class defn (i.e., was deserialized after a class
+defn update).
+
+Thanks for listening.
+
++ seth
+
+
+From sfalcon at fhcrc.org  Fri Apr 21 20:19:32 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 21 Apr 2006 11:19:32 -0700
+Subject: [Bioc-devel] version argument to setClass and serialized
+	instances
+In-Reply-To: <m2acaebxzh.fsf@ziti.local> (Seth Falcon's message of "Fri,
+	21 Apr 2006 11:10:58 -0700")
+References: <m2acaebxzh.fsf@ziti.local>
+Message-ID: <m264l2bxl7.fsf@ziti.local>
+
+Doh!  This was intended for R-devel.  So sorry. :-(
+
++ seth
+
+
+From sfalcon at fhcrc.org  Fri Apr 21 21:49:41 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 21 Apr 2006 12:49:41 -0700
+Subject: [Bioc-devel] Bioc 1.8 release branch...
+Message-ID: <m2odyuaeui.fsf@ziti.local>
+
+Hi folks,
+
+We are having technical difficulties with our svn server that is
+preventing us from creating the release branch.
+
+So... Once those difficulties are resolved, I'm going to cut the
+branch off of rev17547.  
+
+This means:
+
+1. You can begin new development work on the trunk again.
+
+2. Access to the release branch is pending.
+
+Thanks,
+
++ seth
+
+
+From sfalcon at fhcrc.org  Sat Apr 22 02:38:18 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 21 Apr 2006 17:38:18 -0700
+Subject: [Bioc-devel] Bioc 1.8 release branch
+Message-ID: <m264l25ts5.fsf@ziti.local>
+
+Hi folks,
+
+Our svn issues have been resolved and I've created the 1.8 release
+branch based off of rev17547.
+
+All package maintainers have commit access to the 1.8 release branch
+for their package.  Please respect that _only_ fixes to remove
+warnings, and doc fixes should be sent to the release branch at this
+time.
+
+If your package still requires a few tweaks before Monday's deadline
+for the release, here is how to proceed:
+
+1. Checkout a working copy of your package from the release branch:
+
+     svn co https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_1_8/madman/Rpacks/Biobase
+
+2. Make the fixes and commit from that working copy.  Please remember
+   to increment the version number.
+
+(cover your ears, I need to shout a small bit)
+
+IMPORTANT: 
+    As of noon PDT today, any changes made to the svn trunk WILL NOT
+    be included in the release.  All changes to trunk are now
+    considered part of the Bioc 1.9 development line.
+
+
+Thanks to everyone's hard work, the builds are looking very good.  As
+such, we are hoping to be able to make the official release a few days
+early.  Our current target is Wednesday 26 April.
+
+
+Best Wishes,
+
++ seth
+
+
+From hpages at fhcrc.org  Mon Apr 24 01:57:50 2006
+From: hpages at fhcrc.org (hpages at fhcrc.org)
+Date: Sun, 23 Apr 2006 16:57:50 -0700
+Subject: [Bioc-devel] Build/check report news
+Message-ID: <1145836670.444c147e8d3cc@webmail.fhcrc.org>
+
+Hi everybody,
+
+We have a new build/check report for BioC 1.9 here:
+
+  http://bioconductor.org/checkResults/1.9/
+
+Note that these results are for the Bioconductor packages located
+in the current trunk. A new line on the report page indicates this:
+- SVN URL: https://hedgehog.fhcrc.org/bioconductor/trunk/madman
+
+Also note that for now these new builds:
+  - are only performed once a day
+  - are only performed on the 2 following platforms:
+      64-bit Linux (SUSE 9.2)
+      64-bit Linux (SUSE 10.0)
+  - use R-2.3.0 RC (this will change ASAP for R-2.4.0).
+
+Setting up the builds for BioC 1.9 was also a good opportunity
+to reorganize things a little bit in order to have simpler URLs:
+
+ - Build/check report for BioC 1.8 are now at:
+     http://bioconductor.org/checkResults/1.8/
+   instead of http://bioconductor.org/checkResults/1.8/html/report.html
+   (note that these builds are still performed twice a day)
+
+ - The page dispatching to the build/check reports for BioC 1.7, 1.8
+   and 1.9 is now at:
+     http://bioconductor.org/checkResults/
+   instead of
+     http://bioconductor.org/checkResults/checkResults.html
+
+Happy Greek Easter!
+
+H.
+
+
+From sfalcon at fhcrc.org  Tue Apr 25 00:19:50 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 24 Apr 2006 15:19:50 -0700
+Subject: [Bioc-devel] Bioc 1.8 release update
+Message-ID: <m2r73m62gp.fsf@ziti.local>
+
+Hi all,
+
+A quick update on the 1.8 release.
+
+R 2.3.0 was released today.
+
+The current Bioc 1.8 check results are looking very good.  A big
+thanks to all of the package maintainers who have been fixing bugs
+left and right.
+
+Today we will be bumping version numbers for packages in the release
+according to the policy outlined here__.  You should not do this
+version bumping yourself, we will take care of it.
+
+__ http://wiki.fhcrc.org/bioc/Version_Numbering_Standards
+
+
+If the results continue to look good and no major problems are
+reported with the new R release, we plan to release Bioc 1.8 *early*.
+Possibly tomorrow (Tuesday) or Wednesday.
+
+Best Wishes,
+
++ seth
+
+
+From tliu at fhcrc.org  Tue Apr 25 19:08:13 2006
+From: tliu at fhcrc.org (Ting-Yuan Liu)
+Date: Tue, 25 Apr 2006 10:08:13 -0700 (PDT)
+Subject: [Bioc-devel] annotation package for Affymetrix Hum6000 array
+Message-ID: <Pine.LNX.4.61.0604251001290.2313@jade.fhcrc.org>
+
+
+Hi,
+
+I am improving the experimental data set colonCA, which contains the data 
+from  Alon et al. (1999, PubMed: 10359783).  I am trying to figure out 
+what should be put in the "annotation" slot of the exprSet object for such 
+data.  According to Alon 1999, they were using Affymetrix Hum6000 array, 
+but I cannot find it in either Affymetrix website or BioConductor 
+website.  Does anyone have ideas about what it is and what we should put 
+in the annotation slot?  
+
+Thanks,
+Ting
+______________________________________
+Ting-Yuan Liu
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+Seattle, WA, USA
+
+
+From khansen at stat.Berkeley.EDU  Wed Apr 26 05:57:16 2006
+From: khansen at stat.Berkeley.EDU (Kasper Daniel Hansen)
+Date: Tue, 25 Apr 2006 20:57:16 -0700
+Subject: [Bioc-devel] Build/check report news
+In-Reply-To: <1145836670.444c147e8d3cc@webmail.fhcrc.org>
+References: <1145836670.444c147e8d3cc@webmail.fhcrc.org>
+Message-ID: <55148C20-84EF-4CCA-8740-574E31F969EE@stat.berkeley.edu>
+
+A few comments:
+
+In my opinion one of the greatest assets of the BioC build/check  
+routine is the ability to get your code tested on various platforms,  
+and that is most important for non-R code (typically C but it may  
+include other languages).
+
+I would like to see
+   * Other automatic build platforms like Solaris, Windows and MacOS  
+X. Perhaps a 32bit Linux as well? (I am sure that this will be the  
+case in due time, just wanted to mention it :)
+   * More details on the build platform especially compiler versions.  
+Eg. I have no idea about the difference between SuSE 9.2 and 10.0
+   * A build timestamp.
+   * The ability to see the contents of the 00INSTALL file which  
+contains compiler warnings/errors. I would like to see this _even if  
+the package build successfully_ as there can be some differences in  
+the warnings the different compilers/platforms yields. This is  
+something that the old pages lacked as well. At first I looked at the  
+aCGH package and did indeed see appropriate g++ output, but then I  
+check the affxparser package and saw none. A bit strange... - indeed  
+I do not even see the building of help pages? (hmm this difference  
+also exists on the BioC 1.8 page - why?)
+   * perhaps it should be considered to use the -Wall flag for gcc  
+and/or -pendantic?
+   * If the building process takes too much time, perhaps one only  
+needs to check code in /src on the various platforms - eg. skip the  
+generation of help pages?
+
+Otherwise it looks good. Thanks for the work.
+
+/Kasper
+
+
+On Apr 23, 2006, at 4:57 PM, hpages at fhcrc.org wrote:
+
+> Hi everybody,
+>
+> We have a new build/check report for BioC 1.9 here:
+>
+>   http://bioconductor.org/checkResults/1.9/
+>
+> Note that these results are for the Bioconductor packages located
+> in the current trunk. A new line on the report page indicates this:
+> - SVN URL: https://hedgehog.fhcrc.org/bioconductor/trunk/madman
+>
+> Also note that for now these new builds:
+>   - are only performed once a day
+>   - are only performed on the 2 following platforms:
+>       64-bit Linux (SUSE 9.2)
+>       64-bit Linux (SUSE 10.0)
+>   - use R-2.3.0 RC (this will change ASAP for R-2.4.0).
+>
+> Setting up the builds for BioC 1.9 was also a good opportunity
+> to reorganize things a little bit in order to have simpler URLs:
+>
+>  - Build/check report for BioC 1.8 are now at:
+>      http://bioconductor.org/checkResults/1.8/
+>    instead of http://bioconductor.org/checkResults/1.8/html/ 
+> report.html
+>    (note that these builds are still performed twice a day)
+>
+>  - The page dispatching to the build/check reports for BioC 1.7, 1.8
+>    and 1.9 is now at:
+>      http://bioconductor.org/checkResults/
+>    instead of
+>      http://bioconductor.org/checkResults/checkResults.html
+>
+> Happy Greek Easter!
+>
+> H.
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From sfalcon at fhcrc.org  Wed Apr 26 07:05:04 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 25 Apr 2006 22:05:04 -0700
+Subject: [Bioc-devel] Build/check report news
+In-Reply-To: <55148C20-84EF-4CCA-8740-574E31F969EE@stat.berkeley.edu> (Kasper
+	Daniel Hansen's message of "Tue, 25 Apr 2006 20:57:16 -0700")
+References: <1145836670.444c147e8d3cc@webmail.fhcrc.org>
+	<55148C20-84EF-4CCA-8740-574E31F969EE@stat.berkeley.edu>
+Message-ID: <m2aca9vse7.fsf@ziti.local>
+
+Hi Kasper,
+
+Kasper Daniel Hansen <khansen at stat.berkeley.edu> writes:
+> In my opinion one of the greatest assets of the BioC build/check  
+> routine is the ability to get your code tested on various platforms,  
+> and that is most important for non-R code (typically C but it may  
+> include other languages).
+>
+> I would like to see
+>    * Other automatic build platforms like Solaris, Windows and MacOS  
+> X. Perhaps a 32bit Linux as well? (I am sure that this will be the  
+> case in due time, just wanted to mention it :)
+
+I'm glad to hear you find the automated builds useful.  Note that
+Herve's announcement for the 1.9 build page is just what we have
+available _today_.  As we did for 1.8, we will have:
+
+- Windows
+- 32 and 64 bit Linux
+- Solaris
+
+And we hope to add at least one OS X build as well. :-)
+
+>    * More details on the build platform especially compiler versions.  
+> Eg. I have no idea about the difference between SuSE 9.2 and 10.0
+
+That's a nice suggestion.  I think we will be able to add that easily.
+
+>    * A build timestamp.
+
+I'm not really sure what you want when you say timestamp (I know it
+sounds obvious, but humor me).  The build report says at the top of
+the page:
+
+    This is the Multiple platform build/check report for BioC 1.8:
+    - SVN URL: https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_1_8/madman
+    - SVN Revision: 17679
+    - SVN Last Changed Date: 2006-04-24 22:18:08 -0700 (Mon, 24 Apr 2006)
+
+This tells you that the report is for a build based on rev 17679 which
+last changed on 24 April at 22:18.  What else can we tell you?
+
+>    * The ability to see the contents of the 00INSTALL file which  
+> contains compiler warnings/errors. I would like to see this _even if  
+> the package build successfully_ as there can be some differences in  
+> the warnings the different compilers/platforms yields. This is  
+> something that the old pages lacked as well. At first I looked at the  
+> aCGH package and did indeed see appropriate g++ output, but then I  
+> check the affxparser package and saw none. A bit strange... - indeed  
+> I do not even see the building of help pages? (hmm this difference  
+> also exists on the BioC 1.8 page - why?)
+
+We had this same conversation 6 months ago.  We'll see what we can do
+about making the install log available.  
+
+But all you have to do is add a vignette to your package; it is
+supposed to have one anyway.  Any vignette will do.  Then your package
+will be compiled during R CMD build and you will be able to view the
+output. :-P
+
+>    * perhaps it should be considered to use the -Wall flag for gcc  
+> and/or -pendantic?
+
+I believe -Wall is already being set for the build, don't know about
+-pedantic.
+
+>    * If the building process takes too much time, perhaps one only  
+> needs to check code in /src on the various platforms - eg. skip the  
+> generation of help pages?
+
+Hmm, that's another interesting idea.
+
+Thanks for the comments, hope we can get around to some of the
+improvements over the next few weeks.
+
+Best,
+
++ seth
+
+
+From laurent at cbs.dtu.dk  Wed Apr 26 07:09:50 2006
+From: laurent at cbs.dtu.dk (Laurent Gautier)
+Date: Wed, 26 Apr 2006 07:09:50 +0200
+Subject: [Bioc-devel] annotation package for Affymetrix Hum6000 array
+In-Reply-To: <Pine.LNX.4.61.0604251001290.2313@jade.fhcrc.org>
+References: <Pine.LNX.4.61.0604251001290.2313@jade.fhcrc.org>
+Message-ID: <20060426050950.GB104533636@genome.cbs.dtu.dk>
+
+My guess is that there is a typo and that chip type is HU6800.
+
+
+On Tue, Apr 25, 2006 at 10:08:13AM -0700, Ting-Yuan Liu wrote:
+> 
+> Hi,
+> 
+> I am improving the experimental data set colonCA, which contains the data 
+> from  Alon et al. (1999, PubMed: 10359783).  I am trying to figure out 
+> what should be put in the "annotation" slot of the exprSet object for such 
+> data.  According to Alon 1999, they were using Affymetrix Hum6000 array, 
+> but I cannot find it in either Affymetrix website or BioConductor 
+> website.  Does anyone have ideas about what it is and what we should put 
+> in the annotation slot?  
+> 
+> Thanks,
+> Ting
+> ______________________________________
+> Ting-Yuan Liu
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> Seattle, WA, USA
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From khansen at stat.Berkeley.EDU  Wed Apr 26 07:21:43 2006
+From: khansen at stat.Berkeley.EDU (Kasper Daniel Hansen)
+Date: Tue, 25 Apr 2006 22:21:43 -0700
+Subject: [Bioc-devel] Build/check report news
+In-Reply-To: <m2aca9vse7.fsf@ziti.local>
+References: <1145836670.444c147e8d3cc@webmail.fhcrc.org>
+	<55148C20-84EF-4CCA-8740-574E31F969EE@stat.berkeley.edu>
+	<m2aca9vse7.fsf@ziti.local>
+Message-ID: <B0BFF92F-FCE5-4060-8A16-38EEC5B8E33C@stat.berkeley.edu>
+
+
+On Apr 25, 2006, at 10:05 PM, Seth Falcon wrote:
+
+> Hi Kasper,
+>
+> Kasper Daniel Hansen <khansen at stat.berkeley.edu> writes:
+>> In my opinion one of the greatest assets of the BioC build/check
+>> routine is the ability to get your code tested on various platforms,
+>> and that is most important for non-R code (typically C but it may
+>> include other languages).
+>>
+>> I would like to see
+>>    * Other automatic build platforms like Solaris, Windows and MacOS
+>> X. Perhaps a 32bit Linux as well? (I am sure that this will be the
+>> case in due time, just wanted to mention it :)
+>
+> I'm glad to hear you find the automated builds useful.  Note that
+> Herve's announcement for the 1.9 build page is just what we have
+> available _today_.  As we did for 1.8, we will have:
+>
+> - Windows
+> - 32 and 64 bit Linux
+> - Solaris
+>
+> And we hope to add at least one OS X build as well. :-)
+>
+>>    * More details on the build platform especially compiler versions.
+>> Eg. I have no idea about the difference between SuSE 9.2 and 10.0
+>
+> That's a nice suggestion.  I think we will be able to add that easily.
+>
+>>    * A build timestamp.
+>
+> I'm not really sure what you want when you say timestamp (I know it
+> sounds obvious, but humor me).  The build report says at the top of
+> the page:
+>
+>     This is the Multiple platform build/check report for BioC 1.8:
+>     - SVN URL: https://hedgehog.fhcrc.org/bioconductor/branches/ 
+> RELEASE_1_8/madman
+>     - SVN Revision: 17679
+>     - SVN Last Changed Date: 2006-04-24 22:18:08 -0700 (Mon, 24 Apr  
+> 2006)
+>
+> This tells you that the report is for a build based on rev 17679 which
+> last changed on 24 April at 22:18.  What else can we tell you?
+
+I have cleaned my glasses and found the above mentioned information.  
+That was indeed was I was looking for :)
+
+>>    * The ability to see the contents of the 00INSTALL file which
+>> contains compiler warnings/errors. I would like to see this _even if
+>> the package build successfully_ as there can be some differences in
+>> the warnings the different compilers/platforms yields. This is
+>> something that the old pages lacked as well. At first I looked at the
+>> aCGH package and did indeed see appropriate g++ output, but then I
+>> check the affxparser package and saw none. A bit strange... - indeed
+>> I do not even see the building of help pages? (hmm this difference
+>> also exists on the BioC 1.8 page - why?)
+>
+> We had this same conversation 6 months ago.  We'll see what we can do
+> about making the install log available.
+>
+> But all you have to do is add a vignette to your package; it is
+> supposed to have one anyway.  Any vignette will do.  Then your package
+> will be compiled during R CMD build and you will be able to view the
+> output. :-P
+
+Ah.
+
+>>    * perhaps it should be considered to use the -Wall flag for gcc
+>> and/or -pendantic?
+>
+> I believe -Wall is already being set for the build, don't know about
+> -pedantic.
+
+If I look at the build output for aCGH (using g++) and affy (using  
+gcc) I do not see the -Wall flag. Also -std=g99 is only set for gcc,  
+not g++. I have no idea if that matters.
+
+>>    * If the building process takes too much time, perhaps one only
+>> needs to check code in /src on the various platforms - eg. skip the
+>> generation of help pages?
+>
+> Hmm, that's another interesting idea.
+>
+> Thanks for the comments, hope we can get around to some of the
+> improvements over the next few weeks.
+>
+
+Thanks, Kasper
+
+> Best,
+>
+> + seth
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From sfalcon at fhcrc.org  Wed Apr 26 15:21:26 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 26 Apr 2006 06:21:26 -0700
+Subject: [Bioc-devel] Build/check report news
+In-Reply-To: <B0BFF92F-FCE5-4060-8A16-38EEC5B8E33C@stat.berkeley.edu> (Kasper
+	Daniel Hansen's message of "Tue, 25 Apr 2006 22:21:43 -0700")
+References: <1145836670.444c147e8d3cc@webmail.fhcrc.org>
+	<55148C20-84EF-4CCA-8740-574E31F969EE@stat.berkeley.edu>
+	<m2aca9vse7.fsf@ziti.local>
+	<B0BFF92F-FCE5-4060-8A16-38EEC5B8E33C@stat.berkeley.edu>
+Message-ID: <m264kwwjzd.fsf@ziti.local>
+
+Kasper Daniel Hansen <khansen at stat.Berkeley.EDU> writes:
+> If I look at the build output for aCGH (using g++) and affy (using
+> gcc) I do not see the -Wall flag. Also -std=g99 is only set for gcc,
+> not g++. I have no idea if that matters.
+
+ok, we will investigate, thanks.
+
+
+From jmacdon at med.umich.edu  Wed Apr 26 15:32:40 2006
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Wed, 26 Apr 2006 09:32:40 -0400
+Subject: [Bioc-devel] annotation package for Affymetrix Hum6000 array
+In-Reply-To: <20060426050950.GB104533636@genome.cbs.dtu.dk>
+References: <Pine.LNX.4.61.0604251001290.2313@jade.fhcrc.org>
+	<20060426050950.GB104533636@genome.cbs.dtu.dk>
+Message-ID: <444F7678.6050207@med.umich.edu>
+
+Laurent Gautier wrote:
+> My guess is that there is a typo and that chip type is HU6800.
+
+No, it isn't a typo. Affy had a chip they called the Hum6000 that had 
+about 6500 probesets on it. Following normal BioC/affy conventions, I 
+would just put hum6000 in the annotation slot.
+
+Best,
+
+Jim
+
+
+> 
+> 
+> On Tue, Apr 25, 2006 at 10:08:13AM -0700, Ting-Yuan Liu wrote:
+> 
+>>Hi,
+>>
+>>I am improving the experimental data set colonCA, which contains the data 
+>>from  Alon et al. (1999, PubMed: 10359783).  I am trying to figure out 
+>>what should be put in the "annotation" slot of the exprSet object for such 
+>>data.  According to Alon 1999, they were using Affymetrix Hum6000 array, 
+>>but I cannot find it in either Affymetrix website or BioConductor 
+>>website.  Does anyone have ideas about what it is and what we should put 
+>>in the annotation slot?  
+>>
+>>Thanks,
+>>Ting
+>>______________________________________
+>>Ting-Yuan Liu
+>>Program in Computational Biology
+>>Division of Public Health Sciences
+>>Fred Hutchinson Cancer Research Center
+>>Seattle, WA, USA
+>>
+>>_______________________________________________
+>>Bioc-devel at stat.math.ethz.ch mailing list
+>>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Affymetrix and cDNA Microarray Core
+University of Michigan Cancer Center
+1500 E. Medical Center Drive
+7410 CCGC
+Ann Arbor MI 48109
+734-647-5623
+
+
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.
+
+
+From sfalcon at fhcrc.org  Wed Apr 26 15:40:27 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 26 Apr 2006 06:40:27 -0700
+Subject: [Bioc-devel] annotation package for Affymetrix Hum6000 array
+In-Reply-To: <444F7678.6050207@med.umich.edu> (James W. MacDonald's message of
+	"Wed, 26 Apr 2006 09:32:40 -0400")
+References: <Pine.LNX.4.61.0604251001290.2313@jade.fhcrc.org>
+	<20060426050950.GB104533636@genome.cbs.dtu.dk>
+	<444F7678.6050207@med.umich.edu>
+Message-ID: <m2wtdcv4j8.fsf@ziti.local>
+
+"James W. MacDonald" <jmacdon at med.umich.edu> writes:
+
+> Laurent Gautier wrote:
+>> My guess is that there is a typo and that chip type is HU6800.
+>
+> No, it isn't a typo. Affy had a chip they called the Hum6000 that had 
+> about 6500 probesets on it. Following normal BioC/affy conventions, I 
+> would just put hum6000 in the annotation slot.
+
+This is what we've decided to do.
+
+Thanks,
+
++ seth
+
+
+From lgautier at altern.org  Thu Apr 27 15:22:55 2006
+From: lgautier at altern.org (lgautier at altern.org)
+Date: Thu, 27 Apr 2006 15:22:55 +0200 (CEST)
+Subject: [Bioc-devel] annotation package for Affymetrix Hum6000 array
+In-Reply-To: <m2wtdcv4j8.fsf@ziti.local>
+References: <Pine.LNX.4.61.0604251001290.2313@jade.fhcrc.org>
+	<20060426050950.GB104533636@genome.cbs.dtu.dk>
+	<444F7678.6050207@med.umich.edu> <m2wtdcv4j8.fsf@ziti.local>
+Message-ID: <35406.218.212.96.120.1146144175.squirrel@www.altern.org>
+
+> "James W. MacDonald" <jmacdon at med.umich.edu> writes:
+>
+>> Laurent Gautier wrote:
+>>> My guess is that there is a typo and that chip type is HU6800.
+>>
+>> No, it isn't a typo. Affy had a chip they called the Hum6000 that had
+>> about 6500 probesets on it. Following normal BioC/affy conventions, I
+>> would just put hum6000 in the annotation slot.
+
+I did not know (I never heard about that one).
+
+> This is what we've decided to do.
+
+Since we are about Affymetrix chips and data, apparently there is a quirk
+with the example data in 'affydata' and the corresponding probe sequence
+package (the probe sets in the AffyBatch does not seem to match the probe
+sequences).
+
+I am not sure this is a big deal, but it might be handy to know for the
+people having code dealing with Affymetrix probe sequence and having
+examples for it
+(for example, it makes some of example in 'affypdnn' examples behave
+erratically).
+
+
+Laurent
+
+>
+> Thanks,
+>
+> + seth
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From sfalcon at fhcrc.org  Thu Apr 27 16:20:28 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 27 Apr 2006 07:20:28 -0700
+Subject: [Bioc-devel] annotation package for Affymetrix Hum6000 array
+In-Reply-To: <35406.218.212.96.120.1146144175.squirrel@www.altern.org>
+	(lgautier@altern.org's message of "Thu,
+	27 Apr 2006 15:22:55 +0200 (CEST)")
+References: <Pine.LNX.4.61.0604251001290.2313@jade.fhcrc.org>
+	<20060426050950.GB104533636@genome.cbs.dtu.dk>
+	<444F7678.6050207@med.umich.edu> <m2wtdcv4j8.fsf@ziti.local>
+	<35406.218.212.96.120.1146144175.squirrel@www.altern.org>
+Message-ID: <m21wvjp0b7.fsf@ziti.local>
+
+lgautier at altern.org writes:
+> Since we are about Affymetrix chips and data, apparently there is a quirk
+> with the example data in 'affydata' and the corresponding probe sequence
+> package (the probe sets in the AffyBatch does not seem to match the probe
+> sequences).
+>
+> I am not sure this is a big deal, but it might be handy to know for the
+> people having code dealing with Affymetrix probe sequence and having
+> examples for it
+> (for example, it makes some of example in 'affypdnn' examples behave
+> erratically).
+
+Can you give a bit more detail or an example?
+
+
+From sfalcon at fhcrc.org  Thu Apr 27 22:46:23 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 27 Apr 2006 13:46:23 -0700
+Subject: [Bioc-devel] Bioconductor 1.8 for R 2.3.0 is released!
+Message-ID: <m2vesulpb4.fsf@ziti.local>
+
+We are pleased to announce the release of Bioconductor 1.8.  This
+release includes 35 new packages and many improvements and bug fixes
+to existing packages.
+
+Please visit http://bioconductor.org for details and downloads.
+
+Thanks to all of the package maintainers for their hard work.
+
+Best Wishes,
+
++ seth
+
+Contents
+========
+
+- Release Highlights
+- Getting Started With Bioconductor 1.8
+- Known Issues
+- 35 New Packages
+- Packages in 1.7 that didn't make it to 1.8
+
+Release Highlights
+==================
+
+- BiocViews, a new way to browse the Bioconductor package
+  repositories.  Have a look:
+  http://bioconductor.org/packages/1.8/BiocViews.html
+
+- New cdf and probe packages produced by the Molecular and Behavioral
+  Neuroscience Institute (MBNI) at the University of Michigan. These
+  packages re-map the individual probes using the most current
+  annotation sources (UniGene, RefSeq, ENSEMBL, Entrez Gene, Tigr,
+  DoTS, and dbSNP). For more information, please see the MBNI web
+  page__
+
+  The naming convention for these packages is more complex than for
+  the normal probe and cdf packages, especially since some are mapped
+  against related species.  The name is derived as follows:
+  SPECIES_CHIP_MAPPED-SPECIES_VERSION_TYPE.  For example, a cdf for
+  the HG-U133A chip, mapped to the human genome, and based on Entrez
+  Gene would be named hs133ahsentrezg7cdf (based on
+  Hs_133A_Hs_version-7_CDF).  The same chip mapped to chimpanzee (Pan
+  troglodytes) would be hs133aptentrezg7cdf.
+
+  __ http://brainarray.mhri.med.umich.edu/Brainarray/Database/CustomCDF/genomic_curated_CDF.asp
+
+
+Getting Started With Bioconductor 1.8
+=====================================
+
+To get started with Bioconductor 1.8, please:
+
+- Install R 2.3.0.  Bioconductor 1.8 has been designed expressly for
+  this version of R.
+
+- Follow the instructions here:
+  http://www.bioconductor.org/docs/install-howto.html
+
+
+Known Issues
+============
+
+- The following packages are not currently available for Windows:
+
+     EBImage      GeneR        iSPlot       maDB
+     MVCClass     pgUtils      RdbiPgSQL    RMAGEML      widgetInvoke
+
+- Due to a hardware failure, OS X binaries for Bioconductor 1.8 are
+  not currently available.  We expect to have OS X binaries available
+  within the next three weeks.
+
+- The YEAST annotation package contains two GO ids (GO:0043625 and
+  GO:0043626) that are not present in the GO annotation package.  The
+  yeast data used a slightly newer GO build.  We aim to synchronize
+  these data resources in the next release.
+
+35 New Packages
+===============
+
+affyio
+Title: Tools for parsing Affymetrix data files
+Maintainer: Benjamin Milo Bolstad <bmb at bmbolstad.com>
+
+gtkWidgets
+Title: Widgets built using RGtk
+Maintainer: Jianhua Zhang<jzhang at jimmy.harvard.edu>
+
+exprExternal
+Title: Implementation of exprSet using externalVectors
+Maintainer: Biocore Team <biocpkgs at lists.fhcrc.org>
+
+MVCClass
+Title: Model-View-Controller (MVC) Classes
+Maintainer: Elizabeth Whalen <ewhalen at hsph.harvard.edu>
+
+LMGene
+Title: LMGene Software for Date Transformation and Identification 
+Maintainer: Geun Cheol Lee <gcxlee at ucdavis.edu>
+
+biocViews
+Title: Categorized views of R package repositories
+Maintainer: Seth Falcon <sfalcon at fhcrc.org>
+
+RLMM 
+Title: A Genotype Calling Algorithm for Affymetrix SNP Arrays 
+Maintainer: Nusrat Rabbee <nrabbee at post.harvard.edu>
+
+affycoretools
+Title: Functions useful for those doing repetitive analyses
+Maintainer: James W. MacDonald <jmacdon at med.umich.edu>
+
+applera
+Title: applera
+Maintainer: Francesca Cordero <fcordero at di.unito.it>
+
+MantelCorr
+Title: Compute Mantel Cluster Correlations
+Maintainer: Brian Steinmeyer <steinmeb at ilya.wustl.edu>
+
+panp
+Title: Presence-Absence Calls from Negative Strand Matching Probesets
+Maintainer: Peter Warren <peter.warren at verizon.net>
+
+pathRender
+Title: Render molecular pathways
+Maintainer: Li Long <lilong at isb-sib.ch>
+
+GEOquery
+Title: Get data from NCBI Gene Expression Omnibus (GEO)
+Maintainer: Sean Davis <sdavis2 at mail.nih.gov>
+
+codelink
+Title: Manipulation of Codelink Bioarrays data.
+Maintainer: Diego D?ez <ddiez at iib.uam.es>
+
+metaArray
+Title: Integration of Microarray Data for Meta-analysis
+Maintainer: Hyungwon Choi <hwchoi at umich.edu>
+
+snapCGH
+Title: Segmentation, normalisation and processing of aCGH data.
+Maintainer: Mike Smith <mls40 at cam.ac.uk>
+
+sscore
+Title: S-Score Algorithm for Affymetrix Oligonucleotide Microarrays
+Maintainer: Richard Kennedy <rkennedy at vcu.edu>
+
+ScISI
+Title: In Silico Interactome
+Maintainer: Tony Chiang <tchiang at fhcrc.org>
+
+beadarray
+Title: Quality control and low-level analysis of BeadArrays
+Maintainer: Mark Dunning <md392 at cam.ac.uk>
+
+Mfuzz
+Title:  Soft clustering of time series gene expression data 
+Maintainer:  Matthias Futschik <m.futschik at biologie.hu-berlin.de>
+
+adSplit
+Title: Annotation-Driven Clustering
+Maintainer: Claudio Lottaz <claudio.lottaz at molgen.mpg.de>
+
+copa
+Title: Functions to perform cancer outlier profile analysis.
+Maintainer: James W. MacDonald <jmacdon at med.umich.edu>
+
+sizepower
+Title: Sample Size and Power Calculation in Micorarray Studies
+Maintainer: Weiliang Qiu <weiliang.qiu at gmail.com>
+
+cellHTS
+Title: Analysis of cell-based screens
+Maintainer: Wolfgang Huber <huber at ebi.ac.uk>
+
+EBImage
+Title: EBImage: R image processing toolkit
+Maintainer: Oleg Sklyar <osklyar at ebi.ac.uk>
+
+OCplus
+Title: Operating characteristics plus sample size and local fdr for microarray experiments
+Maintainer: Alexander Ploner <Alexander.Ploner at ki.se>
+
+Heatplus
+Title: A heat map displaying covariates and coloring clusters  
+Maintainer: Alexander Ploner <Alexander.Ploner at ki.se>
+
+maCorrPlot
+Title: Visualize artificial correlation in microarray data
+Maintainer: Alexander Ploner <Alexander.Ploner at ki.se>
+
+nudge
+Title: Normal Uniform Differential Gene Expression detection
+Maintainer: N. Dean <nemad at stat.washington.edu>
+
+cghMCR
+Title: Find chromosome regions showing common gains/losses
+Maintainer: J. Zhang <jzhang at jimmy.harvard.edu>
+
+RMAPPER
+Title: interface to mapper.chip.org
+Maintainer: VJ Carey <stvjc at channing.harvard.edu>
+
+OrderedList
+Title: Similarities of Ordered Gene Lists
+Maintainer: Claudio Lottaz <Claudio.Lottaz at molgen.mpg.de>
+
+logicFS
+Title: Identification of SNP Interactions
+Maintainer: Holger Schwender <holger.schwender at udo.edu>
+
+GenomeBase
+Title: Base functions for genome data package manipulation
+Maintainer: H. Pages <hpages at fhcrc.org>
+
+y2hStat
+Title: Y2H Statistical Package
+Maintainer: Tony Chiang <tchiang at fhcrc.org>
+
+
+Packages in 1.7 that didn't make it to 1.8
+==========================================
+
+- rhdf5
+- msbase
+- ideogram (was renamed to idiogram)
+
+
+From sfalcon at fhcrc.org  Fri Apr 28 05:55:05 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 27 Apr 2006 20:55:05 -0700
+Subject: [Bioc-devel] Thanks are deserved
+Message-ID: <m28xpqjqw6.fsf@ziti.local>
+
+Hi all,
+
+I want to take a moment to publicly thank a few folks who helped to
+make this Bioc release the smoothest to date.
+
+Jim MacDonald donated his time and compute cycles to rebuild the
+annotation cdf and probe packages, coordinated the addition of the new
+MBNI cdf and probe packages, and answered countless questions on the
+bioc list.  Thanks, Jim.
+
+Seattle team at FHCRC: 
+
+* Ting-Yuan Liu delivered the updated annotation packages, provided
+  fixes for experiment data, and reviewed all of the newly contributed
+  packages.  Ting will be moving to a different group here at FHCRC.
+  We'll miss his help, but wish him the best in his new endeavors.
+
+* Herve Pages has taken on the build master role and done wonders to
+  improve the reliability of the builds (even on Windows!) and enhance
+  the usability of the daily check reports (they really are daily!).
+  He has also taken on the care and feeding of the Biostrings
+  package ensuring that powerful sequence analysis tools are available
+  in Bioconductor.
+
+* Martin Morgan did a great job improving Biobase and implementing a
+  new set of Biobase core classes (more on that soon).  Thanks
+  especially for keeping a cool head during the last minute design
+  changes.
+
+* Nianhua Li contributed fixes to a number of packages to allow them
+  to pass R CMD check and get into the release.  She also added
+  namespace support to the packages that we maintain here.  
+
+So thanks all.  
+
+Best Wishes,
+
++ seth
+
+
+From sfalcon at fhcrc.org  Fri Apr 28 17:18:21 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 28 Apr 2006 08:18:21 -0700
+Subject: [Bioc-devel] Complete download of Bioconductor 1.8
+In-Reply-To: <002d01c66ad2$2da03bb0$70160e8d@molgen.mpg.de> (Claudio Lottaz's
+	message of "Fri, 28 Apr 2006 16:43:56 +0200")
+References: <m2vesulpb4.fsf@ziti.local>
+	<002d01c66ad2$2da03bb0$70160e8d@molgen.mpg.de>
+Message-ID: <m2aca5iv9e.fsf@ziti.local>
+
+"Claudio Lottaz" <Claudio.Lottaz at molgen.mpg.de> writes:
+> Hi all,
+>
+> I am responsible for the installation of Bioconductor at our institute.
+> I found it helpful to download all packages from the Bioconductor repository
+> and then install from local copies. I did this for release 1.7 using the
+> reposTools package. In the current reposTools package, no repositories for
+> release 1.8 have been added (when using repositories()).
+
+reposTools has been deprecated.  The 1.8 release repositories are not
+available in reposTools format.
+
+> Is this, because the 1.8 repositories now have standard format as announced
+> earlier?
+> And how would I go about downloading all packages in Bioconductor
+> repositories?
+
+Yes, all Bioc package repositories are normal CRAN-style repositories.
+To get the current complete list of Bioc repositories:
+
+library("Biobase")
+biocReposList()
+allp <- available.packages(contriburl=contrib.url(biocReposList()))
+
+However, this includes all of CRAN, all annotation and experiment
+packages, etc.
+
+For just the software packages:
+
+softwarePkgs <- available.packages(contrib.url(biocReposList()["bioc"]))
+
+Then you can use download.packages:
+
+download.packages(rownames(softwarePkgs), "destdir", repos=biocReposList()["bioc"])
+
+Also, you might be interested in these instructions:
+http://www.bioconductor.org/download/mirrors/mirror-howto.html
+
+-- 
++ seth
+
+

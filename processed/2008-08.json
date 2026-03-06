@@ -1,0 +1,631 @@
+{
+  "list": "bioc-devel",
+  "description": "",
+  "month": "2008-08",
+  "messages": [
+    {
+      "id": "msg-a4b1752cac3b",
+      "message_id": "<48933954.2020508@fhcrc.org>",
+      "from_name": "Patrick Aboyoun",
+      "from_email_hash": "dc50c3c245d3952d5b85da1e198abf49dacd056ac9649061263764cf7191a8de",
+      "date": "2008-08-01T09:27:00-07:00",
+      "subject": "[Bioc-devel] Package size limitation",
+      "subject_clean": "[Bioc-devel] Package size limitation",
+      "in_reply_to": "<BF06EC34-B2C4-46C9-9E0A-516DB5A2886A@stat.berkeley.edu>",
+      "references": [
+        "<010901c8f385$dc7898b0$9569ca10$@edu>",
+        "<BF06EC34-B2C4-46C9-9E0A-516DB5A2886A@stat.berkeley.edu>"
+      ],
+      "body_plain": "Tobias,\nTo elaborate on Kasper's well-stated points, the Bioconductor project \nhas separate repositories for software, experiment data, and annotation \nmetadata.\n\nBioC software:  http://bioconductor.org/packages/release/bioc/\nBioC experiment data:  \nhttp://bioconductor.org/packages/release/data/experiment/\nBioC annotation metadata:  \nhttp://bioconductor.org/packages/release/data/annotation/\n\nThe main criterion for an experiment data package is that it should be \nnovel in some way to make it useful for other software developers to \nutilize it when illustrating concepts in their software package. More \noften than not, including a subset of your data in your software package \nwill suffice. One common misconception by new package developers is that \nexamples in the man pages and the vignettes need to be 100% \"real\". The \nmain goal of vignettes and man pages is to illustrate concepts rather \nthan reveal scientific findings. You are encouraged to provide \nreferences to scientific papers that demonstrate the latter within your \nsoftware's documentation, but typically end-users want your package to \nhave a small storage footprint on their machine and have the examples \nrun in a short time frame.\n\nIf you are not sure how to handle your particular situation, when the \nBioconductor team previews and reviews your package, we will help you \nthrough any tricky decisions. Good luck with your package submission and \nthanks for your interest in the Bioconductor project!\n\n\nPatrick\n\n\n\nKasper Daniel Hansen wrote:\n> I believe the right way to do this is the following\n>\n> 1) Make an AffyBatch containing only a few probesets to use for your \n> examples. Include this in the package\n> 2) Submit a package containing your experiment\n> 3) Use the package above in a vignette.\n>\n> But I am sure someone else will chime in.\n>\n> Kasper\n>\n> On Jul 31, 2008, at 8:22 PM, Tobias Guennel wrote:\n>\n>> Dear all,\n>>\n>> I'm writing my first R package that I want to submit to Bioconductor\n>> implementing an algorithm for detecting differentially expressed \n>> genes that\n>> is not available in R yet.\n>> The example data set is an AffyBatch object that contains 6 read in \n>> *.CEL\n>> files, which were used in the paper introducing the algorithm and are \n>> most\n>> suitable to show the application of the package. Unfortunately, \n>> including\n>> the data example increases the size of the compressed package to 6MB.\n>>\n>> Is there a way to drastically reduce the size of an Affybatch object \n>> or are\n>> there other options that can reduce the file size?\n>>\n>> Thanks for your help,\n>>\n>> ------------------------------\n>> Tobias Guennel\n>> Research Assistant\n>> Department of Biostatistics\n>> Virginia Commonwealth University\n>> Theater Row 3035F\n>> 804-828-2527\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "Tobias,\nTo elaborate on Kasper's well-stated points, the Bioconductor project \nhas separate repositories for software, experiment data, and annotation \nmetadata.\n\nBioC software:  http://bioconductor.o",
+      "thread_id": "thread-a4b1752cac3b",
+      "thread_depth": 0,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-d9cd37d7e0eb",
+      "message_id": "<59d7961d0808011007h1d4bbbb5j2ba0d8f686555e85@mail.gmail.com>",
+      "from_name": "Henrik Bengtsson",
+      "from_email_hash": "9990c0a46f707a7b7a32dc78108db722c1ccf39a8c5733e31eb392daba5a47ca",
+      "date": "2008-08-01T10:07:43-07:00",
+      "subject": "[Bioc-devel] Package size limitation",
+      "subject_clean": "[Bioc-devel] Package size limitation",
+      "in_reply_to": "<48933954.2020508@fhcrc.org>",
+      "references": [
+        "<010901c8f385$dc7898b0$9569ca10$@edu>",
+        "<BF06EC34-B2C4-46C9-9E0A-516DB5A2886A@stat.berkeley.edu>",
+        "<48933954.2020508@fhcrc.org>"
+      ],
+      "body_plain": "Chime!\n\nAvoid putting large data sets in otherwise small packages (how big is\nyour package without data?).  Put large example data in a separate\nexperiment data package which is optional to load.  Try to minimize\nthe amount of download and the number of dependent package that other\nusers/developers needed to actually use your new method.  That\nincrease the chances that your method is used elsewhere as well.\nUpdates will be faster to install.\n\nIf you put together an experiment data package, please consider using\nthe CEL files and not AffyBatch packages.  The AffyBatch structure\nmight be obsolete one day and your experiment package with it.  This\nis less likely to happen if you use CEL files - the most common\ndenominator for all data structure/classes.\n\nNow to a trick: If you do want to distribute an AffyBatch object, have\na look at your intensities.  If your chip type is a 3x3 pixel per\nprobe array, and the Affymetrix image analysis (typically) took the\n75% quantile (7:th ordered pixel), you will actually see only integer\nprobe signals.  Note, this is not a rounding error but it just happens\n\"by chance\".  If this is the case with your data, you could create an\nobject holding the signals as integers and not doubles without loosing\nanything.  That object would be roughly half the size.  I don't think\ncompression algorithms can pick this up.\n\nCheers\n\nHenrik\n\nOn Fri, Aug 1, 2008 at 9:27 AM, Patrick Aboyoun <paboyoun at fhcrc.org> wrote:\n> Tobias,\n> To elaborate on Kasper's well-stated points, the Bioconductor project has\n> separate repositories for software, experiment data, and annotation\n> metadata.\n>\n> BioC software:  http://bioconductor.org/packages/release/bioc/\n> BioC experiment data:\n>  http://bioconductor.org/packages/release/data/experiment/\n> BioC annotation metadata:\n>  http://bioconductor.org/packages/release/data/annotation/\n>\n> The main criterion for an experiment data package is that it should be novel\n> in some way to make it useful for other software developers to utilize it\n> when illustrating concepts in their software package. More often than not,\n> including a subset of your data in your software package will suffice. One\n> common misconception by new package developers is that examples in the man\n> pages and the vignettes need to be 100% \"real\". The main goal of vignettes\n> and man pages is to illustrate concepts rather than reveal scientific\n> findings. You are encouraged to provide references to scientific papers that\n> demonstrate the latter within your software's documentation, but typically\n> end-users want your package to have a small storage footprint on their\n> machine and have the examples run in a short time frame.\n>\n> If you are not sure how to handle your particular situation, when the\n> Bioconductor team previews and reviews your package, we will help you\n> through any tricky decisions. Good luck with your package submission and\n> thanks for your interest in the Bioconductor project!\n>\n>\n> Patrick\n>\n>\n>\n> Kasper Daniel Hansen wrote:\n>>\n>> I believe the right way to do this is the following\n>>\n>> 1) Make an AffyBatch containing only a few probesets to use for your\n>> examples. Include this in the package\n>> 2) Submit a package containing your experiment\n>> 3) Use the package above in a vignette.\n>>\n>> But I am sure someone else will chime in.\n>>\n>> Kasper\n>>\n>> On Jul 31, 2008, at 8:22 PM, Tobias Guennel wrote:\n>>\n>>> Dear all,\n>>>\n>>> I'm writing my first R package that I want to submit to Bioconductor\n>>> implementing an algorithm for detecting differentially expressed genes\n>>> that\n>>> is not available in R yet.\n>>> The example data set is an AffyBatch object that contains 6 read in *.CEL\n>>> files, which were used in the paper introducing the algorithm and are\n>>> most\n>>> suitable to show the application of the package. Unfortunately, including\n>>> the data example increases the size of the compressed package to 6MB.\n>>>\n>>> Is there a way to drastically reduce the size of an Affybatch object or\n>>> are\n>>> there other options that can reduce the file size?\n>>>\n>>> Thanks for your help,\n>>>\n>>> ------------------------------\n>>> Tobias Guennel\n>>> Research Assistant\n>>> Department of Biostatistics\n>>> Virginia Commonwealth University\n>>> Theater Row 3035F\n>>> 804-828-2527\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "Chime!\n\nAvoid putting large data sets in otherwise small packages (how big is\nyour package without data?).  Put large example data in a separate\nexperiment data package which is optional to load.  Try",
+      "thread_id": "thread-a4b1752cac3b",
+      "thread_depth": 1,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-3c7f67034100",
+      "message_id": "<20080801102514.kg9ogr0xhc88840g@webmail.fhcrc.org>",
+      "from_name": "hpages at fhcrc.org",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2008-08-01T10:25:14-07:00",
+      "subject": "[Bioc-devel] Package size limitation",
+      "subject_clean": "[Bioc-devel] Package size limitation",
+      "in_reply_to": "<59d7961d0808011007h1d4bbbb5j2ba0d8f686555e85@mail.gmail.com>",
+      "references": [
+        "<010901c8f385$dc7898b0$9569ca10$@edu>",
+        "<BF06EC34-B2C4-46C9-9E0A-516DB5A2886A@stat.berkeley.edu>",
+        "<48933954.2020508@fhcrc.org>",
+        "<59d7961d0808011007h1d4bbbb5j2ba0d8f686555e85@mail.gmail.com>"
+      ],
+      "body_plain": "Hi Henrik,\n\nQuoting Henrik Bengtsson <hb at stat.berkeley.edu>:\n[...]\n>\n> Now to a trick: If you do want to distribute an AffyBatch object, have\n> a look at your intensities.  If your chip type is a 3x3 pixel per\n> probe array, and the Affymetrix image analysis (typically) took the\n> 75% quantile (7:th ordered pixel), you will actually see only integer\n> probe signals.  Note, this is not a rounding error but it just happens\n> \"by chance\".  If this is the case with your data, you could create an\n> object holding the signals as integers and not doubles without loosing\n> anything.  That object would be roughly half the size.  I don't think\n> compression algorithms can pick this up.\n\nYes they do:\n\n   > xx <- sample(1000000L, 5000000, replace=TRUE)\n   > typeof(xx)\n   [1] \"integer\"\n   > object.size(xx)\n   [1] 20000040\n   > yy <- as.double(xx)\n   > typeof(yy)\n   [1] \"double\"\n   > object.size(yy)\n   [1] 40000040\n   > save(xx, file=\"xx.rda\")\n   > save(yy, file=\"yy.rda\")\n\nThen from the shell:\n\n   hpages at lamprey:~> ls -lh *.rda\n   -rw-r--r-- 1 hpages compbio 16M 2008-08-01 10:19 xx.rda\n   -rw-r--r-- 1 hpages compbio 18M 2008-08-01 10:19 yy.rda\n\nH.",
+      "body_snippet": "Hi Henrik,\n\nQuoting Henrik Bengtsson <hb at stat.berkeley.edu>:\n[...]\n>\n> Now to a trick: If you do want to distribute an AffyBatch object, have\n> a look at your intensities.  If your chip type is a 3",
+      "thread_id": "thread-a4b1752cac3b",
+      "thread_depth": 2,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-8fba4b644d10",
+      "message_id": "<012801c8f3fd$82fb4580$88f1d080$@edu>",
+      "from_name": "Tobias Guennel",
+      "from_email_hash": "331bc07e9970046abbfd3f1bb35c6781a4711c4731040eb316fcd85d42aa249f",
+      "date": "2008-08-01T13:39:07-04:00",
+      "subject": "[Bioc-devel] Package size limitation",
+      "subject_clean": "[Bioc-devel] Package size limitation",
+      "in_reply_to": "<48933954.2020508@fhcrc.org>",
+      "references": [
+        "<010901c8f385$dc7898b0$9569ca10$@edu>",
+        "<BF06EC34-B2C4-46C9-9E0A-516DB5A2886A@stat.berkeley.edu>",
+        "<48933954.2020508@fhcrc.org>"
+      ],
+      "body_plain": "Thanks everyone, I found what I needed!\n\nCheers,\n\n------------------------------\nTobias Guennel\nResearch Assistant\nDepartment of Biostatistics\nVirginia Commonwealth University\nTheater Row 3035F\n804-828-2527\n\n\n-----Original Message-----\nFrom: Patrick Aboyoun [mailto:paboyoun at fhcrc.org] \nSent: Friday, August 01, 2008 12:27 PM\nTo: Kasper Daniel Hansen\nCc: Tobias Guennel; bioc-devel at stat.math.ethz.ch\nSubject: Re: [Bioc-devel] Package size limitation\n\nTobias,\nTo elaborate on Kasper's well-stated points, the Bioconductor project \nhas separate repositories for software, experiment data, and annotation \nmetadata.\n\nBioC software:  http://bioconductor.org/packages/release/bioc/\nBioC experiment data:  \nhttp://bioconductor.org/packages/release/data/experiment/\nBioC annotation metadata:  \nhttp://bioconductor.org/packages/release/data/annotation/\n\nThe main criterion for an experiment data package is that it should be \nnovel in some way to make it useful for other software developers to \nutilize it when illustrating concepts in their software package. More \noften than not, including a subset of your data in your software package \nwill suffice. One common misconception by new package developers is that \nexamples in the man pages and the vignettes need to be 100% \"real\". The \nmain goal of vignettes and man pages is to illustrate concepts rather \nthan reveal scientific findings. You are encouraged to provide \nreferences to scientific papers that demonstrate the latter within your \nsoftware's documentation, but typically end-users want your package to \nhave a small storage footprint on their machine and have the examples \nrun in a short time frame.\n\nIf you are not sure how to handle your particular situation, when the \nBioconductor team previews and reviews your package, we will help you \nthrough any tricky decisions. Good luck with your package submission and \nthanks for your interest in the Bioconductor project!\n\n\nPatrick\n\n\n\nKasper Daniel Hansen wrote:\n> I believe the right way to do this is the following\n>\n> 1) Make an AffyBatch containing only a few probesets to use for your \n> examples. Include this in the package\n> 2) Submit a package containing your experiment\n> 3) Use the package above in a vignette.\n>\n> But I am sure someone else will chime in.\n>\n> Kasper\n>\n> On Jul 31, 2008, at 8:22 PM, Tobias Guennel wrote:\n>\n>> Dear all,\n>>\n>> I'm writing my first R package that I want to submit to Bioconductor\n>> implementing an algorithm for detecting differentially expressed \n>> genes that\n>> is not available in R yet.\n>> The example data set is an AffyBatch object that contains 6 read in \n>> *.CEL\n>> files, which were used in the paper introducing the algorithm and are \n>> most\n>> suitable to show the application of the package. Unfortunately, \n>> including\n>> the data example increases the size of the compressed package to 6MB.\n>>\n>> Is there a way to drastically reduce the size of an Affybatch object \n>> or are\n>> there other options that can reduce the file size?\n>>\n>> Thanks for your help,\n>>\n>> ------------------------------\n>> Tobias Guennel\n>> Research Assistant\n>> Department of Biostatistics\n>> Virginia Commonwealth University\n>> Theater Row 3035F\n>> 804-828-2527\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "Thanks everyone, I found what I needed!\n\nCheers,\n\n------------------------------\nTobias Guennel\nResearch Assistant\nDepartment of Biostatistics\nVirginia Commonwealth University\nTheater Row 3035F\n804-82",
+      "thread_id": "thread-a4b1752cac3b",
+      "thread_depth": 1,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-2ffdaae17077",
+      "message_id": "<489AFFD4.4070804@ibe.med.uni-muenchen.de>",
+      "from_name": "Markus Schmidberger",
+      "from_email_hash": "f8bfa84297de571d104d5331872fd43189cf7e374fa9dc4c24b6e4212d13663a",
+      "date": "2008-08-07T15:59:48+02:00",
+      "subject": "[Bioc-devel] Packages, NEWS files, CHANGELOG files",
+      "subject_clean": "[Bioc-devel] Packages, NEWS files, CHANGELOG files",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\n\nconcerning the \"CHANGELOGS\" and \"NEWS\" file discussion at the \nBioconductor Developer day:\nIn the Bioconductor Changelog \n(http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi) I saw, that people \nstarting to rename their HISTORY or ChangeLog files to NEWS files.\n\nI think we should stay next to the R and GNU advices:\n\"The package subdirectory may also contain files INDEX, ... and NEWS. \nOther files such as README or ChangeLog will be ignored by R, but may be \nuseful to end-users.\nFor the conventions for files NEWS and ChangeLog in the GNU project see \nhttp://www.gnu.org/prep/standards/standards.html#NEWS-File\"\n\nMajor changes, bug fixes and releases should be written in the NEWS file.\nTo keep a good programming standard ALL changes made to program source \nfiles should be written to the \"CHANGELOG\" file.\n\nThere should be added a short sentence to the \"BioC Package Guidelines\" \n-> \"Package Contents\".\n\nBest regards\nMarkus\n\n-- \nDipl.-Tech. Math. Markus Schmidberger\n\nLudwig-Maximilians-Universit?t M?nchen\nIBE - Institut f?r medizinische Informationsverarbeitung,\nBiometrie und Epidemiologie\nMarchioninistr. 15, D-81377 Muenchen\nURL: http://ibe.web.med.uni-muenchen.de \nMail: Markus.Schmidberger [at] ibe.med.uni-muenchen.de",
+      "body_snippet": "Hi,\n\nconcerning the \"CHANGELOGS\" and \"NEWS\" file discussion at the \nBioconductor Developer day:\nIn the Bioconductor Changelog \n(http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi) I saw, that people \nstarti",
+      "thread_id": "thread-2ffdaae17077",
+      "thread_depth": 0,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-e56ddaadee0c",
+      "message_id": "<509e0620808071958y17d1b149h4d5b808ad5e7ed42@mail.gmail.com>",
+      "from_name": "Michael Lawrence",
+      "from_email_hash": "e9ff4b3acc925189bce61741d9f30f26f996837e9604d7ac3a80794d259750a9",
+      "date": "2008-08-07T19:58:45-07:00",
+      "subject": "[Bioc-devel] Packages, NEWS files, CHANGELOG files",
+      "subject_clean": "[Bioc-devel] Packages, NEWS files, CHANGELOG files",
+      "in_reply_to": "<489AFFD4.4070804@ibe.med.uni-muenchen.de>",
+      "references": [
+        "<489AFFD4.4070804@ibe.med.uni-muenchen.de>"
+      ],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080807/3c89463c/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080807/3c89463c/attachment.pl>",
+      "thread_id": "thread-2ffdaae17077",
+      "thread_depth": 1,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-357e6dc2d4a4",
+      "message_id": "<59d7961d0808100955i7776bb6bu24888d0eaff533e@mail.gmail.com>",
+      "from_name": "Henrik Bengtsson",
+      "from_email_hash": "9990c0a46f707a7b7a32dc78108db722c1ccf39a8c5733e31eb392daba5a47ca",
+      "date": "2008-08-10T09:55:23-07:00",
+      "subject": "[Bioc-devel] EBImage: Devel version not building",
+      "subject_clean": "[Bioc-devel] EBImage: Devel version not building",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\n\nFYI, the devel version of EBImage won't build due to a \"typo\" in DESCRIPTION:\n\nhttp://bioconductor.org/checkResults/2.3/bioc-LATEST/EBImage/gewurz-buildsrc.html\n\nI've contacted the new maintainer (Wolfgang Huber), but he's won't get\nback until Aug 17, so could someelse with write privileges please\nupdate the DESCRIPTION file?\n\nCheers\n\nHenrik",
+      "body_snippet": "Hi,\n\nFYI, the devel version of EBImage won't build due to a \"typo\" in DESCRIPTION:\n\nhttp://bioconductor.org/checkResults/2.3/bioc-LATEST/EBImage/gewurz-buildsrc.html\n\nI've contacted the new maintainer",
+      "thread_id": "thread-357e6dc2d4a4",
+      "thread_depth": 0,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-16487114e081",
+      "message_id": "<52f663c40808101141r5693d87dh1a1172cc4a305a3a@mail.gmail.com>",
+      "from_name": "Tony Chiang",
+      "from_email_hash": "9ebd881620c095055c1af52b74c4847ccfe07f5853999ccdedf800c66fa6d7bd",
+      "date": "2008-08-10T11:41:32-07:00",
+      "subject": "[Bioc-devel] EBImage: Devel version not building",
+      "subject_clean": "[Bioc-devel] EBImage: Devel version not building",
+      "in_reply_to": "<59d7961d0808100955i7776bb6bu24888d0eaff533e@mail.gmail.com>",
+      "references": [
+        "<59d7961d0808100955i7776bb6bu24888d0eaff533e@mail.gmail.com>"
+      ],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080810/a36125cc/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080810/a36125cc/attachment.pl>",
+      "thread_id": "thread-357e6dc2d4a4",
+      "thread_depth": 1,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-a70e0ed50512",
+      "message_id": "<20080810131350.e1pvvlmiowgkowsw@webmail.fhcrc.org>",
+      "from_name": "hpages at fhcrc.org",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2008-08-10T13:13:50-07:00",
+      "subject": "[Bioc-devel] EBImage: Devel version not building",
+      "subject_clean": "[Bioc-devel] EBImage: Devel version not building",
+      "in_reply_to": "<52f663c40808101141r5693d87dh1a1172cc4a305a3a@mail.gmail.com>",
+      "references": [
+        "<59d7961d0808100955i7776bb6bu24888d0eaff533e@mail.gmail.com>",
+        "<52f663c40808101141r5693d87dh1a1172cc4a305a3a@mail.gmail.com>"
+      ],
+      "body_plain": "Hi Sunday workers! I just fixed this. Thanks for pointing it.  H.\n\nQuoting Tony Chiang <tchiang at fhcrc.org>:\n\n> Hi Henrik,\n>\n> The maintainer is listed as:\n>\n> Package: EBImage\n> Version: 2.5.3\n> Title: Image processing and image analysis toolkit for R\n> Authors: Oleg Sklyar, Gregoire Pau, Mike Smith, Wolfgang Huber\n> Maintainer: Gregoire Pau <gpau at ebi.ac.uk>\n>\n> So it might be worthwhile to drop Greg a line. I am sure that Oleg is also\n> reading the list but just not as frequently, so he might respond as well.\n>\n> tony\n>\n> On Sun, Aug 10, 2008 at 9:55 AM, Henrik Bengtsson   \n> <hb at stat.berkeley.edu>wrote:\n>\n>> Hi,\n>>\n>> FYI, the devel version of EBImage won't build due to a \"typo\" in\n>> DESCRIPTION:\n>>\n>>\n>> http://bioconductor.org/checkResults/2.3/bioc-LATEST/EBImage/gewurz-buildsrc.html\n>>\n>> I've contacted the new maintainer (Wolfgang Huber), but he's won't get\n>> back until Aug 17, so could someelse with write privileges please\n>> update the DESCRIPTION file?\n>>\n>> Cheers\n>>\n>> Henrik\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>\n> \t[[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "Hi Sunday workers! I just fixed this. Thanks for pointing it.  H.\n\nQuoting Tony Chiang <tchiang at fhcrc.org>:\n\n> Hi Henrik,\n>\n> The maintainer is listed as:\n>\n> Package: EBImage\n> Version: 2.5.3\n> Ti",
+      "thread_id": "thread-357e6dc2d4a4",
+      "thread_depth": 2,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-56f1aaa16144",
+      "message_id": "<59d7961d0808101614o202bcd28jab654067d3f2bec6@mail.gmail.com>",
+      "from_name": "Henrik Bengtsson",
+      "from_email_hash": "9990c0a46f707a7b7a32dc78108db722c1ccf39a8c5733e31eb392daba5a47ca",
+      "date": "2008-08-10T16:14:12-07:00",
+      "subject": "[Bioc-devel] EBImage: Devel version not building",
+      "subject_clean": "[Bioc-devel] EBImage: Devel version not building",
+      "in_reply_to": "<52f663c40808101141r5693d87dh1a1172cc4a305a3a@mail.gmail.com>",
+      "references": [
+        "<59d7961d0808100955i7776bb6bu24888d0eaff533e@mail.gmail.com>",
+        "<52f663c40808101141r5693d87dh1a1172cc4a305a3a@mail.gmail.com>"
+      ],
+      "body_plain": "Hi,\n\nsorry, my bad - I was told two weeks ago that Oleg was handing it over\nto Wolfgang, but I should have checked the DESCRIPTION file.\n\n/Henrik\n\nOn Sun, Aug 10, 2008 at 11:41 AM, Tony Chiang <tchiang at fhcrc.org> wrote:\n> Hi Henrik,\n>\n> The maintainer is listed as:\n>\n> Package: EBImage\n> Version: 2.5.3\n> Title: Image processing and image analysis toolkit for R\n> Authors: Oleg Sklyar, Gregoire Pau, Mike Smith, Wolfgang Huber\n> Maintainer: Gregoire Pau <gpau at ebi.ac.uk>\n>\n> So it might be worthwhile to drop Greg a line. I am sure that Oleg is also\n> reading the list but just not as frequently, so he might respond as well.\n>\n> tony\n>\n> On Sun, Aug 10, 2008 at 9:55 AM, Henrik Bengtsson <hb at stat.berkeley.edu>\n> wrote:\n>>\n>> Hi,\n>>\n>> FYI, the devel version of EBImage won't build due to a \"typo\" in\n>> DESCRIPTION:\n>>\n>>\n>> http://bioconductor.org/checkResults/2.3/bioc-LATEST/EBImage/gewurz-buildsrc.html\n>>\n>> I've contacted the new maintainer (Wolfgang Huber), but he's won't get\n>> back until Aug 17, so could someelse with write privileges please\n>> update the DESCRIPTION file?\n>>\n>> Cheers\n>>\n>> Henrik\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n>",
+      "body_snippet": "Hi,\n\nsorry, my bad - I was told two weeks ago that Oleg was handing it over\nto Wolfgang, but I should have checked the DESCRIPTION file.\n\n/Henrik\n\nOn Sun, Aug 10, 2008 at 11:41 AM, Tony Chiang <tchian",
+      "thread_id": "thread-357e6dc2d4a4",
+      "thread_depth": 2,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-f0551bf580f4",
+      "message_id": "<59d7961d0808121831t71cb10c4jfe4804f1b4ca2d2f@mail.gmail.com>",
+      "from_name": "Henrik Bengtsson",
+      "from_email_hash": "9990c0a46f707a7b7a32dc78108db722c1ccf39a8c5733e31eb392daba5a47ca",
+      "date": "2008-08-12T18:31:10-07:00",
+      "subject": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "subject_clean": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\n\nthanks for fixing the DESCRIPTION file for EBImage.  FYI, the Windows\nversion does not build:\n\n* creating vignettes ... ERROR\nError in inDL(x, as.logical(local), as.logical(now), ...) :\n  unable to load shared library\n'D:/biocbld/bbs-2.3-bioc/tmpdir/Rinst415629052/EBImage/libs/EBImage.dll':\n  LoadLibrary failure:  The specified procedure could not be found.\n\nError: processing vignette 'AnalysisWithEBImage.Rnw' failed with diagnostics:\n chunk 1 (label=loadlib)\nError : package/namespace load failed for 'EBImage'\nExecution halted\n\nMore: http://bioconductor.org/checkResults/2.3/bioc-LATEST/EBImage/gewurz-buildsrc.html\n\nI noticed this already a few weeks ago (before the typo in DESCRIPTION\nwas added) and hoped it would solve \"itself\", but it is still there.\nNot sure if it is an EBImage or a BioC server config problem.\n\nCheers\n\nHenrik\n\nPS. I can solve all these problems for myself, but I reporting it for\nthe sake of automatic installation etc. DS.",
+      "body_snippet": "Hi,\n\nthanks for fixing the DESCRIPTION file for EBImage.  FYI, the Windows\nversion does not build:\n\n* creating vignettes ... ERROR\nError in inDL(x, as.logical(local), as.logical(now), ...) :\n  unable ",
+      "thread_id": "thread-f0551bf580f4",
+      "thread_depth": 0,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-03dd1be6c555",
+      "message_id": "<509e0620808130556qe8b28fdi8ab2b874b3564190@mail.gmail.com>",
+      "from_name": "Michael Lawrence",
+      "from_email_hash": "e9ff4b3acc925189bce61741d9f30f26f996837e9604d7ac3a80794d259750a9",
+      "date": "2008-08-13T05:56:50-07:00",
+      "subject": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "subject_clean": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "in_reply_to": "<59d7961d0808121831t71cb10c4jfe4804f1b4ca2d2f@mail.gmail.com>",
+      "references": [
+        "<59d7961d0808121831t71cb10c4jfe4804f1b4ca2d2f@mail.gmail.com>"
+      ],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080813/019123cf/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080813/019123cf/attachment.pl>",
+      "thread_id": "thread-f0551bf580f4",
+      "thread_depth": 1,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-c36720aec699",
+      "message_id": "<48A2DAEF.8000700@ebi.ac.uk>",
+      "from_name": "Gregoire Pau",
+      "from_email_hash": "20fcd28649a7d549bbda0eb4805742bd0f4f62031a4ef0f0cffefaa2a3f381b3",
+      "date": "2008-08-13T14:00:31+01:00",
+      "subject": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "subject_clean": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "in_reply_to": "<59d7961d0808121831t71cb10c4jfe4804f1b4ca2d2f@mail.gmail.com>",
+      "references": [
+        "<59d7961d0808121831t71cb10c4jfe4804f1b4ca2d2f@mail.gmail.com>"
+      ],
+      "body_plain": "Hi,\n\nI'm the new maintainer of EBImage.\n\nThe DLL EBImage.dll has been manually compiled some time ago and is not \nin sync with the current version. It would be really nice that the \nWindows version can be automatically built by the automatic Bioconductor \nbuilding framework, but EBImage relies on two external libraries: \nGTK+2.0 and ImageMagick and I'm not sure whether they are available on \nthe Bioconductor building machines.\n\nWhat is the general policy for packages that rely on external libraries \n? Can I rely on some pre-installed libraries or should I build them \nmanually for some platforms ?\n\nThanks !\nBest regards,\n\nGreg\n\nHenrik Bengtsson wrote:\n> Hi,\n> \n> thanks for fixing the DESCRIPTION file for EBImage.  FYI, the Windows\n> version does not build:\n> \n> * creating vignettes ... ERROR\n> Error in inDL(x, as.logical(local), as.logical(now), ...) :\n>   unable to load shared library\n> 'D:/biocbld/bbs-2.3-bioc/tmpdir/Rinst415629052/EBImage/libs/EBImage.dll':\n>   LoadLibrary failure:  The specified procedure could not be found.\n> \n> Error: processing vignette 'AnalysisWithEBImage.Rnw' failed with diagnostics:\n>  chunk 1 (label=loadlib)\n> Error : package/namespace load failed for 'EBImage'\n> Execution halted\n> \n> More: http://bioconductor.org/checkResults/2.3/bioc-LATEST/EBImage/gewurz-buildsrc.html\n> \n> I noticed this already a few weeks ago (before the typo in DESCRIPTION\n> was added) and hoped it would solve \"itself\", but it is still there.\n> Not sure if it is an EBImage or a BioC server config problem.\n> \n> Cheers\n> \n> Henrik\n> \n> PS. I can solve all these problems for myself, but I reporting it for\n> the sake of automatic installation etc. DS.\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n-- \nGregoire Pau\nEMBL/EBI Cambridge, UK\nhttp://www.ebi.ac.uk/~gpau",
+      "body_snippet": "Hi,\n\nI'm the new maintainer of EBImage.\n\nThe DLL EBImage.dll has been manually compiled some time ago and is not \nin sync with the current version. It would be really nice that the \nWindows version ca",
+      "thread_id": "thread-f0551bf580f4",
+      "thread_depth": 1,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-bce5ae82fd3e",
+      "message_id": "<27d1e6020808130656t6769aeb8ndbfc35537b4b01cf@mail.gmail.com>",
+      "from_name": "Laurent Gautier",
+      "from_email_hash": "bf804a19bca99afd3e8648a6bb32a7956ed8fcfdac81cf240f84fad273a2991e",
+      "date": "2008-08-13T15:56:26+02:00",
+      "subject": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "subject_clean": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "in_reply_to": "<509e0620808130556qe8b28fdi8ab2b874b3564190@mail.gmail.com>",
+      "references": [
+        "<59d7961d0808121831t71cb10c4jfe4804f1b4ca2d2f@mail.gmail.com>",
+        "<509e0620808130556qe8b28fdi8ab2b874b3564190@mail.gmail.com>"
+      ],
+      "body_plain": "There is a chance that further changes in the handling of plotting\ndevices event appear;\nI think that there is an ongoing effort to bring new features for R-2.8.\n\nWhat about bumping that to r-devel ? (Sorry if you already did and I missed it).\nThe solution you came up with could be of general use, and could\nsomehow be included into R-devel\n(either as functions, macros, or as instructions in R-exts).\n\n\nL.\n\n\n\n2008/8/13 Michael Lawrence <mflawren at fhcrc.org>:\n> This is almost certainly due to the lack of tcl_do in R devel. I fixed this\n> in RGtk2 by using multiple threads and synchronizing on the Windows event\n> loop. If the maintainer wants an example of how to do this, he can check out\n> RGtk2. I will upload the new version to CRAN today.\n>\n> Michael\n>\n> On Tue, Aug 12, 2008 at 6:31 PM, Henrik Bengtsson <hb at stat.berkeley.edu>wrote:\n>\n>> Hi,\n>>\n>> thanks for fixing the DESCRIPTION file for EBImage.  FYI, the Windows\n>> version does not build:\n>>\n>> * creating vignettes ... ERROR\n>> Error in inDL(x, as.logical(local), as.logical(now), ...) :\n>>  unable to load shared library\n>> 'D:/biocbld/bbs-2.3-bioc/tmpdir/Rinst415629052/EBImage/libs/EBImage.dll':\n>>  LoadLibrary failure:  The specified procedure could not be found.\n>>\n>> Error: processing vignette 'AnalysisWithEBImage.Rnw' failed with\n>> diagnostics:\n>>  chunk 1 (label=loadlib)\n>> Error : package/namespace load failed for 'EBImage'\n>> Execution halted\n>>\n>> More:\n>> http://bioconductor.org/checkResults/2.3/bioc-LATEST/EBImage/gewurz-buildsrc.html\n>>\n>> I noticed this already a few weeks ago (before the typo in DESCRIPTION\n>> was added) and hoped it would solve \"itself\", but it is still there.\n>> Not sure if it is an EBImage or a BioC server config problem.\n>>\n>> Cheers\n>>\n>> Henrik\n>>\n>> PS. I can solve all these problems for myself, but I reporting it for\n>> the sake of automatic installation etc. DS.\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>\n>        [[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "There is a chance that further changes in the handling of plotting\ndevices event appear;\nI think that there is an ongoing effort to bring new features for R-2.8.\n\nWhat about bumping that to r-devel ? ",
+      "thread_id": "thread-f0551bf580f4",
+      "thread_depth": 2,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-e0d0c24c42c2",
+      "message_id": "<509e0620808130921n52f85a9bw9ed6d933d6e60b67@mail.gmail.com>",
+      "from_name": "Michael Lawrence",
+      "from_email_hash": "e9ff4b3acc925189bce61741d9f30f26f996837e9604d7ac3a80794d259750a9",
+      "date": "2008-08-13T09:21:55-07:00",
+      "subject": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "subject_clean": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "in_reply_to": "<27d1e6020808130656t6769aeb8ndbfc35537b4b01cf@mail.gmail.com>",
+      "references": [
+        "<59d7961d0808121831t71cb10c4jfe4804f1b4ca2d2f@mail.gmail.com>",
+        "<509e0620808130556qe8b28fdi8ab2b874b3564190@mail.gmail.com>",
+        "<27d1e6020808130656t6769aeb8ndbfc35537b4b01cf@mail.gmail.com>"
+      ],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080813/bd54e7bd/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080813/bd54e7bd/attachment.pl>",
+      "thread_id": "thread-f0551bf580f4",
+      "thread_depth": 3,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-306588ce4c43",
+      "message_id": "<48A31043.5020001@fhcrc.org>",
+      "from_name": "Herve Pages",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2008-08-13T09:48:03-07:00",
+      "subject": "[Bioc-devel] openSUSE 11.0/gcc 4.3.1: changes in standard header file hierarchy break some BioC packages",
+      "subject_clean": "[Bioc-devel] openSUSE 11.0/gcc 4.3.1: changes in standard header file hierarchy break some BioC packages",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi BioC developers,\n\nI've set up a new build machine for the BioC software. The name is wilson1\nand it's running 64-bit openSUSE 11.0 (latest openSUSE release):\n\n   http://bioconductor.org/checkResults/2.3/bioc-LATEST/\n\nPlease watch carefully the build results for your package(s), it's very\nimportant that they pass the build/check test on openSUSE 11.0 too for the\nnext BioC release.\n\nThe default compiler on openSUSE 11.0 is gcc 4.3.1:\n\n   http://bioconductor.org/checkResults/2.3/bioc-LATEST/wilson1-NodeInfo.html\n\nA few packages with C/C++ code don't compile anymore with gcc 4.3.1. These\ninclude:\n\n   - adSplit\n   - affxparser\n   - GeneR\n   - GeneticsBase\n   - plier\n   - Rdisop\n   - Rtreemix\n   - XDE\n\nFor these packages, the problem seems to be that a number of include\ndirectives are missing: #include <stdlib.h>, #include <string.h>, etc...\nEverything was compiling fine so far (i.e. with gcc < 4.3.1), even without\nthose includes, but somewhere between gcc 4.2.1 (openSUSE 10.3) and gcc 4.3.1,\nit seems that the C/C++ standard header files have been reorganized and some\nfiles that used to be indirectly included are not anymore. Unfortunately this\nbreaks code that was relying on these indirect inclusions.\n\nOther packages with C/C++ code that breaks on openSUSE 11.0:\n\n   - EBImage: in openSUSE 11.0, the Wand library that the EBImage C++ code needs\n         to be linked to has been renamed MagickWand.\n\n   - GeneRfold: the ViennaRNA package was missing on wilson1 but this is fixed now.\n\n   - xcms: an obscure problem that seems to be caused by an internal compiler\n         error.\n\nPlease don't hesitate to post here if you need help to fix your package. Thanks!\n\nCheers,\nH.",
+      "body_snippet": "Hi BioC developers,\n\nI've set up a new build machine for the BioC software. The name is wilson1\nand it's running 64-bit openSUSE 11.0 (latest openSUSE release):\n\n   http://bioconductor.org/checkResult",
+      "thread_id": "thread-306588ce4c43",
+      "thread_depth": 0,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-0b83da9bf0c2",
+      "message_id": "<48A329CC.10607@aon.at>",
+      "from_name": "cstrato",
+      "from_email_hash": "84962443a13e43e007ab9d69a1c992a2a96fdd7459e4d6a89edf29c18a8df2e7",
+      "date": "2008-08-13T20:37:00+02:00",
+      "subject": "[Bioc-devel] openSUSE 11.0/gcc 4.3.1: changes in standard header file hierarchy break some BioC packages",
+      "subject_clean": "[Bioc-devel] openSUSE 11.0/gcc 4.3.1: changes in standard header file hierarchy break some BioC packages",
+      "in_reply_to": "<48A31043.5020001@fhcrc.org>",
+      "references": [
+        "<48A31043.5020001@fhcrc.org>"
+      ],
+      "body_plain": "Dear Herve,\n\nThank you for this information, I would be eager to know how my package \n\"xps\", which is mainly based on C++, works with openSuse11.0.\nHowever, please note that it depends on the installation of ROOT, thus \ncurrently it does not build on openSuse11.0 nor on Windows.\n\nLike R, ROOT is updating the production version periodically, the \ncurrent version being root_v5.20/00. Thus it would be great, if BioC2.3 \ncould be using the new production version, see: \nhttp://root.cern.ch/root/Version520.html\nIn case you are installing the binary for Windows, it may probably be \nbetter to use the version for VC++9.0 (which also works with VC++7.1, \nsee the link)\n\nThank you in advance.\nBest regards\nChristian\n_._._._._._._._._._._._._._._._._._\nC.h.r.i.s.t.i.a.n   S.t.r.a.t.o.w.a\nV.i.e.n.n.a           A.u.s.t.r.i.a\ne.m.a.i.l:        cstrato at aon.at\n_._._._._._._._._._._._._._._._._._",
+      "body_snippet": "Dear Herve,\n\nThank you for this information, I would be eager to know how my package \n\"xps\", which is mainly based on C++, works with openSuse11.0.\nHowever, please note that it depends on the installa",
+      "thread_id": "thread-306588ce4c43",
+      "thread_depth": 1,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-b5b1b490a214",
+      "message_id": "<1218659575.30515.8.camel@lathan.ipb-sub.ipb-halle.de>",
+      "from_name": "Steffen Neumann",
+      "from_email_hash": "c7f736cda77247542b42535cfff3f1e7c8954a83a0a2400d953c4111745bbaea",
+      "date": "2008-08-13T22:32:55+02:00",
+      "subject": "[Bioc-devel] openSUSE 11.0/gcc 4.3.1: changes in standard\theader file hierarchy break some BioC packages",
+      "subject_clean": "[Bioc-devel] openSUSE 11.0/gcc 4.3.1: changes in standard\theader file hierarchy break some BioC packages",
+      "in_reply_to": "<48A31043.5020001@fhcrc.org>",
+      "references": [
+        "<48A31043.5020001@fhcrc.org>"
+      ],
+      "body_plain": "On Wed, 2008-08-13 at 09:48 -0700, Herve Pages wrote:\n...\n>    - Rdisop\nI'll check, should be easy enough with your hints.\n\n>    - xcms: an obscure problem that seems to be caused by an internal compiler\n>          error.\nThis is a bug in gcc for which a fix is supposedly available:\nhttps://bugzilla.novell.com/show_bug.cgi?id=402268\n\nYours,\nSteffen\n\n-- \nIPB Halle                    AG Massenspektrometrie & Bioinformatik\nDr. Steffen Neumann          http://www.IPB-Halle.DE\nWeinberg 3                   http://msbi.bic-gh.de\n06120 Halle                  Tel. +49 (0) 345 5582 - 1470\n                                  +49 (0) 345 5582 - 0\nsneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409",
+      "body_snippet": "On Wed, 2008-08-13 at 09:48 -0700, Herve Pages wrote:\n...\n>    - Rdisop\nI'll check, should be easy enough with your hints.\n\n>    - xcms: an obscure problem that seems to be caused by an internal compi",
+      "thread_id": "thread-306588ce4c43",
+      "thread_depth": 1,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-b34f96f11f37",
+      "message_id": "<48AAE9DC.5080608@ebi.ac.uk>",
+      "from_name": "Wolfgang Huber",
+      "from_email_hash": "8481a5f74e0203c0e279b0cd7f952f11ea65fcad4bf054f5268c275ad236a2d9",
+      "date": "2008-08-19T16:42:20+01:00",
+      "subject": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "subject_clean": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "in_reply_to": "<48A2DAEF.8000700@ebi.ac.uk>",
+      "references": [
+        "<59d7961d0808121831t71cb10c4jfe4804f1b4ca2d2f@mail.gmail.com>",
+        "<48A2DAEF.8000700@ebi.ac.uk>"
+      ],
+      "body_plain": "Hi Patrick et al. in Seattle\n\nmaybe the main point of Greg's message got lost, so here it is again:\nwould it be possible to compile the C code in EBImage from source on the\nSeattle build system?\n\nThis would seem to be preferable to the current solution, in which a\n.dll file that was made by Oleg is used, which is checked into svn:\nhttps://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/EBImage/inst/winlibs/EBImage.dll\n\n------------------------------------------------------------------------\nr21716 | osklyar at ebi.ac.uk | 2006-12-30 23:02:15 +0000 (sab, 30 dic\n2006) | 1 line\n\nadded precompiled windows dll to save work of Bioc maintainers in\ninstalling and maintaining GTK+ and ImageMagick on Windows build\nmachines! I  will recompile the windows dll myself, the target dll is\nonly 38K large, so this is not a big problem. The method seems to be\nconsistent with R CMD check on Linux. The idea is: inst/winlibs contains\nthe precompiled dll, which is moved to inst/libs on build and then\ncopied into libs by the installer; if dll is found in winlibs then the\nsrc directory is removed to prevent compilation mistakes, if not -- the\npackage is recompiled. R CMD check does not check winlibs and does not\nwarn (as it does if the dll is put into libs) so the only drawback is\nadding a unnecess ary windll to all *nix installations.\n\n\nBest wishes\n Wolfgang\n\n------------------------------------------------------------------\nWolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber\n\n\n13/08/2008 14:00 Gregoire Pau scripsit\n> Hi,\n> \n> I'm the new maintainer of EBImage.\n> \n> The DLL EBImage.dll has been manually compiled some time ago and is not\n> in sync with the current version. It would be really nice that the\n> Windows version can be automatically built by the automatic Bioconductor\n> building framework, but EBImage relies on two external libraries:\n> GTK+2.0 and ImageMagick and I'm not sure whether they are available on\n> the Bioconductor building machines.\n> \n> What is the general policy for packages that rely on external libraries\n> ? Can I rely on some pre-installed libraries or should I build them\n> manually for some platforms ?\n> \n> Thanks !\n> Best regards,\n> \n> Greg\n> \n> Henrik Bengtsson wrote:\n>> Hi,\n>>\n>> thanks for fixing the DESCRIPTION file for EBImage.  FYI, the Windows\n>> version does not build:\n>>\n>> * creating vignettes ... ERROR\n>> Error in inDL(x, as.logical(local), as.logical(now), ...) :\n>>   unable to load shared library\n>> 'D:/biocbld/bbs-2.3-bioc/tmpdir/Rinst415629052/EBImage/libs/EBImage.dll':\n>>   LoadLibrary failure:  The specified procedure could not be found.\n>>\n>> Error: processing vignette 'AnalysisWithEBImage.Rnw' failed with\n>> diagnostics:\n>>  chunk 1 (label=loadlib)\n>> Error : package/namespace load failed for 'EBImage'\n>> Execution halted\n>>\n>> More:\n>> http://bioconductor.org/checkResults/2.3/bioc-LATEST/EBImage/gewurz-buildsrc.html\n>>\n>>\n>> I noticed this already a few weeks ago (before the typo in DESCRIPTION\n>> was added) and hoped it would solve \"itself\", but it is still there.\n>> Not sure if it is an EBImage or a BioC server config problem.\n>>\n>> Cheers\n>>\n>> Henrik\n>>\n>> PS. I can solve all these problems for myself, but I reporting it for\n>> the sake of automatic installation etc. DS.\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "Hi Patrick et al. in Seattle\n\nmaybe the main point of Greg's message got lost, so here it is again:\nwould it be possible to compile the C code in EBImage from source on the\nSeattle build system?\n\nThis",
+      "thread_id": "thread-f0551bf580f4",
+      "thread_depth": 2,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-da11c75d6aca",
+      "message_id": "<48AAFA84.8050001@fhcrc.org>",
+      "from_name": "Patrick Aboyoun",
+      "from_email_hash": "dc50c3c245d3952d5b85da1e198abf49dacd056ac9649061263764cf7191a8de",
+      "date": "2008-08-19T09:53:24-07:00",
+      "subject": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "subject_clean": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "in_reply_to": "<48AAE9DC.5080608@ebi.ac.uk>",
+      "references": [
+        "<59d7961d0808121831t71cb10c4jfe4804f1b4ca2d2f@mail.gmail.com>",
+        "<48A2DAEF.8000700@ebi.ac.uk>",
+        "<48AAE9DC.5080608@ebi.ac.uk>"
+      ],
+      "body_plain": "Greg and Wolfgang,\nThe Windows build machines all have GTK+ and ImageMagick installed on \nthem so you can link to the appropriate dlls during the build process. I \njust took a cursory look at the EBImage package, and it looks like the \nchange would be minor.\n\n1) Remove the pre-built dll and all the configuration code that manages it.\n2) Move the GTK_BASEPATH and IM_BASEPATH definitions out of the \nMakevars.win file, make them Windows Environment Variables, and check to \nensure they are defined during the configuration process.\n\nI just added these two environment variables to the windows build \nmachines so they are ready to go. If we run into other snags, we can \nmake additional tweaks.\n\n\nPatrick\n\n\n\nWolfgang Huber wrote:\n> Hi Patrick et al. in Seattle\n>\n> maybe the main point of Greg's message got lost, so here it is again:\n> would it be possible to compile the C code in EBImage from source on the\n> Seattle build system?\n>\n> This would seem to be preferable to the current solution, in which a\n> .dll file that was made by Oleg is used, which is checked into svn:\n> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/EBImage/inst/winlibs/EBImage.dll\n>\n> ------------------------------------------------------------------------\n> r21716 | osklyar at ebi.ac.uk | 2006-12-30 23:02:15 +0000 (sab, 30 dic\n> 2006) | 1 line\n>\n> added precompiled windows dll to save work of Bioc maintainers in\n> installing and maintaining GTK+ and ImageMagick on Windows build\n> machines! I  will recompile the windows dll myself, the target dll is\n> only 38K large, so this is not a big problem. The method seems to be\n> consistent with R CMD check on Linux. The idea is: inst/winlibs contains\n> the precompiled dll, which is moved to inst/libs on build and then\n> copied into libs by the installer; if dll is found in winlibs then the\n> src directory is removed to prevent compilation mistakes, if not -- the\n> package is recompiled. R CMD check does not check winlibs and does not\n> warn (as it does if the dll is put into libs) so the only drawback is\n> adding a unnecess ary windll to all *nix installations.\n>\n>\n> Best wishes\n>  Wolfgang\n>\n> ------------------------------------------------------------------\n> Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber\n>\n>\n> 13/08/2008 14:00 Gregoire Pau scripsit\n>   \n>> Hi,\n>>\n>> I'm the new maintainer of EBImage.\n>>\n>> The DLL EBImage.dll has been manually compiled some time ago and is not\n>> in sync with the current version. It would be really nice that the\n>> Windows version can be automatically built by the automatic Bioconductor\n>> building framework, but EBImage relies on two external libraries:\n>> GTK+2.0 and ImageMagick and I'm not sure whether they are available on\n>> the Bioconductor building machines.\n>>\n>> What is the general policy for packages that rely on external libraries\n>> ? Can I rely on some pre-installed libraries or should I build them\n>> manually for some platforms ?\n>>\n>> Thanks !\n>> Best regards,\n>>\n>> Greg\n>>\n>> Henrik Bengtsson wrote:\n>>     \n>>> Hi,\n>>>\n>>> thanks for fixing the DESCRIPTION file for EBImage.  FYI, the Windows\n>>> version does not build:\n>>>\n>>> * creating vignettes ... ERROR\n>>> Error in inDL(x, as.logical(local), as.logical(now), ...) :\n>>>   unable to load shared library\n>>> 'D:/biocbld/bbs-2.3-bioc/tmpdir/Rinst415629052/EBImage/libs/EBImage.dll':\n>>>   LoadLibrary failure:  The specified procedure could not be found.\n>>>\n>>> Error: processing vignette 'AnalysisWithEBImage.Rnw' failed with\n>>> diagnostics:\n>>>  chunk 1 (label=loadlib)\n>>> Error : package/namespace load failed for 'EBImage'\n>>> Execution halted\n>>>\n>>> More:\n>>> http://bioconductor.org/checkResults/2.3/bioc-LATEST/EBImage/gewurz-buildsrc.html\n>>>\n>>>\n>>> I noticed this already a few weeks ago (before the typo in DESCRIPTION\n>>> was added) and hoped it would solve \"itself\", but it is still there.\n>>> Not sure if it is an EBImage or a BioC server config problem.\n>>>\n>>> Cheers\n>>>\n>>> Henrik\n>>>\n>>> PS. I can solve all these problems for myself, but I reporting it for\n>>> the sake of automatic installation etc. DS.\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>",
+      "body_snippet": "Greg and Wolfgang,\nThe Windows build machines all have GTK+ and ImageMagick installed on \nthem so you can link to the appropriate dlls during the build process. I \njust took a cursory look at the EBIm",
+      "thread_id": "thread-f0551bf580f4",
+      "thread_depth": 3,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-912355fdd500",
+      "message_id": "<18602.64311.393856.115871@stat.math.ethz.ch>",
+      "from_name": "Martin Maechler",
+      "from_email_hash": "c2c86f22f78a4ecfe6d0e6b4e2be505a3f5beb0470ea88c903688ac536018a98",
+      "date": "2008-08-19T18:56:23+02:00",
+      "subject": "[Bioc-devel] R-devel now using codetools checks also for S4 methods",
+      "subject_clean": "[Bioc-devel] R-devel now using codetools checks also for S4 methods",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Just a quick note (from an R-core member) to those of you\n(many ?!) who have S4 methods in  your packages:\n\nR-devel [2.8.0 unstable] as of a few hours ago (svn)\ndoes now also apply some of (Luke Tierney's) codetools package\nchecks to S4 methods.  For some reason it did check all regular\nfunction definitions in a package, but not the S4 methods until now.\n\nConsequently, you will see a bit more warnings in the output of 'R\nCMD check' for 'R := R-devel', i.e., for \"Bioc (pre-) 2.3\" \nwithin a day or two at the package check page, i.e., at\n  http://bioconductor.org/checkResults/2.3/bioc-LATEST/\n\nRegards,\nMartin Maechler, ETH Zurich",
+      "body_snippet": "Just a quick note (from an R-core member) to those of you\n(many ?!) who have S4 methods in  your packages:\n\nR-devel [2.8.0 unstable] as of a few hours ago (svn)\ndoes now also apply some of (Luke Tiern",
+      "thread_id": "thread-912355fdd500",
+      "thread_depth": 0,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-3ccf4f53c79b",
+      "message_id": "<59d7961d0808191136m382b760dx2e3af6aa2530543e@mail.gmail.com>",
+      "from_name": "Henrik Bengtsson",
+      "from_email_hash": "9990c0a46f707a7b7a32dc78108db722c1ccf39a8c5733e31eb392daba5a47ca",
+      "date": "2008-08-19T11:36:32-07:00",
+      "subject": "[Bioc-devel] R-devel now using codetools checks also for S4 methods",
+      "subject_clean": "[Bioc-devel] R-devel now using codetools checks also for S4 methods",
+      "in_reply_to": "<18602.64311.393856.115871@stat.math.ethz.ch>",
+      "references": [
+        "<18602.64311.393856.115871@stat.math.ethz.ch>"
+      ],
+      "body_plain": "On Tue, Aug 19, 2008 at 9:56 AM, Martin Maechler\n<maechler at stat.math.ethz.ch> wrote:\n> Just a quick note (from an R-core member) to those of you\n> (many ?!) who have S4 methods in  your packages:\n>\n> R-devel [2.8.0 unstable] as of a few hours ago (svn)\n> does now also apply some of (Luke Tierney's) codetools package\n> checks to S4 methods.  For some reason it did check all regular\n> function definitions in a package, but not the S4 methods until now.\n>\n> Consequently, you will see a bit more warnings in the output of 'R\n> CMD check' for 'R := R-devel', i.e., for \"Bioc (pre-) 2.3\"\n> within a day or two at the package check page, i.e., at\n>  http://bioconductor.org/checkResults/2.3/bioc-LATEST/\n\nTo the few bitter and conservative S3 coders still out there: at least\nthis one we don't have to worry about ;)\n\n/Henrik\n\n>\n> Regards,\n> Martin Maechler, ETH Zurich\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "On Tue, Aug 19, 2008 at 9:56 AM, Martin Maechler\n<maechler at stat.math.ethz.ch> wrote:\n> Just a quick note (from an R-core member) to those of you\n> (many ?!) who have S4 methods in  your packages:\n>",
+      "thread_id": "thread-912355fdd500",
+      "thread_depth": 1,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-3e5d540eb75e",
+      "message_id": "<48AC28D1.7010308@ebi.ac.uk>",
+      "from_name": "Gregoire Pau",
+      "from_email_hash": "20fcd28649a7d549bbda0eb4805742bd0f4f62031a4ef0f0cffefaa2a3f381b3",
+      "date": "2008-08-20T15:23:13+01:00",
+      "subject": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "subject_clean": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "in_reply_to": "<48AAFA84.8050001@fhcrc.org>",
+      "references": [
+        "<59d7961d0808121831t71cb10c4jfe4804f1b4ca2d2f@mail.gmail.com>",
+        "<48A2DAEF.8000700@ebi.ac.uk>",
+        "<48AAE9DC.5080608@ebi.ac.uk>",
+        "<48AAFA84.8050001@fhcrc.org>"
+      ],
+      "body_plain": "Thanks Patrick for your clear answer.\nBest,\n\nGreg\n\nPatrick Aboyoun wrote:\n> Greg and Wolfgang,\n> The Windows build machines all have GTK+ and ImageMagick installed on \n> them so you can link to the appropriate dlls during the build process. I \n> just took a cursory look at the EBImage package, and it looks like the \n> change would be minor.\n> \n> 1) Remove the pre-built dll and all the configuration code that manages it.\n> 2) Move the GTK_BASEPATH and IM_BASEPATH definitions out of the \n> Makevars.win file, make them Windows Environment Variables, and check to \n> ensure they are defined during the configuration process.\n> \n> I just added these two environment variables to the windows build \n> machines so they are ready to go. If we run into other snags, we can \n> make additional tweaks.\n> \n> \n> Patrick\n> \n> \n> \n> Wolfgang Huber wrote:\n>> Hi Patrick et al. in Seattle\n>>\n>> maybe the main point of Greg's message got lost, so here it is again:\n>> would it be possible to compile the C code in EBImage from source on the\n>> Seattle build system?\n>>\n>> This would seem to be preferable to the current solution, in which a\n>> .dll file that was made by Oleg is used, which is checked into svn:\n>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/EBImage/inst/winlibs/EBImage.dll \n>>\n>>\n>> ------------------------------------------------------------------------\n>> r21716 | osklyar at ebi.ac.uk | 2006-12-30 23:02:15 +0000 (sab, 30 dic\n>> 2006) | 1 line\n>>\n>> added precompiled windows dll to save work of Bioc maintainers in\n>> installing and maintaining GTK+ and ImageMagick on Windows build\n>> machines! I  will recompile the windows dll myself, the target dll is\n>> only 38K large, so this is not a big problem. The method seems to be\n>> consistent with R CMD check on Linux. The idea is: inst/winlibs contains\n>> the precompiled dll, which is moved to inst/libs on build and then\n>> copied into libs by the installer; if dll is found in winlibs then the\n>> src directory is removed to prevent compilation mistakes, if not -- the\n>> package is recompiled. R CMD check does not check winlibs and does not\n>> warn (as it does if the dll is put into libs) so the only drawback is\n>> adding a unnecess ary windll to all *nix installations.\n>>\n>>\n>> Best wishes\n>>  Wolfgang\n>>\n>> ------------------------------------------------------------------\n>> Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber\n>>\n>>\n>> 13/08/2008 14:00 Gregoire Pau scripsit\n>>  \n>>> Hi,\n>>>\n>>> I'm the new maintainer of EBImage.\n>>>\n>>> The DLL EBImage.dll has been manually compiled some time ago and is not\n>>> in sync with the current version. It would be really nice that the\n>>> Windows version can be automatically built by the automatic Bioconductor\n>>> building framework, but EBImage relies on two external libraries:\n>>> GTK+2.0 and ImageMagick and I'm not sure whether they are available on\n>>> the Bioconductor building machines.\n>>>\n>>> What is the general policy for packages that rely on external libraries\n>>> ? Can I rely on some pre-installed libraries or should I build them\n>>> manually for some platforms ?\n>>>\n>>> Thanks !\n>>> Best regards,\n>>>\n>>> Greg\n>>>\n>>> Henrik Bengtsson wrote:\n>>>    \n>>>> Hi,\n>>>>\n>>>> thanks for fixing the DESCRIPTION file for EBImage.  FYI, the Windows\n>>>> version does not build:\n>>>>\n>>>> * creating vignettes ... ERROR\n>>>> Error in inDL(x, as.logical(local), as.logical(now), ...) :\n>>>>   unable to load shared library\n>>>> 'D:/biocbld/bbs-2.3-bioc/tmpdir/Rinst415629052/EBImage/libs/EBImage.dll': \n>>>>\n>>>>   LoadLibrary failure:  The specified procedure could not be found.\n>>>>\n>>>> Error: processing vignette 'AnalysisWithEBImage.Rnw' failed with\n>>>> diagnostics:\n>>>>  chunk 1 (label=loadlib)\n>>>> Error : package/namespace load failed for 'EBImage'\n>>>> Execution halted\n>>>>\n>>>> More:\n>>>> http://bioconductor.org/checkResults/2.3/bioc-LATEST/EBImage/gewurz-buildsrc.html \n>>>>\n>>>>\n>>>>\n>>>> I noticed this already a few weeks ago (before the typo in DESCRIPTION\n>>>> was added) and hoped it would solve \"itself\", but it is still there.\n>>>> Not sure if it is an EBImage or a BioC server config problem.\n>>>>\n>>>> Cheers\n>>>>\n>>>> Henrik\n>>>>\n>>>> PS. I can solve all these problems for myself, but I reporting it for\n>>>> the sake of automatic installation etc. DS.\n>>>>\n>>>> _______________________________________________\n>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>       \n\n-- \nGregoire Pau\nEMBL/EBI Cambridge, UK\nhttp://www.ebi.ac.uk/~gpau",
+      "body_snippet": "Thanks Patrick for your clear answer.\nBest,\n\nGreg\n\nPatrick Aboyoun wrote:\n> Greg and Wolfgang,\n> The Windows build machines all have GTK+ and ImageMagick installed on \n> them so you can link to the ap",
+      "thread_id": "thread-f0551bf580f4",
+      "thread_depth": 4,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-d465b83bafe2",
+      "message_id": "<b1527cda0808250730j5337033bnd496f87b6dbb2c1b@mail.gmail.com>",
+      "from_name": "Francesco Ferrari",
+      "from_email_hash": "a33e340495a0d217a3536dfa87ce10ced64474b07441b68d902619ab5b40b16f",
+      "date": "2008-08-25T16:30:45+02:00",
+      "subject": "[Bioc-devel] problem with matchprobes:getProbeDataAffy() -",
+      "subject_clean": "[Bioc-devel] problem with matchprobes:getProbeDataAffy() -",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "A few days ago I received a couple of bug reports concerning an error\nmessage occurring when using gcrma preprocessing procedure with custom\nprobeset definitions (gahgu133acdf and gahgu133aprobe package).\n\nThe source of the problem is one single missing probe sequence into\nthe environment \"gahgu133aprobe\".\nI also verified that the same problem occurs on the other \"probe\"\npackages with custom definitions of probesets that I am currently\nmaintaining: i.e. gahgu133bprobe, gahgu133plus2probe, ... etc.\n\n\nAfter carefully debugging the package generation procedure, I found\nthe likely source of this problem into the function \"getProbeDataAffy\"\nfrom the matchprobes package, that is used to read the probetable from\na TXT file, in order to generate the \"probetable\" object, that is\nsubsequently used to create the \"probe\" package.\n\n\n#Within the function code, the following lines change the \"datafile\"\nargument of the function from a character, i.e. the path to the file,\nto a \"connection\" to the file itself.\n\n  if (missing(datafile)) {\n        datafile <- paste(arraytype, \"_probe_tab\", sep = \"\")\n    } else {\n        if (is(datafile, \"character\")) {\n            datafile <- file(datafile, \"r\")\n            on.exit(close(datafile))\n        }\n     }\n\n# Then a few lines below, the connection to the file is firstly used\nto read the header line, and then the remaining part of the data\n   head <- scan(datafile, sep = \"\\t\", quiet = TRUE, multi.line = FALSE,\n        nlines = 1, what = \"character\")\n    dat <- scan(datafile, sep = \"\\t\", quiet = TRUE, multi.line = FALSE,\n        what = what, skip = 1)\n\n\nThe second call to the \"scan()\" function misses one of the lines of\ndata, therefore there is one missing line in the resulting object.\nThe problem can be solved just using the filename instead of a\nconnection to access the file itself. I temporary solved the problem\ncommenting the initial part of the function code as follows:\n\n if (missing(datafile)) {\n        datafile <- paste(arraytype, \"_probe_tab\", sep = \"\")\n#    } else {\n#        if (is(datafile, \"character\")) {\n#            datafile <- file(datafile, \"r\")\n#            on.exit(close(datafile))\n#        }\n     }\n\n\nI think that my problem is due to the fact that, when using the\nconnection instead of the file path, the connection itself \"remembers\"\nthe last line that was read, thus the second call to the scan()\nfunction skips an additional line containing meaningful data.\n\nWhat do you think about this problem and the proposed \"diagnosis\" and solution?\n\nAll the best,\nFrancesco Ferrari\n\n\n\n\n> sessionInfo()\nR version 2.7.1 (2008-06-23)\ni686-pc-linux-gnu\n\nlocale:\nLC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8;LC_COLLATE=en_US.UTF-8;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=it_IT.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=it_IT.UTF-8;LC_IDENTIFICATION=C\n\nattached base packages:\n[1] tools     stats     graphics  grDevices utils     datasets  methods\n[8] base\n\nother attached packages:\n[1] matchprobes_1.12.0   affy_1.18.2          preprocessCore_1.2.0\n[4] affyio_1.8.0         Biobase_2.0.1",
+      "body_snippet": "A few days ago I received a couple of bug reports concerning an error\nmessage occurring when using gcrma preprocessing procedure with custom\nprobeset definitions (gahgu133acdf and gahgu133aprobe packa",
+      "thread_id": "thread-d465b83bafe2",
+      "thread_depth": 0,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-3964dbefb8cd",
+      "message_id": "<48B2D03F.80702@med.umich.edu>",
+      "from_name": "James W. MacDonald",
+      "from_email_hash": "51e0486782bd6ed6ad0d8d179dbc9204aca523620b6842837909c743527fce1d",
+      "date": "2008-08-25T11:31:11-04:00",
+      "subject": "[Bioc-devel] problem with matchprobes:getProbeDataAffy() -",
+      "subject_clean": "[Bioc-devel] problem with matchprobes:getProbeDataAffy() -",
+      "in_reply_to": "<b1527cda0808250730j5337033bnd496f87b6dbb2c1b@mail.gmail.com>",
+      "references": [
+        "<b1527cda0808250730j5337033bnd496f87b6dbb2c1b@mail.gmail.com>"
+      ],
+      "body_plain": "Hi Francesco,\n\nThanks for the bug report. This was fixed a while ago in the devel \nversion. Admittedly this should have been fixed in the release version \nas well, which I will do ASAP.\n\nBest,\n\nJim\n\n\n\nFrancesco Ferrari wrote:\n> A few days ago I received a couple of bug reports concerning an error\n> message occurring when using gcrma preprocessing procedure with custom\n> probeset definitions (gahgu133acdf and gahgu133aprobe package).\n> \n> The source of the problem is one single missing probe sequence into\n> the environment \"gahgu133aprobe\".\n> I also verified that the same problem occurs on the other \"probe\"\n> packages with custom definitions of probesets that I am currently\n> maintaining: i.e. gahgu133bprobe, gahgu133plus2probe, ... etc.\n> \n> \n> After carefully debugging the package generation procedure, I found\n> the likely source of this problem into the function \"getProbeDataAffy\"\n> from the matchprobes package, that is used to read the probetable from\n> a TXT file, in order to generate the \"probetable\" object, that is\n> subsequently used to create the \"probe\" package.\n> \n> \n> #Within the function code, the following lines change the \"datafile\"\n> argument of the function from a character, i.e. the path to the file,\n> to a \"connection\" to the file itself.\n> \n>   if (missing(datafile)) {\n>         datafile <- paste(arraytype, \"_probe_tab\", sep = \"\")\n>     } else {\n>         if (is(datafile, \"character\")) {\n>             datafile <- file(datafile, \"r\")\n>             on.exit(close(datafile))\n>         }\n>      }\n> \n> # Then a few lines below, the connection to the file is firstly used\n> to read the header line, and then the remaining part of the data\n>    head <- scan(datafile, sep = \"\\t\", quiet = TRUE, multi.line = FALSE,\n>         nlines = 1, what = \"character\")\n>     dat <- scan(datafile, sep = \"\\t\", quiet = TRUE, multi.line = FALSE,\n>         what = what, skip = 1)\n> \n> \n> The second call to the \"scan()\" function misses one of the lines of\n> data, therefore there is one missing line in the resulting object.\n> The problem can be solved just using the filename instead of a\n> connection to access the file itself. I temporary solved the problem\n> commenting the initial part of the function code as follows:\n> \n>  if (missing(datafile)) {\n>         datafile <- paste(arraytype, \"_probe_tab\", sep = \"\")\n> #    } else {\n> #        if (is(datafile, \"character\")) {\n> #            datafile <- file(datafile, \"r\")\n> #            on.exit(close(datafile))\n> #        }\n>      }\n> \n> \n> I think that my problem is due to the fact that, when using the\n> connection instead of the file path, the connection itself \"remembers\"\n> the last line that was read, thus the second call to the scan()\n> function skips an additional line containing meaningful data.\n> \n> What do you think about this problem and the proposed \"diagnosis\" and solution?\n> \n> All the best,\n> Francesco Ferrari\n> \n> \n> \n> \n>> sessionInfo()\n> R version 2.7.1 (2008-06-23)\n> i686-pc-linux-gnu\n> \n> locale:\n> LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8;LC_COLLATE=en_US.UTF-8;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=it_IT.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=it_IT.UTF-8;LC_IDENTIFICATION=C\n> \n> attached base packages:\n> [1] tools     stats     graphics  grDevices utils     datasets  methods\n> [8] base\n> \n> other attached packages:\n> [1] matchprobes_1.12.0   affy_1.18.2          preprocessCore_1.2.0\n> [4] affyio_1.8.0         Biobase_2.0.1\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n-- \nJames W. MacDonald, M.S.\nBiostatistician\nHildebrandt Lab\n8220D MSRB III\n1150 W. Medical Center Drive\nAnn Arbor MI 48109-0646\n734-936-8662",
+      "body_snippet": "Hi Francesco,\n\nThanks for the bug report. This was fixed a while ago in the devel \nversion. Admittedly this should have been fixed in the release version \nas well, which I will do ASAP.\n\nBest,\n\nJim\n\n\n",
+      "thread_id": "thread-d465b83bafe2",
+      "thread_depth": 1,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-7df102541830",
+      "message_id": "<E9FE064718786E44B2130B7100DB6C7527E855@EXCH-VS1.coh.org>",
+      "from_name": "Li, Xuejun",
+      "from_email_hash": "15ae656beed71a8d10ac6958acab1db40b2c94b7ac3c101a490aceee48f9f38d",
+      "date": "2008-08-26T10:04:42-07:00",
+      "subject": "[Bioc-devel] mget function in AnnotationDbi package",
+      "subject_clean": "[Bioc-devel] mget function in AnnotationDbi package",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080826/04ef16c8/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080826/04ef16c8/attachment.pl>",
+      "thread_id": "thread-7df102541830",
+      "thread_depth": 0,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-7b055f85f90f",
+      "message_id": "<1219770844.6975.49.camel@hot-spring>",
+      "from_name": "laurent",
+      "from_email_hash": "bf804a19bca99afd3e8648a6bb32a7956ed8fcfdac81cf240f84fad273a2991e",
+      "date": "2008-08-26T19:14:04+02:00",
+      "subject": "[Bioc-devel] mget function in AnnotationDbi package",
+      "subject_clean": "[Bioc-devel] mget function in AnnotationDbi package",
+      "in_reply_to": "<E9FE064718786E44B2130B7100DB6C7527E855@EXCH-VS1.coh.org>",
+      "references": [
+        "<E9FE064718786E44B2130B7100DB6C7527E855@EXCH-VS1.coh.org>"
+      ],
+      "body_plain": "On Tue, 2008-08-26 at 10:04 -0700, Li, Xuejun wrote:\n> Hi there,\n> \n> I have a question regarding using \"mget\" functioni in the Annotation package.  I understand that I can use the \"mget\" function to get the gene symbol.  For example,\n> \n> syms <- unlist(mget(probes, hgu95av2SYMBOL))\n> \n> What about, if hgu95av2SYMBOL is a string, how can I get the gene symbol?  For example,\n> \n> a <- \"hgu95av2SYMBOL\"\n> \n> syms <- unlist(mget(probes, a))  ## this does not work, how to make this line work?  \n\none way to do it:\n\nmget(probes, get(a))\n\n\n> Thanks very much!!\n> \n>  \n> \n> Arthur Xuejun Li\n> \n> Division of Information Science\n> \n> 1500 East Duarte Road\n> \n> Duarte, CA 91010 - 3000\n> \n> Ph:   (626) 256-4673 ext. 65121\n> \n> Fax: (626) 471-7106\n> \n>  \n> \n> \n> \n> \n> \n> \n> ---------------------------------------------------------------------\n> \n> SECURITY/CONFIDENTIALITY WARNING:  \\ This message an...{{dropped:23}}\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "On Tue, 2008-08-26 at 10:04 -0700, Li, Xuejun wrote:\n> Hi there,\n> \n> I have a question regarding using \"mget\" functioni in the Annotation package.  I understand that I can use the \"mget\" function to ",
+      "thread_id": "thread-7df102541830",
+      "thread_depth": 1,
+      "month": "2008-08"
+    },
+    {
+      "id": "msg-a1938fe61848",
+      "message_id": "<20080826171739.1373B4CC9C@pascal.dfci.harvard.edu>",
+      "from_name": "John Zhang",
+      "from_email_hash": "acd4a6e67be28cf44112ee26a70b893d6f9d51e1a0ca020da9126fa61ea45b7d",
+      "date": "2008-08-26T13:16:53-04:00",
+      "subject": "[Bioc-devel] mget function in AnnotationDbi package",
+      "subject_clean": "[Bioc-devel] mget function in AnnotationDbi package",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": ">What about, if hgu95av2SYMBOL is a string, how can I get the gene symbol?  For \nexample,\n>\n>a <- \"hgu95av2SYMBOL\"\n>\n>syms <- unlist(mget(probes, a))  ## this does not work, how to make this line \nwork?  \n\n\nHow about \n\n>syms <- unlist(mget(probes, get(a))\n\n\n\n>\n>Thanks very much!!\n>\n> \n>\n>Arthur Xuejun Li\n>\n>Division of Information Science\n>\n>1500 East Duarte Road\n>\n>Duarte, CA 91010 - 3000\n>\n>Ph:   (626) 256-4673 ext. 65121\n>\n>Fax: (626) 471-7106\n>\n> \n>\n> \n>\n> \n>\n>\n>---------------------------------------------------------------------\n>\n>SECURITY/CONFIDENTIALITY WARNING:  \\ This message an...{{dropped:23}}\n>\n>_______________________________________________\n>Bioc-devel at stat.math.ethz.ch mailing list\n>https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\nJianhua Zhang\nDepartment of Medical Oncology\nDana-Farber Cancer Institute\n44 Binney Street\nBoston, MA 02115-6084",
+      "body_snippet": ">What about, if hgu95av2SYMBOL is a string, how can I get the gene symbol?  For \nexample,\n>\n>a <- \"hgu95av2SYMBOL\"\n>\n>syms <- unlist(mget(probes, a))  ## this does not work, how to make this line \nwor",
+      "thread_id": "thread-a1938fe61848",
+      "thread_depth": 0,
+      "month": "2008-08"
+    }
+  ],
+  "threads": [
+    {
+      "id": "thread-a4b1752cac3b",
+      "subject": "[Bioc-devel] Package size limitation",
+      "message_count": 4,
+      "participants": [
+        "Henrik Bengtsson",
+        "Patrick Aboyoun",
+        "Tobias Guennel",
+        "hpages at fhcrc.org"
+      ],
+      "started": "2008-08-01T09:27:00-07:00",
+      "last_reply": "2008-08-01T13:39:07-04:00",
+      "root_message_id": "msg-a4b1752cac3b"
+    },
+    {
+      "id": "thread-2ffdaae17077",
+      "subject": "[Bioc-devel] Packages, NEWS files, CHANGELOG files",
+      "message_count": 2,
+      "participants": [
+        "Markus Schmidberger",
+        "Michael Lawrence"
+      ],
+      "started": "2008-08-07T15:59:48+02:00",
+      "last_reply": "2008-08-07T19:58:45-07:00",
+      "root_message_id": "msg-2ffdaae17077"
+    },
+    {
+      "id": "thread-357e6dc2d4a4",
+      "subject": "[Bioc-devel] EBImage: Devel version not building",
+      "message_count": 4,
+      "participants": [
+        "Henrik Bengtsson",
+        "Tony Chiang",
+        "hpages at fhcrc.org"
+      ],
+      "started": "2008-08-10T09:55:23-07:00",
+      "last_reply": "2008-08-10T16:14:12-07:00",
+      "root_message_id": "msg-357e6dc2d4a4"
+    },
+    {
+      "id": "thread-f0551bf580f4",
+      "subject": "[Bioc-devel] EBImage: Devel version on Windows not building",
+      "message_count": 8,
+      "participants": [
+        "Gregoire Pau",
+        "Henrik Bengtsson",
+        "Laurent Gautier",
+        "Michael Lawrence",
+        "Patrick Aboyoun",
+        "Wolfgang Huber"
+      ],
+      "started": "2008-08-12T18:31:10-07:00",
+      "last_reply": "2008-08-20T15:23:13+01:00",
+      "root_message_id": "msg-f0551bf580f4"
+    },
+    {
+      "id": "thread-306588ce4c43",
+      "subject": "[Bioc-devel] openSUSE 11.0/gcc 4.3.1: changes in standard header file hierarchy break some BioC packages",
+      "message_count": 3,
+      "participants": [
+        "Herve Pages",
+        "Steffen Neumann",
+        "cstrato"
+      ],
+      "started": "2008-08-13T09:48:03-07:00",
+      "last_reply": "2008-08-13T22:32:55+02:00",
+      "root_message_id": "msg-306588ce4c43"
+    },
+    {
+      "id": "thread-912355fdd500",
+      "subject": "[Bioc-devel] R-devel now using codetools checks also for S4 methods",
+      "message_count": 2,
+      "participants": [
+        "Henrik Bengtsson",
+        "Martin Maechler"
+      ],
+      "started": "2008-08-19T18:56:23+02:00",
+      "last_reply": "2008-08-19T11:36:32-07:00",
+      "root_message_id": "msg-912355fdd500"
+    },
+    {
+      "id": "thread-d465b83bafe2",
+      "subject": "[Bioc-devel] problem with matchprobes:getProbeDataAffy() -",
+      "message_count": 2,
+      "participants": [
+        "Francesco Ferrari",
+        "James W. MacDonald"
+      ],
+      "started": "2008-08-25T16:30:45+02:00",
+      "last_reply": "2008-08-25T11:31:11-04:00",
+      "root_message_id": "msg-d465b83bafe2"
+    },
+    {
+      "id": "thread-7df102541830",
+      "subject": "[Bioc-devel] mget function in AnnotationDbi package",
+      "message_count": 2,
+      "participants": [
+        "Li, Xuejun",
+        "laurent"
+      ],
+      "started": "2008-08-26T10:04:42-07:00",
+      "last_reply": "2008-08-26T19:14:04+02:00",
+      "root_message_id": "msg-7df102541830"
+    },
+    {
+      "id": "thread-a1938fe61848",
+      "subject": "[Bioc-devel] mget function in AnnotationDbi package",
+      "message_count": 1,
+      "participants": [
+        "John Zhang"
+      ],
+      "started": "2008-08-26T13:16:53-04:00",
+      "last_reply": "2008-08-26T13:16:53-04:00",
+      "root_message_id": "msg-a1938fe61848"
+    }
+  ]
+}

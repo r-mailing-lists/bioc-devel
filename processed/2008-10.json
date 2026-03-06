@@ -1,0 +1,562 @@
+{
+  "list": "bioc-devel",
+  "description": "",
+  "month": "2008-10",
+  "messages": [
+    {
+      "id": "msg-367a47ebe750",
+      "message_id": "<996031a10810060927u56bea63ahf1129bef99961dc7@mail.gmail.com>",
+      "from_name": "mattia pelizzola",
+      "from_email_hash": "3a187be2eb7ece8483ea461d58ef1505f00034aa58911ab268baf34cbaf7faaa",
+      "date": "2008-10-06T12:27:06-04:00",
+      "subject": "[Bioc-devel] problem with S4 class/methods documentation",
+      "subject_clean": "[Bioc-devel] problem with S4 class/methods documentation",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\n\nI have a warning on the check report of my package MEDME (BioC 2.3\ndevel) that I do not know how to deal with. I can't reproduce the same\nwarning on my computer so it is difficult test possible solutions as I\ncontinuously have to wait for the online update. This warning is\nconsistent over all the tested OSs:\n\n* checking for missing documentation entries ... WARNING\nUndocumented S4 methods:\n  generic '[' and siglist 'MEDMEset,ANY,ANY,ANY'\nAll user-level objects in a package (including S4 classes and methods)\nshould have documentation entries.\n\n\nUnfortunately, I have no idea what the \" siglist\n'MEDMEset,ANY,ANY,ANY' \" refers to.\n\nRegarding the \"[\" method, here are some extracts from my MEDMEset-class.Rd file.\nI already included an alias for the \"[\" method:\n\n\\name{MEDMEset-class}\n\\docType{class}\n\\alias{MEDMEset-class}\n\\alias{[,MEDMEset-method}\n.....\n\n\n\nas well as the method description:\n\n......\n\\section{Methods}{\n  \\describe{\n    \\item{[}{\\code{signature(x = \"MEDMEset\")}: subsets the object\nbased on its probes and/or samples}\n.......\n\n\nI used the promptClass function to generate a first version of this Rd\nfile. I did not use the promptMethods function though, and it is not\nclear to me when to use it.\n\nMany thanks for any advice,\n\nmattia",
+      "body_snippet": "Hi,\n\nI have a warning on the check report of my package MEDME (BioC 2.3\ndevel) that I do not know how to deal with. I can't reproduce the same\nwarning on my computer so it is difficult test possible s",
+      "thread_id": "thread-367a47ebe750",
+      "thread_depth": 0,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-4b32c71d079a",
+      "message_id": "<1223311602.14170.16.camel@hot-spring>",
+      "from_name": "laurent",
+      "from_email_hash": "bf804a19bca99afd3e8648a6bb32a7956ed8fcfdac81cf240f84fad273a2991e",
+      "date": "2008-10-06T18:46:42+02:00",
+      "subject": "[Bioc-devel] problem with S4 class/methods documentation",
+      "subject_clean": "[Bioc-devel] problem with S4 class/methods documentation",
+      "in_reply_to": "<996031a10810060927u56bea63ahf1129bef99961dc7@mail.gmail.com>",
+      "references": [
+        "<996031a10810060927u56bea63ahf1129bef99961dc7@mail.gmail.com>"
+      ],
+      "body_plain": "On Mon, 2008-10-06 at 12:27 -0400, mattia pelizzola wrote:\n[...]\n> ......\n> \\section{Methods}{\n>   \\describe{\n>     \\item{[}{\\code{signature(x = \"MEDMEset\")}: subsets the object\n> based on its probes and/or samples}\n\nAs you have it, the signature might have to be\n\"MEDMEset\", \"missing\", \"missing\", \"missing\"\nbut I do not think this is making a lot of sense.\n\nAren't you forgetting to specify the actual probes and samples\nparameters in the signature ?",
+      "body_snippet": "On Mon, 2008-10-06 at 12:27 -0400, mattia pelizzola wrote:\n[...]\n> ......\n> \\section{Methods}{\n>   \\describe{\n>     \\item{[}{\\code{signature(x = \"MEDMEset\")}: subsets the object\n> based on its probes ",
+      "thread_id": "thread-367a47ebe750",
+      "thread_depth": 1,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-48f8db998d38",
+      "message_id": "<48EA40F7.10108@fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2008-10-06T09:46:47-07:00",
+      "subject": "[Bioc-devel] problem with S4 class/methods documentation",
+      "subject_clean": "[Bioc-devel] problem with S4 class/methods documentation",
+      "in_reply_to": "<996031a10810060927u56bea63ahf1129bef99961dc7@mail.gmail.com>",
+      "references": [
+        "<996031a10810060927u56bea63ahf1129bef99961dc7@mail.gmail.com>"
+      ],
+      "body_plain": "Hi Mattia --\n\nProbably you're having difficulty reproducing because your version of R \nis slightly lagging compared to those on the build systems. Here's the \ngeneric signature for '[':\n\n > getGeneric(\"[\")\nstandardGeneric for \"[\" defined from package \"base\"\n\nfunction (x, i, j, ..., drop = TRUE)\nstandardGeneric(\"[\", .Primitive(\"[\"))\n<environment: 0x82471f0>\nMethods may be defined for arguments: x, i, j, drop\nUse  showMethods(\"[\")  for currently available ones.\n\nNote there are 4 arguments available for dispatch (x, i, j, drop). Your \nmethod signature is implicitly [,MEDMEset,ANY,ANY,ANY -- you haven't \nspecified a class for i, j, or drop, so they default to matching ANY \ntype of object.\n\nYou mention documentation for\n\n\\alias{[,MEDMEset-method}\n\nChange this to\n\n\\alias{[,MEDMEset,ANY,ANY,ANY-method}\n\nand I think you'll be set. I'm not sure whether this is an intentional \nincrease in stringency in documentation on R's part.\n\nIn reality your method probably accepts i=\"numeric\" or \"character\", j = \n\"missing\", and drop = \"logical\" (or perhaps \"missing\", depending on your \ncode). One might want to change your setMethod definitions and \ndocumentation aliases to reflect this (though it's not really clear that \nthis will help the end user experience).\n\nMartin\n\nmattia pelizzola wrote:\n> Hi,\n> \n> I have a warning on the check report of my package MEDME (BioC 2.3\n> devel) that I do not know how to deal with. I can't reproduce the same\n> warning on my computer so it is difficult test possible solutions as I\n> continuously have to wait for the online update. This warning is\n> consistent over all the tested OSs:\n> \n> * checking for missing documentation entries ... WARNING\n> Undocumented S4 methods:\n>   generic '[' and siglist 'MEDMEset,ANY,ANY,ANY'\n> All user-level objects in a package (including S4 classes and methods)\n> should have documentation entries.\n> \n> \n> Unfortunately, I have no idea what the \" siglist\n> 'MEDMEset,ANY,ANY,ANY' \" refers to.\n> \n> Regarding the \"[\" method, here are some extracts from my MEDMEset-class.Rd file.\n> I already included an alias for the \"[\" method:\n> \n> \\name{MEDMEset-class}\n> \\docType{class}\n> \\alias{MEDMEset-class}\n> \\alias{[,MEDMEset-method}\n> .....\n> \n> \n> \n> as well as the method description:\n> \n> ......\n> \\section{Methods}{\n>   \\describe{\n>     \\item{[}{\\code{signature(x = \"MEDMEset\")}: subsets the object\n> based on its probes and/or samples}\n> .......\n> \n> \n> I used the promptClass function to generate a first version of this Rd\n> file. I did not use the promptMethods function though, and it is not\n> clear to me when to use it.\n> \n> Many thanks for any advice,\n> \n> mattia\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "Hi Mattia --\n\nProbably you're having difficulty reproducing because your version of R \nis slightly lagging compared to those on the build systems. Here's the \ngeneric signature for '[':\n\n > getGeneric",
+      "thread_id": "thread-367a47ebe750",
+      "thread_depth": 1,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-3882a44a55de",
+      "message_id": "<996031a10810061104p586357b0s38e84ad2dc0be64b@mail.gmail.com>",
+      "from_name": "mattia pelizzola",
+      "from_email_hash": "3a187be2eb7ece8483ea461d58ef1505f00034aa58911ab268baf34cbaf7faaa",
+      "date": "2008-10-06T14:04:38-04:00",
+      "subject": "[Bioc-devel] package version numbering",
+      "subject_clean": "[Bioc-devel] package version numbering",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\n\nI did not pay sufficient attention to version numbering till now, and\nI have a newly submitted package with version 1.0.3 in the devel\nbranch.\nI just realized that this is not really correct. Also, I'm updating it\nand I have to decide the new version number.\nI wonder if and how I could fix this number at this point.\n\nOn one hand I should have had something like 0.99.3 at this point, but\nit does not sound good to me to go from 1.0.3 to 0.99.4 ...\n\nOn the other hand I could go to from 1.0.3 to 1.1.0 (that is going to\nbe 1.2.0 in the release) but still I'm not sure a newly release\npackage can appear with 1.2.0 in the release branch ..\n\nThanks for any suggestion,\n\nmattia",
+      "body_snippet": "Hi,\n\nI did not pay sufficient attention to version numbering till now, and\nI have a newly submitted package with version 1.0.3 in the devel\nbranch.\nI just realized that this is not really correct. Als",
+      "thread_id": "thread-3882a44a55de",
+      "thread_depth": 0,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-ba2e2678c061",
+      "message_id": "<264855a00810061141n55a81305t7a24b2aaaf78b2c2@mail.gmail.com>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "5a8e0e6abee8db2f7eeaea6df4cbae4d8713a79b51ddc5ef74e7c509c4b05f87",
+      "date": "2008-10-06T14:41:59-04:00",
+      "subject": "[Bioc-devel] package version numbering",
+      "subject_clean": "[Bioc-devel] package version numbering",
+      "in_reply_to": "<996031a10810061104p586357b0s38e84ad2dc0be64b@mail.gmail.com>",
+      "references": [
+        "<996031a10810061104p586357b0s38e84ad2dc0be64b@mail.gmail.com>"
+      ],
+      "body_plain": "On Mon, Oct 6, 2008 at 2:04 PM, mattia pelizzola\n<mattia.pelizzola at gmail.com> wrote:\n> Hi,\n>\n> I did not pay sufficient attention to version numbering till now, and\n> I have a newly submitted package with version 1.0.3 in the devel\n> branch.\n> I just realized that this is not really correct. Also, I'm updating it\n> and I have to decide the new version number.\n> I wonder if and how I could fix this number at this point.\n>\n> On one hand I should have had something like 0.99.3 at this point, but\n> it does not sound good to me to go from 1.0.3 to 0.99.4 ...\n>\n> On the other hand I could go to from 1.0.3 to 1.1.0 (that is going to\n> be 1.2.0 in the release) but still I'm not sure a newly release\n> package can appear with 1.2.0 in the release branch ..\n\nHi, Mattia.  The numbering (except for the second value, which needs\nto be odd in development) is arbitrary.  I would go with 1.1.0.\n\nSean",
+      "body_snippet": "On Mon, Oct 6, 2008 at 2:04 PM, mattia pelizzola\n<mattia.pelizzola at gmail.com> wrote:\n> Hi,\n>\n> I did not pay sufficient attention to version numbering till now, and\n> I have a newly submitted packa",
+      "thread_id": "thread-3882a44a55de",
+      "thread_depth": 1,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-3f3e70e853af",
+      "message_id": "<48EA5D73.9080308@fhcrc.org>",
+      "from_name": "Robert Gentleman",
+      "from_email_hash": "7de55c0000c437ab05b37d16b5a00e42a9bba6254ce27d76eb635498d1e3dda7",
+      "date": "2008-10-06T11:48:19-07:00",
+      "subject": "[Bioc-devel] package version numbering",
+      "subject_clean": "[Bioc-devel] package version numbering",
+      "in_reply_to": "<264855a00810061141n55a81305t7a24b2aaaf78b2c2@mail.gmail.com>",
+      "references": [
+        "<996031a10810061104p586357b0s38e84ad2dc0be64b@mail.gmail.com>",
+        "<264855a00810061141n55a81305t7a24b2aaaf78b2c2@mail.gmail.com>"
+      ],
+      "body_plain": "Sean Davis wrote:\n> On Mon, Oct 6, 2008 at 2:04 PM, mattia pelizzola\n> <mattia.pelizzola at gmail.com> wrote:\n>> Hi,\n>>\n>> I did not pay sufficient attention to version numbering till now, and\n>> I have a newly submitted package with version 1.0.3 in the devel\n>> branch.\n>> I just realized that this is not really correct. Also, I'm updating it\n>> and I have to decide the new version number.\n>> I wonder if and how I could fix this number at this point.\n>>\n>> On one hand I should have had something like 0.99.3 at this point, but\n>> it does not sound good to me to go from 1.0.3 to 0.99.4 ...\n>>\n>> On the other hand I could go to from 1.0.3 to 1.1.0 (that is going to\n>> be 1.2.0 in the release) but still I'm not sure a newly release\n>> package can appear with 1.2.0 in the release branch ..\n> \n> Hi, Mattia.  The numbering (except for the second value, which needs\n> to be odd in development) is arbitrary.  I would go with 1.1.0.\n\n   and never ever go to a lower number - all of the tools for updating \npackages etc presume that higher numbers are newer...\n\n   thx\n    Robert\n\n> \n> Sean\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n\n-- \nRobert Gentleman, PhD\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M2-B876\nPO Box 19024\nSeattle, Washington 98109-1024\n206-667-7700\nrgentlem at fhcrc.org",
+      "body_snippet": "Sean Davis wrote:\n> On Mon, Oct 6, 2008 at 2:04 PM, mattia pelizzola\n> <mattia.pelizzola at gmail.com> wrote:\n>> Hi,\n>>\n>> I did not pay sufficient attention to version numbering till now, and\n>> I ha",
+      "thread_id": "thread-3882a44a55de",
+      "thread_depth": 2,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-cda026efaa08",
+      "message_id": "<48EDE3CE.4010901@ebi.ac.uk>",
+      "from_name": "audrey",
+      "from_email_hash": "98390704acb28e4db7823a28305f793e4c23dd087d061c09956a857e47f19697",
+      "date": "2008-10-09T11:58:22+01:00",
+      "subject": "[Bioc-devel] class union with AffyBatch",
+      "subject_clean": "[Bioc-devel] class union with AffyBatch",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi all,\n\nIn my package, I am trying to set a class union the following way:\nsetClassUnion(\"OneColour\", c(\"ExpressionSet\", \"AffyBatch\"))\n\nIn the NAMESPACE if I write the following:\nimportClassesFrom(\"Biobase\", \"ExpressionSet\")\nimportClassesFrom(\"Biobase\", \"AffyBatch\")\n\nWhen I build the package I have this error message\nError: package 'affy' does not have a name space\nExecution halted\n\nIf I remove the importClassesFrom(\"Biobase\", \"AffyBatch\") from my \nNAMESPACE, I have this warning:\nWarning in .findOrCopyClass(class1, classDef, where, \"superClass\") :\n  Class \"AffyBatch\" is defined (with package slot \"affy\") but no \nmetadata object found to revise superClass information---not exported?  \nMaking a copy in package \"arrayQualityMetrics\"\n\nIn the dependencies in the DESCRIPTION, I do depend on the package \n\"affy\". This is using R2.8 and affy_1.19.0.\n\nAny idea on how I could solve that? Is it possible to import a class \nfrom a package that does not have a namespace?\n\nThanks\nAudrey\n\n-- \nAudrey Kauffmann\nEMBL - EBI\nCambridge UK\nhttp://www.ebi.ac.uk/~audrey",
+      "body_snippet": "Hi all,\n\nIn my package, I am trying to set a class union the following way:\nsetClassUnion(\"OneColour\", c(\"ExpressionSet\", \"AffyBatch\"))\n\nIn the NAMESPACE if I write the following:\nimportClassesFrom(\"B",
+      "thread_id": "thread-cda026efaa08",
+      "thread_depth": 0,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-457f7dc9dc1b",
+      "message_id": "<27d1e6020810090445i7ec724c2l2234a2b79f974a6f@mail.gmail.com>",
+      "from_name": "Laurent Gautier",
+      "from_email_hash": "bf804a19bca99afd3e8648a6bb32a7956ed8fcfdac81cf240f84fad273a2991e",
+      "date": "2008-10-09T13:45:31+02:00",
+      "subject": "[Bioc-devel] problem with S4 class/methods documentation",
+      "subject_clean": "[Bioc-devel] problem with S4 class/methods documentation",
+      "in_reply_to": "<48EA40F7.10108@fhcrc.org>",
+      "references": [
+        "<996031a10810060927u56bea63ahf1129bef99961dc7@mail.gmail.com>",
+        "<48EA40F7.10108@fhcrc.org>"
+      ],
+      "body_plain": "Martin,\n\nI saw that I am experiencing the same with an other package,\nand changing the \\alias for \"[\" as you suggest does not seem to clear\nthe warning.\n\nI also changed the signature in the .Rd man page, as well as in the\nsetMethod definition,\nbut without effect on the warning.\n\nAny other hint ?\n\n\nLaurent\n\n\n\n\n2008/10/6 Martin Morgan <mtmorgan at fhcrc.org>:\n> Hi Mattia --\n>\n> Probably you're having difficulty reproducing because your version of R is\n> slightly lagging compared to those on the build systems. Here's the generic\n> signature for '[':\n>\n>> getGeneric(\"[\")\n> standardGeneric for \"[\" defined from package \"base\"\n>\n> function (x, i, j, ..., drop = TRUE)\n> standardGeneric(\"[\", .Primitive(\"[\"))\n> <environment: 0x82471f0>\n> Methods may be defined for arguments: x, i, j, drop\n> Use  showMethods(\"[\")  for currently available ones.\n>\n> Note there are 4 arguments available for dispatch (x, i, j, drop). Your\n> method signature is implicitly [,MEDMEset,ANY,ANY,ANY -- you haven't\n> specified a class for i, j, or drop, so they default to matching ANY type of\n> object.\n>\n> You mention documentation for\n>\n> \\alias{[,MEDMEset-method}\n>\n> Change this to\n>\n> \\alias{[,MEDMEset,ANY,ANY,ANY-method}\n>\n> and I think you'll be set. I'm not sure whether this is an intentional\n> increase in stringency in documentation on R's part.\n>\n> In reality your method probably accepts i=\"numeric\" or \"character\", j =\n> \"missing\", and drop = \"logical\" (or perhaps \"missing\", depending on your\n> code). One might want to change your setMethod definitions and documentation\n> aliases to reflect this (though it's not really clear that this will help\n> the end user experience).\n>\n> Martin\n>\n> mattia pelizzola wrote:\n>>\n>> Hi,\n>>\n>> I have a warning on the check report of my package MEDME (BioC 2.3\n>> devel) that I do not know how to deal with. I can't reproduce the same\n>> warning on my computer so it is difficult test possible solutions as I\n>> continuously have to wait for the online update. This warning is\n>> consistent over all the tested OSs:\n>>\n>> * checking for missing documentation entries ... WARNING\n>> Undocumented S4 methods:\n>>  generic '[' and siglist 'MEDMEset,ANY,ANY,ANY'\n>> All user-level objects in a package (including S4 classes and methods)\n>> should have documentation entries.\n>>\n>>\n>> Unfortunately, I have no idea what the \" siglist\n>> 'MEDMEset,ANY,ANY,ANY' \" refers to.\n>>\n>> Regarding the \"[\" method, here are some extracts from my MEDMEset-class.Rd\n>> file.\n>> I already included an alias for the \"[\" method:\n>>\n>> \\name{MEDMEset-class}\n>> \\docType{class}\n>> \\alias{MEDMEset-class}\n>> \\alias{[,MEDMEset-method}\n>> .....\n>>\n>>\n>>\n>> as well as the method description:\n>>\n>> ......\n>> \\section{Methods}{\n>>  \\describe{\n>>    \\item{[}{\\code{signature(x = \"MEDMEset\")}: subsets the object\n>> based on its probes and/or samples}\n>> .......\n>>\n>>\n>> I used the promptClass function to generate a first version of this Rd\n>> file. I did not use the promptMethods function though, and it is not\n>> clear to me when to use it.\n>>\n>> Many thanks for any advice,\n>>\n>> mattia\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "Martin,\n\nI saw that I am experiencing the same with an other package,\nand changing the \\alias for \"[\" as you suggest does not seem to clear\nthe warning.\n\nI also changed the signature in the .Rd man pa",
+      "thread_id": "thread-367a47ebe750",
+      "thread_depth": 2,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-758b1a9a9387",
+      "message_id": "<6phd4i9sp5j.fsf@gopher2.fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2008-10-09T09:34:48-07:00",
+      "subject": "[Bioc-devel] problem with S4 class/methods documentation",
+      "subject_clean": "[Bioc-devel] problem with S4 class/methods documentation",
+      "in_reply_to": "<27d1e6020810090445i7ec724c2l2234a2b79f974a6f@mail.gmail.com> (Laurent Gautier's message of \"Thu, 9 Oct 2008 13:45:31 +0200\")",
+      "references": [
+        "<996031a10810060927u56bea63ahf1129bef99961dc7@mail.gmail.com>",
+        "<48EA40F7.10108@fhcrc.org>",
+        "<27d1e6020810090445i7ec724c2l2234a2b79f974a6f@mail.gmail.com>"
+      ],
+      "body_plain": "\"Laurent Gautier\" <lgautier at gmail.com> writes:\n\n> Martin,\n>\n> I saw that I am experiencing the same with an other package,\n> and changing the \\alias for \"[\" as you suggest does not seem to clear\n> the warning.\n>\n> I also changed the signature in the .Rd man page, as well as in the\n> setMethod definition,\n> but without effect on the warning.\n>\n> Any other hint ?\n\nHi Laurent --\n\nWhen I R CMD check on the current svn checkin of altcdfenv, I get the\nwarning\n\nUndocumented S4 methods:\n  generic '[' and siglist 'CdfEnvAffy,character,missing,missing'\n\nlooking in man/CdfEnvAffy-class.Rd I find:\n\n\\alias{[,CdfEnvAffy, character, missing, missing-method}\n\nNote the spaces after the ','. Changing to\n\n\\alias{[,CdfEnvAffy,character,missing,missing-method}\n\nfixes the warning. Note that R CMD check is only verifying the alias,\nand that you're responsible for ensuring that the appropriate\ndocumentation is actually on the page.\n\nHope that helps,\n\nMartin\n\n\n>\n> Laurent\n>\n>\n>\n>\n> 2008/10/6 Martin Morgan <mtmorgan at fhcrc.org>:\n>> Hi Mattia --\n>>\n>> Probably you're having difficulty reproducing because your version of R is\n>> slightly lagging compared to those on the build systems. Here's the generic\n>> signature for '[':\n>>\n>>> getGeneric(\"[\")\n>> standardGeneric for \"[\" defined from package \"base\"\n>>\n>> function (x, i, j, ..., drop = TRUE)\n>> standardGeneric(\"[\", .Primitive(\"[\"))\n>> <environment: 0x82471f0>\n>> Methods may be defined for arguments: x, i, j, drop\n>> Use  showMethods(\"[\")  for currently available ones.\n>>\n>> Note there are 4 arguments available for dispatch (x, i, j, drop). Your\n>> method signature is implicitly [,MEDMEset,ANY,ANY,ANY -- you haven't\n>> specified a class for i, j, or drop, so they default to matching ANY type of\n>> object.\n>>\n>> You mention documentation for\n>>\n>> \\alias{[,MEDMEset-method}\n>>\n>> Change this to\n>>\n>> \\alias{[,MEDMEset,ANY,ANY,ANY-method}\n>>\n>> and I think you'll be set. I'm not sure whether this is an intentional\n>> increase in stringency in documentation on R's part.\n>>\n>> In reality your method probably accepts i=\"numeric\" or \"character\", j =\n>> \"missing\", and drop = \"logical\" (or perhaps \"missing\", depending on your\n>> code). One might want to change your setMethod definitions and documentation\n>> aliases to reflect this (though it's not really clear that this will help\n>> the end user experience).\n>>\n>> Martin\n>>\n>> mattia pelizzola wrote:\n>>>\n>>> Hi,\n>>>\n>>> I have a warning on the check report of my package MEDME (BioC 2.3\n>>> devel) that I do not know how to deal with. I can't reproduce the same\n>>> warning on my computer so it is difficult test possible solutions as I\n>>> continuously have to wait for the online update. This warning is\n>>> consistent over all the tested OSs:\n>>>\n>>> * checking for missing documentation entries ... WARNING\n>>> Undocumented S4 methods:\n>>>  generic '[' and siglist 'MEDMEset,ANY,ANY,ANY'\n>>> All user-level objects in a package (including S4 classes and methods)\n>>> should have documentation entries.\n>>>\n>>>\n>>> Unfortunately, I have no idea what the \" siglist\n>>> 'MEDMEset,ANY,ANY,ANY' \" refers to.\n>>>\n>>> Regarding the \"[\" method, here are some extracts from my MEDMEset-class.Rd\n>>> file.\n>>> I already included an alias for the \"[\" method:\n>>>\n>>> \\name{MEDMEset-class}\n>>> \\docType{class}\n>>> \\alias{MEDMEset-class}\n>>> \\alias{[,MEDMEset-method}\n>>> .....\n>>>\n>>>\n>>>\n>>> as well as the method description:\n>>>\n>>> ......\n>>> \\section{Methods}{\n>>>  \\describe{\n>>>    \\item{[}{\\code{signature(x = \"MEDMEset\")}: subsets the object\n>>> based on its probes and/or samples}\n>>> .......\n>>>\n>>>\n>>> I used the promptClass function to generate a first version of this Rd\n>>> file. I did not use the promptMethods function though, and it is not\n>>> clear to me when to use it.\n>>>\n>>> Many thanks for any advice,\n>>>\n>>> mattia\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n\n-- \nMartin Morgan\nComputational Biology / Fred Hutchinson Cancer Research Center\n1100 Fairview Ave. N.\nPO Box 19024 Seattle, WA 98109\n\nLocation: Arnold Building M2 B169\nPhone: (206) 667-2793",
+      "body_snippet": "\"Laurent Gautier\" <lgautier at gmail.com> writes:\n\n> Martin,\n>\n> I saw that I am experiencing the same with an other package,\n> and changing the \\alias for \"[\" as you suggest does not seem to clear\n> ",
+      "thread_id": "thread-367a47ebe750",
+      "thread_depth": 3,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-3056c9d14f2d",
+      "message_id": "<6ph63o1sm3k.fsf@gopher2.fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2008-10-09T10:40:47-07:00",
+      "subject": "[Bioc-devel] class union with AffyBatch",
+      "subject_clean": "[Bioc-devel] class union with AffyBatch",
+      "in_reply_to": "<48EDE3CE.4010901@ebi.ac.uk> (audrey@ebi.ac.uk's message of \"Thu, 09 Oct 2008 11:58:22 +0100\")",
+      "references": [
+        "<48EDE3CE.4010901@ebi.ac.uk>"
+      ],
+      "body_plain": "Hi Audrey --\n\naudrey <audrey at ebi.ac.uk> writes:\n\n> Hi all,\n>\n> In my package, I am trying to set a class union the following way:\n> setClassUnion(\"OneColour\", c(\"ExpressionSet\", \"AffyBatch\"))\n>\n> In the NAMESPACE if I write the following:\n> importClassesFrom(\"Biobase\", \"ExpressionSet\")\n> importClassesFrom(\"Biobase\", \"AffyBatch\")\n\ndefinitely the last line is not correct.\n\n> When I build the package I have this error message\n> Error: package 'affy' does not have a name space\n> Execution halted\n>\n> If I remove the importClassesFrom(\"Biobase\", \"AffyBatch\") from my\n> NAMESPACE, I have this warning:\n> Warning in .findOrCopyClass(class1, classDef, where, \"superClass\") :\n>   Class \"AffyBatch\" is defined (with package slot \"affy\") but no\n> metadata object found to revise superClass information---not exported?\n> Making a copy in package \"arrayQualityMetrics\"\n>\n> In the dependencies in the DESCRIPTION, I do depend on the package\n> \"affy\". This is using R2.8 and affy_1.19.0.\n>\n> Any idea on how I could solve that? Is it possible to import a class\n> from a package that does not have a namespace?\n\nI think there's something else going on. If I create a package with\n\nDESCRIPTION\n-----------\nDepends: affy\nImports: Biobase, methods\n\nNAMESPACE\n---------\nimport(methods)\nimportClassesFrom(Biobase, \"ExpressionSet\")\nexportClasses(\"OneColour\")\n\nR/tmp.R\n-------\nsetClassUnion(\"OneColour\", c(\"ExpressionSet\", \"AffyBatch\"))\n\nI can build and check without error with\n\n> R --version\nR version 2.8.0 beta (2008-10-09 r46680)\n\nIn arrayQualityMetrics, if I add a file like tmp.R, move methods to\nImports: (thinking that the end user doesn't need access to the\nfunctionality of the methods package to use my package), add\nimports(methods) and exportClasses(\"OneColour\") then again I can build\nand check without errors / warnings.\n\nMy only real suggestion is to update R.\n\nSorry to be less than helpful\n\nMartin\n\n> Thanks\n> Audrey\n>\n> -- \n> Audrey Kauffmann\n> EMBL - EBI\n> Cambridge UK\n> http://www.ebi.ac.uk/~audrey\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n-- \nMartin Morgan\nComputational Biology / Fred Hutchinson Cancer Research Center\n1100 Fairview Ave. N.\nPO Box 19024 Seattle, WA 98109\n\nLocation: Arnold Building M2 B169\nPhone: (206) 667-2793",
+      "body_snippet": "Hi Audrey --\n\naudrey <audrey at ebi.ac.uk> writes:\n\n> Hi all,\n>\n> In my package, I am trying to set a class union the following way:\n> setClassUnion(\"OneColour\", c(\"ExpressionSet\", \"AffyBatch\"))\n>\n> I",
+      "thread_id": "thread-cda026efaa08",
+      "thread_depth": 1,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-db9b550beba4",
+      "message_id": "<48EF1C6B.3000706@ebi.ac.uk>",
+      "from_name": "Audrey Kauffmann",
+      "from_email_hash": "98390704acb28e4db7823a28305f793e4c23dd087d061c09956a857e47f19697",
+      "date": "2008-10-10T10:12:11+01:00",
+      "subject": "[Bioc-devel] class union with AffyBatch",
+      "subject_clean": "[Bioc-devel] class union with AffyBatch",
+      "in_reply_to": "<6ph63o1sm3k.fsf@gopher2.fhcrc.org>",
+      "references": [
+        "<48EDE3CE.4010901@ebi.ac.uk>",
+        "<6ph63o1sm3k.fsf@gopher2.fhcrc.org>"
+      ],
+      "body_plain": "Hi Martin,\n\nSorry for the \"typo\", of course I meant importClassesFrom(\"affy\", \n\"AffyBatch\").\nAnyway, I think the import(\"methods\") was the missing part. By updating \nR and adding this, it worked and now I do not have the warning any more.\nThanks a lot,\nAudrey\n\n\n\nMartin Morgan wrote:\n> Hi Audrey --\n>\n> audrey <audrey at ebi.ac.uk> writes:\n>\n>   \n>> Hi all,\n>>\n>> In my package, I am trying to set a class union the following way:\n>> setClassUnion(\"OneColour\", c(\"ExpressionSet\", \"AffyBatch\"))\n>>\n>> In the NAMESPACE if I write the following:\n>> importClassesFrom(\"Biobase\", \"ExpressionSet\")\n>> importClassesFrom(\"Biobase\", \"AffyBatch\")\n>>     \n>\n> definitely the last line is not correct.\n>\n>   \n>> When I build the package I have this error message\n>> Error: package 'affy' does not have a name space\n>> Execution halted\n>>\n>> If I remove the importClassesFrom(\"Biobase\", \"AffyBatch\") from my\n>> NAMESPACE, I have this warning:\n>> Warning in .findOrCopyClass(class1, classDef, where, \"superClass\") :\n>>   Class \"AffyBatch\" is defined (with package slot \"affy\") but no\n>> metadata object found to revise superClass information---not exported?\n>> Making a copy in package \"arrayQualityMetrics\"\n>>\n>> In the dependencies in the DESCRIPTION, I do depend on the package\n>> \"affy\". This is using R2.8 and affy_1.19.0.\n>>\n>> Any idea on how I could solve that? Is it possible to import a class\n>> from a package that does not have a namespace?\n>>     \n>\n> I think there's something else going on. If I create a package with\n>\n> DESCRIPTION\n> -----------\n> Depends: affy\n> Imports: Biobase, methods\n>\n> NAMESPACE\n> ---------\n> import(methods)\n> importClassesFrom(Biobase, \"ExpressionSet\")\n> exportClasses(\"OneColour\")\n>\n> R/tmp.R\n> -------\n> setClassUnion(\"OneColour\", c(\"ExpressionSet\", \"AffyBatch\"))\n>\n> I can build and check without error with\n>\n>   \n>> R --version\n>>     \n> R version 2.8.0 beta (2008-10-09 r46680)\n>\n> In arrayQualityMetrics, if I add a file like tmp.R, move methods to\n> Imports: (thinking that the end user doesn't need access to the\n> functionality of the methods package to use my package), add\n> imports(methods) and exportClasses(\"OneColour\") then again I can build\n> and check without errors / warnings.\n>\n> My only real suggestion is to update R.\n>\n> Sorry to be less than helpful\n>\n> Martin\n>\n>   \n>> Thanks\n>> Audrey\n>>\n>> -- \n>> Audrey Kauffmann\n>> EMBL - EBI\n>> Cambridge UK\n>> http://www.ebi.ac.uk/~audrey\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>     \n>\n>   \n\n-- \nAudrey Kauffmann\nEMBL - EBI\nCambridge UK\nhttp://www.ebi.ac.uk/~audrey",
+      "body_snippet": "Hi Martin,\n\nSorry for the \"typo\", of course I meant importClassesFrom(\"affy\", \n\"AffyBatch\").\nAnyway, I think the import(\"methods\") was the missing part. By updating \nR and adding this, it worked and n",
+      "thread_id": "thread-cda026efaa08",
+      "thread_depth": 2,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-aa17f398250e",
+      "message_id": "<59d7961d0810151311y70ff8fc9x2fbff690b3fff55e@mail.gmail.com>",
+      "from_name": "Henrik Bengtsson",
+      "from_email_hash": "9990c0a46f707a7b7a32dc78108db722c1ccf39a8c5733e31eb392daba5a47ca",
+      "date": "2008-10-15T13:11:10-07:00",
+      "subject": "[Bioc-devel] Upcoming release: *Please* revise your Depends and Suggests of DESCRIPTION",
+      "subject_clean": "[Bioc-devel] Upcoming release: *Please* revise your Depends and Suggests of DESCRIPTION",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi *all* package developers\n\nfor the upcoming Bioc release, as a developer, could you please revise\nwhat packages you put under 'Depends' in your DESCRIPTION files.\n\nIn many cases packages listed there are only used occationally in a\nfew rarely called functions.  In such cases it is recommended to put\nsuch packages under 'Suggests' instead and use require(\"<pkg>\") where\never they are needed.   This will decrease the download/installation\nfootprint.\n\nWithout picking on a particular package (I've used a different package\nbefore), here is an illustrative example involving several packages\nwith large package footprints:\n\nIn order to use the runBioHMM() segmentation method in the snapCGH package:\n\nPackage: snapCGH\nDepends: limma, tilingArray, DNAcopy, GLAD, cluster, methods, aCGH\nSuggests:\nImports:\n\nthis is what you need to download and install (illustrated package by package):\n\n> biocLite(\"limma\");\n\ntrying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/limma_2.15.15.zip'\nContent type 'application/zip' length 1499394 bytes (1.4 Mb)\nopened URL\ndownloaded 1016 Kb\n\n\n> biocLite(\"tilingArray\");\n\ntrying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/xtable_1.5-4.zip'\nContent type 'application/zip' length 215584 bytes (210 Kb)\nopened URL\ndownloaded 210 Kb\n\ntrying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/DBI_0.2-4.zip'\nContent type 'application/zip' length 442504 bytes (432 Kb)\nopened URL\ndownloaded 432 Kb\n\ntrying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/RSQLite_0.7-0.zip'\nContent type 'application/zip' length 599395 bytes (585 Kb)\nopened URL\ndownloaded 585 Kb\n\ntrying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/zoo_1.5-4.zip'\nContent type 'application/zip' length 872593 bytes (852 Kb)\nopened URL\ndownloaded 852 Kb\n\ntrying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/sandwich_2.1-0.zip'\nContent type 'application/zip' length 758762 bytes (740 Kb)\nopened URL\ndownloaded 740 Kb\n\ntrying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/annotate_1.19.3.zip'\nContent type 'application/zip' length 1966201 bytes (1.9 Mb)\nopened URL\ndownloaded 1.3 Mb\n\ntrying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/AnnotationDbi_1.3.12.zip'\nContent type 'application/zip' length 1517547 bytes (1.4 Mb)\nopened URL\ndownloaded 1.4 Mb\n\ntrying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/strucchange_1.3-4.zip'\n\nContent type 'application/zip' length 937367 bytes (915 Kb)\nopened URL\ndownloaded 915 Kb\n\ntrying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/vsn_3.7.7.zip'\nContent type 'application/zip' length 1328450 bytes (1.3 Mb)\nopened URL\ndownloaded 1.3 Mb\n\ntrying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/genefilter_1.21.5.zip'\nContent type 'application/zip' length 483979 bytes (472 Kb)\nopened URL\ndownloaded 472 Kb\n\ntrying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/geneplotter_1.19.6.zip'\nContent type 'application/zip' length 1446820 bytes (1.4 Mb)\nopened URL\ndownloaded 1.4 Mb\n\ntrying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/pixmap_0.4-9.zip'\nContent type 'application/zip' length 118653 bytes (115 Kb)\nopened URL\ndownloaded 115 Kb\n\ntrying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/tilingArray_1.19.2.zip'\nContent type 'application/zip' length 2291041 bytes (2.2 Mb)\nopened URL\ndownloaded 2.2 Mb\n\n\n> biocLite(\"DNAcopy\");\n\ntrying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/DNAcopy_1.14.0.zip'\nContent type 'application/zip' length 389689 bytes (380 Kb)\nopened URL\ndownloaded 380 Kb\n\n\n> biocLite(\"GLAD\");\n\ntrying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/GLAD_1.16.0.zip'\nContent type 'application/zip' length 1821831 bytes (1.7 Mb)\nopened URL\ndownloaded 1.7 Mb\n\n\n> biocLite(\"cluster\");\n\ntrying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/cluster_1.11.11.zip'\nContent type 'application/zip' length 517782 bytes (505 Kb)\nopened URL\ndownloaded 505 Kb\n\n\n> biocLite(\"aCGH\");\n\ntrying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/multtest_1.21.1.zip'\nContent type 'application/zip' length 1653667 bytes (1.6 Mb)\nopened URL\ndownloaded 1.6 Mb\n\ntrying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/sma_0.5.15.zip'\nContent type 'application/zip' length 3070300 bytes (2.9 Mb)\nopened URL\ndownloaded 2.9 Mb\n\ntrying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/aCGH_1.14.0.zip'\nContent type 'application/zip' length 6692045 bytes (6.4 Mb)\nopened URL\ndownloaded 6.4 Mb\n\n> biocLite(\"snapCGH\");\n\ntrying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/snapCGH_1.9.5.zip'\nContent type 'application/zip' length 1308714 bytes (1.2 Mb)\nopened URL\ndownloaded 1.2 Mb\n\n\nPOINT MADE?\n\nCheers\n\nHenrik\n\nPS. I'd like to suggest that is is checked as part of the initial\npackage review. DS.",
+      "body_snippet": "Hi *all* package developers\n\nfor the upcoming Bioc release, as a developer, could you please revise\nwhat packages you put under 'Depends' in your DESCRIPTION files.\n\nIn many cases packages listed ther",
+      "thread_id": "thread-aa17f398250e",
+      "thread_depth": 0,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-a089418ea7c2",
+      "message_id": "<48F6521B.5060000@fhcrc.org>",
+      "from_name": "Robert Gentleman",
+      "from_email_hash": "7de55c0000c437ab05b37d16b5a00e42a9bba6254ce27d76eb635498d1e3dda7",
+      "date": "2008-10-15T13:27:07-07:00",
+      "subject": "[Bioc-devel] Upcoming release: *Please* revise your Depends and Suggests of DESCRIPTION",
+      "subject_clean": "[Bioc-devel] Upcoming release: *Please* revise your Depends and Suggests of DESCRIPTION",
+      "in_reply_to": "<59d7961d0810151311y70ff8fc9x2fbff690b3fff55e@mail.gmail.com>",
+      "references": [
+        "<59d7961d0810151311y70ff8fc9x2fbff690b3fff55e@mail.gmail.com>"
+      ],
+      "body_plain": "Hi Henrik,\n   Good points.  I would also like people to consider Imports for things \nthat are infrastructure and hence should not end up on the search path.\n\n   And to answer your last point - the number of dependencies and where \nthey are is something we do check (as several recent submitters can \nattest).  We also review packages that are in the repository for a \nnumber of things (excessive dependencies being one of them).\n\n  best wishes\n    Robert\n\n\nHenrik Bengtsson wrote:\n> Hi *all* package developers\n> \n> for the upcoming Bioc release, as a developer, could you please revise\n> what packages you put under 'Depends' in your DESCRIPTION files.\n> \n> In many cases packages listed there are only used occationally in a\n> few rarely called functions.  In such cases it is recommended to put\n> such packages under 'Suggests' instead and use require(\"<pkg>\") where\n> ever they are needed.   This will decrease the download/installation\n> footprint.\n> \n> Without picking on a particular package (I've used a different package\n> before), here is an illustrative example involving several packages\n> with large package footprints:\n> \n> In order to use the runBioHMM() segmentation method in the snapCGH package:\n> \n> Package: snapCGH\n> Depends: limma, tilingArray, DNAcopy, GLAD, cluster, methods, aCGH\n> Suggests:\n> Imports:\n> \n> this is what you need to download and install (illustrated package by package):\n> \n>> biocLite(\"limma\");\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/limma_2.15.15.zip'\n> Content type 'application/zip' length 1499394 bytes (1.4 Mb)\n> opened URL\n> downloaded 1016 Kb\n> \n> \n>> biocLite(\"tilingArray\");\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/xtable_1.5-4.zip'\n> Content type 'application/zip' length 215584 bytes (210 Kb)\n> opened URL\n> downloaded 210 Kb\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/DBI_0.2-4.zip'\n> Content type 'application/zip' length 442504 bytes (432 Kb)\n> opened URL\n> downloaded 432 Kb\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/RSQLite_0.7-0.zip'\n> Content type 'application/zip' length 599395 bytes (585 Kb)\n> opened URL\n> downloaded 585 Kb\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/zoo_1.5-4.zip'\n> Content type 'application/zip' length 872593 bytes (852 Kb)\n> opened URL\n> downloaded 852 Kb\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/sandwich_2.1-0.zip'\n> Content type 'application/zip' length 758762 bytes (740 Kb)\n> opened URL\n> downloaded 740 Kb\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/annotate_1.19.3.zip'\n> Content type 'application/zip' length 1966201 bytes (1.9 Mb)\n> opened URL\n> downloaded 1.3 Mb\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/AnnotationDbi_1.3.12.zip'\n> Content type 'application/zip' length 1517547 bytes (1.4 Mb)\n> opened URL\n> downloaded 1.4 Mb\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/strucchange_1.3-4.zip'\n> \n> Content type 'application/zip' length 937367 bytes (915 Kb)\n> opened URL\n> downloaded 915 Kb\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/vsn_3.7.7.zip'\n> Content type 'application/zip' length 1328450 bytes (1.3 Mb)\n> opened URL\n> downloaded 1.3 Mb\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/genefilter_1.21.5.zip'\n> Content type 'application/zip' length 483979 bytes (472 Kb)\n> opened URL\n> downloaded 472 Kb\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/geneplotter_1.19.6.zip'\n> Content type 'application/zip' length 1446820 bytes (1.4 Mb)\n> opened URL\n> downloaded 1.4 Mb\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/pixmap_0.4-9.zip'\n> Content type 'application/zip' length 118653 bytes (115 Kb)\n> opened URL\n> downloaded 115 Kb\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/tilingArray_1.19.2.zip'\n> Content type 'application/zip' length 2291041 bytes (2.2 Mb)\n> opened URL\n> downloaded 2.2 Mb\n> \n> \n>> biocLite(\"DNAcopy\");\n> \n> trying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/DNAcopy_1.14.0.zip'\n> Content type 'application/zip' length 389689 bytes (380 Kb)\n> opened URL\n> downloaded 380 Kb\n> \n> \n>> biocLite(\"GLAD\");\n> \n> trying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/GLAD_1.16.0.zip'\n> Content type 'application/zip' length 1821831 bytes (1.7 Mb)\n> opened URL\n> downloaded 1.7 Mb\n> \n> \n>> biocLite(\"cluster\");\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/cluster_1.11.11.zip'\n> Content type 'application/zip' length 517782 bytes (505 Kb)\n> opened URL\n> downloaded 505 Kb\n> \n> \n>> biocLite(\"aCGH\");\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/multtest_1.21.1.zip'\n> Content type 'application/zip' length 1653667 bytes (1.6 Mb)\n> opened URL\n> downloaded 1.6 Mb\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/sma_0.5.15.zip'\n> Content type 'application/zip' length 3070300 bytes (2.9 Mb)\n> opened URL\n> downloaded 2.9 Mb\n> \n> trying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/aCGH_1.14.0.zip'\n> Content type 'application/zip' length 6692045 bytes (6.4 Mb)\n> opened URL\n> downloaded 6.4 Mb\n> \n>> biocLite(\"snapCGH\");\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/snapCGH_1.9.5.zip'\n> Content type 'application/zip' length 1308714 bytes (1.2 Mb)\n> opened URL\n> downloaded 1.2 Mb\n> \n> \n> POINT MADE?\n> \n> Cheers\n> \n> Henrik\n> \n> PS. I'd like to suggest that is is checked as part of the initial\n> package review. DS.\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n\n-- \nRobert Gentleman, PhD\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M2-B876\nPO Box 19024\nSeattle, Washington 98109-1024\n206-667-7700\nrgentlem at fhcrc.org",
+      "body_snippet": "Hi Henrik,\n   Good points.  I would also like people to consider Imports for things \nthat are infrastructure and hence should not end up on the search path.\n\n   And to answer your last point - the num",
+      "thread_id": "thread-aa17f398250e",
+      "thread_depth": 1,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-a31d340cf5d0",
+      "message_id": "<1224142940.6854.26.camel@hot-spring>",
+      "from_name": "laurent",
+      "from_email_hash": "bf804a19bca99afd3e8648a6bb32a7956ed8fcfdac81cf240f84fad273a2991e",
+      "date": "2008-10-16T09:42:20+02:00",
+      "subject": "[Bioc-devel] Upcoming release: *Please* revise your Depends\tand Suggests of DESCRIPTION",
+      "subject_clean": "[Bioc-devel] Upcoming release: *Please* revise your Depends\tand Suggests of DESCRIPTION",
+      "in_reply_to": "<59d7961d0810151311y70ff8fc9x2fbff690b3fff55e@mail.gmail.com>",
+      "references": [
+        "<59d7961d0810151311y70ff8fc9x2fbff690b3fff55e@mail.gmail.com>"
+      ],
+      "body_plain": "Henrik,\n\nI agree that the installation footprint is/has been issue, and I would\nthink that it could be addressed more efficiently than going the \"less\ndependencies\" route.\n\nHaving code and data mixed into one package, and the absence of common\nrecommended data source for data types, are probably responsible for a\nmuch larger fraction of the footprint than the dependencies are.\n\nRegarding the example you picked this time, it can be seen as\ndisputable. \"snapCGH\" is clearly advertised as an \"umbrella\" package,\nunifying several other aCGH-related packages under one common framework.\nOne should still be interested in the package, one should also suspect\nthat is it going to require other packages (and their respective\ndependencies in turn), shouldn't he ?\n\nAs a side note, it can seem difficult to objectively judge what\nfunctions are \"rarely called\" in a package without actual usage data.\n\n\n\nL.\n\n\n\nOn Wed, 2008-10-15 at 13:11 -0700, Henrik Bengtsson wrote: \n> Hi *all* package developers\n> \n> for the upcoming Bioc release, as a developer, could you please revise\n> what packages you put under 'Depends' in your DESCRIPTION files.\n> \n> In many cases packages listed there are only used occationally in a\n> few rarely called functions.  In such cases it is recommended to put\n> such packages under 'Suggests' instead and use require(\"<pkg>\") where\n> ever they are needed.   This will decrease the download/installation\n> footprint.\n>\n> Without picking on a particular package (I've used a different package\n> before), here is an illustrative example involving several packages\n> with large package footprints:\n> \n> In order to use the runBioHMM() segmentation method in the snapCGH package:\n> \n> Package: snapCGH\n> Depends: limma, tilingArray, DNAcopy, GLAD, cluster, methods, aCGH\n> Suggests:\n> Imports:\n> \n> this is what you need to download and install (illustrated package by package):\n> \n> > biocLite(\"limma\");\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/limma_2.15.15.zip'\n> Content type 'application/zip' length 1499394 bytes (1.4 Mb)\n> opened URL\n> downloaded 1016 Kb\n> \n> \n> > biocLite(\"tilingArray\");\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/xtable_1.5-4.zip'\n> Content type 'application/zip' length 215584 bytes (210 Kb)\n> opened URL\n> downloaded 210 Kb\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/DBI_0.2-4.zip'\n> Content type 'application/zip' length 442504 bytes (432 Kb)\n> opened URL\n> downloaded 432 Kb\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/RSQLite_0.7-0.zip'\n> Content type 'application/zip' length 599395 bytes (585 Kb)\n> opened URL\n> downloaded 585 Kb\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/zoo_1.5-4.zip'\n> Content type 'application/zip' length 872593 bytes (852 Kb)\n> opened URL\n> downloaded 852 Kb\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/sandwich_2.1-0.zip'\n> Content type 'application/zip' length 758762 bytes (740 Kb)\n> opened URL\n> downloaded 740 Kb\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/annotate_1.19.3.zip'\n> Content type 'application/zip' length 1966201 bytes (1.9 Mb)\n> opened URL\n> downloaded 1.3 Mb\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/AnnotationDbi_1.3.12.zip'\n> Content type 'application/zip' length 1517547 bytes (1.4 Mb)\n> opened URL\n> downloaded 1.4 Mb\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/strucchange_1.3-4.zip'\n> \n> Content type 'application/zip' length 937367 bytes (915 Kb)\n> opened URL\n> downloaded 915 Kb\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/vsn_3.7.7.zip'\n> Content type 'application/zip' length 1328450 bytes (1.3 Mb)\n> opened URL\n> downloaded 1.3 Mb\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/genefilter_1.21.5.zip'\n> Content type 'application/zip' length 483979 bytes (472 Kb)\n> opened URL\n> downloaded 472 Kb\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/geneplotter_1.19.6.zip'\n> Content type 'application/zip' length 1446820 bytes (1.4 Mb)\n> opened URL\n> downloaded 1.4 Mb\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/pixmap_0.4-9.zip'\n> Content type 'application/zip' length 118653 bytes (115 Kb)\n> opened URL\n> downloaded 115 Kb\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/tilingArray_1.19.2.zip'\n> Content type 'application/zip' length 2291041 bytes (2.2 Mb)\n> opened URL\n> downloaded 2.2 Mb\n> \n> \n> > biocLite(\"DNAcopy\");\n> \n> trying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/DNAcopy_1.14.0.zip'\n> Content type 'application/zip' length 389689 bytes (380 Kb)\n> opened URL\n> downloaded 380 Kb\n> \n> \n> > biocLite(\"GLAD\");\n> \n> trying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/GLAD_1.16.0.zip'\n> Content type 'application/zip' length 1821831 bytes (1.7 Mb)\n> opened URL\n> downloaded 1.7 Mb\n> \n> \n> > biocLite(\"cluster\");\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/cluster_1.11.11.zip'\n> Content type 'application/zip' length 517782 bytes (505 Kb)\n> opened URL\n> downloaded 505 Kb\n> \n> \n> > biocLite(\"aCGH\");\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/multtest_1.21.1.zip'\n> Content type 'application/zip' length 1653667 bytes (1.6 Mb)\n> opened URL\n> downloaded 1.6 Mb\n> \n> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/sma_0.5.15.zip'\n> Content type 'application/zip' length 3070300 bytes (2.9 Mb)\n> opened URL\n> downloaded 2.9 Mb\n> \n> trying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/aCGH_1.14.0.zip'\n> Content type 'application/zip' length 6692045 bytes (6.4 Mb)\n> opened URL\n> downloaded 6.4 Mb\n> \n> > biocLite(\"snapCGH\");\n> \n> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/snapCGH_1.9.5.zip'\n> Content type 'application/zip' length 1308714 bytes (1.2 Mb)\n> opened URL\n> downloaded 1.2 Mb\n> \n> \n> POINT MADE?\n> \n> Cheers\n> \n> Henrik\n> \n> PS. I'd like to suggest that is is checked as part of the initial\n> package review. DS.\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "Henrik,\n\nI agree that the installation footprint is/has been issue, and I would\nthink that it could be addressed more efficiently than going the \"less\ndependencies\" route.\n\nHaving code and data mixed ",
+      "thread_id": "thread-aa17f398250e",
+      "thread_depth": 1,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-737f427bb910",
+      "message_id": "<59d7961d0810161139o20d0c506t9272d67a0bf0c548@mail.gmail.com>",
+      "from_name": "Henrik Bengtsson",
+      "from_email_hash": "9990c0a46f707a7b7a32dc78108db722c1ccf39a8c5733e31eb392daba5a47ca",
+      "date": "2008-10-16T11:39:00-07:00",
+      "subject": "[Bioc-devel] Upcoming release: *Please* revise your Depends and Suggests of DESCRIPTION",
+      "subject_clean": "[Bioc-devel] Upcoming release: *Please* revise your Depends and Suggests of DESCRIPTION",
+      "in_reply_to": "<1224142940.6854.26.camel@hot-spring>",
+      "references": [
+        "<59d7961d0810151311y70ff8fc9x2fbff690b3fff55e@mail.gmail.com>",
+        "<1224142940.6854.26.camel@hot-spring>"
+      ],
+      "body_plain": "Hi,\n\ngood points.\n\nOn Thu, Oct 16, 2008 at 12:42 AM, laurent <lgautier at gmail.com> wrote:\n> Henrik,\n>\n> I agree that the installation footprint is/has been issue, and I would\n> think that it could be addressed more efficiently than going the \"less\n> dependencies\" route.\n\nI wouldn't say less \"dependencies\", but rather \"differently\nclassified\" dependencies (\"Suggests\" could read \"Optional\" and\n\"Depends\" could read \"Critical\"; my view).\n\n>\n> Having code and data mixed into one package, and the absence of common\n> recommended data source for data types, are probably responsible for a\n> much larger fraction of the footprint than the dependencies are.\n\nI definitely agree.  My personal take on this is that for most\nalgorithms the developer could provide:\n\n(i) a high-level function taking objects of more complex classes (e.g.\neSet, ExpressionSet, AffyBatch, RGList, ...), which then utilizes:\n(ii) a low-level function operating on basic data types (e.g. vectors\nand matrices) and that implements the actually algorithms.\n\nThe (i) functions targets end users and higher level calls from other\npackages and (ii) mainly targets other developers (and some users).\nThe API of these low-level functions are less likely to change whereas\nthe high-level API tend to change more often (new classes are\nintroduced).  Several packages already has an internal low-level\ninterface, but it is not always explicit which these functions are\nthat they're part of a supported API (namespaces sometimes clarifies\nthis).\n\nIf all low-level functions are put in a separate package, then we\nachieve part of what you suggest.  It will also be easier to main the\nlow-level as well as the high-level functions, it will be easier for\nother to contribute with say optimized code for the actually algorithm\n(which is in the low-level API).\n\n>\n> Regarding the example you picked this time, it can be seen as\n> disputable. \"snapCGH\" is clearly advertised as an \"umbrella\" package,\n> unifying several other aCGH-related packages under one common framework.\n> One should still be interested in the package, one should also suspect\n> that is it going to require other packages (and their respective\n> dependencies in turn), shouldn't he ?\n\nYes, and the life of Bioconductor packages is a dynamic process.\nMaybe I picked a bad example this time, and it might be that all the\npackages are heavily used most of the time by snapCGH.  My entry point\nto snapCGH was the Bioinformatics Application Note (Marioni et al\n2006) on the BioHMM model, and the umbrella features of snapCGH is not\nthe main point in that package.  This might still illustrate a use\ncase as well the usefulness of a high-/low-level package (and that the\nBioHMM model would favor from being available in a package of itself).\n\nSee also my comments on the frequently used function smoothScatter()\nin \"heavy-weight\" geneplotter, cf.\n\n https://stat.ethz.ch/pipermail/bioc-devel/2008-July/001640.html\n\n>\n> As a side note, it can seem difficult to objectively judge what\n> functions are \"rarely called\" in a package without actual usage data.\n\nI should have used \"optionally\" instead.  It is often the developer\nwho knows when and where certain packages are used and in several\ncases it is only some of the loaded packages that are used in any R\nsession.  For example, in aroma.affymetrix, we only utilize the\n'EBImage' package for generating PNGs showing data spatially.  Not all\npeople do this and if they do not necessarily in every session.  Since\nthis is \"rarely\"/\"optionally\" done, the EBImage package is under\n'Suggests' and we use require():ed whenever needed.\n\nOur dependency of EBImage illustrates another argument, which is\nsoftware robustness.  EBImage was for several months broken on Windows\n(I'm glad to see that it is now fixed), and with a hard dependency\naroma.affymetrix would have been impossible to install and use on\nWindows during that time.  In this case I guess the reason was that\noriginal developer handed over the maintainence of EBImage which\ncaused some startup delays for the new maintainer; these are things we\nare always going to face with most packages at some stage or the\nother.  As developers we can somewhat protect ourselves *and\ndownstream developers/users* against this by using the\n'Suggests/Imports' fields.\n\nFinally, if one want to install all packages including those in\n'Suggests', one can do:\n\n biocLite(\"<pkg/group>\", dependencies=c(\"Depends\", \"Suggests\", \"Imports\"))\n\nCheers\n\nHenrik\n\n>\n>\n>\n> L.\n>\n>\n>\n> On Wed, 2008-10-15 at 13:11 -0700, Henrik Bengtsson wrote:\n>> Hi *all* package developers\n>>\n>> for the upcoming Bioc release, as a developer, could you please revise\n>> what packages you put under 'Depends' in your DESCRIPTION files.\n>>\n>> In many cases packages listed there are only used occationally in a\n>> few rarely called functions.  In such cases it is recommended to put\n>> such packages under 'Suggests' instead and use require(\"<pkg>\") where\n>> ever they are needed.   This will decrease the download/installation\n>> footprint.\n>>\n>> Without picking on a particular package (I've used a different package\n>> before), here is an illustrative example involving several packages\n>> with large package footprints:\n>>\n>> In order to use the runBioHMM() segmentation method in the snapCGH package:\n>>\n>> Package: snapCGH\n>> Depends: limma, tilingArray, DNAcopy, GLAD, cluster, methods, aCGH\n>> Suggests:\n>> Imports:\n>>\n>> this is what you need to download and install (illustrated package by package):\n>>\n>> > biocLite(\"limma\");\n>>\n>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/limma_2.15.15.zip'\n>> Content type 'application/zip' length 1499394 bytes (1.4 Mb)\n>> opened URL\n>> downloaded 1016 Kb\n>>\n>>\n>> > biocLite(\"tilingArray\");\n>>\n>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/xtable_1.5-4.zip'\n>> Content type 'application/zip' length 215584 bytes (210 Kb)\n>> opened URL\n>> downloaded 210 Kb\n>>\n>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/DBI_0.2-4.zip'\n>> Content type 'application/zip' length 442504 bytes (432 Kb)\n>> opened URL\n>> downloaded 432 Kb\n>>\n>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/RSQLite_0.7-0.zip'\n>> Content type 'application/zip' length 599395 bytes (585 Kb)\n>> opened URL\n>> downloaded 585 Kb\n>>\n>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/zoo_1.5-4.zip'\n>> Content type 'application/zip' length 872593 bytes (852 Kb)\n>> opened URL\n>> downloaded 852 Kb\n>>\n>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/sandwich_2.1-0.zip'\n>> Content type 'application/zip' length 758762 bytes (740 Kb)\n>> opened URL\n>> downloaded 740 Kb\n>>\n>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/annotate_1.19.3.zip'\n>> Content type 'application/zip' length 1966201 bytes (1.9 Mb)\n>> opened URL\n>> downloaded 1.3 Mb\n>>\n>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/AnnotationDbi_1.3.12.zip'\n>> Content type 'application/zip' length 1517547 bytes (1.4 Mb)\n>> opened URL\n>> downloaded 1.4 Mb\n>>\n>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/strucchange_1.3-4.zip'\n>>\n>> Content type 'application/zip' length 937367 bytes (915 Kb)\n>> opened URL\n>> downloaded 915 Kb\n>>\n>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/vsn_3.7.7.zip'\n>> Content type 'application/zip' length 1328450 bytes (1.3 Mb)\n>> opened URL\n>> downloaded 1.3 Mb\n>>\n>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/genefilter_1.21.5.zip'\n>> Content type 'application/zip' length 483979 bytes (472 Kb)\n>> opened URL\n>> downloaded 472 Kb\n>>\n>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/geneplotter_1.19.6.zip'\n>> Content type 'application/zip' length 1446820 bytes (1.4 Mb)\n>> opened URL\n>> downloaded 1.4 Mb\n>>\n>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/pixmap_0.4-9.zip'\n>> Content type 'application/zip' length 118653 bytes (115 Kb)\n>> opened URL\n>> downloaded 115 Kb\n>>\n>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/tilingArray_1.19.2.zip'\n>> Content type 'application/zip' length 2291041 bytes (2.2 Mb)\n>> opened URL\n>> downloaded 2.2 Mb\n>>\n>>\n>> > biocLite(\"DNAcopy\");\n>>\n>> trying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/DNAcopy_1.14.0.zip'\n>> Content type 'application/zip' length 389689 bytes (380 Kb)\n>> opened URL\n>> downloaded 380 Kb\n>>\n>>\n>> > biocLite(\"GLAD\");\n>>\n>> trying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/GLAD_1.16.0.zip'\n>> Content type 'application/zip' length 1821831 bytes (1.7 Mb)\n>> opened URL\n>> downloaded 1.7 Mb\n>>\n>>\n>> > biocLite(\"cluster\");\n>>\n>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/cluster_1.11.11.zip'\n>> Content type 'application/zip' length 517782 bytes (505 Kb)\n>> opened URL\n>> downloaded 505 Kb\n>>\n>>\n>> > biocLite(\"aCGH\");\n>>\n>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/multtest_1.21.1.zip'\n>> Content type 'application/zip' length 1653667 bytes (1.6 Mb)\n>> opened URL\n>> downloaded 1.6 Mb\n>>\n>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/sma_0.5.15.zip'\n>> Content type 'application/zip' length 3070300 bytes (2.9 Mb)\n>> opened URL\n>> downloaded 2.9 Mb\n>>\n>> trying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/aCGH_1.14.0.zip'\n>> Content type 'application/zip' length 6692045 bytes (6.4 Mb)\n>> opened URL\n>> downloaded 6.4 Mb\n>>\n>> > biocLite(\"snapCGH\");\n>>\n>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/snapCGH_1.9.5.zip'\n>> Content type 'application/zip' length 1308714 bytes (1.2 Mb)\n>> opened URL\n>> downloaded 1.2 Mb\n>>\n>>\n>> POINT MADE?\n>>\n>> Cheers\n>>\n>> Henrik\n>>\n>> PS. I'd like to suggest that is is checked as part of the initial\n>> package review. DS.\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n>",
+      "body_snippet": "Hi,\n\ngood points.\n\nOn Thu, Oct 16, 2008 at 12:42 AM, laurent <lgautier at gmail.com> wrote:\n> Henrik,\n>\n> I agree that the installation footprint is/has been issue, and I would\n> think that it could b",
+      "thread_id": "thread-aa17f398250e",
+      "thread_depth": 2,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-6d60aa4010d4",
+      "message_id": "<48F8E69E.4080702@fhcrc.org>",
+      "from_name": "Herve Pages",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2008-10-17T12:25:18-07:00",
+      "subject": "[Bioc-devel] Upcoming release: *Please* revise your Depends and Suggests of DESCRIPTION",
+      "subject_clean": "[Bioc-devel] Upcoming release: *Please* revise your Depends and Suggests of DESCRIPTION",
+      "in_reply_to": "<59d7961d0810161139o20d0c506t9272d67a0bf0c548@mail.gmail.com>",
+      "references": [
+        "<59d7961d0810151311y70ff8fc9x2fbff690b3fff55e@mail.gmail.com>",
+        "<1224142940.6854.26.camel@hot-spring>",
+        "<59d7961d0810161139o20d0c506t9272d67a0bf0c548@mail.gmail.com>"
+      ],
+      "body_plain": "Hi developers,\n\nHenrik Bengtsson wrote:\n[...]\n> Finally, if one want to install all packages including those in\n> 'Suggests', one can do:\n> \n>  biocLite(\"<pkg/group>\", dependencies=c(\"Depends\", \"Suggests\", \"Imports\"))\n\nNote that currently, when I do:\n\n  biocLite(\"<somepackage>\", dependencies=TRUE)  # equivalent to the above\n\nI end up with tons of packages that I'm not necessarily interested in.\n\nThis is because the behaviour of install.packages() (the backend of biocLite)\nwhen \"Suggests\" is specified in the 'dependencies' argument is to follow\nrecursively the Suggests field. This is obviously the right thing to do for\nthe Depends and Imports fields but IMO the Suggests field should be treated\ndifferently i.e. only packages *directly* suggested by <somepackage> should be\ninstalled (+ the packages that those suggested packages depend on or import,\nrecursively, of course), but not the packages that the suggested packages\nsuggest :-P\n\nIt could be that this behaviour of install.packages() is partly responsible\nof the too many installed packages that the user experiences sometimes...\n\nCheers,\nH.\n\n> \n> Cheers\n> \n> Henrik\n> \n>>\n>>\n>> L.\n>>\n>>\n>>\n>> On Wed, 2008-10-15 at 13:11 -0700, Henrik Bengtsson wrote:\n>>> Hi *all* package developers\n>>>\n>>> for the upcoming Bioc release, as a developer, could you please revise\n>>> what packages you put under 'Depends' in your DESCRIPTION files.\n>>>\n>>> In many cases packages listed there are only used occationally in a\n>>> few rarely called functions.  In such cases it is recommended to put\n>>> such packages under 'Suggests' instead and use require(\"<pkg>\") where\n>>> ever they are needed.   This will decrease the download/installation\n>>> footprint.\n>>>\n>>> Without picking on a particular package (I've used a different package\n>>> before), here is an illustrative example involving several packages\n>>> with large package footprints:\n>>>\n>>> In order to use the runBioHMM() segmentation method in the snapCGH package:\n>>>\n>>> Package: snapCGH\n>>> Depends: limma, tilingArray, DNAcopy, GLAD, cluster, methods, aCGH\n>>> Suggests:\n>>> Imports:\n>>>\n>>> this is what you need to download and install (illustrated package by package):\n>>>\n>>>> biocLite(\"limma\");\n>>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/limma_2.15.15.zip'\n>>> Content type 'application/zip' length 1499394 bytes (1.4 Mb)\n>>> opened URL\n>>> downloaded 1016 Kb\n>>>\n>>>\n>>>> biocLite(\"tilingArray\");\n>>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/xtable_1.5-4.zip'\n>>> Content type 'application/zip' length 215584 bytes (210 Kb)\n>>> opened URL\n>>> downloaded 210 Kb\n>>>\n>>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/DBI_0.2-4.zip'\n>>> Content type 'application/zip' length 442504 bytes (432 Kb)\n>>> opened URL\n>>> downloaded 432 Kb\n>>>\n>>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/RSQLite_0.7-0.zip'\n>>> Content type 'application/zip' length 599395 bytes (585 Kb)\n>>> opened URL\n>>> downloaded 585 Kb\n>>>\n>>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/zoo_1.5-4.zip'\n>>> Content type 'application/zip' length 872593 bytes (852 Kb)\n>>> opened URL\n>>> downloaded 852 Kb\n>>>\n>>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/sandwich_2.1-0.zip'\n>>> Content type 'application/zip' length 758762 bytes (740 Kb)\n>>> opened URL\n>>> downloaded 740 Kb\n>>>\n>>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/annotate_1.19.3.zip'\n>>> Content type 'application/zip' length 1966201 bytes (1.9 Mb)\n>>> opened URL\n>>> downloaded 1.3 Mb\n>>>\n>>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/AnnotationDbi_1.3.12.zip'\n>>> Content type 'application/zip' length 1517547 bytes (1.4 Mb)\n>>> opened URL\n>>> downloaded 1.4 Mb\n>>>\n>>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/strucchange_1.3-4.zip'\n>>>\n>>> Content type 'application/zip' length 937367 bytes (915 Kb)\n>>> opened URL\n>>> downloaded 915 Kb\n>>>\n>>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/vsn_3.7.7.zip'\n>>> Content type 'application/zip' length 1328450 bytes (1.3 Mb)\n>>> opened URL\n>>> downloaded 1.3 Mb\n>>>\n>>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/genefilter_1.21.5.zip'\n>>> Content type 'application/zip' length 483979 bytes (472 Kb)\n>>> opened URL\n>>> downloaded 472 Kb\n>>>\n>>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/geneplotter_1.19.6.zip'\n>>> Content type 'application/zip' length 1446820 bytes (1.4 Mb)\n>>> opened URL\n>>> downloaded 1.4 Mb\n>>>\n>>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.8/pixmap_0.4-9.zip'\n>>> Content type 'application/zip' length 118653 bytes (115 Kb)\n>>> opened URL\n>>> downloaded 115 Kb\n>>>\n>>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/tilingArray_1.19.2.zip'\n>>> Content type 'application/zip' length 2291041 bytes (2.2 Mb)\n>>> opened URL\n>>> downloaded 2.2 Mb\n>>>\n>>>\n>>>> biocLite(\"DNAcopy\");\n>>> trying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/DNAcopy_1.14.0.zip'\n>>> Content type 'application/zip' length 389689 bytes (380 Kb)\n>>> opened URL\n>>> downloaded 380 Kb\n>>>\n>>>\n>>>> biocLite(\"GLAD\");\n>>> trying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/GLAD_1.16.0.zip'\n>>> Content type 'application/zip' length 1821831 bytes (1.7 Mb)\n>>> opened URL\n>>> downloaded 1.7 Mb\n>>>\n>>>\n>>>> biocLite(\"cluster\");\n>>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/cluster_1.11.11.zip'\n>>> Content type 'application/zip' length 517782 bytes (505 Kb)\n>>> opened URL\n>>> downloaded 505 Kb\n>>>\n>>>\n>>>> biocLite(\"aCGH\");\n>>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/multtest_1.21.1.zip'\n>>> Content type 'application/zip' length 1653667 bytes (1.6 Mb)\n>>> opened URL\n>>> downloaded 1.6 Mb\n>>>\n>>> trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.7/sma_0.5.15.zip'\n>>> Content type 'application/zip' length 3070300 bytes (2.9 Mb)\n>>> opened URL\n>>> downloaded 2.9 Mb\n>>>\n>>> trying URL 'http://bioconductor.org/packages/2.2/bioc/bin/windows/contrib/2.7/aCGH_1.14.0.zip'\n>>> Content type 'application/zip' length 6692045 bytes (6.4 Mb)\n>>> opened URL\n>>> downloaded 6.4 Mb\n>>>\n>>>> biocLite(\"snapCGH\");\n>>> trying URL 'http://bioconductor.org/packages/2.3/bioc/bin/windows/contrib/2.8/snapCGH_1.9.5.zip'\n>>> Content type 'application/zip' length 1308714 bytes (1.2 Mb)\n>>> opened URL\n>>> downloaded 1.2 Mb\n>>>\n>>>\n>>> POINT MADE?\n>>>\n>>> Cheers\n>>>\n>>> Henrik\n>>>\n>>> PS. I'd like to suggest that is is checked as part of the initial\n>>> package review. DS.\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "Hi developers,\n\nHenrik Bengtsson wrote:\n[...]\n> Finally, if one want to install all packages including those in\n> 'Suggests', one can do:\n> \n>  biocLite(\"<pkg/group>\", dependencies=c(\"Depends\", \"Sugge",
+      "thread_id": "thread-aa17f398250e",
+      "thread_depth": 3,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-8a146adb29b2",
+      "message_id": "<20081018085000.gjofq08hggcckw44@webmail.fhcrc.org>",
+      "from_name": "hpages at fhcrc.org",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2008-10-18T08:50:00-07:00",
+      "subject": "[Bioc-devel] BioC 2.3 release: please commit bug fixes and documentation\timprovements only",
+      "subject_clean": "[Bioc-devel] BioC 2.3 release: please commit bug fixes and documentation\timprovements only",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi developpers,\n\nOur next release is just around the corner now. BioC 2.3 is planned\nto be released next Wednesday (Oct 22) i.e. two days after the\nrelease of R 2.8.0:\n\n   http://wiki.fhcrc.org/bioc/BioC_2.3_Release_Schedule\n\nPlease make sure that your package builds and passes check\non all supported platforms:\n\n   http://bioconductor.org/checkResults/2.3/bioc-LATEST/\n\nFYI, we've changed the schedule of the daily builds 2 days ago: now\nthey start at midnight (the svn snapshot happens just a few minutes\nafter midnight) and the report is published around 1 pm of the same\nday (all times are for Seattle).\n\n From now and until next Tuesday, only bug fixes and documentation\nimprovements should be committed.\n\nR-2.8.0 will be installed on all our build machines on Monday.\nOn Tuesday at noon we'll have the first build/check results with\nthis new version of R. Please pay a special attention to these\nresults (everything should be OK, but just in case).\n\nIf everything looks OK, we'll create the 2.3 branch in svn on\nTuesday in the late afternoon (very late afternoon for those who\nlive East of Seattle ;-)) and bump the version numbers of all the\npackages. We'll need a 2-hour window for this operation and no\ncommit at all should be sent to the svn server during that time.\n\nWe'll post here again when we'll be about to perform this operation.\n\nPlease post any question you have to this list.\n\nThanks for your attention!\nH.",
+      "body_snippet": "Hi developpers,\n\nOur next release is just around the corner now. BioC 2.3 is planned\nto be released next Wednesday (Oct 22) i.e. two days after the\nrelease of R 2.8.0:\n\n   http://wiki.fhcrc.org/bioc/B",
+      "thread_id": "thread-8a146adb29b2",
+      "thread_depth": 0,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-74fdb41b3c9c",
+      "message_id": "<48FA16BA.6080103@aon.at>",
+      "from_name": "cstrato",
+      "from_email_hash": "84962443a13e43e007ab9d69a1c992a2a96fdd7459e4d6a89edf29c18a8df2e7",
+      "date": "2008-10-18T19:02:50+02:00",
+      "subject": "[Bioc-devel] BioC 2.3 release: please commit bug fixes and\tdocumentation improvements only",
+      "subject_clean": "[Bioc-devel] BioC 2.3 release: please commit bug fixes and\tdocumentation improvements only",
+      "in_reply_to": "<20081018085000.gjofq08hggcckw44@webmail.fhcrc.org>",
+      "references": [
+        "<20081018085000.gjofq08hggcckw44@webmail.fhcrc.org>"
+      ],
+      "body_plain": "Dear Herve\n\nThank you for taking care of the Warnings problem of my package \"xps\" on \nMacOS X (see R-SIG-MAC).\n\nHere I would like to address the more severe problem with my package \n\"xps\" on Windows Server gewurz:\nThe problem is that the BUILD process on gewurz results in a TIMEOUT due \nto problems with \"creating vignettes...\"\n\nInterestingly, this problem does also affect other packages, see e.g.:\nhttp://bioconductor.org/checkResults/2.3/bioc-LATEST/biocGraph/gewurz-buildsrc.html\nhttp://bioconductor.org/checkResults/2.3/bioc-LATEST/GEOquery/gewurz-buildsrc.html\n\nHowever, in contrast to the packages mentioned, my package has yesterday \nbeen changed on gewurz to NOT SUPPORTED, although the problem seems to \nbe the same. Since some users of my package are Windows users, it is \nimportant to me that my package supports Windows, too, as it does \nalready on BioC2.2.\n\nPlease let me know if there is a possibility that this problem can be \nsolved, and if there is something that I can do to help.\n\nThank you in advance\nBest regards\nChristian\n_._._._._._._._._._._._._._._._._._\nC.h.r.i.s.t.i.a.n   S.t.r.a.t.o.w.a\nV.i.e.n.n.a           A.u.s.t.r.i.a\ne.m.a.i.l:        cstrato at aon.at\n_._._._._._._._._._._._._._._._._._",
+      "body_snippet": "Dear Herve\n\nThank you for taking care of the Warnings problem of my package \"xps\" on \nMacOS X (see R-SIG-MAC).\n\nHere I would like to address the more severe problem with my package \n\"xps\" on Windows S",
+      "thread_id": "thread-8a146adb29b2",
+      "thread_depth": 1,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-5adf780e754f",
+      "message_id": "<1224615628.12181.61.camel@samson>",
+      "from_name": "Steffen Neumann",
+      "from_email_hash": "c7f736cda77247542b42535cfff3f1e7c8954a83a0a2400d953c4111745bbaea",
+      "date": "2008-10-21T21:00:28+02:00",
+      "subject": "[Bioc-devel] XCMS in BioC 2.3 [Was: BioC 2.3 release: please commit bug fixes]",
+      "subject_clean": "[Bioc-devel] XCMS in BioC 2.3 [Was: BioC 2.3 release: please commit bug fixes]",
+      "in_reply_to": "<20081018085000.gjofq08hggcckw44@webmail.fhcrc.org>",
+      "references": [
+        "<20081018085000.gjofq08hggcckw44@webmail.fhcrc.org>"
+      ],
+      "body_plain": "On Sat, 2008-10-18 at 08:50 -0700, hpages at fhcrc.org wrote:\n> Hi developpers,\nHi Herve,\n\nI know you're currently extremely busy getting the BioC release\nout of the door. At the end of the mail I have the request \nto set xcms on MacOS to \"unsupported\" for the upcoming release.\n\nThanks for fixing a bug in xcmsSet.R:xcmsBoxPlot(),\nwe currently still have an issue with this function on MacOS: \n\nhttp://bioconductor.org/checkResults/2.3/bioc-LATEST/xcms/pitt-buildsrc.html\n\tLast Changed Rev: 34729 / Revision: 34773\n\tError: QuartzBitmap_Output - unable to open file 'example_box/402.png'\n\nThe graphic file is only opened for write, and this works fine on e.g. i386:\n\n\tls -l xcms.Rcheck/inst/doc/example_box/402.png \n\t-rw-r--r-- sneumann 2451 2008-10-21 20:25 xcms.Rcheck/inst/doc/example_box/402.png\n\nSince I don't have any Mac experience, I am unsure what might be special \nabout the Quartz Device, or (less likely) whether this is a symptom \nof R-2.8.0 beta on pitt. Google is no help either, the three hits are \nthe error message in the R-SVN repo and our own build report :-(\n\n\thttp://www.google.de/search?q=Error%3A+QuartzBitmap_Output\n\nRight now  I tried to add a dev.off() call, which seems to have been missing:\n\n\tr34799 | s.neumann | 2008-10-21 20:53:31 +0200 (Tue, 21 Oct 2008) | 1 line\n\tAdded missing dev.off(), fixing MacOS now ?\n\nand maybe Quartz is more sensitive to such omissions.\n\nJust to be sure I also removed some tree plotting in the xcmsMSn.Rnw vignette,\nwhich might (?) have caused a bus error with the Rgraphviz call that \notherwise works fine on the other arches.\n\nBecause it is unlikely that we get all MacOS issues fixed in time, \nI'd like to ask for xcms on MacOS to be set to \"unsupported\", \nso that it can proceed into the BioC-2.3 release.\n\nYours,\nSteffen",
+      "body_snippet": "On Sat, 2008-10-18 at 08:50 -0700, hpages at fhcrc.org wrote:\n> Hi developpers,\nHi Herve,\n\nI know you're currently extremely busy getting the BioC release\nout of the door. At the end of the mail I hav",
+      "thread_id": "thread-8a146adb29b2",
+      "thread_depth": 1,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-4ba7539fdc4b",
+      "message_id": "<48FE2D69.7080606@fhcrc.org>",
+      "from_name": "Patrick Aboyoun",
+      "from_email_hash": "dc50c3c245d3952d5b85da1e198abf49dacd056ac9649061263764cf7191a8de",
+      "date": "2008-10-21T12:28:41-07:00",
+      "subject": "[Bioc-devel] XCMS in BioC 2.3 [Was: BioC 2.3 release: please commit\tbug fixes]",
+      "subject_clean": "[Bioc-devel] XCMS in BioC 2.3 [Was: BioC 2.3 release: please commit\tbug fixes]",
+      "in_reply_to": "<1224615628.12181.61.camel@samson>",
+      "references": [
+        "<20081018085000.gjofq08hggcckw44@webmail.fhcrc.org>",
+        "<1224615628.12181.61.camel@samson>"
+      ],
+      "body_plain": "Steffen,\nYour efforts weren't in vain. I just tried xcms on pitt (Mac OS X build machine) with the fixes you made and the package built and checked without issue. We'll be able to release xcms in all three package types (source, Windows binary, and Mac OS X binary).\n\n\nCheers,\nPatrick\n\n\n\nSteffen Neumann wrote:\n> On Sat, 2008-10-18 at 08:50 -0700, hpages at fhcrc.org wrote:\n>   \n>> Hi developpers,\n>>     \n> Hi Herve,\n>\n> I know you're currently extremely busy getting the BioC release\n> out of the door. At the end of the mail I have the request \n> to set xcms on MacOS to \"unsupported\" for the upcoming release.\n>\n> Thanks for fixing a bug in xcmsSet.R:xcmsBoxPlot(),\n> we currently still have an issue with this function on MacOS: \n>\n> http://bioconductor.org/checkResults/2.3/bioc-LATEST/xcms/pitt-buildsrc.html\n> \tLast Changed Rev: 34729 / Revision: 34773\n> \tError: QuartzBitmap_Output - unable to open file 'example_box/402.png'\n>\n> The graphic file is only opened for write, and this works fine on e.g. i386:\n>\n> \tls -l xcms.Rcheck/inst/doc/example_box/402.png \n> \t-rw-r--r-- sneumann 2451 2008-10-21 20:25 xcms.Rcheck/inst/doc/example_box/402.png\n>\n> Since I don't have any Mac experience, I am unsure what might be special \n> about the Quartz Device, or (less likely) whether this is a symptom \n> of R-2.8.0 beta on pitt. Google is no help either, the three hits are \n> the error message in the R-SVN repo and our own build report :-(\n>\n> \thttp://www.google.de/search?q=Error%3A+QuartzBitmap_Output\n>\n> Right now  I tried to add a dev.off() call, which seems to have been missing:\n>\n> \tr34799 | s.neumann | 2008-10-21 20:53:31 +0200 (Tue, 21 Oct 2008) | 1 line\n> \tAdded missing dev.off(), fixing MacOS now ?\n>\n> and maybe Quartz is more sensitive to such omissions.\n>\n> Just to be sure I also removed some tree plotting in the xcmsMSn.Rnw vignette,\n> which might (?) have caused a bus error with the Rgraphviz call that \n> otherwise works fine on the other arches.\n>\n> Because it is unlikely that we get all MacOS issues fixed in time, \n> I'd like to ask for xcms on MacOS to be set to \"unsupported\", \n> so that it can proceed into the BioC-2.3 release.\n>\n> Yours,\n> Steffen\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "Steffen,\nYour efforts weren't in vain. I just tried xcms on pitt (Mac OS X build machine) with the fixes you made and the package built and checked without issue. We'll be able to release xcms in all ",
+      "thread_id": "thread-8a146adb29b2",
+      "thread_depth": 2,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-8d3441d7c374",
+      "message_id": "<48FE505B.3080502@fhcrc.org>",
+      "from_name": "Patrick Aboyoun",
+      "from_email_hash": "dc50c3c245d3952d5b85da1e198abf49dacd056ac9649061263764cf7191a8de",
+      "date": "2008-10-21T14:57:47-07:00",
+      "subject": "[Bioc-devel] BioC 2.3 SVN BRANCH TO BE CREATED, PLEASE REFRAIN FROM SVN SUBMITS UNTIL 6PM PDT",
+      "subject_clean": "[Bioc-devel] BioC 2.3 SVN BRANCH TO BE CREATED, PLEASE REFRAIN FROM SVN SUBMITS UNTIL 6PM PDT",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "I am happy to announce that we are getting really close to the BioC 2.3 \nrelease. In order to prepare for this release, all developers *must* \nrefrain from SVN commits until further notification, which will be at or \nbefore 6 pm PDT - roughly 3 hours from now. This check in moratorium is \nneeded because we need to create a branch in SVN to hold the BioC 2.3 \ncode line and your check-ins could inadvertently cause your package to \nbreak become the files may not wind up in the SVN repository that you \nintended it to. Thanks for your help on this matter.\n\n\nPatrick",
+      "body_snippet": "I am happy to announce that we are getting really close to the BioC 2.3 \nrelease. In order to prepare for this release, all developers *must* \nrefrain from SVN commits until further notification, whic",
+      "thread_id": "thread-8d3441d7c374",
+      "thread_depth": 0,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-8517e5bedea0",
+      "message_id": "<48FE6A26.70905@fhcrc.org>",
+      "from_name": "Patrick Aboyoun",
+      "from_email_hash": "dc50c3c245d3952d5b85da1e198abf49dacd056ac9649061263764cf7191a8de",
+      "date": "2008-10-21T16:47:50-07:00",
+      "subject": "[Bioc-devel] BioC 2.3 SVN BRANCH TO BE CREATED, PLEASE REFRAIN FROM SVN SUBMITS UNTIL 6PM PDT",
+      "subject_clean": "[Bioc-devel] BioC 2.3 SVN BRANCH TO BE CREATED, PLEASE REFRAIN FROM SVN SUBMITS UNTIL 6PM PDT",
+      "in_reply_to": "<48FE505B.3080502@fhcrc.org>",
+      "references": [
+        "<48FE505B.3080502@fhcrc.org>"
+      ],
+      "body_plain": "Thank you for your patience. The BioC 2.3 SVN branch has been made and \nyou may now resume SVN check-ins. The BioC 2.3 software repository can \nnow be found at\n\nURL:  \nhttps://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_2_3/madman/Rpacks/\n\nand the BioC 2.4 development branch can be found at\n\nURL:  https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/\n\nIf you have been holding off on checking new code in for fear of \nbreaking the build, you may now safely do so in into the BioC 2.4 trunk. \nFor those needing to fix bugs in the BioC 2.3 version of your package, \nsimply point your check-ins to the BioC 2.3 URL above with the \nappropriate package name added on to the end. Unless something \nunforeseen happens, tomorrow we will be sending out an announcement on \nthe BioC 2.3 release to the end-users. Thanks again for all your help in \ngetting your packages ready for this release!\n\n\nPatrick\n\n\n\nPatrick Aboyoun wrote:\n> I am happy to announce that we are getting really close to the BioC \n> 2.3 release. In order to prepare for this release, all developers \n> *must* refrain from SVN commits until further notification, which will \n> be at or before 6 pm PDT - roughly 3 hours from now. This check in \n> moratorium is needed because we need to create a branch in SVN to hold \n> the BioC 2.3 code line and your check-ins could inadvertently cause \n> your package to break become the files may not wind up in the SVN \n> repository that you intended it to. Thanks for your help on this matter.\n>\n>\n> Patrick\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "Thank you for your patience. The BioC 2.3 SVN branch has been made and \nyou may now resume SVN check-ins. The BioC 2.3 software repository can \nnow be found at\n\nURL:  \nhttps://hedgehog.fhcrc.org/bioco",
+      "thread_id": "thread-8d3441d7c374",
+      "thread_depth": 1,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-1783b9b17a99",
+      "message_id": "<48FF5A49.3050504@fhcrc.org>",
+      "from_name": "Robert Gentleman",
+      "from_email_hash": "7de55c0000c437ab05b37d16b5a00e42a9bba6254ce27d76eb635498d1e3dda7",
+      "date": "2008-10-22T09:52:25-07:00",
+      "subject": "[Bioc-devel] [Fwd: Re: [Rd] R 2.8.0 qqnorm produces error with object of class zoo?]",
+      "subject_clean": "[Bioc-devel] [Fwd: Re: [Rd] R 2.8.0 qqnorm produces error with object of class zoo?]",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "perhaps we need to discuss xtfrm and its role (if any) in the external \nvector/Iranges world...\n\n-- \nRobert Gentleman, PhD\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M2-B876\nPO Box 19024\nSeattle, Washington 98109-1024\n206-667-7700\nrgentlem at fhcrc.org",
+      "body_snippet": "perhaps we need to discuss xtfrm and its role (if any) in the external \nvector/Iranges world...\n\n-- \nRobert Gentleman, PhD\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutc",
+      "thread_id": "thread-1783b9b17a99",
+      "thread_depth": 0,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-7023f5abf584",
+      "message_id": "<a3b32af80810270540w5ea2c5cdh73d082492a2faae4@mail.gmail.com>",
+      "from_name": "Mizanur Khondoker",
+      "from_email_hash": "8d28f04004e9838234e0d7370f33d03c272ade205f0d1689b81b0cc1abd4384d",
+      "date": "2008-10-27T12:40:41Z",
+      "subject": "[Bioc-devel] Problem installing 'affy' with R-2.8.0",
+      "subject_clean": "[Bioc-devel] Problem installing 'affy' with R-2.8.0",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20081027/fead6bbb/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20081027/fead6bbb/attachment.pl>",
+      "thread_id": "thread-7023f5abf584",
+      "thread_depth": 0,
+      "month": "2008-10"
+    },
+    {
+      "id": "msg-c8e6b0ae9e78",
+      "message_id": "<1225392409.6721.89.camel@hot-spring>",
+      "from_name": "laurent",
+      "from_email_hash": "bf804a19bca99afd3e8648a6bb32a7956ed8fcfdac81cf240f84fad273a2991e",
+      "date": "2008-10-30T19:46:49+01:00",
+      "subject": "[Bioc-devel] Affymetrix's Targeted Genotyping arrays ?",
+      "subject_clean": "[Bioc-devel] Affymetrix's Targeted Genotyping arrays ?",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\n\nWould anyone have :\n- a workflow for Affymetrix's Targeted Genotyping arrays ?\n- sample data to share (sample information can be recoded, if the\ndataset is not yet fully public - I am after the 4-CELs, rather than\nafter the DTT but would take the later as well).\n\n\nThanks,\n\n\nLaurent",
+      "body_snippet": "Hi,\n\nWould anyone have :\n- a workflow for Affymetrix's Targeted Genotyping arrays ?\n- sample data to share (sample information can be recoded, if the\ndataset is not yet fully public - I am after the 4",
+      "thread_id": "thread-c8e6b0ae9e78",
+      "thread_depth": 0,
+      "month": "2008-10"
+    }
+  ],
+  "threads": [
+    {
+      "id": "thread-367a47ebe750",
+      "subject": "[Bioc-devel] problem with S4 class/methods documentation",
+      "message_count": 5,
+      "participants": [
+        "Laurent Gautier",
+        "Martin Morgan",
+        "laurent",
+        "mattia pelizzola"
+      ],
+      "started": "2008-10-06T12:27:06-04:00",
+      "last_reply": "2008-10-09T09:34:48-07:00",
+      "root_message_id": "msg-367a47ebe750"
+    },
+    {
+      "id": "thread-3882a44a55de",
+      "subject": "[Bioc-devel] package version numbering",
+      "message_count": 3,
+      "participants": [
+        "Robert Gentleman",
+        "Sean Davis",
+        "mattia pelizzola"
+      ],
+      "started": "2008-10-06T14:04:38-04:00",
+      "last_reply": "2008-10-06T11:48:19-07:00",
+      "root_message_id": "msg-3882a44a55de"
+    },
+    {
+      "id": "thread-cda026efaa08",
+      "subject": "[Bioc-devel] class union with AffyBatch",
+      "message_count": 3,
+      "participants": [
+        "Audrey Kauffmann",
+        "Martin Morgan",
+        "audrey"
+      ],
+      "started": "2008-10-09T11:58:22+01:00",
+      "last_reply": "2008-10-10T10:12:11+01:00",
+      "root_message_id": "msg-cda026efaa08"
+    },
+    {
+      "id": "thread-aa17f398250e",
+      "subject": "[Bioc-devel] Upcoming release: *Please* revise your Depends and Suggests of DESCRIPTION",
+      "message_count": 5,
+      "participants": [
+        "Henrik Bengtsson",
+        "Herve Pages",
+        "Robert Gentleman",
+        "laurent"
+      ],
+      "started": "2008-10-15T13:11:10-07:00",
+      "last_reply": "2008-10-17T12:25:18-07:00",
+      "root_message_id": "msg-aa17f398250e"
+    },
+    {
+      "id": "thread-8a146adb29b2",
+      "subject": "[Bioc-devel] BioC 2.3 release: please commit bug fixes and documentation\timprovements only",
+      "message_count": 4,
+      "participants": [
+        "Patrick Aboyoun",
+        "Steffen Neumann",
+        "cstrato",
+        "hpages at fhcrc.org"
+      ],
+      "started": "2008-10-18T08:50:00-07:00",
+      "last_reply": "2008-10-21T12:28:41-07:00",
+      "root_message_id": "msg-8a146adb29b2"
+    },
+    {
+      "id": "thread-8d3441d7c374",
+      "subject": "[Bioc-devel] BioC 2.3 SVN BRANCH TO BE CREATED, PLEASE REFRAIN FROM SVN SUBMITS UNTIL 6PM PDT",
+      "message_count": 2,
+      "participants": [
+        "Patrick Aboyoun"
+      ],
+      "started": "2008-10-21T14:57:47-07:00",
+      "last_reply": "2008-10-21T16:47:50-07:00",
+      "root_message_id": "msg-8d3441d7c374"
+    },
+    {
+      "id": "thread-1783b9b17a99",
+      "subject": "[Bioc-devel] [Fwd: Re: [Rd] R 2.8.0 qqnorm produces error with object of class zoo?]",
+      "message_count": 1,
+      "participants": [
+        "Robert Gentleman"
+      ],
+      "started": "2008-10-22T09:52:25-07:00",
+      "last_reply": "2008-10-22T09:52:25-07:00",
+      "root_message_id": "msg-1783b9b17a99"
+    },
+    {
+      "id": "thread-7023f5abf584",
+      "subject": "[Bioc-devel] Problem installing 'affy' with R-2.8.0",
+      "message_count": 1,
+      "participants": [
+        "Mizanur Khondoker"
+      ],
+      "started": "2008-10-27T12:40:41+00:00",
+      "last_reply": "2008-10-27T12:40:41+00:00",
+      "root_message_id": "msg-7023f5abf584"
+    },
+    {
+      "id": "thread-c8e6b0ae9e78",
+      "subject": "[Bioc-devel] Affymetrix's Targeted Genotyping arrays ?",
+      "message_count": 1,
+      "participants": [
+        "laurent"
+      ],
+      "started": "2008-10-30T19:46:49+01:00",
+      "last_reply": "2008-10-30T19:46:49+01:00",
+      "root_message_id": "msg-c8e6b0ae9e78"
+    }
+  ]
+}

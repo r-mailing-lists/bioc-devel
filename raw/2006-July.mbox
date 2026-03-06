@@ -1,0 +1,704 @@
+From ellis at stat.harvard.edu  Sun Jul  9 00:23:37 2006
+From: ellis at stat.harvard.edu (Byron Ellis)
+Date: Sat, 8 Jul 2006 15:23:37 -0700
+Subject: [Bioc-devel] Depending vs. Importing?
+Message-ID: <748401DD-10F7-44C3-9E3E-E868404FD0D0@stat.harvard.edu>
+
+Is there any particular reason Imports and different from  
+Dependencies? I may be missing something, but importing would seem to  
+imply a dependence relationship which doesn't appear to be honored.  
+rflowcyt (not to pick on it, it just happened to be the package I  
+tried to load) for example imports but does not depend on prada.
+
+---
+Byron Ellis (ellis at stat.harvard.edu)
+"Oook" -- The Librarian
+
+
+From osklyar at ebi.ac.uk  Sun Jul  9 13:24:01 2006
+From: osklyar at ebi.ac.uk (Oleg Sklyar)
+Date: Sun, 09 Jul 2006 12:24:01 +0100
+Subject: [Bioc-devel] Depending vs. Importing?
+In-Reply-To: <748401DD-10F7-44C3-9E3E-E868404FD0D0@stat.harvard.edu>
+References: <748401DD-10F7-44C3-9E3E-E868404FD0D0@stat.harvard.edu>
+Message-ID: <44B0E751.90306@ebi.ac.uk>
+
+Without going to your particular example, the main difference as I see
+it, is that developers using import can still make the packages usable
+in case a dependency is broken.
+
+Suppose your package is intended for some complex analysis (for which it
+does not need anything) and can additionally produce some fancy
+graphical output of the analysis if it loads a dependency. Now if this
+dependency is broken (missing, cannot be compiled etc) - with depends
+your package will fail to install; with import the package developer
+could have tested for the result and implemented some simple plots if
+the dependency is broken - but the package would still work for the
+analysis.
+
+If however, the package fails to work completely when it cannot import
+something, then such import should go into depends to allow for the
+error during the installation time.
+
+Generally, you do not want to make a package totally non-functional if 1
+of 10 dependencies fails, therefore it is reasonable to use import for
+lesser important features of the package.
+
+Cheers,
+  Oleg
+
+Byron Ellis wrote:
+> Is there any particular reason Imports and different from  
+> Dependencies? I may be missing something, but importing would seem to  
+> imply a dependence relationship which doesn't appear to be honored.  
+> rflowcyt (not to pick on it, it just happened to be the package I  
+> tried to load) for example imports but does not depend on prada.
+> 
+> ---
+> Byron Ellis (ellis at stat.harvard.edu)
+> "Oook" -- The Librarian
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Dr. Oleg Sklyar
+European Bioinformatics Institute
+Wellcome Trust Genome Campus
+Hinxton
+Cambridge CB10 1SD
+England
+
+Tel   +44-1223-494466
+Fax   +44-1223-494468
+email osklyar at ebi.ac.uk
+
+
+From khansen at stat.Berkeley.EDU  Mon Jul 10 08:03:45 2006
+From: khansen at stat.Berkeley.EDU (Kasper Daniel Hansen)
+Date: Sun, 9 Jul 2006 23:03:45 -0700
+Subject: [Bioc-devel] Depending vs. Importing?
+In-Reply-To: <44B0E751.90306@ebi.ac.uk>
+References: <748401DD-10F7-44C3-9E3E-E868404FD0D0@stat.harvard.edu>
+	<44B0E751.90306@ebi.ac.uk>
+Message-ID: <4864C66B-4377-4AA2-A512-00AA4E97A921@stat.berkeley.edu>
+
+
+On Jul 9, 2006, at 4:24 AM, Oleg Sklyar wrote:
+
+> Without going to your particular example, the main difference as I see
+> it, is that developers using import can still make the packages usable
+> in case a dependency is broken.
+>
+> Suppose your package is intended for some complex analysis (for  
+> which it
+> does not need anything) and can additionally produce some fancy
+> graphical output of the analysis if it loads a dependency. Now if this
+> dependency is broken (missing, cannot be compiled etc) - with depends
+> your package will fail to install; with import the package developer
+> could have tested for the result and implemented some simple plots if
+> the dependency is broken - but the package would still work for the
+> analysis.
+>
+> If however, the package fails to work completely when it cannot import
+> something, then such import should go into depends to allow for the
+> error during the installation time.
+>
+> Generally, you do not want to make a package totally non-functional  
+> if 1
+> of 10 dependencies fails, therefore it is reasonable to use import for
+> lesser important features of the package.
+
+But isn't this what the suggests field is for?
+
+/Kasper
+
+
+> Cheers,
+>   Oleg
+>
+> Byron Ellis wrote:
+>> Is there any particular reason Imports and different from
+>> Dependencies? I may be missing something, but importing would seem to
+>> imply a dependence relationship which doesn't appear to be honored.
+>> rflowcyt (not to pick on it, it just happened to be the package I
+>> tried to load) for example imports but does not depend on prada.
+>>
+>> ---
+>> Byron Ellis (ellis at stat.harvard.edu)
+>> "Oook" -- The Librarian
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> -- 
+> Dr. Oleg Sklyar
+> European Bioinformatics Institute
+> Wellcome Trust Genome Campus
+> Hinxton
+> Cambridge CB10 1SD
+> England
+>
+> Tel   +44-1223-494466
+> Fax   +44-1223-494468
+> email osklyar at ebi.ac.uk
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From ellis at stat.harvard.edu  Mon Jul 10 08:55:46 2006
+From: ellis at stat.harvard.edu (Byron Ellis)
+Date: Sun, 9 Jul 2006 23:55:46 -0700
+Subject: [Bioc-devel] Depending vs. Importing?
+In-Reply-To: <44B0E751.90306@ebi.ac.uk>
+References: <748401DD-10F7-44C3-9E3E-E868404FD0D0@stat.harvard.edu>
+	<44B0E751.90306@ebi.ac.uk>
+Message-ID: <DFE9D791-08A6-4CF6-A796-7F2F49CEBF0C@stat.harvard.edu>
+
+Yes, this is exactly the situation that Suggests handles (in fact,  
+rflowcyt suggests xgobi in addition to the 16 or so it requires).
+
+Import on the other hand happens at package load time and as such  
+prevents the successful loading of the package. So it seems while  
+there might be some semantic difference between Depending versus  
+Importing, say, importing a package makes it accessible to the  
+package but not necessarily the console while dependence makes the  
+package also available to the console, there is no practical  
+difference in terms of the proper functioning of the package.
+
+Ultimately, this is probably a topic for R-devel rather than  
+Bioconductor, but my R-devel mail hasn't been getting delivered  
+reliably. :-)
+
+On Jul 9, 2006, at 4:24 AM, Oleg Sklyar wrote:
+
+> Without going to your particular example, the main difference as I see
+> it, is that developers using import can still make the packages usable
+> in case a dependency is broken.
+>
+> Suppose your package is intended for some complex analysis (for  
+> which it
+> does not need anything) and can additionally produce some fancy
+> graphical output of the analysis if it loads a dependency. Now if this
+> dependency is broken (missing, cannot be compiled etc) - with depends
+> your package will fail to install; with import the package developer
+> could have tested for the result and implemented some simple plots if
+> the dependency is broken - but the package would still work for the
+> analysis.
+>
+> If however, the package fails to work completely when it cannot import
+> something, then such import should go into depends to allow for the
+> error during the installation time.
+>
+> Generally, you do not want to make a package totally non-functional  
+> if 1
+> of 10 dependencies fails, therefore it is reasonable to use import for
+> lesser important features of the package.
+>
+> Cheers,
+>   Oleg
+>
+> Byron Ellis wrote:
+>> Is there any particular reason Imports and different from
+>> Dependencies? I may be missing something, but importing would seem to
+>> imply a dependence relationship which doesn't appear to be honored.
+>> rflowcyt (not to pick on it, it just happened to be the package I
+>> tried to load) for example imports but does not depend on prada.
+>>
+>> ---
+>> Byron Ellis (ellis at stat.harvard.edu)
+>> "Oook" -- The Librarian
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> -- 
+> Dr. Oleg Sklyar
+> European Bioinformatics Institute
+> Wellcome Trust Genome Campus
+> Hinxton
+> Cambridge CB10 1SD
+> England
+>
+> Tel   +44-1223-494466
+> Fax   +44-1223-494468
+> email osklyar at ebi.ac.uk
+
+---
+Byron Ellis (ellis at stat.harvard.edu)
+"Oook" -- The Librarian
+
+
+From f.hahne at dkfz-heidelberg.de  Mon Jul 10 10:21:08 2006
+From: f.hahne at dkfz-heidelberg.de (Florian Hahne)
+Date: Mon, 10 Jul 2006 10:21:08 +0200
+Subject: [Bioc-devel] Depending vs. Importing?
+In-Reply-To: <748401DD-10F7-44C3-9E3E-E868404FD0D0@stat.harvard.edu>
+References: <748401DD-10F7-44C3-9E3E-E868404FD0D0@stat.harvard.edu>
+Message-ID: <44B20DF4.8090606@dkfz-heidelberg.de>
+
+IMO, the only difference is that the package is not attached on package 
+load time for imports, so one can reduce the overhead for packages with 
+a lot of  minor dependencies. Until now I haven't realized that the 
+information in the imports field is not evaluated during package 
+installation (is this really the case?).
+Florian
+
+Byron Ellis wrote:
+> Is there any particular reason Imports and different from  
+> Dependencies? I may be missing something, but importing would seem to  
+> imply a dependence relationship which doesn't appear to be honored.  
+> rflowcyt (not to pick on it, it just happened to be the package I  
+> tried to load) for example imports but does not depend on prada.
+>
+> ---
+> Byron Ellis (ellis at stat.harvard.edu)
+> "Oook" -- The Librarian
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>   
+
+
+-- 
+Florian Hahne
+Abt. Molekulare Genomanalyse (B050)
+Deutsches Krebsforschungszentrum (DKFZ)
+Im Neuenheimer Feld 580
+D-69120 Heidelberg
+phone: 0049 6221 424764
+fax: 0049 6221 423454
+web: www.dkfz.de/mga
+
+
+From osklyar at ebi.ac.uk  Mon Jul 10 11:17:14 2006
+From: osklyar at ebi.ac.uk (Oleg Sklyar)
+Date: Mon, 10 Jul 2006 10:17:14 +0100
+Subject: [Bioc-devel] Depending vs. Importing?
+In-Reply-To: <DFE9D791-08A6-4CF6-A796-7F2F49CEBF0C@stat.harvard.edu>
+References: <748401DD-10F7-44C3-9E3E-E868404FD0D0@stat.harvard.edu>
+	<44B0E751.90306@ebi.ac.uk>
+	<DFE9D791-08A6-4CF6-A796-7F2F49CEBF0C@stat.harvard.edu>
+Message-ID: <44B21B1A.5070507@ebi.ac.uk>
+
+Does the suggest field works properly now? It used to work exactly the
+same way as depends braking your package if the dependency is broken. It
+used to be a bug, and I do not know if it was corrected.
+
+Oleg
+
+Byron Ellis wrote:
+> Yes, this is exactly the situation that Suggests handles (in fact,
+> rflowcyt suggests xgobi in addition to the 16 or so it requires).
+> 
+> Import on the other hand happens at package load time and as such
+> prevents the successful loading of the package. So it seems while there
+> might be some semantic difference between Depending versus Importing,
+> say, importing a package makes it accessible to the package but not
+> necessarily the console while dependence makes the package also
+> available to the console, there is no practical difference in terms of
+> the proper functioning of the package.
+> 
+> Ultimately, this is probably a topic for R-devel rather than
+> Bioconductor, but my R-devel mail hasn't been getting delivered
+> reliably. :-)
+> 
+> On Jul 9, 2006, at 4:24 AM, Oleg Sklyar wrote:
+> 
+>> Without going to your particular example, the main difference as I see
+>> it, is that developers using import can still make the packages usable
+>> in case a dependency is broken.
+>>
+>> Suppose your package is intended for some complex analysis (for which it
+>> does not need anything) and can additionally produce some fancy
+>> graphical output of the analysis if it loads a dependency. Now if this
+>> dependency is broken (missing, cannot be compiled etc) - with depends
+>> your package will fail to install; with import the package developer
+>> could have tested for the result and implemented some simple plots if
+>> the dependency is broken - but the package would still work for the
+>> analysis.
+>>
+>> If however, the package fails to work completely when it cannot import
+>> something, then such import should go into depends to allow for the
+>> error during the installation time.
+>>
+>> Generally, you do not want to make a package totally non-functional if 1
+>> of 10 dependencies fails, therefore it is reasonable to use import for
+>> lesser important features of the package.
+>>
+>> Cheers,
+>>   Oleg
+>>
+>> Byron Ellis wrote:
+>>> Is there any particular reason Imports and different from
+>>> Dependencies? I may be missing something, but importing would seem to
+>>> imply a dependence relationship which doesn't appear to be honored.
+>>> rflowcyt (not to pick on it, it just happened to be the package I
+>>> tried to load) for example imports but does not depend on prada.
+>>>
+>>> ---
+>>> Byron Ellis (ellis at stat.harvard.edu)
+>>> "Oook" -- The Librarian
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>> --Dr. Oleg Sklyar
+>> European Bioinformatics Institute
+>> Wellcome Trust Genome Campus
+>> Hinxton
+>> Cambridge CB10 1SD
+>> England
+>>
+>> Tel   +44-1223-494466
+>> Fax   +44-1223-494468
+>> email osklyar at ebi.ac.uk
+> 
+> ---
+> Byron Ellis (ellis at stat.harvard.edu)
+> "Oook" -- The Librarian
+> 
+
+-- 
+Dr. Oleg Sklyar
+European Bioinformatics Institute
+Wellcome Trust Genome Campus
+Hinxton
+Cambridge CB10 1SD
+England
+
+Tel   +44-1223-494466
+Fax   +44-1223-494468
+email osklyar at ebi.ac.uk
+
+
+From sfalcon at fhcrc.org  Mon Jul 10 18:38:43 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 10 Jul 2006 09:38:43 -0700
+Subject: [Bioc-devel] Depending vs. Importing?
+In-Reply-To: <44B20DF4.8090606@dkfz-heidelberg.de> (Florian Hahne's message of
+	"Mon, 10 Jul 2006 10:21:08 +0200")
+References: <748401DD-10F7-44C3-9E3E-E868404FD0D0@stat.harvard.edu>
+	<44B20DF4.8090606@dkfz-heidelberg.de>
+Message-ID: <m2u05pv2i4.fsf@fhcrc.org>
+
+Florian Hahne <f.hahne at dkfz-heidelberg.de> writes:
+> IMO, the only difference is that the package is not attached on package 
+> load time for imports, so one can reduce the overhead for packages with 
+> a lot of  minor dependencies.
+
+Well, that isn't just your "opinion" :-)
+
+When a package Foo lists package Bar in Depends, Bar is loaded _and_ attached to
+the search path before Foo is loaded and attached when the user calls
+library("Foo").
+
+Importing provides a more fine grained way of handling dependencies
+between packages, but the implementation leaves something to be
+desired.  To import functionality, a developer must list a package in
+Imports _and_ include appropriate directives in the NAMESPACE file.
+It makes no sense to use the Imports field if your package does not
+have a NAMESPACE.
+
+The main difference with importing is as Florian said: imported
+packages are loaded but _not_ attached to the search path.  This keeps
+the symbols available from the global env cleaner and makes it
+possible to work with packages that have symbol conflicts.
+
+The thing that is confusing and IMO could use improvement is that a
+developer must provide the import information in two places, the
+Imports field in the DESCRIPTION file and various import directives in
+the NAMESPACE file.
+
+I'm not certain, but I think the only places where the Imports field
+gets used are during 'R CMD check' and when using the
+install.packages() family of functions where the Imports field is used
+to track down dependencies.
+
+> Until now I haven't realized that the information in the imports
+> field is not evaluated during package installation (is this really
+> the case?).  
+
+I think what you mean is that R CMD INSTALL ignores the Imports
+field.  Yes, that seems to be the case, but note that it also is the
+case for the Depends field; R is perfectly happy to let you install a
+package that will not work for lack of dependencies.  This isn't
+necessarily a bad thing; it makes installing a collection of packages
+easier because you don't have to get the order right.
+
+> Byron Ellis wrote:
+>> Is there any particular reason Imports and different from  
+>> Dependencies? I may be missing something, but importing would seem to  
+>> imply a dependence relationship which doesn't appear to be honored.  
+>> rflowcyt (not to pick on it, it just happened to be the package I  
+>> tried to load) for example imports but does not depend on prada.
+
+Not sure what you mean about not being honored.  More detail?
+
+Best,
+
++ seth
+
+
+From mattia.pelizzola at unimib.it  Thu Jul 20 14:36:06 2006
+From: mattia.pelizzola at unimib.it (Mattia Pelizzola)
+Date: Thu, 20 Jul 2006 14:36:06 +0200
+Subject: [Bioc-devel] yeast2 metadata
+Message-ID: <200607201436.06148.mattia.pelizzola@unimib.it>
+
+Dear all, 
+
+I wonder why some very important environments are missing in the yeast2 
+annotation package (in both 1.8 and 1.7 bioC releases). For instance the 
+ACCNUM and the SYMBOL environments are missing, while the GENENAME env is 
+available. This would be a problem in writing scripts that can be applied to 
+a generic Affy annotation package.
+
+Moreover, in both 1.8 and 1.7 bioC releases, the yeast2 package has some 
+problems in the quality checks. For example for the old one:
+
+Quality control information for  yeast2
+Date built: Created: Tue Oct  4 19:23:39 2005
+
+Number of probes: 10928
+Probe number missmatch: yeast2ALIAS; yeast2CHRLOC; yeast2CHR; 
+yeast2DESCRIPTION; yeast2ENZYME; yeast2GENENAME; yeast2GO; yeast2ORF; 
+yeast2PATH; yeast2PMID
+Probe missmatch: None
+Mappings found for probe based rda files:
+         yeast2ALIAS found 1759 of 10928
+         yeast2CHRLOC found 4962 of 10928
+         yeast2CHR found 5645 of 10928
+         yeast2DESCRIPTION found 5631 of 10928
+         yeast2ENZYME found 778 of 10928
+         yeast2GENENAME found 4335 of 10928
+         yeast2GO found 5645 of 10928
+         yeast2ORF found 6356 of 10928
+         yeast2PATH found 1110 of 10928
+         yeast2PMID found 5454 of 10928
+Mappings found for non-probe based rda files:
+         yeast2CHRLENGTHS found 17
+         yeast2ENZYME2PROBE found 446
+         yeast2GO2ALLPROBES found 3870
+         yeast2GO2PROBE found 2615
+         yeast2ORGANISM found 1
+         yeast2PATH2PROBE found 99
+         yeast2PMID2PROBE found 34881
+
+
+I previously experienced problems regarding the "Probe number missmatch", but 
+usually the total number of probes was less than the number of probes in the 
+corresponding cdf package, and the annotation was very poor. In this case the 
+number of probesets seems to be ok, while I'm not able to evaluate the amount 
+of annotated probesets.
+
+I would ask if it would be possible not to release metadata packages showing 
+missmatches.
+
+regards and thanks for any comment
+
+mattia
+
+-- 
+Mattia Pelizzola
+PhD Student
+Genopolis Consortium
+Milano-Bicocca University
+P.zza della Scienza 4
+20126 Milano (Italy)
+tel:+390264483556
+fax:+390264483552
+
+
+From nli at fhcrc.org  Thu Jul 20 23:06:41 2006
+From: nli at fhcrc.org (Nianhua Li)
+Date: Thu, 20 Jul 2006 14:06:41 -0700
+Subject: [Bioc-devel] yeast2 metadata
+In-Reply-To: <200607201436.06148.mattia.pelizzola@unimib.it>
+References: <200607201436.06148.mattia.pelizzola@unimib.it>
+Message-ID: <44BFF061.5080401@fhcrc.org>
+
+Hi, Mattia,
+
+Mattia Pelizzola wrote:
+> Dear all, 
+>
+> I wonder why some very important environments are missing in the yeast2 
+> annotation package (in both 1.8 and 1.7 bioC releases). For instance the 
+> ACCNUM and the SYMBOL environments are missing, while the GENENAME env is 
+> available. This would be a problem in writing scripts that can be applied to 
+> a generic Affy annotation package.
+>   
+Most Annotation packages for human, mouse and rat are generated by
+ABPkgBuilder, and therfore have similar set of environments. But
+Annotation packages for other organisms like yeast and arabidopsis are
+generated by other functions, so the interface can be different. yeast2
+is generated by yeastPkgBuilder. Environment yeast2ORF plays a role
+similar to ACCNUM in some other packages. We first get probeset ID to
+ORF ID mapping from Affymetrix and then merge with the ORF ID to SGD ID
+mapping from
+ftp://genome-ftp.stanford.edu/pub/yeast/data_download/literature_curation/orf_geneontology.tab 
+
+to get probeset ID to SGD ID mapping. And then we use SGD ID to get
+other annotations. For human, mouse or rat annotation packages, we map
+probeset ID to Entrez Gene ID and get other annotations from there. We
+use different functions/processes to build annotation packages of
+different organisms because the community standards are different.
+> Moreover, in both 1.8 and 1.7 bioC releases, the yeast2 package has some 
+> problems in the quality checks. For example for the old one:
+>
+> Quality control information for  yeast2
+> Date built: Created: Tue Oct  4 19:23:39 2005
+>
+> Number of probes: 10928
+> Probe number missmatch: yeast2ALIAS; yeast2CHRLOC; yeast2CHR; 
+> yeast2DESCRIPTION; yeast2ENZYME; yeast2GENENAME; yeast2GO; yeast2ORF; 
+> yeast2PATH; yeast2PMID
+> Probe missmatch: None
+> Mappings found for probe based rda files:
+>          yeast2ALIAS found 1759 of 10928
+>          yeast2CHRLOC found 4962 of 10928
+>          yeast2CHR found 5645 of 10928
+>          yeast2DESCRIPTION found 5631 of 10928
+>          yeast2ENZYME found 778 of 10928
+>          yeast2GENENAME found 4335 of 10928
+>          yeast2GO found 5645 of 10928
+>          yeast2ORF found 6356 of 10928
+>          yeast2PATH found 1110 of 10928
+>          yeast2PMID found 5454 of 10928
+> Mappings found for non-probe based rda files:
+>          yeast2CHRLENGTHS found 17
+>          yeast2ENZYME2PROBE found 446
+>          yeast2GO2ALLPROBES found 3870
+>          yeast2GO2PROBE found 2615
+>          yeast2ORGANISM found 1
+>          yeast2PATH2PROBE found 99
+>          yeast2PMID2PROBE found 34881
+>
+>
+> I previously experienced problems regarding the "Probe number missmatch", but 
+> usually the total number of probes was less than the number of probes in the 
+> corresponding cdf package, and the annotation was very poor. In this case the 
+> number of probesets seems to be ok, while I'm not able to evaluate the amount 
+> of annotated probesets.
+>   
+The probe number missmatch may because of these codes in function
+getProbe2SGD.:
+
+    merged <- merge(probes, temp, by = by, all.x = TRUE)
+    merged <- merged[!duplicated(merged[, 1]), ]
+
+Here "probes" is the probeset ID to ORF ID mapping obtained from
+Affymetrix. All probeset IDs are included (10928 probeset IDs in total).
+"temp" is the ORF ID to SGD ID mapping obtained from
+ftp://genome-ftp.stanford.edu/pub/yeast/data_download/literature_curation/orf_geneontology.tab. 
+
+They are first merged together, so still have 10928 probeset IDs. And
+then when multiple probeset IDs are mapped to the same ORF ID, only the
+first probeset ID is kept. Because the 10928 probeset IDs are mapped to
+only 6356 unique ORF IDs, only 6356 probeset IDs are kept for further
+annotation process. I guess that's why we get probe number mismatch. It
+seems this is the author's intention to remove probeset IDs with
+duplicated mappings. Maybe the author can explain more.
+
+thanks
+
+nianhua
+
+> I would ask if it would be possible not to release metadata packages showing 
+> missmatches.
+>
+> regards and thanks for any comment
+>
+> mattia
+>
+>
+
+
+From jzhang at jimmy.harvard.edu  Fri Jul 21 19:57:20 2006
+From: jzhang at jimmy.harvard.edu (John Zhang)
+Date: Fri, 21 Jul 2006 13:57:20 -0400 (EDT)
+Subject: [Bioc-devel] yeast2 metadata
+Message-ID: <20060721175720.122C24CCCC@pascal.dfci.harvard.edu>
+
+   
+>The probe number missmatch may because of these codes in function
+>getProbe2SGD.:
+>
+>    merged <- merge(probes, temp, by = by, all.x = TRUE)
+>    merged <- merged[!duplicated(merged[, 1]), ]
+>
+>Here "probes" is the probeset ID to ORF ID mapping obtained from
+>Affymetrix. All probeset IDs are included (10928 probeset IDs in total).
+>"temp" is the ORF ID to SGD ID mapping obtained from
+>ftp://genome-ftp.stanford.edu/pub/yeast/data_download/literature_curation/orf_g
+eneontology.tab. 
+>
+>They are first merged together, so still have 10928 probeset IDs. And
+>then when multiple probeset IDs are mapped to the same ORF ID, only the
+>first probeset ID is kept. Because the 10928 probeset IDs are mapped to
+>only 6356 unique ORF IDs, only 6356 probeset IDs are kept for further
+>annotation process. I guess that's why we get probe number mismatch. It
+>seems this is the author's intention to remove probeset IDs with
+>duplicated mappings. Maybe the author can explain more.
+>
+
+Probe number mismatch is not a serious problem but should be avoided. I will try 
+to look at this when I get the chance. 
+
+
+>thanks
+>
+>nianhua
+>
+>> I would ask if it would be possible not to release metadata packages showing 
+>> missmatches.
+>>
+>> regards and thanks for any comment
+>>
+>> mattia
+>>
+>>
+>
+>_______________________________________________
+>Bioc-devel at stat.math.ethz.ch mailing list
+>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+Jianhua Zhang
+Department of Medical Oncology
+Dana-Farber Cancer Institute
+44 Binney Street
+Boston, MA 02115-6084
+
+
+From sfalcon at fhcrc.org  Wed Jul 26 22:45:33 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 26 Jul 2006 13:45:33 -0700
+Subject: [Bioc-devel] How to fetch HTTP headers using RCurl
+Message-ID: <m24px4hz82.fsf@ziti.local>
+
+Hi all,
+
+With Duncan's help, I figured out how to get RCurl to fetch _just_ the
+HTTP headers for a URL and not actually download anything.  This is
+useful, for example, to determine the size of a download.  In case
+others are interested in how to do this, read on...
+
+Here's the basic voodoo:
+
+library("RCurl")
+h <- basicTextGatherer()
+junk <- getURI(url, writeheader=h$update, header=TRUE, nobody=TRUE)
+h$value()
+
+
++ seth
+
+

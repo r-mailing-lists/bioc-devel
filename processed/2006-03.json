@@ -1,0 +1,686 @@
+{
+  "list": "bioc-devel",
+  "description": "",
+  "month": "2006-03",
+  "messages": [
+    {
+      "id": "msg-a5526094736d",
+      "message_id": "<4405F3FD.5060402@fhcrc.org>",
+      "from_name": "Herve Pages",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2006-03-01T11:20:29-08:00",
+      "subject": "[Bioc-devel]  Some build system changes",
+      "subject_clean": "[Bioc-devel]  Some build system changes",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi Bioc-developers,\n\n\nYesterday I set up the build system to make it use the \"-ansi\" flag\nwhen compiling Bioconductor devel packages. Today, after looking at\nthe build/check results, it seems that this change broke too many\npackages :-(\n\n2 frequent non-ANSI \"features\" found in the Bioconductor C code are:\n\n   - Use of C++-style comments //\n\n   - Use of the R_FINITE macro (defined in $R_HOME/src/include/Rmath.h):\n     this macro is a wrapper for C99 isfinite() function. You must use\n     the \"-std=gnu99\" gcc flag in order to compile code that uses it.\n\nSo may be it's better if we stick to the original flags and I will\nrestore them ASAP. Any suggestion?\n\n\nH.\n\n\n-- \n------------------------\nHerv? Pag?s\nE-mail: hpages at fhcrc.org\nPhone: (206) 667-5791\n    Fax: (206) 667-1319\n\n_______________________________________________\nBioc-devel at stat.math.ethz.ch mailing list\nhttps://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "Hi Bioc-developers,\n\n\nYesterday I set up the build system to make it use the \"-ansi\" flag\nwhen compiling Bioconductor devel packages. Today, after looking at\nthe build/check results, it seems that thi",
+      "thread_id": "thread-a5526094736d",
+      "thread_depth": 0,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-a3e754aae27c",
+      "message_id": "<44083464.3090206@gmx.de>",
+      "from_name": "Florian Hahne",
+      "from_email_hash": "49001675c3104b0d1e3d2fe4e9cbbc4f0c0befee3b311a4d60a08227ff0b7135",
+      "date": "2006-03-03T13:19:48+01:00",
+      "subject": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "subject_clean": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi all,\nWhen running the example of imageMap with R-2.3.0 I get an error\n\nError in imageMap(coord, con, list(HREF = paste(\"http://\", href, sep =\n\"\"),  :\n        no direct or inherited method for function 'imageMap' for this call\n\nI checked the signature definition and the error seems to be caused by\nthe connection object\n\nsetOldClass(\"connection\")\nsetMethod(\"imageMap\",\n  signature=c(\"matrix\", \"connection\", \"list\", \"character\"),\n  definition=function(object, con, tags, imgname) {\n  ...\n\nWhen I apply\n\nsetOldClass(c(\"file\", \"connection\"))\n\nthe example works again, but only if I do this interactively, not when\nchanging it in the source and after rebuilding the package. Strange...\n\nAnyone has an idea what's going wrong here?\n\nBy the way, the package has a namespace but no .onLoad function, but\nthat's not the problem here...\n\nCheers,\nFlorian\n\n\n\n\n\n\n-- \nFlorian Hahne\nAbt. Molekulare Genomanalyse (B050)\nDeutsches Krebsforschungszentrum (DKFZ)\nIm Neuenheimer Feld 580\nD-69120 Heidelberg\nphone: 0049 6221 424764\nfax: 0049 6221 422399\nweb: www.dkfz.de/mga",
+      "body_snippet": "Hi all,\nWhen running the example of imageMap with R-2.3.0 I get an error\n\nError in imageMap(coord, con, list(HREF = paste(\"http://\", href, sep =\n\"\"),  :\n        no direct or inherited method for funct",
+      "thread_id": "thread-a3e754aae27c",
+      "thread_depth": 0,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-dd294d195a01",
+      "message_id": "<m2lkvr1tj6.fsf@ziti.local>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2006-03-03T06:39:57-08:00",
+      "subject": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "subject_clean": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "in_reply_to": "<44083464.3090206@gmx.de> (Florian Hahne's message of \"Fri, 03 Mar 2006 13:19:48 +0100\")",
+      "references": [
+        "<44083464.3090206@gmx.de>"
+      ],
+      "body_plain": "Hi Florian,\n\nNot sure I understand what's going on, but the graph package defines a\nmethod fromGXL that has a connection object as part of its signature.\nHere's what the code does there:\n\n    setIs(\"file\", \"connection\")\n    \n    setMethod(\"fromGXL\", signature(con=\"connection\"),\n              function(con) { ... }\n\nSo you could give that a try.\n\n+ seth",
+      "body_snippet": "Hi Florian,\n\nNot sure I understand what's going on, but the graph package defines a\nmethod fromGXL that has a connection object as part of its signature.\nHere's what the code does there:\n\n    setIs(\"f",
+      "thread_id": "thread-a3e754aae27c",
+      "thread_depth": 1,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-d5a8f25f5949",
+      "message_id": "<C02E5FE0.81D%sdavis2@mail.nih.gov>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "5a8e0e6abee8db2f7eeaea6df4cbae4d8713a79b51ddc5ef74e7c509c4b05f87",
+      "date": "2006-03-03T21:04:32-05:00",
+      "subject": "[Bioc-devel] Invalid multibyte string",
+      "subject_clean": "[Bioc-devel] Invalid multibyte string",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "I have a user of GEOquery that is having these problems.\n\n> getGEO('GSE94')\ntrying URL \n'ftp://ftp.ncbi.nih.gov/pub/geo/data/geo/by_series/GSE94_family.soft\n<ftp://ftp.ncbi.nih.gov/pub/geo/data/geo/by_series/GSE94_family.soft> .\ngz'\nftp data connection made, file length 100291059 bytes\nopened URL\n=================================================\ndownloaded 97940Kb\n\nFile stored at:\n/tmp/RtmpA18116/GSE94.soft.gz\nParsing....\n^PLATFORM = GPL218\nError in substr(x, start = matches + patlen, stop = 1e+07) :\n        invalid multibyte string\nIn addition: Warning messages:\n1: input string 1 is invalid in this locale in: grep.perl(pattern, x,\nignore.cas e, value, useBytes)\n2: input string 1 is invalid in this locale in: grep.perl(pattern, x,\nignore.cas e, value, useBytes)\n3: input string 1 is invalid in this locale in: grep.perl(pattern, x,\nignore.cas e, value, useBytes)\n4: input string 42 is invalid in this locale in: grep.perl(pattern, x,\nignore.ca <http://ignore.ca/>  se, value, useBytes)\n5: input string 67 is invalid in this locale in: grep.perl(pattern, x,\nignore.ca <http://ignore.ca/>  se, value, useBytes)\n6: input string 80 is invalid in this locale in: grep.perl(pattern, x,\nignore.ca <http://ignore.ca/>  se, value, useBytes)\n7: input string 4 is invalid in this locale in: regexpr(pattern, text,\nextended,  fixed, useBytes)\n8: input string 29 is invalid in this locale in: regexpr(pattern,\ntext, extended , fixed, useBytes)\n\n\nHere is the output of sys.getlocale:\n\n> Sys.getlocale ()\n [1] \"en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8\"\n\nSetting the locale to \"C\" results in the code working, except that he then\ngets:\n\n> Sys.setlocale(\"LC_ALL\",\"C\")\n [1] \n\"LC_CTYPE=C;LC_NUMERIC=C;LC_TIME=C;LC_COLLATE=C;LC_MONETARY=C;LC_MESSAGES=en\n_US.UTF-8;LC_PAPER=C;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=C;\nLC_IDENTIFICATION=C\"\n> gse<-getGEO('GSE94')\ntrying URL '\nftp://ftp.ncbi.nih.gov/pub/geo/data/geo/by_series/GSE94_family.soft.gz'\nftp data connection made, file length 100291059 bytes\nopened URL\n=================================================\ndownloaded 97940Kb\n\nFile stored at:\n/tmp/RtmpA18116/GSE94.soft.gz\nParsing....\n^PLATFORM = GPL218 \n*** glibc detected *** double free or corruption (!prev): 0x08bf1d80 ***\nAborted\n[root at phylo juan]#\n\n\nAnd, finally, his sessionInfo()\n> sessionInfo()\nR version 2.2.1, 2005-12-20, i686-redhat-linux-gnu\n\nattached base packages:\n[1] \"methods\"   \"stats\"    \"graphics\"  \"grDevices\" \"utils\"     \"datasets\"\n[7] \"base\"\n\nother attached packages:\nGEOquery\n \"1.5.5\"\n\nI assume there is a bug lurking in one of the libraries or R itself that\ncauses the doublefree.  This sounds like it happens only under the \"C\"\nlocale.  However, it also appears that he needs to be using the \"C\" locale\nand not UTF-8 to read the file as downloaded from GEO.  Any suggestions on\nwhat to try?  Is there something I can do to fix the problem, or is this in\nthe user's court?\n\nThanks,\nSean",
+      "body_snippet": "I have a user of GEOquery that is having these problems.\n\n> getGEO('GSE94')\ntrying URL \n'ftp://ftp.ncbi.nih.gov/pub/geo/data/geo/by_series/GSE94_family.soft\n<ftp://ftp.ncbi.nih.gov/pub/geo/data/geo/by",
+      "thread_id": "thread-d5a8f25f5949",
+      "thread_depth": 0,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-02793ef021ac",
+      "message_id": "<m2y7zqxi97.fsf@ziti.local>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2006-03-04T08:54:44-08:00",
+      "subject": "[Bioc-devel] Invalid multibyte string",
+      "subject_clean": "[Bioc-devel] Invalid multibyte string",
+      "in_reply_to": "<C02E5FE0.81D%sdavis2@mail.nih.gov> (Sean Davis's message of \"Fri, 03 Mar 2006 21:04:32 -0500\")",
+      "references": [
+        "<C02E5FE0.81D%sdavis2@mail.nih.gov>"
+      ],
+      "body_plain": "Hi, I'm forwarding a msg from Florian.\n\nFlorian: I've added this address also to the list so that you should\nbe able to post with it as well.  \n\n+ seth\n\n\nFrom: Florian Hahne <f.hahne at dkfz-heidelberg.de>\nSubject: Re: [Bioc-devel] Invalid multibyte string\nTo: Sean Davis <sdavis2 at mail.nih.gov>\nCC: bioc-devel at stat.math.ethz.ch\nDate: Sat Mar  4 02:06:06 2006 -0800\n\nHi Sean,\nI had a similar problem with invalid multibyte strings in the UTF-8 \nlocale. This error occurs when you apply any of the string processing\nfunctions to a string that contains  non-UTF-8 characters. In my code\nI use the function iconv to convert the string to latin encoding\nbefore applying strsplit (take a look at the code below). This\nsubstitutes the illegal characters with the hex code of the respective\nbyte. Not sure if this is helpful in your situation, but at least it\ndoesn't force the user into using a specific locale.\n\nreadFCStext <- function(con, offsets) {\n  seek(con, offsets[\"textstart\"])\n  txt <- readChar(con, offsets[\"textend\"]-offsets[\"textstart\"]+1)\n  txt <- iconv(txt, \"\", \"latin1\", sub=\"byte\")\n  delimiter <- substr(txt, 1, 1)\n  sp  <- strsplit(substr(txt, 2, nchar(txt)), split=delimiter,\n  fixed=TRUE)[[1]]\n  rv <- sp[seq(2, length(sp), by=2)]\n  names(rv) <- sp[seq(1, length(sp)-1, by=2)]\n  return(rv)\n}\n\nCheers,\nFlorian",
+      "body_snippet": "Hi, I'm forwarding a msg from Florian.\n\nFlorian: I've added this address also to the list so that you should\nbe able to post with it as well.  \n\n+ seth\n\n\nFrom: Florian Hahne <f.hahne at dkfz-heidelber",
+      "thread_id": "thread-d5a8f25f5949",
+      "thread_depth": 1,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-9d0eb529684c",
+      "message_id": "<440A3370.2020000@cesmail.net>",
+      "from_name": "M. Edward (Ed) Borasky",
+      "from_email_hash": "390ea6e9423379f5ff85ceeda76c9ee62169fc3ede0e90359a6c408e812bbee3",
+      "date": "2006-03-04T16:40:16-08:00",
+      "subject": "[Bioc-devel] Compendium tools?",
+      "subject_clean": "[Bioc-devel] Compendium tools?",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "I'm just starting to experiment with the compendium concept, and I'm\nlooking for tools to make the job easier. It turns out that the current\nversion of LyX, 1.3.6, can read the \"Rnw\" files in the existing\ncompendia on the web site at\n\nhttp://www.bioconductor.org/docs/papers/2003/Compendium/!\n\nFor those not in the know, there are two major \"WYSIWIG\" TeX editors,\nTeXmacs and LyX. I have both. TeXmacs is a tad more powerful and LyX is\na tad easier to use, but on the whole they are of comparable utility.\nTeXmacs can insert R, Maxima and other sessions directly into a document\nbut doesn't read and write files in \"Noweb\" format directly. LyX doesn't\nhave sessions but can read and write \"Noweb\" format. Both have their own\nnative formats but can import and export LaTeX directly and can create\nPDF output.\n\nI had some minor glitches with the bibliography section in LyX, but\nthat's most likely just a lack of knowledge of Bibtex conventions on my\npart. So:\n\n1. Is anyone else on this list working with tools for editing compendia\nother than the usual text editors like vi and emacs?\n\n2. Are there other tools I don't know about?\n\n3. For bonus points, is anyone working on integrating the compendium\nconcept with the Rpad concept to create living documents that are\n\"active\" and \"beautiful\" in the TeX/Metafont sense? For example, I'm\nbuilding a smallish queuing theory model, and I'd like to be able to\nhave the user open up a web site in Rpad, define a model and execute it,\nthen save off the PDF as a finished document.\n\n4. Is the plural of \"compendium\" really \"compendia\"?  :) \n\nI'm on the TeXmacs mailing list, and there have been some discussions\nrecently about enhancing it for literate programming. I'm not on the LyX\nmailing list, but I will probably join now after my \"discovery\". By the\nway, as usual, all this magic works seamlessly in Linux but there are a\nfew seams on Windows. TeXmacs is part of the standard CygWin\ndistribution but can't get to Windows-side tools for sessions. And it's\nbeen a while since I tested LyX on a Windows system but I remember quite\na few issues, even with CygWin.\n\n-- M. Edward (Ed) Borasky http://linuxcapacityplanning.com\n\n-- \nM. Edward (Ed) Borasky\n\nhttp://linuxcapacityplanning.com",
+      "body_snippet": "I'm just starting to experiment with the compendium concept, and I'm\nlooking for tools to make the job easier. It turns out that the current\nversion of LyX, 1.3.6, can read the \"Rnw\" files in the exis",
+      "thread_id": "thread-9d0eb529684c",
+      "thread_depth": 0,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-2c6f90f02832",
+      "message_id": "<440C308D.70903@gmx.de>",
+      "from_name": "Florian Hahne",
+      "from_email_hash": "49001675c3104b0d1e3d2fe4e9cbbc4f0c0befee3b311a4d60a08227ff0b7135",
+      "date": "2006-03-06T13:52:29+01:00",
+      "subject": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "subject_clean": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "in_reply_to": "<m2lkvr1tj6.fsf@ziti.local>",
+      "references": [
+        "<44083464.3090206@gmx.de>",
+        "<m2lkvr1tj6.fsf@ziti.local>"
+      ],
+      "body_plain": "Hi Seth,\n\nSeth Falcon schrieb:\n> Hi Florian,\n>\n> Not sure I understand what's going on, but the graph package defines a\n> method fromGXL that has a connection object as part of its signature.\n> Here's what the code does there:\n>\n>     setIs(\"file\", \"connection\")\n>   \nThis doesn't work here, only produces another error.  And as far as I\nunderstand, it can be used to set up inheritance via a subclass but what\nis needed here is rather a virtual S4 class \"connection\" to allow for\nmethod dispatching. Since\nsetOldClass(c(\"file\", \"connection\"))\nworks interactively but not in the source code, this could also be a\nnamespace issue.  There is a paramter \"which\" to setOldClass and the\ndocumentation states, that it can be used to specify the search path\nposition to assign the virtual class to, but playing around with it\ndidn't help either. As a solution for myself I now changed the signature to\nsignature(object=\"matrix\", con=\"ANY\", tags=\"list\",\n    imgname=\"character\")\nbut this is definitely not the most beautiful way to solve the problem.\nIf you want I can check in the fix, but I'm not the maintainer of the\npackage and don't want to mess with other people's code...\n\nFlorian\n\nPS: Thanks for adding another one of my numerous email adresses to the\nmailing list ;)\n\n>     \n>     setMethod(\"fromGXL\", signature(con=\"connection\"),\n>               function(con) { ... }\n>\n> So you could give that a try.\n>\n> + seth\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>   \n\n\n-- \nFlorian Hahne\nAbt. Molekulare Genomanalyse (B050)\nDeutsches Krebsforschungszentrum (DKFZ)\nIm Neuenheimer Feld 580\nD-69120 Heidelberg\nphone: 0049 6221 424764\nfax: 0049 6221 422399\nweb: www.dkfz.de/mga",
+      "body_snippet": "Hi Seth,\n\nSeth Falcon schrieb:\n> Hi Florian,\n>\n> Not sure I understand what's going on, but the graph package defines a\n> method fromGXL that has a connection object as part of its signature.\n> Here's",
+      "thread_id": "thread-a3e754aae27c",
+      "thread_depth": 2,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-7cd99b801a8b",
+      "message_id": "<C0319D7E.75B7%sdavis2@mail.nih.gov>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "5a8e0e6abee8db2f7eeaea6df4cbae4d8713a79b51ddc5ef74e7c509c4b05f87",
+      "date": "2006-03-06T08:04:14-05:00",
+      "subject": "[Bioc-devel] Invalid multibyte string",
+      "subject_clean": "[Bioc-devel] Invalid multibyte string",
+      "in_reply_to": "<4409668E.7010505@dkfz-heidelberg.de>",
+      "references": [],
+      "body_plain": "On 3/4/06 5:06 AM, \"Florian Hahne\" <f.hahne at dkfz-heidelberg.de> wrote:\n\n> Hi Sean,\n> I had a similar problem with invalid multibyte strings in the UTF-8\n> locale. This error occurs when you apply any of the string processing\n> functions to a string that contains  non-UTF-8 characters. In my code I\n> use the function iconv to convert the string to latin encoding before\n> applying strsplit (take a look at the code below). This substitutes the\n> illegal characters with the hex code of the respective byte. Not sure if\n> this is helpful in your situation, but at least it doesn't force the\n> user into using a specific locale.\n> \n> readFCStext <- function(con, offsets) {\n>   seek(con, offsets[\"textstart\"])\n>   txt <- readChar(con, offsets[\"textend\"]-offsets[\"textstart\"]+1)\n>   txt <- iconv(txt, \"\", \"latin1\", sub=\"byte\")\n>   delimiter <- substr(txt, 1, 1)\n>   sp  <- strsplit(substr(txt, 2, nchar(txt)), split=delimiter,\n> fixed=TRUE)[[1]]\n>   rv <- sp[seq(2, length(sp), by=2)]\n>   names(rv) <- sp[seq(1, length(sp)-1, by=2)]\n>   return(rv)\n> }\n\nThanks, Florian.  I'll give this a try.\n\nSean",
+      "body_snippet": "On 3/4/06 5:06 AM, \"Florian Hahne\" <f.hahne at dkfz-heidelberg.de> wrote:\n\n> Hi Sean,\n> I had a similar problem with invalid multibyte strings in the UTF-8\n> locale. This error occurs when you apply a",
+      "thread_id": "thread-7cd99b801a8b",
+      "thread_depth": 0,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-7c23e0a73304",
+      "message_id": "<440C3729.9020506@ebi.ac.uk>",
+      "from_name": "Wolfgang Huber",
+      "from_email_hash": "8481a5f74e0203c0e279b0cd7f952f11ea65fcad4bf054f5268c275ad236a2d9",
+      "date": "2006-03-06T13:20:41Z",
+      "subject": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "subject_clean": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "in_reply_to": "<440C308D.70903@gmx.de>",
+      "references": [
+        "<44083464.3090206@gmx.de>",
+        "<m2lkvr1tj6.fsf@ziti.local>",
+        "<440C308D.70903@gmx.de>"
+      ],
+      "body_plain": "Hi Florian: please go ahead an check in your fix.\nAll: should we set the maintainer for geneplotter, genefilter, Biobase \nto be \"bioc-devel\"? This might lower the threshold for some to contribute?\n\n  Cheers\n  Wolfgang\n\n  Hahne wrote:\n> Hi Seth,\n> \n> Seth Falcon schrieb:\n> \n>>Hi Florian,\n>>\n>>Not sure I understand what's going on, but the graph package defines a\n>>method fromGXL that has a connection object as part of its signature.\n>>Here's what the code does there:\n>>\n>>    setIs(\"file\", \"connection\")\n>>  \n> \n> This doesn't work here, only produces another error.  And as far as I\n> understand, it can be used to set up inheritance via a subclass but what\n> is needed here is rather a virtual S4 class \"connection\" to allow for\n> method dispatching. Since\n> setOldClass(c(\"file\", \"connection\"))\n> works interactively but not in the source code, this could also be a\n> namespace issue.  There is a paramter \"which\" to setOldClass and the\n> documentation states, that it can be used to specify the search path\n> position to assign the virtual class to, but playing around with it\n> didn't help either. As a solution for myself I now changed the signature to\n> signature(object=\"matrix\", con=\"ANY\", tags=\"list\",\n>     imgname=\"character\")\n> but this is definitely not the most beautiful way to solve the problem.\n> If you want I can check in the fix, but I'm not the maintainer of the\n> package and don't want to mess with other people's code...\n> \n> Florian\n> \n> PS: Thanks for adding another one of my numerous email adresses to the\n> mailing list ;)\n>",
+      "body_snippet": "Hi Florian: please go ahead an check in your fix.\nAll: should we set the maintainer for geneplotter, genefilter, Biobase \nto be \"bioc-devel\"? This might lower the threshold for some to contribute?\n\n  ",
+      "thread_id": "thread-a3e754aae27c",
+      "thread_depth": 3,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-d508453f9059",
+      "message_id": "<440C40D8.6030003@med.umich.edu>",
+      "from_name": "James W. MacDonald",
+      "from_email_hash": "51e0486782bd6ed6ad0d8d179dbc9204aca523620b6842837909c743527fce1d",
+      "date": "2006-03-06T09:02:00-05:00",
+      "subject": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "subject_clean": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "in_reply_to": "<440C3729.9020506@ebi.ac.uk>",
+      "references": [
+        "<44083464.3090206@gmx.de>",
+        "<m2lkvr1tj6.fsf@ziti.local>",
+        "<440C308D.70903@gmx.de>",
+        "<440C3729.9020506@ebi.ac.uk>"
+      ],
+      "body_plain": "Wolfgang Huber wrote:\n> Hi Florian: please go ahead an check in your fix.\n> All: should we set the maintainer for geneplotter, genefilter, Biobase \n> to be \"bioc-devel\"? This might lower the threshold for some to contribute?\n\nHow about 'Biocore'?\n\nI think it is a good idea to change the maintainer on the packages that \nanybody in Biocore can contribute to. For me it wasn't clear that we \nshould be doing this, and it seems I am not alone.\n\nBest,\n\nJim\n\n\n\n-- \nJames W. MacDonald, M.S.\nBiostatistician\nAffymetrix and cDNA Microarray Core\nUniversity of Michigan Cancer Center\n1500 E. Medical Center Drive\n7410 CCGC\nAnn Arbor MI 48109\n734-647-5623",
+      "body_snippet": "Wolfgang Huber wrote:\n> Hi Florian: please go ahead an check in your fix.\n> All: should we set the maintainer for geneplotter, genefilter, Biobase \n> to be \"bioc-devel\"? This might lower the threshold",
+      "thread_id": "thread-a3e754aae27c",
+      "thread_depth": 4,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-4025b7741b22",
+      "message_id": "<m2bqwj7g4h.fsf@ziti.local>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2006-03-06T07:22:06-08:00",
+      "subject": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "subject_clean": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "in_reply_to": "<440C308D.70903@gmx.de> (Florian Hahne's message of \"Mon, 06 Mar 2006 13:52:29 +0100\")",
+      "references": [
+        "<44083464.3090206@gmx.de>",
+        "<m2lkvr1tj6.fsf@ziti.local>",
+        "<440C308D.70903@gmx.de>"
+      ],
+      "body_plain": "Hi,\n\nI took a closer look at graph which really is doing what you want\nAFAICS.  What I missed before (sorry) is:\n\nsetClass(\"file\")\nsetClass(\"connection\")\nsetIs(\"file\", \"connection\")\n\nsetMethod(\"FOO\", signature(con=\"connection\"), ...)\n\nand then in NAMESPACE:\n\nfile and connection are listed in exportClasses.\n\nCan you try that?\n\n+ seth",
+      "body_snippet": "Hi,\n\nI took a closer look at graph which really is doing what you want\nAFAICS.  What I missed before (sorry) is:\n\nsetClass(\"file\")\nsetClass(\"connection\")\nsetIs(\"file\", \"connection\")\n\nsetMethod(\"FOO\", ",
+      "thread_id": "thread-a3e754aae27c",
+      "thread_depth": 3,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-504557eb81db",
+      "message_id": "<m2fylvxeeu.fsf@ziti.local>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2006-03-06T16:54:33-08:00",
+      "subject": "[Bioc-devel] Some build system changes",
+      "subject_clean": "[Bioc-devel] Some build system changes",
+      "in_reply_to": "<4405F3FD.5060402@fhcrc.org> (Herve Pages's message of \"Wed, 01 Mar 2006 11:20:29 -0800\")",
+      "references": [
+        "<4405F3FD.5060402@fhcrc.org>"
+      ],
+      "body_plain": "Hi all,\n\nI have a request...\n\nHerve Pages <hpages at fhcrc.org> writes:\n> 2 frequent non-ANSI \"features\" found in the Bioconductor C code are:\n>\n>    - Use of C++-style comments //\n\nIf your package has C code that uses C++-style comments, please change\nthem to C-style comments.  This will make your package code more\nportable across a wider variety of compilers/platforms.\n\n+ seth",
+      "body_snippet": "Hi all,\n\nI have a request...\n\nHerve Pages <hpages at fhcrc.org> writes:\n> 2 frequent non-ANSI \"features\" found in the Bioconductor C code are:\n>\n>    - Use of C++-style comments //\n\nIf your package ha",
+      "thread_id": "thread-a5526094736d",
+      "thread_depth": 1,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-d94d409b98e9",
+      "message_id": "<440D7540.3080008@gmx.de>",
+      "from_name": "Florian Hahne",
+      "from_email_hash": "49001675c3104b0d1e3d2fe4e9cbbc4f0c0befee3b311a4d60a08227ff0b7135",
+      "date": "2006-03-07T12:57:52+01:00",
+      "subject": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "subject_clean": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "in_reply_to": "<m2bqwj7g4h.fsf@ziti.local>",
+      "references": [
+        "<44083464.3090206@gmx.de>",
+        "<m2lkvr1tj6.fsf@ziti.local>",
+        "<440C308D.70903@gmx.de>",
+        "<m2bqwj7g4h.fsf@ziti.local>"
+      ],
+      "body_plain": "Hi Seth,\nyour solution is almost identical to mine, the only difference is that\nyou are creating real S4 classes and I'm only creating virtual classes\nfrom the already existing S3 class definitions.  I only forgot to export\nthis newly defined class in the namespace (how stupid!) and thus the\nwhole thing didn't work in the source code. Still thank's for the\nsuggestion, this actualy made me take a look into the namespace file...\nFlorian\nSeth Falcon schrieb:\n> Hi,\n>\n> I took a closer look at graph which really is doing what you want\n> AFAICS.  What I missed before (sorry) is:\n>\n> setClass(\"file\")\n> setClass(\"connection\")\n> setIs(\"file\", \"connection\")\n>\n> setMethod(\"FOO\", signature(con=\"connection\"), ...)\n>\n> and then in NAMESPACE:\n>\n> file and connection are listed in exportClasses.\n>\n> Can you try that?\n>\n> + seth\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>   \n\n\n-- \nFlorian Hahne\nAbt. Molekulare Genomanalyse (B050)\nDeutsches Krebsforschungszentrum (DKFZ)\nIm Neuenheimer Feld 580\nD-69120 Heidelberg\nphone: 0049 6221 424764\nfax: 0049 6221 422399\nweb: www.dkfz.de/mga",
+      "body_snippet": "Hi Seth,\nyour solution is almost identical to mine, the only difference is that\nyou are creating real S4 classes and I'm only creating virtual classes\nfrom the already existing S3 class definitions.  ",
+      "thread_id": "thread-a3e754aae27c",
+      "thread_depth": 4,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-348d383c6f97",
+      "message_id": "<m2k6b6w2jg.fsf@ziti.local>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2006-03-07T10:08:35-08:00",
+      "subject": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "subject_clean": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "in_reply_to": "<440C40D8.6030003@med.umich.edu> (James W. MacDonald's message of \"Mon, 06 Mar 2006 09:02:00 -0500\")",
+      "references": [
+        "<44083464.3090206@gmx.de>",
+        "<m2lkvr1tj6.fsf@ziti.local>",
+        "<440C308D.70903@gmx.de>",
+        "<440C3729.9020506@ebi.ac.uk>",
+        "<440C40D8.6030003@med.umich.edu>"
+      ],
+      "body_plain": "\"James W. MacDonald\" <jmacdon at med.umich.edu> writes:\n\n> Wolfgang Huber wrote:\n>> Hi Florian: please go ahead an check in your fix.\n>> All: should we set the maintainer for geneplotter, genefilter, Biobase \n>> to be \"bioc-devel\"? This might lower the threshold for some to contribute?\n>\n> How about 'Biocore'?\n>\n> I think it is a good idea to change the maintainer on the packages that \n> anybody in Biocore can contribute to. For me it wasn't clear that we \n> should be doing this, and it seems I am not alone.\n\nThere seems to be consensus among key Biocore members that this is a\ngood idea.\n\nHere's the plan:\n\n1. We will modify a number of \"our\" packages to have the maintainer\n   set to Biocore and list an email alias (something like\n   biocmaintainer@ or biocpkgs@)\n\n2. Biocore members (you know who you are) can let me know if they\n   would like to receive mails sent to the alias.  \n\n3. Biocore members are encouraged to fix bugs and make improvements to\n   packages where the maintainer is Biocore.  We only ask that such\n   updates are accompanied by an explanatory email sent to bioc-devel.\n\nBest,\n\n+ seth",
+      "body_snippet": "\"James W. MacDonald\" <jmacdon at med.umich.edu> writes:\n\n> Wolfgang Huber wrote:\n>> Hi Florian: please go ahead an check in your fix.\n>> All: should we set the maintainer for geneplotter, genefilter, ",
+      "thread_id": "thread-a3e754aae27c",
+      "thread_depth": 5,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-2cbfa282baf5",
+      "message_id": "<6phd5gmw7jj.fsf@gopher3.fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2006-03-16T10:47:44-08:00",
+      "subject": "[Bioc-devel] Biocore Team maintainers for some packages",
+      "subject_clean": "[Bioc-devel] Biocore Team maintainers for some packages",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "The 'Maintainer' field on several packages has been changed to\n'Biocore Team'. This is meant to encourage Biocore members to fix bugs\nand make improvements.\n\nThe email address associated with these packages is biocpkgs at\nlists.fhcrc.org; email sfalcon at fhcrc.org if you are a Biocore\nmember and would like to receive copies of email sent to this address.\n\nHere is a list of packages now under Biocore Team maintenance:\n\nBiobase\nDynDoc\nGeneMeta\nIcens\nRuuid\nannotate\nbioDist\nbuildBioC\nexternalVector\ngenecluster\ngenefilter\ngpls\nmakeMatchAffy\nmatchprobes\nrhdf5\n\nPlease let me know if I have made any errors.\n\nMartin",
+      "body_snippet": "The 'Maintainer' field on several packages has been changed to\n'Biocore Team'. This is meant to encourage Biocore members to fix bugs\nand make improvements.\n\nThe email address associated with these pa",
+      "thread_id": "thread-2cbfa282baf5",
+      "thread_depth": 0,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-154bcf53c9b0",
+      "message_id": "<Pine.LNX.4.61.0603161356060.14641@enigma.biostat.jhsph.edu>",
+      "from_name": "Rafael A. Irizarry",
+      "from_email_hash": "38fc5e3deed7c428d2245c4987e2110c86920a25d1110ffe1795e93fd1780890",
+      "date": "2006-03-16T13:56:11-05:00",
+      "subject": "[Bioc-devel] Biocore Team maintainers for some packages",
+      "subject_clean": "[Bioc-devel] Biocore Team maintainers for some packages",
+      "in_reply_to": "<6phd5gmw7jj.fsf@gopher3.fhcrc.org>",
+      "references": [
+        "<6phd5gmw7jj.fsf@gopher3.fhcrc.org>"
+      ],
+      "body_plain": "can you add geneplotter?\n\n\n\nOn Thu, 16 Mar 2006, Martin Morgan wrote:\n\n> The 'Maintainer' field on several packages has been changed to\n> 'Biocore Team'. This is meant to encourage Biocore members to fix bugs\n> and make improvements.\n>\n> The email address associated with these packages is biocpkgs at\n> lists.fhcrc.org; email sfalcon at fhcrc.org if you are a Biocore\n> member and would like to receive copies of email sent to this address.\n>\n> Here is a list of packages now under Biocore Team maintenance:\n>\n> Biobase\n> DynDoc\n> GeneMeta\n> Icens\n> Ruuid\n> annotate\n> bioDist\n> buildBioC\n> externalVector\n> genecluster\n> genefilter\n> gpls\n> makeMatchAffy\n> matchprobes\n> rhdf5\n>\n> Please let me know if I have made any errors.\n>\n> Martin\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "can you add geneplotter?\n\n\n\nOn Thu, 16 Mar 2006, Martin Morgan wrote:\n\n> The 'Maintainer' field on several packages has been changed to\n> 'Biocore Team'. This is meant to encourage Biocore members to ",
+      "thread_id": "thread-2cbfa282baf5",
+      "thread_depth": 1,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-cb90469f9c62",
+      "message_id": "<6phek10j3fo.fsf@gopher3.fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2006-03-17T11:07:07-08:00",
+      "subject": "[Bioc-devel] Biocore Team maintainers for some packages",
+      "subject_clean": "[Bioc-devel] Biocore Team maintainers for some packages",
+      "in_reply_to": "<Pine.LNX.4.61.0603161356060.14641@enigma.biostat.jhsph.edu> (Rafael A. Irizarry's message of \"Thu, 16 Mar 2006 13:56:11 -0500 (EST)\")",
+      "references": [
+        "<6phd5gmw7jj.fsf@gopher3.fhcrc.org>",
+        "<Pine.LNX.4.61.0603161356060.14641@enigma.biostat.jhsph.edu>"
+      ],
+      "body_plain": "Done! Martin\n\n\"Rafael A. Irizarry\" <ririzarr at jhsph.edu> writes:\n\n> can you add geneplotter?\n>\n>\n>\n> On Thu, 16 Mar 2006, Martin Morgan wrote:\n>\n>> The 'Maintainer' field on several packages has been changed to\n>> 'Biocore Team'. This is meant to encourage Biocore members to fix bugs\n>> and make improvements.",
+      "body_snippet": "Done! Martin\n\n\"Rafael A. Irizarry\" <ririzarr at jhsph.edu> writes:\n\n> can you add geneplotter?\n>\n>\n>\n> On Thu, 16 Mar 2006, Martin Morgan wrote:\n>\n>> The 'Maintainer' field on several packages has bee",
+      "thread_id": "thread-2cbfa282baf5",
+      "thread_depth": 2,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-4547ea1635bc",
+      "message_id": "<CEA39A213F7F2E44A0DED9210BCD352FB407ED@VAIEXCH04.vai.org>",
+      "from_name": "Dykema, Karl",
+      "from_email_hash": "0d10a4d131fa84821c4069fb77a1fb9f6fb98ee5682dbf8e09b676fc666a50d1",
+      "date": "2006-03-20T10:41:14-05:00",
+      "subject": "[Bioc-devel] idiogram <- ideogram",
+      "subject_clean": "[Bioc-devel] idiogram <- ideogram",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Dear BioC-dev,\n\nWe recently fixed a long standing spelling error in the name of one of\nour packages...the ideogram package was renamed to the idiogram package.\n\nThe idiogram package DOES draw schematic representations of human,\nmouse, and rat chromosomes and not Mayan or Egyptian hieroglyphs\n(ideograms) as earlier implied.\n\nThanks to Seth and all of the BioC team for their help in propagating\nthis change through the BioC repository.\n\n\n\n-------------------------------\nKarl Dykema\nBioinformatics Programmer/Analyst\nLaboratory of Computational Biology\nVan Andel Research Institute\n333 Bostwick Ave. NE\nGrand Rapids, MI 49503\n\nThis email message, including any attachments, is for the so...{{dropped}}",
+      "body_snippet": "Dear BioC-dev,\n\nWe recently fixed a long standing spelling error in the name of one of\nour packages...the ideogram package was renamed to the idiogram package.\n\nThe idiogram package DOES draw schemati",
+      "thread_id": "thread-4547ea1635bc",
+      "thread_depth": 0,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-48acd066aa77",
+      "message_id": "<188498.1143129149089.JavaMail.root@fepweb06>",
+      "from_name": "abprog at charter.net",
+      "from_email_hash": "369c43c773c04ab9116453f9d0a2616158cf04dd356d4b78c9428f1008e94758",
+      "date": "2006-03-23T07:52:29-08:00",
+      "subject": "[Bioc-devel] Annotation: hgfocus missing",
+      "subject_clean": "[Bioc-devel] Annotation: hgfocus missing",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\nI am working on a group of microarrays that are publicly available.\nThey are an affybach object. When I type the name of the object it reports that they are annotated: annotation=hgfocus\nThere are other ways to find the annotation of the probesets which I have already done, but I wanted to test a paper in the bioconductor home page that was recommending to use annaffy package. Following the instructions here is what I get:\n> gbs<-aafGenBank(probeids,\"hgfocus\")\n[1] \"You are missing hgfocus looking to see if it is available.\"\nError in chkPkgs(chip) : couldn't find function \"userQuery\"\n\nI do not see a package \"chip\" in the libraries I have downloaded, and the same in the list online:\nhttp://www.bioconductor.org/packages/bioc/1.8/\nIs there a place where I can download hgfocus? I tried with affymetrix homepage, but it creates a large group of files and at the end the setup aborts because it wants in our computers to have SQL server, which is nonsense.\n\nThank you in advance for any suggestions,\nAB",
+      "body_snippet": "Hi,\nI am working on a group of microarrays that are publicly available.\nThey are an affybach object. When I type the name of the object it reports that they are annotated: annotation=hgfocus\nThere are",
+      "thread_id": "thread-48acd066aa77",
+      "thread_depth": 0,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-ff79304c3844",
+      "message_id": "<4422D729.3060204@med.umich.edu>",
+      "from_name": "James W. MacDonald",
+      "from_email_hash": "51e0486782bd6ed6ad0d8d179dbc9204aca523620b6842837909c743527fce1d",
+      "date": "2006-03-23T12:13:13-05:00",
+      "subject": "[Bioc-devel] Annotation: hgfocus missing",
+      "subject_clean": "[Bioc-devel] Annotation: hgfocus missing",
+      "in_reply_to": "<188498.1143129149089.JavaMail.root@fepweb06>",
+      "references": [
+        "<188498.1143129149089.JavaMail.root@fepweb06>"
+      ],
+      "body_plain": "abprog at charter.net wrote:\n> Hi, I am working on a group of microarrays that are publicly\n> available. They are an affybach object. When I type the name of the\n> object it reports that they are annotated: annotation=hgfocus There\n> are other ways to find the annotation of the probesets which I have\n> already done, but I wanted to test a paper in the bioconductor home\n> page that was recommending to use annaffy package. Following the\n> instructions here is what I get:\n> \n>> gbs<-aafGenBank(probeids,\"hgfocus\")\n> \n> [1] \"You are missing hgfocus looking to see if it is available.\" \n> Error in chkPkgs(chip) : couldn't find function \"userQuery\"\n\nLooks like a bug in chkPkgs(). Anyway, the fix is simple enough. Either \nload the ReposTools package first, or do\n\nsource(\"http://www.bioconductor.org/biocLite.R\")\nbiocLite(\"hgfocus\")\n\nand then try the annaffy code again.\n\nAs an aside, the Bioc-devel list is intended for discussions pertaining \nto the development of packages and other 'higher level' discussions. \nGeneral help questions should be directed to the regular BioC listserv \nat bioconductor at stat.math.ethz.ch.\n\nBest,\n\nJim\n\n\n> \n> I do not see a package \"chip\" in the libraries I have downloaded, and\n> the same in the list online: \n> http://www.bioconductor.org/packages/bioc/1.8/ Is there a place where\n> I can download hgfocus? I tried with affymetrix homepage, but it\n> creates a large group of files and at the end the setup aborts\n> because it wants in our computers to have SQL server, which is\n> nonsense.\n> \n> Thank you in advance for any suggestions, AB\n> \n> _______________________________________________ \n> Bioc-devel at stat.math.ethz.ch mailing list \n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nJames W. MacDonald, M.S.\nBiostatistician\nAffymetrix and cDNA Microarray Core\nUniversity of Michigan Cancer Center\n1500 E. Medical Center Drive\n7410 CCGC\nAnn Arbor MI 48109\n734-647-5623\n\n\n**********************************************************\nElectronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.",
+      "body_snippet": "abprog at charter.net wrote:\n> Hi, I am working on a group of microarrays that are publicly\n> available. They are an affybach object. When I type the name of the\n> object it reports that they are anno",
+      "thread_id": "thread-48acd066aa77",
+      "thread_depth": 1,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-5fc66d96a4d8",
+      "message_id": "<28448310.1143139732917.JavaMail.root@fepweb14>",
+      "from_name": "abprog at charter.net",
+      "from_email_hash": "369c43c773c04ab9116453f9d0a2616158cf04dd356d4b78c9428f1008e94758",
+      "date": "2006-03-23T10:48:52-08:00",
+      "subject": "[Bioc-devel] Annotation: hgfocus missing",
+      "subject_clean": "[Bioc-devel] Annotation: hgfocus missing",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Ops!\nThank you Jim,\nI had no intention to send this email it to the development list\nMy apologies to the list,\nThank you also for the suggestion about hgfocus.\nAB\n\n> \n> As an aside, the Bioc-devel list is intended for discussions pertaining \n> to the development of packages and other 'higher level' discussions. \n> General help questions should be directed to the regular BioC listserv \n> at bioconductor at stat.math.ethz.ch.\n> \n> Best,\n> \n> Jim\n>",
+      "body_snippet": "Ops!\nThank you Jim,\nI had no intention to send this email it to the development list\nMy apologies to the list,\nThank you also for the suggestion about hgfocus.\nAB\n\n> \n> As an aside, the Bioc-devel lis",
+      "thread_id": "thread-5fc66d96a4d8",
+      "thread_depth": 0,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-d559db30b44e",
+      "message_id": "<m28xqvn4ms.fsf@ziti.local>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2006-03-27T10:07:07-08:00",
+      "subject": "[Bioc-devel] Bioc 1.8 Release Schedule",
+      "subject_clean": "[Bioc-devel] Bioc 1.8 Release Schedule",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hello all,\n\nIt is that time again.  Bioc 1.8 is scheduled to be released on May 1,\n2006 and we have a lot to do between now and then.\n\nI've posted the release schedule for Bioc 1.8 here:\n\n    http://wiki.fhcrc.org/bioc/Bioc_1.8_Release_Schedule\n\n\nHighlights (please see the above page for details):\n\n* R-2.3.0 is in alpha.  Please start testing your packages against it.\n\n* April 10th is the deadline for API changes and new features in your\n  packages.  It is also the deadline for packages to pass R CMD check\n  without errors.  Please keep an eye on the build resutls page:\n  http://www.bioconductor.org/checkResults/1.8/html/report.html\n\nBest Wishes,\n\n+ seth",
+      "body_snippet": "Hello all,\n\nIt is that time again.  Bioc 1.8 is scheduled to be released on May 1,\n2006 and we have a lot to do between now and then.\n\nI've posted the release schedule for Bioc 1.8 here:\n\n    http://w",
+      "thread_id": "thread-d559db30b44e",
+      "thread_depth": 0,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-66f0f953912a",
+      "message_id": "<Pine.LNX.4.61.0603281304540.2313@jade.fhcrc.org>",
+      "from_name": "Ting-Yuan Liu",
+      "from_email_hash": "bd263f0b2a82b861df43c7f0dd3bef0115351e07019d141095ce91ad1e948a0a",
+      "date": "2006-03-28T13:14:43-08:00",
+      "subject": "[Bioc-devel] developmental annotation data packages",
+      "subject_clean": "[Bioc-devel] developmental annotation data packages",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\n\nThe newly built developmental annotation data packages (version 1.11.23) \nare on the repository now.  You can find them at\nhttp://www.bioconductor.org/packages/data/annotation/1.8/\n\nThese annotation packages are based on the public data as of 2006-03-19.  \n\nPlease note that cdf and probe packages are not rebuilt yet.  Only \nannotation packages are renewed.  \n\nYou can install them on R 2.3.0 via biocLite.  Please try them and let me \nknow if you find any problems/bugs.\n\nSincerely,\nTing-Yuan\n______________________________________\nTing-Yuan Liu\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\nSeattle, WA, USA",
+      "body_snippet": "Hi,\n\nThe newly built developmental annotation data packages (version 1.11.23) \nare on the repository now.  You can find them at\nhttp://www.bioconductor.org/packages/data/annotation/1.8/\n\nThese annotat",
+      "thread_id": "thread-66f0f953912a",
+      "thread_depth": 0,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-79b39b1d6b7d",
+      "message_id": "<m28xqra50i.fsf@ziti.local>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2006-03-30T15:26:21-08:00",
+      "subject": "[Bioc-devel] Will your package be in the Bioc 1.8 release?",
+      "subject_clean": "[Bioc-devel] Will your package be in the Bioc 1.8 release?",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hello Bioc developers,\n\nThe following packages have a version number starting with zero\n(0.y.z) and as such will not be part of the upcoming Bioc 1.8 release.\n\nOur policy is that package with < 1.0.0 are not including in releases\n(but remain in devel, of course).  For details please see our `version\npolicy`__\n\n__ http://www.bioconductor.org/developers/devwiki/VersionNumberingStandards\n\n\nHere are the packages along with a note indicating whether they passed\nR CMD check on the most recent build.\n\n>     adSplit\n>     affyio               PASS\n>     arji\n>     beadarray            PASS\n>     biocViews            PASS\n>     codelink\n>     copa                 PASS\n>     EBImage\n>     exprDB\n>     GeneRfold\n>     gtkWidgets           PASS\n>     LMGene\n>     LPEP\n>     makePlatformDesign   PASS\n>     Mfuzz                PASS\n>     oligo\n>     pathRender           PASS\n>     RLMM                 PASS\n>     RPostgreSQL\n>     Rredland\n>     snapCGH              PASS\n>     SNPscan\n\nIf one of these is yours and you want it in the release, please change\nthe version number to 0.99.0 and respond to this thread.  Of course,\ninclusion in the release also depends on meeting the deadlines for\npassing check as outlined in the release schedule.\n\nBest Wishes,\n\n+ seth",
+      "body_snippet": "Hello Bioc developers,\n\nThe following packages have a version number starting with zero\n(0.y.z) and as such will not be part of the upcoming Bioc 1.8 release.\n\nOur policy is that package with < 1.0.0 ",
+      "thread_id": "thread-79b39b1d6b7d",
+      "thread_depth": 0,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-0437a783edf9",
+      "message_id": "<m2zmj78n1j.fsf@ziti.local>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2006-03-30T16:39:52-08:00",
+      "subject": "[Bioc-devel] biocViews vocabulary expansion proposal: RFC",
+      "subject_clean": "[Bioc-devel] biocViews vocabulary expansion proposal: RFC",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi all,\n\nThis request for comment regards adding terms the vocabulary\nunderstood by biocViews.\n\nWe propose to add terms under the AnnotationData node to help \norganize HTML listings of annotation packages.\n\nAt the top-lvel, the biocViews vocabulary has three main nodes:\n\n/* Root */\nTaskViews -> Software;\nTaskViews -> AnnotationData;\nTaskViews -> ExperimentData;\n\nUnder the AnnotationData node, we plan to add:\n\n1. A term for each chip.  For example, hgu95av2 would be added as a\n   term under AnnotationData.  This will allow us to construct an\n   alphabetic listing of chips such that each is a link to a page\n   listing all annotation packages related to that chip.\n\n2. A term for organisms that we have annotation data for.  The\n   proposed scheme is to use CamelCaps on the organism's Latin name.\n   This will allow a by-organism listing.\n\n3. For the annotation packages that deal with data across species and\n   across chips, we will add SequenceAnnotation for genome-wide\n   package, and FunctionalAnnotation for packages like GO, KEGG, PFAM,\n   and cMAP.  This will make finding these packages easier because we\n   will be able to produce listing that are separate from the bulk of\n   chip-specific annotation packages.\n\nWe welcome comments and suggestions on this plan.  Unless significant\ndebate ensues, we will implement this plan next Thursday, April 6.\n\nBest,\n\n+ seth",
+      "body_snippet": "Hi all,\n\nThis request for comment regards adding terms the vocabulary\nunderstood by biocViews.\n\nWe propose to add terms under the AnnotationData node to help \norganize HTML listings of annotation pack",
+      "thread_id": "thread-0437a783edf9",
+      "thread_depth": 0,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-e0f152fa6632",
+      "message_id": "<442D51EA.8010007@med.umich.edu>",
+      "from_name": "James W. MacDonald",
+      "from_email_hash": "51e0486782bd6ed6ad0d8d179dbc9204aca523620b6842837909c743527fce1d",
+      "date": "2006-03-31T10:59:38-05:00",
+      "subject": "[Bioc-devel] biocViews vocabulary expansion proposal: RFC",
+      "subject_clean": "[Bioc-devel] biocViews vocabulary expansion proposal: RFC",
+      "in_reply_to": "<m2zmj78n1j.fsf@ziti.local>",
+      "references": [
+        "<m2zmj78n1j.fsf@ziti.local>"
+      ],
+      "body_plain": "Seth Falcon wrote:\n> Hi all,\n> \n> This request for comment regards adding terms the vocabulary\n> understood by biocViews.\n> \n> We propose to add terms under the AnnotationData node to help \n> organize HTML listings of annotation packages.\n> \n> At the top-lvel, the biocViews vocabulary has three main nodes:\n> \n> /* Root */\n> TaskViews -> Software;\n> TaskViews -> AnnotationData;\n> TaskViews -> ExperimentData;\n> \n> Under the AnnotationData node, we plan to add:\n> \n> 1. A term for each chip.  For example, hgu95av2 would be added as a\n>    term under AnnotationData.  This will allow us to construct an\n>    alphabetic listing of chips such that each is a link to a page\n>    listing all annotation packages related to that chip.\n> \n> 2. A term for organisms that we have annotation data for.  The\n>    proposed scheme is to use CamelCaps on the organism's Latin name.\n>    This will allow a by-organism listing.\n\nDoes this mean that e.g., for human we would have homoSapiens? I am not \ntoo keen on that idea, as we would be going against the established \nconvention that genus is capitalized but species is not. Unless there is \na compelling argument for this scheme, I would rather something like \nHomo_sapiens or better yet, Hsapiens, Ecoli, Mmusculus, etc.\n\nAm I correct in assuming that the organism node would simply contain \nchip specific nodes as well as whatever organism-level packages exist? \nFor instance, the human node would contain the hgu133a, hgu133plus2, \nhgu95av2, etc. nodes plus the hshomology, humanCHRLOC, and \nhumanLLmappings packages?\n\n\nBest,\n\nJim\n\n\n> \n> 3. For the annotation packages that deal with data across species and\n>    across chips, we will add SequenceAnnotation for genome-wide\n>    package, and FunctionalAnnotation for packages like GO, KEGG, PFAM,\n>    and cMAP.  This will make finding these packages easier because we\n>    will be able to produce listing that are separate from the bulk of\n>    chip-specific annotation packages.\n> \n> We welcome comments and suggestions on this plan.  Unless significant\n> debate ensues, we will implement this plan next Thursday, April 6.\n> \n> Best,\n> \n> + seth\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nJames W. MacDonald, M.S.\nBiostatistician\nAffymetrix and cDNA Microarray Core\nUniversity of Michigan Cancer Center\n1500 E. Medical Center Drive\n7410 CCGC\nAnn Arbor MI 48109\n734-647-5623\n\n\n**********************************************************\nElectronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.",
+      "body_snippet": "Seth Falcon wrote:\n> Hi all,\n> \n> This request for comment regards adding terms the vocabulary\n> understood by biocViews.\n> \n> We propose to add terms under the AnnotationData node to help \n> organize",
+      "thread_id": "thread-0437a783edf9",
+      "thread_depth": 1,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-203b4ddfa897",
+      "message_id": "<m2wtea7er7.fsf@ziti.local>",
+      "from_name": "Seth Falcon",
+      "from_email_hash": "92e6ad61c3d6d545a12aa5845a0d74c5de1bbbc7bf85c768e4a2cb862e092abc",
+      "date": "2006-03-31T08:36:28-08:00",
+      "subject": "[Bioc-devel] biocViews vocabulary expansion proposal: RFC",
+      "subject_clean": "[Bioc-devel] biocViews vocabulary expansion proposal: RFC",
+      "in_reply_to": "<442D51EA.8010007@med.umich.edu> (James W. MacDonald's message of \"Fri, 31 Mar 2006 10:59:38 -0500\")",
+      "references": [
+        "<m2zmj78n1j.fsf@ziti.local>",
+        "<442D51EA.8010007@med.umich.edu>"
+      ],
+      "body_plain": "\"James W. MacDonald\" <jmacdon at med.umich.edu> writes:\n> Does this mean that e.g., for human we would have homoSapiens? \n\nYes, or perhaps HomoSapiens.\n\n> I am not too keen on that idea, as we would be going against the\n> established convention that genus is capitalized but species is\n> not. Unless there is a compelling argument for this scheme, I would\n> rather something like Homo_sapiens or better yet, Hsapiens, Ecoli,\n> Mmusculus, etc.\n\nThat would be fine with me.  We considered using a TLA (three letter\nacronymn) like HSA for Hsapiens, but we are not convinced that there\nexists a real standard.\n\nI like your underscore suggestion best: Homo_sapiens\n\n> Am I correct in assuming that the organism node would simply contain\n> chip specific nodes as well as whatever organism-level packages exist?\n> For instance, the human node would contain the hgu133a, hgu133plus2,\n> hgu95av2, etc. nodes plus the hshomology, humanCHRLOC, and\n> humanLLmappings packages?\n\nYes, the idea would be that any annotation data packages having to do\nwith humans would list in their biocViews field (among other terms)\nHomo_sapiens.  Then under the Homo_sapiens node/listing will be all\nthose packages.\n\n+ seth",
+      "body_snippet": "\"James W. MacDonald\" <jmacdon at med.umich.edu> writes:\n> Does this mean that e.g., for human we would have homoSapiens? \n\nYes, or perhaps HomoSapiens.\n\n> I am not too keen on that idea, as we would b",
+      "thread_id": "thread-0437a783edf9",
+      "thread_depth": 2,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-529bfcaf2a06",
+      "message_id": "<442D6277.5050605@med.umich.edu>",
+      "from_name": "James W. MacDonald",
+      "from_email_hash": "51e0486782bd6ed6ad0d8d179dbc9204aca523620b6842837909c743527fce1d",
+      "date": "2006-03-31T12:10:15-05:00",
+      "subject": "[Bioc-devel] biocViews vocabulary expansion proposal: RFC",
+      "subject_clean": "[Bioc-devel] biocViews vocabulary expansion proposal: RFC",
+      "in_reply_to": "<m2wtea7er7.fsf@ziti.local>",
+      "references": [
+        "<m2zmj78n1j.fsf@ziti.local>",
+        "<442D51EA.8010007@med.umich.edu>",
+        "<m2wtea7er7.fsf@ziti.local>"
+      ],
+      "body_plain": "Seth Falcon wrote:\n> \"James W. MacDonald\" <jmacdon at med.umich.edu> writes:\n> \n>>Does this mean that e.g., for human we would have homoSapiens? \n> \n> \n> Yes, or perhaps HomoSapiens.\n> \n> \n>>I am not too keen on that idea, as we would be going against the\n>>established convention that genus is capitalized but species is\n>>not. Unless there is a compelling argument for this scheme, I would\n>>rather something like Homo_sapiens or better yet, Hsapiens, Ecoli,\n>>Mmusculus, etc.\n> \n> \n> That would be fine with me.  We considered using a TLA (three letter\n> acronymn) like HSA for Hsapiens, but we are not convinced that there\n> exists a real standard.\n> \n> I like your underscore suggestion best: Homo_sapiens\n> \n> \n>>Am I correct in assuming that the organism node would simply contain\n>>chip specific nodes as well as whatever organism-level packages exist?\n>>For instance, the human node would contain the hgu133a, hgu133plus2,\n>>hgu95av2, etc. nodes plus the hshomology, humanCHRLOC, and\n>>humanLLmappings packages?\n> \n> \n> Yes, the idea would be that any annotation data packages having to do\n> with humans would list in their biocViews field (among other terms)\n> Homo_sapiens.  Then under the Homo_sapiens node/listing will be all\n> those packages.\n\nOK. Looks good to me then.\n\nBest,\n\nJim\n\n\n> \n> + seth\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nJames W. MacDonald, M.S.\nBiostatistician\nAffymetrix and cDNA Microarray Core\nUniversity of Michigan Cancer Center\n1500 E. Medical Center Drive\n7410 CCGC\nAnn Arbor MI 48109\n734-647-5623\n\n\n**********************************************************\nElectronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.",
+      "body_snippet": "Seth Falcon wrote:\n> \"James W. MacDonald\" <jmacdon at med.umich.edu> writes:\n> \n>>Does this mean that e.g., for human we would have homoSapiens? \n> \n> \n> Yes, or perhaps HomoSapiens.\n> \n> \n>>I am not ",
+      "thread_id": "thread-0437a783edf9",
+      "thread_depth": 3,
+      "month": "2006-03"
+    },
+    {
+      "id": "msg-dc39ba10e6bd",
+      "message_id": "<1143829774.442d750e077d9@daffodil.dfci.harvard.edu>",
+      "from_name": "Aedin Culhane",
+      "from_email_hash": "f9a0ef928527888d8673a1fe1fe7cbbb399663b83600d24f147bc744279c3951",
+      "date": "2006-03-31T13:29:34-05:00",
+      "subject": "[Bioc-devel] biocViews vocabulary expansion proposal: RFC",
+      "subject_clean": "[Bioc-devel] biocViews vocabulary expansion proposal: RFC",
+      "in_reply_to": "<mailman.1.1143799201.29316.bioc-devel@stat.math.ethz.ch>",
+      "references": [
+        "<mailman.1.1143799201.29316.bioc-devel@stat.math.ethz.ch>"
+      ],
+      "body_plain": "Hi Seth\nThis will be very welcome.  Will there is a manufacturer term also?\nSo one can sort by a commerical Agilent/Affymetrix or\nInstitute/Academic/submitter term.\n\nThe other thing that might help (if its not lots of work), would be the nrow or\nnumber of ID's. When I can't recall the extact annotation package, its a quick\ncompare I use.\n\nThanks\nAedin \n\n> \n> Date: Thu, 30 Mar 2006 16:39:52 -0800\n> From: Seth Falcon <sfalcon at fhcrc.org>\n> Subject: [Bioc-devel] biocViews vocabulary expansion proposal: RFC\n> To: bioc-devel at stat.math.ethz.ch\n> Message-ID: <m2zmj78n1j.fsf at ziti.local>\n> Content-Type: text/plain; charset=us-ascii\n> \n> Hi all,\n> \n> This request for comment regards adding terms the vocabulary\n> understood by biocViews.\n> \n> We propose to add terms under the AnnotationData node to help \n> organize HTML listings of annotation packages.\n> \n> At the top-lvel, the biocViews vocabulary has three main nodes:\n> \n> /* Root */\n> TaskViews -> Software;\n> TaskViews -> AnnotationData;\n> TaskViews -> ExperimentData;\n> \n> Under the AnnotationData node, we plan to add:\n> \n> 1. A term for each chip.  For example, hgu95av2 would be added as a\n>    term under AnnotationData.  This will allow us to construct an\n>    alphabetic listing of chips such that each is a link to a page\n>    listing all annotation packages related to that chip.\n> \n> 2. A term for organisms that we have annotation data for.  The\n>    proposed scheme is to use CamelCaps on the organism's Latin name.\n>    This will allow a by-organism listing.\n> \n> 3. For the annotation packages that deal with data across species and\n>    across chips, we will add SequenceAnnotation for genome-wide\n>    package, and FunctionalAnnotation for packages like GO, KEGG, PFAM,\n>    and cMAP.  This will make finding these packages easier because we\n>    will be able to produce listing that are separate from the bulk of\n>    chip-specific annotation packages.\n> \n> We welcome comments and suggestions on this plan.  Unless significant\n> debate ensues, we will implement this plan next Thursday, April 6.\n> \n> Best,\n> \n> + seth\n> \n> \n>",
+      "body_snippet": "Hi Seth\nThis will be very welcome.  Will there is a manufacturer term also?\nSo one can sort by a commerical Agilent/Affymetrix or\nInstitute/Academic/submitter term.\n\nThe other thing that might help (i",
+      "thread_id": "thread-dc39ba10e6bd",
+      "thread_depth": 0,
+      "month": "2006-03"
+    }
+  ],
+  "threads": [
+    {
+      "id": "thread-a5526094736d",
+      "subject": "[Bioc-devel]  Some build system changes",
+      "message_count": 2,
+      "participants": [
+        "Herve Pages",
+        "Seth Falcon"
+      ],
+      "started": "2006-03-01T11:20:29-08:00",
+      "last_reply": "2006-03-06T16:54:33-08:00",
+      "root_message_id": "msg-a5526094736d"
+    },
+    {
+      "id": "thread-a3e754aae27c",
+      "subject": "[Bioc-devel] imageMap in package genplotter has wrong signature",
+      "message_count": 8,
+      "participants": [
+        "Florian Hahne",
+        "James W. MacDonald",
+        "Seth Falcon",
+        "Wolfgang Huber"
+      ],
+      "started": "2006-03-03T13:19:48+01:00",
+      "last_reply": "2006-03-07T10:08:35-08:00",
+      "root_message_id": "msg-a3e754aae27c"
+    },
+    {
+      "id": "thread-d5a8f25f5949",
+      "subject": "[Bioc-devel] Invalid multibyte string",
+      "message_count": 2,
+      "participants": [
+        "Sean Davis",
+        "Seth Falcon"
+      ],
+      "started": "2006-03-03T21:04:32-05:00",
+      "last_reply": "2006-03-04T08:54:44-08:00",
+      "root_message_id": "msg-d5a8f25f5949"
+    },
+    {
+      "id": "thread-9d0eb529684c",
+      "subject": "[Bioc-devel] Compendium tools?",
+      "message_count": 1,
+      "participants": [
+        "M. Edward (Ed) Borasky"
+      ],
+      "started": "2006-03-04T16:40:16-08:00",
+      "last_reply": "2006-03-04T16:40:16-08:00",
+      "root_message_id": "msg-9d0eb529684c"
+    },
+    {
+      "id": "thread-7cd99b801a8b",
+      "subject": "[Bioc-devel] Invalid multibyte string",
+      "message_count": 1,
+      "participants": [
+        "Sean Davis"
+      ],
+      "started": "2006-03-06T08:04:14-05:00",
+      "last_reply": "2006-03-06T08:04:14-05:00",
+      "root_message_id": "msg-7cd99b801a8b"
+    },
+    {
+      "id": "thread-2cbfa282baf5",
+      "subject": "[Bioc-devel] Biocore Team maintainers for some packages",
+      "message_count": 3,
+      "participants": [
+        "Martin Morgan",
+        "Rafael A. Irizarry"
+      ],
+      "started": "2006-03-16T10:47:44-08:00",
+      "last_reply": "2006-03-17T11:07:07-08:00",
+      "root_message_id": "msg-2cbfa282baf5"
+    },
+    {
+      "id": "thread-4547ea1635bc",
+      "subject": "[Bioc-devel] idiogram <- ideogram",
+      "message_count": 1,
+      "participants": [
+        "Dykema, Karl"
+      ],
+      "started": "2006-03-20T10:41:14-05:00",
+      "last_reply": "2006-03-20T10:41:14-05:00",
+      "root_message_id": "msg-4547ea1635bc"
+    },
+    {
+      "id": "thread-48acd066aa77",
+      "subject": "[Bioc-devel] Annotation: hgfocus missing",
+      "message_count": 2,
+      "participants": [
+        "James W. MacDonald",
+        "abprog at charter.net"
+      ],
+      "started": "2006-03-23T07:52:29-08:00",
+      "last_reply": "2006-03-23T12:13:13-05:00",
+      "root_message_id": "msg-48acd066aa77"
+    },
+    {
+      "id": "thread-5fc66d96a4d8",
+      "subject": "[Bioc-devel] Annotation: hgfocus missing",
+      "message_count": 1,
+      "participants": [
+        "abprog at charter.net"
+      ],
+      "started": "2006-03-23T10:48:52-08:00",
+      "last_reply": "2006-03-23T10:48:52-08:00",
+      "root_message_id": "msg-5fc66d96a4d8"
+    },
+    {
+      "id": "thread-d559db30b44e",
+      "subject": "[Bioc-devel] Bioc 1.8 Release Schedule",
+      "message_count": 1,
+      "participants": [
+        "Seth Falcon"
+      ],
+      "started": "2006-03-27T10:07:07-08:00",
+      "last_reply": "2006-03-27T10:07:07-08:00",
+      "root_message_id": "msg-d559db30b44e"
+    },
+    {
+      "id": "thread-66f0f953912a",
+      "subject": "[Bioc-devel] developmental annotation data packages",
+      "message_count": 1,
+      "participants": [
+        "Ting-Yuan Liu"
+      ],
+      "started": "2006-03-28T13:14:43-08:00",
+      "last_reply": "2006-03-28T13:14:43-08:00",
+      "root_message_id": "msg-66f0f953912a"
+    },
+    {
+      "id": "thread-79b39b1d6b7d",
+      "subject": "[Bioc-devel] Will your package be in the Bioc 1.8 release?",
+      "message_count": 1,
+      "participants": [
+        "Seth Falcon"
+      ],
+      "started": "2006-03-30T15:26:21-08:00",
+      "last_reply": "2006-03-30T15:26:21-08:00",
+      "root_message_id": "msg-79b39b1d6b7d"
+    },
+    {
+      "id": "thread-0437a783edf9",
+      "subject": "[Bioc-devel] biocViews vocabulary expansion proposal: RFC",
+      "message_count": 4,
+      "participants": [
+        "James W. MacDonald",
+        "Seth Falcon"
+      ],
+      "started": "2006-03-30T16:39:52-08:00",
+      "last_reply": "2006-03-31T12:10:15-05:00",
+      "root_message_id": "msg-0437a783edf9"
+    },
+    {
+      "id": "thread-dc39ba10e6bd",
+      "subject": "[Bioc-devel] biocViews vocabulary expansion proposal: RFC",
+      "message_count": 1,
+      "participants": [
+        "Aedin Culhane"
+      ],
+      "started": "2006-03-31T13:29:34-05:00",
+      "last_reply": "2006-03-31T13:29:34-05:00",
+      "root_message_id": "msg-dc39ba10e6bd"
+    }
+  ]
+}

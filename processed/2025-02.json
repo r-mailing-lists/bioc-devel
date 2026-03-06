@@ -1,0 +1,700 @@
+{
+  "list": "bioc-devel",
+  "description": "",
+  "month": "2025-02",
+  "messages": [
+    {
+      "id": "msg-c42c9d10fc9e",
+      "message_id": "<BL1PR12MB53010E595236C52E0FF9F613F9F42@BL1PR12MB5301.namprd12.prod.outlook.com>",
+      "from_name": "Kern, Lori",
+      "from_email_hash": "ea9e9340d257178aa1b928bc69ed4277ea8643508ee1da9006b9114b56b9ff51",
+      "date": "2025-02-04T13:49:57Z",
+      "subject": "[Bioc-devel]  spoon problems reported Multiple platform build/check BioC 3.21",
+      "subject_clean": "[Bioc-devel]  spoon problems reported Multiple platform build/check BioC 3.21",
+      "in_reply_to": "<CAJPmrje9dk3oYvr4A8r_m7KenpciWOF9c=xVcXKPRHEkAPUOjQ@mail.gmail.com>",
+      "references": [
+        "<CAJPmrje9dk3oYvr4A8r_m7KenpciWOF9c=xVcXKPRHEkAPUOjQ@mail.gmail.com>"
+      ],
+      "body_plain": "It might be possible that it stems from changes in R itself or a dependent package you utilize.   Bioc 3.21/Devel is using R-devel (R 4.5) it might be worth testing on that version of R with all updated devel Bioconductor packages.  It looks like perhaps with using BRISC package.   I was able to reproduce this locally:\n\n\n\nR CMD build spoon\n* checking for file 'spoon/DESCRIPTION' ... OK\n* preparing 'spoon':\n* checking DESCRIPTION meta-information ... OK\n* installing the package to build vignettes\n* creating vignettes ... ERROR\n--- re-building ?spoon.Rmd? using rmarkdown\n\n *** caught segfault ***\naddress 0x1, cause 'memory not mapped'\n\nTraceback:\n 1: BRISC_estimation(coords = coords, y = y_i, x = NULL, cov.model = \"exponential\",     ordering = order_brisc, neighbor = nn_brisc, verbose = FALSE)\n 2: system.time({    out_i <- BRISC_estimation(coords = coords, y = y_i, x = NULL,         cov.model = \"exponential\", ordering = order_brisc, neighbor = nn_brisc,         verbose = FALSE)})\n 3: withCallingHandlers(expr, warning = function(w) if (inherits(w,     classes)) tryInvokeRestart(\"muffleWarning\"))\n 4: suppressWarnings({    runtime <- system.time({        out_i <- BRISC_estimation(coords = coords, y = y_i, x = NULL,             cov.model = \"exponential\", ordering = order_brisc,             neighbor = nn_brisc, verbose = FALSE)    })})\n 5: FUN(...)\n 6: withCallingHandlers({    ERROR_CALL_DEPTH <<- (function() sys.nframe() - 1L)()    FUN(...)}, error = function(e) {    annotated_condition <- handle_error(e)    stop(annotated_condition)}, warning = handle_warning)\n 7: doTryCatch(return(expr), name, parentenv, handler)\n 8: tryCatchOne(expr, names, parentenv, handlers[[1L]])\n 9: tryCatchList(expr, classes, parentenv, handlers)\n10: tryCatch({    withCallingHandlers({        ERROR_CALL_DEPTH <<- (function() sys.nframe() - 1L)()        FUN(...)    }, error = function(e) {        annotated_condition <- handle_error(e)        stop(annotated_condition)    }, warning = handle_warning)}, error = identity)\n11: FUN(X[[i]], ...)\n12: (function (X, FUN, ...) {    FUN <- match.fun(FUN)    if (!is.vector(X) || is.object(X))         X <- as.list(X)    .Internal(lapply(X, FUN))})(X = 1:10, FUN = function (...) {    if (!identical(timeout, WORKER_TIMEOUT)) {        setTimeLimit(timeout, timeout, TRUE)        on.exit(setTimeLimit(Inf, Inf, FALSE))    }    if (!is.null(globalOptions))         base::options(globalOptions)    if (stop.on.error && ERROR_OCCURRED) {        UNEVALUATED    }    else {        .rng_reset_generator(\"L'Ecuyer-CMRG\", SEED)        output <- tryCatch({            withCallingHandlers({                ERROR_CALL_DEPTH <<- (function() sys.nframe() -                   1L)()                FUN(...)            }, error = function(e) {                annotated_condition <- handle_error(e)                stop(annotated_condition)            }, warning = handle_warning)        }, error = identity)        if (force.GC)             gc(verbose = FALSE, full = FALSE)        SEED <<- .rng_next_substream(SEED)        output    }})\n13: do.call(lapply, args)\n14: BiocParallel:::.workerLapply_impl(...)\n15: (function (...) BiocParallel:::.workerLapply_impl(...))(X = 1:10, FUN = function (i) {    y_i <- y[, i]    suppressWarnings({        runtime <- system.time({            out_i <- BRISC_estimation(coords = coords, y = y_i,                 x = NULL, cov.model = \"exponential\", ordering = order_brisc,                 neighbor = nn_brisc, verbose = FALSE)        })    })    pred_i <- BRISC_prediction(out_i, coords.0 = coords, X.0 = NULL,         verbose = FALSE)    residual_i <- y_i - pred_i$prediction    return(c(pred_i$prediction, residual_i))}, ARGS = list(), OPTIONS = list(log = FALSE, threshold = \"INFO\",     stop.on.error = TRUE, as.error = TRUE, timeout = NA_integer_,     force.GC = FALSE, globalOptions = NULL), BPRNGSEED = c(10407L, 1226132466L, -421848373L, 412861328L, 1631185489L, -1231568930L, -1407128889L), GLOBALS = list(), PACKAGES = character(0))\n16: do.call(msg$data$fun, msg$data$args)\n17: doTryCatch(return(expr), name, parentenv, handler)\n18: tryCatchOne(expr, names, parentenv, handlers[[1L]])\n19: tryCatchList(expr, classes, parentenv, handlers)\n20: tryCatch({    do.call(msg$data$fun, msg$data$args)}, error = function(e) {    list(.error_worker_comm(e, \"worker evaluation failed\"))})\n21: .bpworker_EXEC(msg, bplog(backend$BPPARAM))\n22: .recv_any(manager$backend)\n23: .recv_any(manager$backend)\n24: .manager_recv(manager)\n25: .manager_recv(manager)\n26: .collect_result(manager, reducer, progress, BPPARAM)\n27: .bploop_impl(ITER = ITER, FUN = FUN, ARGS = ARGS, BPPARAM = BPPARAM,     BPOPTIONS = BPOPTIONS, BPREDO = BPREDO, reducer = reducer,     progress.length = length(redo_index))\n28: bploop.lapply(manager, BPPARAM = BPPARAM, BPOPTIONS = BPOPTIONS,     ...)\n29: bploop(manager, BPPARAM = BPPARAM, BPOPTIONS = BPOPTIONS, ...)\n30: .bpinit(manager = manager, X = X, FUN = FUN, ARGS = ARGS, BPPARAM = BPPARAM,     BPOPTIONS = BPOPTIONS, BPREDO = BPREDO)\n31: bplapply(ix, function(i) {    y_i <- y[, i]    suppressWarnings({        runtime <- system.time({            out_i <- BRISC_estimation(coords = coords, y = y_i,                 x = NULL, cov.model = \"exponential\", ordering = order_brisc,                 neighbor = nn_brisc, verbose = FALSE)        })    })    pred_i <- BRISC_prediction(out_i, coords.0 = coords, X.0 = NULL,         verbose = FALSE)    residual_i <- y_i - pred_i$prediction    return(c(pred_i$prediction, residual_i))}, BPPARAM = BPPARAM)\n32: bplapply(ix, function(i) {    y_i <- y[, i]    suppressWarnings({        runtime <- system.time({            out_i <- BRISC_estimation(coords = coords, y = y_i,                 x = NULL, cov.model = \"exponential\", ordering = order_brisc,                 neighbor = nn_brisc, verbose = FALSE)        })    })    pred_i <- BRISC_prediction(out_i, coords.0 = coords, X.0 = NULL,         verbose = FALSE)    residual_i <- y_i - pred_i$prediction    return(c(pred_i$prediction, residual_i))}, BPPARAM = BPPARAM)\n33: generate_weights(input = spe, stabilize = TRUE, BPPARAM = MulticoreParam(workers = 1,     RNGseed = 4))\n34: eval(expr, envir)\n35: eval(expr, envir)\n36: withVisible(eval(expr, envir))\n37: withCallingHandlers(code, message = function (cnd) {    watcher$capture_plot_and_output()    if (on_message$capture) {        watcher$push(cnd)    }    if (on_message$silence) {        invokeRestart(\"muffleMessage\")    }}, warning = function (cnd) {    if (getOption(\"warn\") >= 2 || getOption(\"warn\") < 0) {        return()    }    watcher$capture_plot_and_output()    if (on_warning$capture) {        cnd <- sanitize_call(cnd)        watcher$push(cnd)    }    if (on_warning$silence) {        invokeRestart(\"muffleWarning\")    }}, error = function (cnd) {    watcher$capture_plot_and_output()    cnd <- sanitize_call(cnd)    watcher$push(cnd)    switch(on_error, continue = invokeRestart(\"eval_continue\"),         stop = invokeRestart(\"eval_stop\"), error = NULL)})\n38: eval(call)\n39: eval(call)\n40: with_handlers({    for (expr in tle$exprs) {        ev <- withVisible(eval(expr, envir))        watcher$capture_plot_and_output()        watcher$print_value(ev$value, ev$visible, envir)    }    TRUE}, handlers)\n41: doWithOneRestart(return(expr), restart)\n42: withOneRestart(expr, restarts[[1L]])\n43: withRestartList(expr, restarts[-nr])\n44: doWithOneRestart(return(expr), restart)\n45: withOneRestart(withRestartList(expr, restarts[-nr]), restarts[[nr]])\n46: withRestartList(expr, restarts)\n47: withRestarts(with_handlers({    for (expr in tle$exprs) {        ev <- withVisible(eval(expr, envir))        watcher$capture_plot_and_output()        watcher$print_value(ev$value, ev$visible, envir)    }    TRUE}, handlers), eval_continue = function() TRUE, eval_stop = function() FALSE)\n48: evaluate::evaluate(...)\n49: evaluate(code, envir = env, new_device = FALSE, keep_warning = if (is.numeric(options$warning)) TRUE else options$warning,     keep_message = if (is.numeric(options$message)) TRUE else options$message,     stop_on_error = if (is.numeric(options$error)) options$error else {        if (options$error && options$include)             0L        else 2L    }, output_handler = knit_handlers(options$render, options))\n50: in_dir(input_dir(), expr)\n51: in_input_dir(evaluate(code, envir = env, new_device = FALSE,     keep_warning = if (is.numeric(options$warning)) TRUE else options$warning,     keep_message = if (is.numeric(options$message)) TRUE else options$message,     stop_on_error = if (is.numeric(options$error)) options$error else {        if (options$error && options$include)             0L        else 2L    }, output_handler = knit_handlers(options$render, options)))\n52: eng_r(options)\n53: block_exec(params)\n54: call_block(x)\n55: process_group(group)\n56: withCallingHandlers(if (tangle) process_tangle(group) else process_group(group),     error = function(e) if (xfun::pkg_available(\"rlang\", \"1.0.0\")) rlang::entrace(e))\n57: xfun:::handle_error(withCallingHandlers(if (tangle) process_tangle(group) else process_group(group),     error = function(e) if (xfun::pkg_available(\"rlang\", \"1.0.0\")) rlang::entrace(e)),     function(loc) {        setwd(wd)        write_utf8(res, output %n% stdout())        paste0(\"\\nQuitting from lines \", loc)    }, if (labels[i] != \"\") sprintf(\" [%s]\", labels[i]), get_loc)\n58: process_file(text, output)\n59: knitr::knit(knit_input, knit_output, envir = envir, quiet = quiet)\n60: rmarkdown::render(file, encoding = encoding, quiet = quiet, envir = globalenv(),     output_dir = getwd(), ...)\n61: vweave_rmarkdown(...)\n62: engine$weave(file, quiet = quiet, encoding = enc)\n63: doTryCatch(return(expr), name, parentenv, handler)\n64: tryCatchOne(expr, names, parentenv, handlers[[1L]])\n65: tryCatchList(expr, classes, parentenv, handlers)\n66: tryCatch({    engine$weave(file, quiet = quiet, encoding = enc)    setwd(startdir)    output <- find_vignette_product(name, by = \"weave\", engine = engine)    if (!have.makefile && vignette_is_tex(output)) {        texi2pdf(file = output, clean = FALSE, quiet = quiet)        output <- find_vignette_product(name, by = \"texi2pdf\",             engine = engine)    }    outputs <- c(outputs, output)}, error = function(e) {    thisOK <<- FALSE    fails <<- c(fails, file)    message(gettextf(\"Error: processing vignette '%s' failed with diagnostics:\\n%s\",         file, conditionMessage(e)))})\n67: tools::buildVignettes(dir = \".\", tangle = TRUE)\nAn irrecoverable exception occurred. R is aborting now ...\nSegmentation fault (core dumped)\n\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Kinnary Shah <kinnaryshahh at gmail.com>\nSent: Friday, January 31, 2025 12:48 PM\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>\nSubject: [Bioc-devel] spoon problems reported Multiple platform build/check BioC 3.21\n\nHello,\n\nThanks for reading my question!\n\nI received an email that my package has build errors, linked here:\nhttps://secure-web.cisco.com/1H9FLv3ZaMtZaJEtCVXtaN2trFPN8-7_WFsMGBUFym9dQJ13CusIdBR31Nfgi9zZNgleOhjnxyZeoEhU_3UfO-6rGoTU41LyeIi1XvZULp1x3ETDyhNYKHmBoI65h4eNgukf3FVJSIBltexlpKS2T-_LznkuoqJ8WkK8JzQwKlMYhRHzT2niS6pYmFdzsO7lHHsv_sr3hiDsSnZJ1Crbf4P5JVjxaKx9FnGPoI4HRWtIsfKVyEYnAxyD0cqy3Qzbuz2dclzsyBV2OfI6k_PntnLxZP1jr25ZotUeoAJkxeQM6VePxJqq5w7ZfLRQFVf_ZZilihQnWD35Ctdyzz4y6qQ/https%3A%2F%2Fbioconductor.org%2FcheckResults%2F3.21%2Fbioc-LATEST%2Fspoon%2Fnebbiolo1-buildsrc.html\n\nI haven't updated the package since the last build, so I'm not sure why I'm\ngetting the \"memory not mapped\" error now. I tested out the vignette on my\nlocal computer and it still runs very quickly and does not use much memory\nat all. How can I go about addressing this?\n\nThank you,\nKinnary Shah\n\n        [[alternative HTML version deleted]]\n\n_______________________________________________\nBioc-devel at r-project.org mailing list\nhttps://secure-web.cisco.com/1ybPjdQ9f5fRB207268KuRdolV03OI4oTSHZNfWlRxFiigN2eujQuiKfQ8UWLCpfWX9Ez-ZSntfoiXqY31HsNHRpxz95jXRZiw2lYpJ0sj76NXY6qpyceLjNpcpA1MNp19HFjLNi4XkLT-D4mFHlj9gWD6Y64eGEMSZugHDTbNF1eOiEmg3rVhCWKImFn4cyfHSTegT_eNbHHEhjOoLgPmQ87LbRSAg_BeTd3lzVjAx9xn97RG8Mx6uwkTMDexinqfe5FcS7nVOgT2_fJ4jmxtadkf0UuS4bPgxiLq123ZnfoAj5YPkvbKCJtSDrv6lhi-8vzqxLEBA9wptb_1430jw/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n\n\n\nThis email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "It might be possible that it stems from changes in R itself or a dependent package you utilize.   Bioc 3.21/Devel is using R-devel (R 4.5) it might be worth testing on that version of R with all updat",
+      "thread_id": "thread-c42c9d10fc9e",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-ef5929846969",
+      "message_id": "<AM6PR03MB364054CAE4A8A6DACFEA4C1591F62@AM6PR03MB3640.eurprd03.prod.outlook.com>",
+      "from_name": "Laurent Gatto",
+      "from_email_hash": "96f1838f2ba092f759d5369cb91a860ddccbdbe9bd62c72347005d71a1f047eb",
+      "date": "2025-02-06T09:53:12Z",
+      "subject": "[Bioc-devel] ExperimentHub ft resource with password",
+      "subject_clean": "[Bioc-devel] ExperimentHub ft resource with password",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Dear hub developers, dear Lori,\n\nSection 7.1 'Hosting Data on a Publicly Accessible Site' from the 'Creating A Hub Package' vignette (HubPub package) [1] describes how to define resources stored on ftp servers. Is there a way to specify a password to download such a resource? \n\nThe data I would like to share as a hub resource needs a password. The password is public (it's spelled out in the associated publication). I imagine that at some point, the data will become accessible without password, but that can be a bit of a hit and miss situation. I would prefer avoiding re-sharing the files elsewhere or to have to wait until the data becomes accessible without password.\n\nThank you in advance.\n\nLaurent\n\n[1] https://bioconductor.org/packages/3.20/bioc/vignettes/HubPub/inst/doc/CreateAHubPackage.html#storage-of-data-files",
+      "body_snippet": "Dear hub developers, dear Lori,\n\nSection 7.1 'Hosting Data on a Publicly Accessible Site' from the 'Creating A Hub Package' vignette (HubPub package) [1] describes how to define resources stored on ft",
+      "thread_id": "thread-ef5929846969",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-d48fc9f88067",
+      "message_id": "<476bf43a-3961-4283-9e72-73388b442cf0@upf.edu>",
+      "from_name": "Robert Castelo",
+      "from_email_hash": "bee9feebf9761baae97002ef72c2c2035a815d597dd30000ff1359233c9b756f",
+      "date": "2025-02-07T09:08:41+01:00",
+      "subject": "[Bioc-devel] ExperimentHub ft resource with password",
+      "subject_clean": "[Bioc-devel] ExperimentHub ft resource with password",
+      "in_reply_to": "<AM6PR03MB364054CAE4A8A6DACFEA4C1591F62@AM6PR03MB3640.eurprd03.prod.outlook.com>",
+      "references": [
+        "<AM6PR03MB364054CAE4A8A6DACFEA4C1591F62@AM6PR03MB3640.eurprd03.prod.outlook.com>"
+      ],
+      "body_plain": "Hi,\n\nI think this is an?analogous question to the one brought up about year \nand a half ago by Martin Morgan in this issue:\n\nhttps://github.com/Bioconductor/AnnotationHub/issues/45\n\non how could we ask the user to accept a license before downloading the \ncorresponding AlphaMissense data from the AnnotationHub.\n\nIn GenomicScores, which also provides access to AlphaMissense data, I \nimplemented a temporary solution until we have a general solution for \nall AH resources, by which if the resource metadata (that I created \nmyself) included a license, this is displayed to the user, who must \naccept it to use the data:\n\n > library(GenomicScores)\n\n > am <- getGScores(\"AlphaMissense.v2023.hg38\")\nsnapshotDate(): 2024-10-28\nloading from cache\nThese data is shared under the license CC BY-NC-SA 4.0 (see \nhttps://creativecommons.org/licenses/by-nc-sa/4.0), do you accept it? \n[y/n]: y\n > am\nGScores object\n# organism: Homo sapiens (UCSC, hg38)\n# provider: Google DeepMind\n# provider version: v2023\n# download date: Oct 10, 2023\n# loaded sequences: chr1\n# maximum abs. error: 0.005\n# license: CC BY-NC-SA 4.0, see \nhttps://creativecommons.org/licenses/by-nc-sa/4.0\n# use 'citation()' to cite these data in publications\n\nso, I guess a similar strategy could be applied, but requiring a \npassword instead of accepting a license. this of course implies \nimplementing a hub package that handles this, as GenomicScores is doing.\n\ncheers,\n\nrobert.\n\nOn 6/2/25 10:53, Laurent Gatto via Bioc-devel wrote:\n> Dear hub developers, dear Lori,\n>\n> Section 7.1 'Hosting Data on a Publicly Accessible Site' from the 'Creating A Hub Package' vignette (HubPub package) [1] describes how to define resources stored on ftp servers. Is there a way to specify a password to download such a resource?\n>\n> The data I would like to share as a hub resource needs a password. The password is public (it's spelled out in the associated publication). I imagine that at some point, the data will become accessible without password, but that can be a bit of a hit and miss situation. I would prefer avoiding re-sharing the files elsewhere or to have to wait until the data becomes accessible without password.\n>\n> Thank you in advance.\n>\n> Laurent\n>\n> [1]https://bioconductor.org/packages/3.20/bioc/vignettes/HubPub/inst/doc/CreateAHubPackage.html#storage-of-data-files\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nRobert Castelo, PhD\nAssociate Professor\nDept. of Medicine and Life Sciences\nUniversitat Pompeu Fabra (UPF)\nBarcelona Biomedical Research Park (PRBB)\nDr Aiguader 88\nE-08003 Barcelona, Spain\ntelf: +34.933.160.514\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi,\n\nI think this is an?analogous question to the one brought up about year \nand a half ago by Martin Morgan in this issue:\n\nhttps://github.com/Bioconductor/AnnotationHub/issues/45\n\non how could we as",
+      "thread_id": "thread-ef5929846969",
+      "thread_depth": 1,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-fa7b20985d4d",
+      "message_id": "<CAJppbAxJxHidRdBT9WqFTeEjs8bZJ_BforEDg03hesa0vfauYQ@mail.gmail.com>",
+      "from_name": "Deepank Korandla",
+      "from_email_hash": "64f9ade472f41bc77803ba159af5b50ee02545b7d23f23cc290cac57849ffea8",
+      "date": "2025-02-07T08:29:46-05:00",
+      "subject": "[Bioc-devel] Additional maintainer for package AssessORFData",
+      "subject_clean": "[Bioc-devel] Additional maintainer for package AssessORFData",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi Bioconductor CoreTeam,\n\nI would like to add a new maintainer to the experimental data package\nAssessORFData. I've listed out the details for the additional maintainer\nbelow:\n\nName: Nicholas Cooley\nEmail: NPC19 at pitt.edu\n\nPlease let me know if you need any additional information from us.\n\nThanks in advance,\nDeepank Korandla\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi Bioconductor CoreTeam,\n\nI would like to add a new maintainer to the experimental data package\nAssessORFData. I've listed out the details for the additional maintainer\nbelow:\n\nName: Nicholas Cooley\n",
+      "thread_id": "thread-fa7b20985d4d",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-a4ca8917d526",
+      "message_id": "<DB7PR03MB5066F5B180B1FE98290EA505E2F32@DB7PR03MB5066.eurprd03.prod.outlook.com>",
+      "from_name": "Maria.Doyle",
+      "from_email_hash": "81da13936178a16fc0d29cdf909ea177149013fd99cf53f7ada86f29b1a5660d",
+      "date": "2025-02-10T09:05:00Z",
+      "subject": "[Bioc-devel] Announcing the EuroBioC2025 Sticker Design Contest!",
+      "subject_clean": "[Bioc-devel] Announcing the EuroBioC2025 Sticker Design Contest!",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "We invite you to design the official sticker for EuroBioC2025, the European Bioconductor Conference, taking place September 17-19, 2025, in Barcelona, Spain. Share your creativity and leave your mark on EuroBioC2025!\n\nHow to Enter:\nSubmit your design through this form<https://forms.gle/jQUkezzwoFXvSScJA> by March 10, 2025.\n\nPrize:\n- Free registration to EuroBioC2025 for the winning design.\n- The winning sticker will also be featured on the conference website and printed for attendees at the event.\n\nWe?re excited to see your creative ideas!\n\nP.S. Abstract submissions for EuroBioC2025 will be opening soon - stay tuned for details!\n\nMaria Doyle, PhD\nBioconductor Community Manager\n\nSchool of Medicine,\nUniversity of Limerick, Limerick, V94 T9PX\nIreland\nEmail: maria.doyle at ul.ie<mailto:maria.doyle at ul.ie>\nPhone (office): +353 61 234 768\nConnect with the Bioconductor community at our conferences:\n\n  *   GBCC 2025 (June 23-26, New York, USA)<https://www.linkedin.com/posts/bioconductor_gbcc2025-bioconductor-galaxy-activity-7236739126190829569-QdEH>\n  *   EuroBioC 2025 (September 17-19, Barcelona, Spain)<https://www.linkedin.com/posts/bioconductor_eurobioc2024-eurobioc2025-activity-7237888796564885505-hUW6>\n\nI work flexible hours across several time zones. I don't expect you to read or respond to my emails outside of your normal working hours.\n\n\n\n\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "We invite you to design the official sticker for EuroBioC2025, the European Bioconductor Conference, taking place September 17-19, 2025, in Barcelona, Spain. Share your creativity and leave your mark ",
+      "thread_id": "thread-a4ca8917d526",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-84679d525bb3",
+      "message_id": "<BL1PR12MB5301E70EB6AF605B5739A8DCF9F22@BL1PR12MB5301.namprd12.prod.outlook.com>",
+      "from_name": "Kern, Lori",
+      "from_email_hash": "ea9e9340d257178aa1b928bc69ed4277ea8643508ee1da9006b9114b56b9ff51",
+      "date": "2025-02-10T13:40:21Z",
+      "subject": "[Bioc-devel] ExperimentHub ft resource with password",
+      "subject_clean": "[Bioc-devel] ExperimentHub ft resource with password",
+      "in_reply_to": "<476bf43a-3961-4283-9e72-73388b442cf0@upf.edu>",
+      "references": [
+        "<AM6PR03MB364054CAE4A8A6DACFEA4C1591F62@AM6PR03MB3640.eurprd03.prod.outlook.com>",
+        "<476bf43a-3961-4283-9e72-73388b442cf0@upf.edu>"
+      ],
+      "body_plain": "I know Martin and a collogue worked on trying to get a version of the hubs updated to have a licensing acceptance portion which required substantial efforts/rewrites as the base database of hubs had to migrate/change as well. I can look around to see where that left off.\n\nI think its similar but still distinct.  Right now I'm not sure it's directly possible. And I don't think Robert's suggestion would work as it seems the work around is after the file is downloaded.   I would have to look up if/how httr (and really httr2 since we are in process of converting since httr is no longer maintained) handles this. If httr2 allows this with a config or argument it should be possible to allow with additional argument in the hubs.\n\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Robert Castelo via Bioc-devel <bioc-devel at r-project.org>\nSent: Friday, February 7, 2025 3:08 AM\nTo: Laurent Gatto <laurent.gatto at uclouvain.be>\nCc: bioc-devel at r-project.org <bioc-devel at r-project.org>\nSubject: Re: [Bioc-devel] ExperimentHub ft resource with password\n\nHi,\n\nI think this is an analogous question to the one brought up about year\nand a half ago by Martin Morgan in this issue:\n\nhttps://secure-web.cisco.com/1xcashewkbQZcqqHQxelujWJqKSvcxnK9Q2IAvU3vbhmfBx2Xdml8gMETuzBAP7ZpEhIfwLJmT6SO9OKNpWtvG2wzXf_Fh4zW6h6k7zM6RVns6ZuRQx64J3urCBY0ejs5z5ixQWIGjLp3d11jzUmSzLrpOJNBbIQy31ZOKSL-5pJIMcE-nVD3S1x83KhdHpD0zEEbtQ-DB06X63QzzpjT8zkf1XNIjAaoOaBavuIrYULe5ULp1NSXzsPLJQtG5RnLB3-OyHKDvGEtnU8Jvnpk480oy5uGGDkI0F6UKYZMmvWxeLHqRBkDBPF1m2q73KZE/https%3A%2F%2Fgithub.com%2FBioconductor%2FAnnotationHub%2Fissues%2F45\n\non how could we ask the user to accept a license before downloading the\ncorresponding AlphaMissense data from the AnnotationHub.\n\nIn GenomicScores, which also provides access to AlphaMissense data, I\nimplemented a temporary solution until we have a general solution for\nall AH resources, by which if the resource metadata (that I created\nmyself) included a license, this is displayed to the user, who must\naccept it to use the data:\n\n > library(GenomicScores)\n\n > am <- getGScores(\"AlphaMissense.v2023.hg38\")\nsnapshotDate(): 2024-10-28\nloading from cache\nThese data is shared under the license CC BY-NC-SA 4.0 (see\nhttps://secure-web.cisco.com/1awrcjsDj2PlvUmP4fTefz87hWNdc25ltWYt0_UJeCffi7WMKL1tjMmYhilWIDEQUcyL_7ji0PdLaRzv3pL110Lsl8FzFpJqv1p-5tQnJMCYA_hsCJivnDWZouXzHAjl_UqlfYisvakPB0UlWDDrQCd4656j5Lrk2MyPnkZRn1vyb3g0wZ1zJaZLx1U9PUv4T2OpIW4ir5bX3MYoh58HxDtVQlPjEwvL1Dd0Q7pYFNWORSUWV3bKOVqpOBTvtJCu-MOnVA5YjKEmvTok_58U6LjgXwlZpt05U6SYIeahj2bURwmsq0SeGsGuutWyDcvJt/https%3A%2F%2Fcreativecommons.org%2Flicenses%2Fby-nc-sa%2F4.0), do you accept it?\n[y/n]: y\n > am\nGScores object\n# organism: Homo sapiens (UCSC, hg38)\n# provider: Google DeepMind\n# provider version: v2023\n# download date: Oct 10, 2023\n# loaded sequences: chr1\n# maximum abs. error: 0.005\n# license: CC BY-NC-SA 4.0, see\nhttps://secure-web.cisco.com/1awrcjsDj2PlvUmP4fTefz87hWNdc25ltWYt0_UJeCffi7WMKL1tjMmYhilWIDEQUcyL_7ji0PdLaRzv3pL110Lsl8FzFpJqv1p-5tQnJMCYA_hsCJivnDWZouXzHAjl_UqlfYisvakPB0UlWDDrQCd4656j5Lrk2MyPnkZRn1vyb3g0wZ1zJaZLx1U9PUv4T2OpIW4ir5bX3MYoh58HxDtVQlPjEwvL1Dd0Q7pYFNWORSUWV3bKOVqpOBTvtJCu-MOnVA5YjKEmvTok_58U6LjgXwlZpt05U6SYIeahj2bURwmsq0SeGsGuutWyDcvJt/https%3A%2F%2Fcreativecommons.org%2Flicenses%2Fby-nc-sa%2F4.0\n# use 'citation()' to cite these data in publications\n\nso, I guess a similar strategy could be applied, but requiring a\npassword instead of accepting a license. this of course implies\nimplementing a hub package that handles this, as GenomicScores is doing.\n\ncheers,\n\nrobert.\n\nOn 6/2/25 10:53, Laurent Gatto via Bioc-devel wrote:\n> Dear hub developers, dear Lori,\n>\n> Section 7.1 'Hosting Data on a Publicly Accessible Site' from the 'Creating A Hub Package' vignette (HubPub package) [1] describes how to define resources stored on ftp servers. Is there a way to specify a password to download such a resource?\n>\n> The data I would like to share as a hub resource needs a password. The password is public (it's spelled out in the associated publication). I imagine that at some point, the data will become accessible without password, but that can be a bit of a hit and miss situation. I would prefer avoiding re-sharing the files elsewhere or to have to wait until the data becomes accessible without password.\n>\n> Thank you in advance.\n>\n> Laurent\n>\n> [1]https://secure-web.cisco.com/1SbkOz9UzHSZM3BbImwZCSskaJYUD5YrKL9HLpIyVSlGNAcb_jmsZga2QHnaUyECf0TDry2JyjhmkIIWN40aBT158yemkEpCk8MyF_pytj8ort-zmB2N7cPnBXRepgP2QzQzI6XGLZFLr1W9PQHdx7zqnr49fnjy8MWrB6J08_sDtHm3w0O-UHrQSTIBx6SgQgX7VVsSBs089pmJT1U1ouSZzdzYsJrWG8uojcyUjVwliT5waEwa2b2ayB8VRFLtc7Q1aPFBOlhQUVlIBhgBe54l6YXXMmSNeSvCrOB-qAdbVWhpLxhDs46Pq1Bj-jmIj/https%3A%2F%2Fbioconductor.org%2Fpackages%2F3.20%2Fbioc%2Fvignettes%2FHubPub%2Finst%2Fdoc%2FCreateAHubPackage.html%23storage-of-data-files\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://secure-web.cisco.com/1fpqrJlFU7GKXGW_B5iI6_r4obI_vVzK8MPxnMN0AahPvpT-Zg0Bgayg_BQ_tT1kvrv14_8RzScfdMUB50P82Gy3kli0_EfsQJN0qpzskNwt3d6uEZQ25hRdrDg0UdNl9PqfAbZ1HRX6-vCcWiiSQWTWPreb5A3eCoLqdzO5UZXeQCnZW-_uyZDwDs4CWLTViQpI4s2Ql7VI2C2ibvHN52ULL89uMfLyuYF68BKfoINYlUprU4KGIAJsrxyPMmaaD6F4gQLyAYw3Mt3mpInDNJCWNwq6otv956htbOTXoBpTVe_gWO_05ohqwWjnNGCV0/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n\n\n--\nRobert Castelo, PhD\nAssociate Professor\nDept. of Medicine and Life Sciences\nUniversitat Pompeu Fabra (UPF)\nBarcelona Biomedical Research Park (PRBB)\nDr Aiguader 88\nE-08003 Barcelona, Spain\ntelf: +34.933.160.514\n\n        [[alternative HTML version deleted]]\n\n_______________________________________________\nBioc-devel at r-project.org mailing list\nhttps://secure-web.cisco.com/1fpqrJlFU7GKXGW_B5iI6_r4obI_vVzK8MPxnMN0AahPvpT-Zg0Bgayg_BQ_tT1kvrv14_8RzScfdMUB50P82Gy3kli0_EfsQJN0qpzskNwt3d6uEZQ25hRdrDg0UdNl9PqfAbZ1HRX6-vCcWiiSQWTWPreb5A3eCoLqdzO5UZXeQCnZW-_uyZDwDs4CWLTViQpI4s2Ql7VI2C2ibvHN52ULL89uMfLyuYF68BKfoINYlUprU4KGIAJsrxyPMmaaD6F4gQLyAYw3Mt3mpInDNJCWNwq6otv956htbOTXoBpTVe_gWO_05ohqwWjnNGCV0/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n\n\n\nThis email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "I know Martin and a collogue worked on trying to get a version of the hubs updated to have a licensing acceptance portion which required substantial efforts/rewrites as the base database of hubs had t",
+      "thread_id": "thread-ef5929846969",
+      "thread_depth": 2,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-f240284a5cf0",
+      "message_id": "<BL1PR12MB5301E8066322A126E3DE13A6F9F22@BL1PR12MB5301.namprd12.prod.outlook.com>",
+      "from_name": "Kern, Lori",
+      "from_email_hash": "ea9e9340d257178aa1b928bc69ed4277ea8643508ee1da9006b9114b56b9ff51",
+      "date": "2025-02-10T13:44:51Z",
+      "subject": "[Bioc-devel] Additional maintainer for package AssessORFData",
+      "subject_clean": "[Bioc-devel] Additional maintainer for package AssessORFData",
+      "in_reply_to": "<CAJppbAxJxHidRdBT9WqFTeEjs8bZJ_BforEDg03hesa0vfauYQ@mail.gmail.com>",
+      "references": [
+        "<CAJppbAxJxHidRdBT9WqFTeEjs8bZJ_BforEDg03hesa0vfauYQ@mail.gmail.com>"
+      ],
+      "body_plain": "We can assist with this request.  We will be in touch off mailing list if additional information is required\n\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Deepank Korandla <dkorandl at alumni.cmu.edu>\nSent: Friday, February 7, 2025 8:29 AM\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>\nCc: Cooley, Nicholas P <NPC19 at pitt.edu>; Wright, Erik Scott <eswright at pitt.edu>\nSubject: [Bioc-devel] Additional maintainer for package AssessORFData\n\nHi Bioconductor CoreTeam,\n\nI would like to add a new maintainer to the experimental data package\nAssessORFData. I've listed out the details for the additional maintainer\nbelow:\n\nName: Nicholas Cooley\nEmail: NPC19 at pitt.edu\n\nPlease let me know if you need any additional information from us.\n\nThanks in advance,\nDeepank Korandla\n\n        [[alternative HTML version deleted]]\n\n_______________________________________________\nBioc-devel at r-project.org mailing list\nhttps://secure-web.cisco.com/1h9Cx63GeTk9_-fbdVT9yb-d8hmmM0l4oc7XxObgS7zqK2LAMFT1diSPrb5hSsX1fkTwKNBlmu4T0AliCKC4bAN-46FoyNulhggN-ANep9RNaMdodofcmmfUfhJ4wvf3r-FPH5SNIBop5FEcL7Ytk1iXSMMaj8Co2IO8dIak-RPHQDCwq4RJonOzYYkiXqKq9TGGh6jtyXLn-XiVgZyTJkioUdAg-BOcSMNJkEW1xWSuBVU0A0PFnaWnGNy7ZtC9_VpE-nej0XL-nkUW9OTOavsoCOCroVf6intS2Pr8kIECc7bQxhBFkYsekEGfzCzp1lIR1CqlY2i7rSShQJrrX_A/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n\n\n\nThis email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "We can assist with this request.  We will be in touch off mailing list if additional information is required\n\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\n",
+      "thread_id": "thread-fa7b20985d4d",
+      "thread_depth": 1,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-615dd0a7a8c7",
+      "message_id": "<CYYPR02MB990373FDC77FB09A38DEE3ECB8F22@CYYPR02MB9903.namprd02.prod.outlook.com>",
+      "from_name": "Danila Bredikhin",
+      "from_email_hash": "39bb97d3a6ba0ab61ed9e01cc0493a6a60d521f3dac5d748017dd72cbe550ff6",
+      "date": "2025-02-10T22:37:31Z",
+      "subject": "[Bioc-devel] Add a maintainer for MuData",
+      "subject_clean": "[Bioc-devel] Add a maintainer for MuData",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi Bioc Core Team,\n\nCould you help with adding another maintainer to the MuData<https://www.bioconductor.org/packages/release/bioc/html/MuData.html> package?\nCC?ing Ilia Kats for that.\n\nKind regards,\nDanila\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi Bioc Core Team,\n\nCould you help with adding another maintainer to the MuData<https://www.bioconductor.org/packages/release/bioc/html/MuData.html> package?\nCC?ing Ilia Kats for that.\n\nKind regards,\n",
+      "thread_id": "thread-615dd0a7a8c7",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-6a5ceecf501a",
+      "message_id": "<CAFu+EnUOBaki9dOwsH7ZqKpCm8BLLWKe3x6M0xPmpGFOoK=GVw@mail.gmail.com>",
+      "from_name": "Kevin Stachelek",
+      "from_email_hash": "a6cb3c0c1898e495f9a3923f297fb249b9c58369c445a5c0dabb7376084bea05",
+      "date": "2025-02-10T16:46:06-08:00",
+      "subject": "[Bioc-devel] experimenthub package timeout and resubmission",
+      "subject_clean": "[Bioc-devel] experimenthub package timeout and resubmission",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "https://github.com/Bioconductor/Contributions/issues/3332#issuecomment-2631735739\n\nHello,\nI recently had several packages added to builds which collectively depend\non an experimenthub package which formerly passed checks without error or\nwarning. I am unable to interpret example check timeout warnings for the\nexperimenthub package. Should I open a new issue contribution to enable\nsubmission of the experimenthub package?\n\nThanks,\n\n-- \nKevin Stachelek\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "https://github.com/Bioconductor/Contributions/issues/3332#issuecomment-2631735739\n\nHello,\nI recently had several packages added to builds which collectively depend\non an experimenthub package which fo",
+      "thread_id": "thread-6a5ceecf501a",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-572dc654043a",
+      "message_id": "<CAGfgtYAxOULNy+aEOkRT2UNcYPQm_ohXBCq25nTqW8n__+cZvQ@mail.gmail.com>",
+      "from_name": "Mike Smith",
+      "from_email_hash": "6907bff6173350984d532f22759e0270a953afb04a351e4298bfd78bc4136731",
+      "date": "2025-02-11T14:03:05+01:00",
+      "subject": "[Bioc-devel] ExperimentHub ft resource with password",
+      "subject_clean": "[Bioc-devel] ExperimentHub ft resource with password",
+      "in_reply_to": "<BL1PR12MB5301E70EB6AF605B5739A8DCF9F22@BL1PR12MB5301.namprd12.prod.outlook.com>",
+      "references": [
+        "<AM6PR03MB364054CAE4A8A6DACFEA4C1591F62@AM6PR03MB3640.eurprd03.prod.outlook.com>",
+        "<476bf43a-3961-4283-9e72-73388b442cf0@upf.edu>",
+        "<BL1PR12MB5301E70EB6AF605B5739A8DCF9F22@BL1PR12MB5301.namprd12.prod.outlook.com>"
+      ],
+      "body_plain": "This might require significant work on the Hub backend, but might it be\npossible to support getting data from an S3 bucket, and then requiring a\npermissions key to actually get access?  Something like paws.storage could\nbe used in an analogous way to httr2 inside AnnotationHub to actually\nobtain the data.  In Laurent's original scenario the key would be publicly\nknown, and the supporting package could have it stored and ready to use for\nany access request, so downloading would be seamless to a user.  Of course\nthis doesn't actually help with password protecting an FTP site.\n\nCheers,\nMike\n\n\nOn Mon, 10 Feb 2025 at 14:40, Kern, Lori via Bioc-devel <\nbioc-devel at r-project.org> wrote:\n\n> I know Martin and a collogue worked on trying to get a version of the hubs\n> updated to have a licensing acceptance portion which required substantial\n> efforts/rewrites as the base database of hubs had to migrate/change as\n> well. I can look around to see where that left off.\n>\n> I think its similar but still distinct.  Right now I'm not sure it's\n> directly possible. And I don't think Robert's suggestion would work as it\n> seems the work around is after the file is downloaded.   I would have to\n> look up if/how httr (and really httr2 since we are in process of converting\n> since httr is no longer maintained) handles this. If httr2 allows this with\n> a config or argument it should be possible to allow with additional\n> argument in the hubs.\n>\n>\n>\n> Lori Shepherd - Kern\n>\n> Bioconductor Core Team\n>\n> Roswell Park Comprehensive Cancer Center\n>\n> Department of Biostatistics & Bioinformatics\n>\n> Elm & Carlton Streets\n>\n> Buffalo, New York 14263\n>\n> ________________________________\n> From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Robert\n> Castelo via Bioc-devel <bioc-devel at r-project.org>\n> Sent: Friday, February 7, 2025 3:08 AM\n> To: Laurent Gatto <laurent.gatto at uclouvain.be>\n> Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>\n> Subject: Re: [Bioc-devel] ExperimentHub ft resource with password\n>\n> Hi,\n>\n> I think this is an analogous question to the one brought up about year\n> and a half ago by Martin Morgan in this issue:\n>\n>\n> https://secure-web.cisco.com/1xcashewkbQZcqqHQxelujWJqKSvcxnK9Q2IAvU3vbhmfBx2Xdml8gMETuzBAP7ZpEhIfwLJmT6SO9OKNpWtvG2wzXf_Fh4zW6h6k7zM6RVns6ZuRQx64J3urCBY0ejs5z5ixQWIGjLp3d11jzUmSzLrpOJNBbIQy31ZOKSL-5pJIMcE-nVD3S1x83KhdHpD0zEEbtQ-DB06X63QzzpjT8zkf1XNIjAaoOaBavuIrYULe5ULp1NSXzsPLJQtG5RnLB3-OyHKDvGEtnU8Jvnpk480oy5uGGDkI0F6UKYZMmvWxeLHqRBkDBPF1m2q73KZE/https%3A%2F%2Fgithub.com%2FBioconductor%2FAnnotationHub%2Fissues%2F45\n>\n> on how could we ask the user to accept a license before downloading the\n> corresponding AlphaMissense data from the AnnotationHub.\n>\n> In GenomicScores, which also provides access to AlphaMissense data, I\n> implemented a temporary solution until we have a general solution for\n> all AH resources, by which if the resource metadata (that I created\n> myself) included a license, this is displayed to the user, who must\n> accept it to use the data:\n>\n>  > library(GenomicScores)\n>\n>  > am <- getGScores(\"AlphaMissense.v2023.hg38\")\n> snapshotDate(): 2024-10-28\n> loading from cache\n> These data is shared under the license CC BY-NC-SA 4.0 (see\n>\n> https://secure-web.cisco.com/1awrcjsDj2PlvUmP4fTefz87hWNdc25ltWYt0_UJeCffi7WMKL1tjMmYhilWIDEQUcyL_7ji0PdLaRzv3pL110Lsl8FzFpJqv1p-5tQnJMCYA_hsCJivnDWZouXzHAjl_UqlfYisvakPB0UlWDDrQCd4656j5Lrk2MyPnkZRn1vyb3g0wZ1zJaZLx1U9PUv4T2OpIW4ir5bX3MYoh58HxDtVQlPjEwvL1Dd0Q7pYFNWORSUWV3bKOVqpOBTvtJCu-MOnVA5YjKEmvTok_58U6LjgXwlZpt05U6SYIeahj2bURwmsq0SeGsGuutWyDcvJt/https%3A%2F%2Fcreativecommons.org%2Flicenses%2Fby-nc-sa%2F4.0),\n> do you accept it?\n> [y/n]: y\n>  > am\n> GScores object\n> # organism: Homo sapiens (UCSC, hg38)\n> # provider: Google DeepMind\n> # provider version: v2023\n> # download date: Oct 10, 2023\n> # loaded sequences: chr1\n> # maximum abs. error: 0.005\n> # license: CC BY-NC-SA 4.0, see\n>\n> https://secure-web.cisco.com/1awrcjsDj2PlvUmP4fTefz87hWNdc25ltWYt0_UJeCffi7WMKL1tjMmYhilWIDEQUcyL_7ji0PdLaRzv3pL110Lsl8FzFpJqv1p-5tQnJMCYA_hsCJivnDWZouXzHAjl_UqlfYisvakPB0UlWDDrQCd4656j5Lrk2MyPnkZRn1vyb3g0wZ1zJaZLx1U9PUv4T2OpIW4ir5bX3MYoh58HxDtVQlPjEwvL1Dd0Q7pYFNWORSUWV3bKOVqpOBTvtJCu-MOnVA5YjKEmvTok_58U6LjgXwlZpt05U6SYIeahj2bURwmsq0SeGsGuutWyDcvJt/https%3A%2F%2Fcreativecommons.org%2Flicenses%2Fby-nc-sa%2F4.0\n> # use 'citation()' to cite these data in publications\n>\n> so, I guess a similar strategy could be applied, but requiring a\n> password instead of accepting a license. this of course implies\n> implementing a hub package that handles this, as GenomicScores is doing.\n>\n> cheers,\n>\n> robert.\n>\n> On 6/2/25 10:53, Laurent Gatto via Bioc-devel wrote:\n> > Dear hub developers, dear Lori,\n> >\n> > Section 7.1 'Hosting Data on a Publicly Accessible Site' from the\n> 'Creating A Hub Package' vignette (HubPub package) [1] describes how to\n> define resources stored on ftp servers. Is there a way to specify a\n> password to download such a resource?\n> >\n> > The data I would like to share as a hub resource needs a password. The\n> password is public (it's spelled out in the associated publication). I\n> imagine that at some point, the data will become accessible without\n> password, but that can be a bit of a hit and miss situation. I would prefer\n> avoiding re-sharing the files elsewhere or to have to wait until the data\n> becomes accessible without password.\n> >\n> > Thank you in advance.\n> >\n> > Laurent\n> >\n> > [1]\n> https://secure-web.cisco.com/1SbkOz9UzHSZM3BbImwZCSskaJYUD5YrKL9HLpIyVSlGNAcb_jmsZga2QHnaUyECf0TDry2JyjhmkIIWN40aBT158yemkEpCk8MyF_pytj8ort-zmB2N7cPnBXRepgP2QzQzI6XGLZFLr1W9PQHdx7zqnr49fnjy8MWrB6J08_sDtHm3w0O-UHrQSTIBx6SgQgX7VVsSBs089pmJT1U1ouSZzdzYsJrWG8uojcyUjVwliT5waEwa2b2ayB8VRFLtc7Q1aPFBOlhQUVlIBhgBe54l6YXXMmSNeSvCrOB-qAdbVWhpLxhDs46Pq1Bj-jmIj/https%3A%2F%2Fbioconductor.org%2Fpackages%2F3.20%2Fbioc%2Fvignettes%2FHubPub%2Finst%2Fdoc%2FCreateAHubPackage.html%23storage-of-data-files\n> > _______________________________________________\n> > Bioc-devel at r-project.org mailing list\n> >\n> https://secure-web.cisco.com/1fpqrJlFU7GKXGW_B5iI6_r4obI_vVzK8MPxnMN0AahPvpT-Zg0Bgayg_BQ_tT1kvrv14_8RzScfdMUB50P82Gy3kli0_EfsQJN0qpzskNwt3d6uEZQ25hRdrDg0UdNl9PqfAbZ1HRX6-vCcWiiSQWTWPreb5A3eCoLqdzO5UZXeQCnZW-_uyZDwDs4CWLTViQpI4s2Ql7VI2C2ibvHN52ULL89uMfLyuYF68BKfoINYlUprU4KGIAJsrxyPMmaaD6F4gQLyAYw3Mt3mpInDNJCWNwq6otv956htbOTXoBpTVe_gWO_05ohqwWjnNGCV0/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n>\n>\n> --\n> Robert Castelo, PhD\n> Associate Professor\n> Dept. of Medicine and Life Sciences\n> Universitat Pompeu Fabra (UPF)\n> Barcelona Biomedical Research Park (PRBB)\n> Dr Aiguader 88\n> E-08003 Barcelona, Spain\n> telf: +34.933.160.514\n>\n>         [[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n>\n> https://secure-web.cisco.com/1fpqrJlFU7GKXGW_B5iI6_r4obI_vVzK8MPxnMN0AahPvpT-Zg0Bgayg_BQ_tT1kvrv14_8RzScfdMUB50P82Gy3kli0_EfsQJN0qpzskNwt3d6uEZQ25hRdrDg0UdNl9PqfAbZ1HRX6-vCcWiiSQWTWPreb5A3eCoLqdzO5UZXeQCnZW-_uyZDwDs4CWLTViQpI4s2Ql7VI2C2ibvHN52ULL89uMfLyuYF68BKfoINYlUprU4KGIAJsrxyPMmaaD6F4gQLyAYw3Mt3mpInDNJCWNwq6otv956htbOTXoBpTVe_gWO_05ohqwWjnNGCV0/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n>\n>\n>\n> This email message may contain legally privileged and/or confidential\n> information.  If you are not the intended recipient(s), or the employee or\n> agent responsible for the delivery of this message to the intended\n> recipient(s), you are hereby notified that any disclosure, copying,\n> distribution, or use of this email message is prohibited.  If you have\n> received this message in error, please notify the sender immediately by\n> e-mail and delete this email message from your computer. Thank you.\n>         [[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "This might require significant work on the Hub backend, but might it be\npossible to support getting data from an S3 bucket, and then requiring a\npermissions key to actually get access?  Something like",
+      "thread_id": "thread-ef5929846969",
+      "thread_depth": 3,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-d73aadb9d7a1",
+      "message_id": "<DB7PR03MB5066DCB34F5D604DCA1421C0E2FD2@DB7PR03MB5066.eurprd03.prod.outlook.com>",
+      "from_name": "Maria.Doyle",
+      "from_email_hash": "81da13936178a16fc0d29cdf909ea177149013fd99cf53f7ada86f29b1a5660d",
+      "date": "2025-02-11T22:06:26Z",
+      "subject": "[Bioc-devel] Galaxy Bioconductor Community Conference (GBCC2025) Registration Open!",
+      "subject_clean": "[Bioc-devel] Galaxy Bioconductor Community Conference (GBCC2025) Registration Open!",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "We?re delighted to announce that abstract submissions and registration are now open for the first-ever Galaxy and Bioconductor Community Conference (GBCC2025), taking place June 23-26, 2025, at Cold Spring Harbor Laboratory, New York. This joint event will bring together the Galaxy and Bioconductor communities to advance bioinformatics, data science, and open-source software.\n\n\nSubmit your abstract to present your work on cutting-edge bioinformatics tools, methods, and research. Whether you're sharing new software, innovative workflows, or data science insights, we?d love to feature your contributions.\n\n\nRegistration is also open?secure your spot early to be part of this exciting event!\n\n\n  *   Abstract Submission Deadline: April 1, 2025\n  *   Submit Abstract / Register: https://gbcc2025.org<https://gbcc2025.org/>\n\n\nWe?re looking forward to seeing your abstracts and welcoming you to GBCC2025!\n\n\nMaria Doyle, PhD\nBioconductor Community Manager\n\nSchool of Medicine,\nUniversity of Limerick, Limerick, V94 T9PX\nIreland\nEmail: maria.doyle at ul.ie<mailto:maria.doyle at ul.ie>\nPhone (office): +353 61 234 768\nConnect with the Bioconductor community at our conferences:\n\n  *   GBCC 2025 (June 23-26, New York, USA)<https://www.linkedin.com/posts/bioconductor_gbcc2025-bioconductor-galaxy-activity-7236739126190829569-QdEH>\n  *   EuroBioC 2025 (September 17-19, Barcelona, Spain)<https://www.linkedin.com/posts/bioconductor_eurobioc2024-eurobioc2025-activity-7237888796564885505-hUW6>\n\nI work flexible hours across several time zones. I don't expect you to read or respond to my emails outside of your normal working hours.\n\n\n\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "We?re delighted to announce that abstract submissions and registration are now open for the first-ever Galaxy and Bioconductor Community Conference (GBCC2025), taking place June 23-26, 2025, at Cold S",
+      "thread_id": "thread-d73aadb9d7a1",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-0bb02b6c5996",
+      "message_id": "<MN2PR10MB3230B2EACD45354A1691F450F9FC2@MN2PR10MB3230.namprd10.prod.outlook.com>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "109b9a34086cf76701f2b8d9829b34ab79f50658b0fbd49b00fae8e1665544ec",
+      "date": "2025-02-12T02:19:54Z",
+      "subject": "[Bioc-devel] ExperimentHub ft resource with password",
+      "subject_clean": "[Bioc-devel] ExperimentHub ft resource with password",
+      "in_reply_to": "<CAGfgtYAxOULNy+aEOkRT2UNcYPQm_ohXBCq25nTqW8n__+cZvQ@mail.gmail.com>",
+      "references": [
+        "<AM6PR03MB364054CAE4A8A6DACFEA4C1591F62@AM6PR03MB3640.eurprd03.prod.outlook.com>",
+        "<476bf43a-3961-4283-9e72-73388b442cf0@upf.edu>",
+        "<BL1PR12MB5301E70EB6AF605B5739A8DCF9F22@BL1PR12MB5301.namprd12.prod.outlook.com>",
+        "<CAGfgtYAxOULNy+aEOkRT2UNcYPQm_ohXBCq25nTqW8n__+cZvQ@mail.gmail.com>"
+      ],
+      "body_plain": "I?d suggest adding these ideas as issues to AnnotationHub:\n\nhttps://github.com/Bioconductor/AnnotationHub\n\n(or ExperimentHub, depending on the perceived best fit for the data). Even if there is not yet consensus on development priorities, it will be helpful to have a catalog of additional use cases and requirements.\n\nSean\n\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Mike Smith <grimbough at gmail.com>\nDate: Tuesday, February 11, 2025 at 8:03?AM\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>\nSubject: Re: [Bioc-devel] ExperimentHub ft resource with password\nThis might require significant work on the Hub backend, but might it be\npossible to support getting data from an S3 bucket, and then requiring a\npermissions key to actually get access?  Something like paws.storage could\nbe used in an analogous way to httr2 inside AnnotationHub to actually\nobtain the data.  In Laurent's original scenario the key would be publicly\nknown, and the supporting package could have it stored and ready to use for\nany access request, so downloading would be seamless to a user.  Of course\nthis doesn't actually help with password protecting an FTP site.\n\nCheers,\nMike\n\n\nOn Mon, 10 Feb 2025 at 14:40, Kern, Lori via Bioc-devel <\nbioc-devel at r-project.org> wrote:\n\n> I know Martin and a collogue worked on trying to get a version of the hubs\n> updated to have a licensing acceptance portion which required substantial\n> efforts/rewrites as the base database of hubs had to migrate/change as\n> well. I can look around to see where that left off.\n>\n> I think its similar but still distinct.  Right now I'm not sure it's\n> directly possible. And I don't think Robert's suggestion would work as it\n> seems the work around is after the file is downloaded.   I would have to\n> look up if/how httr (and really httr2 since we are in process of converting\n> since httr is no longer maintained) handles this. If httr2 allows this with\n> a config or argument it should be possible to allow with additional\n> argument in the hubs.\n>\n>\n>\n> Lori Shepherd - Kern\n>\n> Bioconductor Core Team\n>\n> Roswell Park Comprehensive Cancer Center\n>\n> Department of Biostatistics & Bioinformatics\n>\n> Elm & Carlton Streets\n>\n> Buffalo, New York 14263\n>\n> ________________________________\n> From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Robert\n> Castelo via Bioc-devel <bioc-devel at r-project.org>\n> Sent: Friday, February 7, 2025 3:08 AM\n> To: Laurent Gatto <laurent.gatto at uclouvain.be>\n> Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>\n> Subject: Re: [Bioc-devel] ExperimentHub ft resource with password\n>\n> Hi,\n>\n> I think this is an analogous question to the one brought up about year\n> and a half ago by Martin Morgan in this issue:\n>\n>\n> https://secure-web.cisco.com/1xcashewkbQZcqqHQxelujWJqKSvcxnK9Q2IAvU3vbhmfBx2Xdml8gMETuzBAP7ZpEhIfwLJmT6SO9OKNpWtvG2wzXf_Fh4zW6h6k7zM6RVns6ZuRQx64J3urCBY0ejs5z5ixQWIGjLp3d11jzUmSzLrpOJNBbIQy31ZOKSL-5pJIMcE-nVD3S1x83KhdHpD0zEEbtQ-DB06X63QzzpjT8zkf1XNIjAaoOaBavuIrYULe5ULp1NSXzsPLJQtG5RnLB3-OyHKDvGEtnU8Jvnpk480oy5uGGDkI0F6UKYZMmvWxeLHqRBkDBPF1m2q73KZE/https%3A%2F%2Fgithub.com%2FBioconductor%2FAnnotationHub%2Fissues%2F45\n>\n> on how could we ask the user to accept a license before downloading the\n> corresponding AlphaMissense data from the AnnotationHub.\n>\n> In GenomicScores, which also provides access to AlphaMissense data, I\n> implemented a temporary solution until we have a general solution for\n> all AH resources, by which if the resource metadata (that I created\n> myself) included a license, this is displayed to the user, who must\n> accept it to use the data:\n>\n>  > library(GenomicScores)\n>\n>  > am <- getGScores(\"AlphaMissense.v2023.hg38\")\n> snapshotDate(): 2024-10-28\n> loading from cache\n> These data is shared under the license CC BY-NC-SA 4.0 (see\n>\n> https://secure-web.cisco.com/1awrcjsDj2PlvUmP4fTefz87hWNdc25ltWYt0_UJeCffi7WMKL1tjMmYhilWIDEQUcyL_7ji0PdLaRzv3pL110Lsl8FzFpJqv1p-5tQnJMCYA_hsCJivnDWZouXzHAjl_UqlfYisvakPB0UlWDDrQCd4656j5Lrk2MyPnkZRn1vyb3g0wZ1zJaZLx1U9PUv4T2OpIW4ir5bX3MYoh58HxDtVQlPjEwvL1Dd0Q7pYFNWORSUWV3bKOVqpOBTvtJCu-MOnVA5YjKEmvTok_58U6LjgXwlZpt05U6SYIeahj2bURwmsq0SeGsGuutWyDcvJt/https%3A%2F%2Fcreativecommons.org%2Flicenses%2Fby-nc-sa%2F4.0),\n> do you accept it?\n> [y/n]: y\n>  > am\n> GScores object\n> # organism: Homo sapiens (UCSC, hg38)\n> # provider: Google DeepMind\n> # provider version: v2023\n> # download date: Oct 10, 2023\n> # loaded sequences: chr1\n> # maximum abs. error: 0.005\n> # license: CC BY-NC-SA 4.0, see\n>\n> https://secure-web.cisco.com/1awrcjsDj2PlvUmP4fTefz87hWNdc25ltWYt0_UJeCffi7WMKL1tjMmYhilWIDEQUcyL_7ji0PdLaRzv3pL110Lsl8FzFpJqv1p-5tQnJMCYA_hsCJivnDWZouXzHAjl_UqlfYisvakPB0UlWDDrQCd4656j5Lrk2MyPnkZRn1vyb3g0wZ1zJaZLx1U9PUv4T2OpIW4ir5bX3MYoh58HxDtVQlPjEwvL1Dd0Q7pYFNWORSUWV3bKOVqpOBTvtJCu-MOnVA5YjKEmvTok_58U6LjgXwlZpt05U6SYIeahj2bURwmsq0SeGsGuutWyDcvJt/https%3A%2F%2Fcreativecommons.org%2Flicenses%2Fby-nc-sa%2F4.0\n> # use 'citation()' to cite these data in publications\n>\n> so, I guess a similar strategy could be applied, but requiring a\n> password instead of accepting a license. this of course implies\n> implementing a hub package that handles this, as GenomicScores is doing.\n>\n> cheers,\n>\n> robert.\n>\n> On 6/2/25 10:53, Laurent Gatto via Bioc-devel wrote:\n> > Dear hub developers, dear Lori,\n> >\n> > Section 7.1 'Hosting Data on a Publicly Accessible Site' from the\n> 'Creating A Hub Package' vignette (HubPub package) [1] describes how to\n> define resources stored on ftp servers. Is there a way to specify a\n> password to download such a resource?\n> >\n> > The data I would like to share as a hub resource needs a password. The\n> password is public (it's spelled out in the associated publication). I\n> imagine that at some point, the data will become accessible without\n> password, but that can be a bit of a hit and miss situation. I would prefer\n> avoiding re-sharing the files elsewhere or to have to wait until the data\n> becomes accessible without password.\n> >\n> > Thank you in advance.\n> >\n> > Laurent\n> >\n> > [1]\n> https://secure-web.cisco.com/1SbkOz9UzHSZM3BbImwZCSskaJYUD5YrKL9HLpIyVSlGNAcb_jmsZga2QHnaUyECf0TDry2JyjhmkIIWN40aBT158yemkEpCk8MyF_pytj8ort-zmB2N7cPnBXRepgP2QzQzI6XGLZFLr1W9PQHdx7zqnr49fnjy8MWrB6J08_sDtHm3w0O-UHrQSTIBx6SgQgX7VVsSBs089pmJT1U1ouSZzdzYsJrWG8uojcyUjVwliT5waEwa2b2ayB8VRFLtc7Q1aPFBOlhQUVlIBhgBe54l6YXXMmSNeSvCrOB-qAdbVWhpLxhDs46Pq1Bj-jmIj/https%3A%2F%2Fbioconductor.org%2Fpackages%2F3.20%2Fbioc%2Fvignettes%2FHubPub%2Finst%2Fdoc%2FCreateAHubPackage.html%23storage-of-data-files\n> > _______________________________________________\n> > Bioc-devel at r-project.org mailing list\n> >\n> https://secure-web.cisco.com/1fpqrJlFU7GKXGW_B5iI6_r4obI_vVzK8MPxnMN0AahPvpT-Zg0Bgayg_BQ_tT1kvrv14_8RzScfdMUB50P82Gy3kli0_EfsQJN0qpzskNwt3d6uEZQ25hRdrDg0UdNl9PqfAbZ1HRX6-vCcWiiSQWTWPreb5A3eCoLqdzO5UZXeQCnZW-_uyZDwDs4CWLTViQpI4s2Ql7VI2C2ibvHN52ULL89uMfLyuYF68BKfoINYlUprU4KGIAJsrxyPMmaaD6F4gQLyAYw3Mt3mpInDNJCWNwq6otv956htbOTXoBpTVe_gWO_05ohqwWjnNGCV0/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n>\n>\n> --\n> Robert Castelo, PhD\n> Associate Professor\n> Dept. of Medicine and Life Sciences\n> Universitat Pompeu Fabra (UPF)\n> Barcelona Biomedical Research Park (PRBB)\n> Dr Aiguader 88\n> E-08003 Barcelona, Spain\n> telf: +34.933.160.514\n>\n>         [[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n>\n> https://secure-web.cisco.com/1fpqrJlFU7GKXGW_B5iI6_r4obI_vVzK8MPxnMN0AahPvpT-Zg0Bgayg_BQ_tT1kvrv14_8RzScfdMUB50P82Gy3kli0_EfsQJN0qpzskNwt3d6uEZQ25hRdrDg0UdNl9PqfAbZ1HRX6-vCcWiiSQWTWPreb5A3eCoLqdzO5UZXeQCnZW-_uyZDwDs4CWLTViQpI4s2Ql7VI2C2ibvHN52ULL89uMfLyuYF68BKfoINYlUprU4KGIAJsrxyPMmaaD6F4gQLyAYw3Mt3mpInDNJCWNwq6otv956htbOTXoBpTVe_gWO_05ohqwWjnNGCV0/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n>\n>\n>\n> This email message may contain legally privileged and/or confidential\n> information.  If you are not the intended recipient(s), or the employee or\n> agent responsible for the delivery of this message to the intended\n> recipient(s), you are hereby notified that any disclosure, copying,\n> distribution, or use of this email message is prohibited.  If you have\n> received this message in error, please notify the sender immediately by\n> e-mail and delete this email message from your computer. Thank you.\n>         [[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n        [[alternative HTML version deleted]]\n\n_______________________________________________\nBioc-devel at r-project.org mailing list\nhttps://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "I?d suggest adding these ideas as issues to AnnotationHub:\n\nhttps://github.com/Bioconductor/AnnotationHub\n\n(or ExperimentHub, depending on the perceived best fit for the data). Even if there is not ye",
+      "thread_id": "thread-ef5929846969",
+      "thread_depth": 4,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-040fed39cd10",
+      "message_id": "<CADPf3_0kq2APPsd=-4OWo2p-XcDAHh9ohNDXhvQFjDpPE4B1mA@mail.gmail.com>",
+      "from_name": "Burak Ogan Mancarci",
+      "from_email_hash": "9e2db3edb4aa2b5341a5ab22cc95a365e7be4ac575aa67cb7487623eac67037b",
+      "date": "2025-02-13T16:48:51-08:00",
+      "subject": "[Bioc-devel] Excluding internal functions from package manual",
+      "subject_clean": "[Bioc-devel] Excluding internal functions from package manual",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "I maintain gemma.R in bioconductor, a package with quite a few internal\nfunctions with documentation. In CRAN, functions that are not exported are\nnot included in the reference pdf that is generated, however in\nBioconductor, we seem to have all documented functions included. I have\nbeen trying to see if there's a difference I can identify but from the\nbuild logs in bioconductor I see that packages are built using\n\nR CMD build --keep-empty-dirs --no-resave-data --md5 gemma.R\n\nwhich generates a reference pdf without internal functions.\n\nI am wondering what I am missing here and if there is a way to exclude\nthese internal functions from the reference. I have checked a few other\npackages to see how they are handling the issue but I could only see the\ninternals being left undocumented entirely\n\nCheers,\nOgan\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "I maintain gemma.R in bioconductor, a package with quite a few internal\nfunctions with documentation. In CRAN, functions that are not exported are\nnot included in the reference pdf that is generated, ",
+      "thread_id": "thread-040fed39cd10",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-a2163ec36ec2",
+      "message_id": "<a53cdfe7-7a92-08e5-c7d1-17153eeae907@gmail.com>",
+      "from_name": "Cao",
+      "from_email_hash": "a15ab87fce9f37a5e228a0c533d219178256b394a269ed38ff3d9313ada9f03e",
+      "date": "2025-02-14T09:15:01+08:00",
+      "subject": "[Bioc-devel] Bioconductor checking error: example failed due to a suggest package of a dependecy package of my package",
+      "subject_clean": "[Bioc-devel] Bioconductor checking error: example failed due to a suggest package of a dependecy package of my package",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Dear,\n\nI have addressed the checking error of my package *microbiomeMarker* and \npushed the commit to the bioconductor repository.\n\nAs shown in the checkResults package \n(https://bioconductor.org/checkResults/release/bioc-LATEST/microbiomeMarker/), \nall checks passed for windows and mac os. But for Linux (Ubuntu), an \nerror occurred while checking the example in function /run_ancombc/:\n\n    Running examples in ?microbiomeMarker-Ex.R? failed\n    The error most likely occurred in:\n\n     > base::assign(\".ptime\", proc.time(), pos = \"CheckExEnv\")\n     > ### Name: run_ancombc\n     > ### Title: Differential analysis of compositions of microbiomes\n    with bias\n     > ###?? correction (ANCOM-BC).\n     > ### Aliases: run_ancombc\n     >\n     > ### ** Examples\n     >\n     > data(enterotypes_arumugam)\n     > ps <- phyloseq::subset_samples(\n    +???? enterotypes_arumugam,\n    +???? Enterotype %in% c(\"Enterotype 3\", \"Enterotype 2\")\n    + )\n     > run_ancombc(ps, group = \"Enterotype\")\n    'ancombc' has been fully evolved to 'ancombc2'.\n    Explore the enhanced capabilities of our refined method!\n    Checking the input data type ...\n    The input data is of type: phyloseq\n    Error in data_sanity_check(data = data, taxa_are_rows =\n    taxa_are_rows,? :\n     ? The 'microbiome' package is needed to process the imported data\n    but is not installed. Please install the package to continue.\n    Calls: run_ancombc -> <Anonymous> -> data_sanity_check\n    Execution halted\n\n\n    The? package *microbiome *is in? the Suggests list of *ANCOMBC\n    *packge, and ANCOMBC is in the Import list of *microbiomeMarker*.\n    Why is the *microbiome* package not installed automatically on\n    Linux?how can I fix this checking error?\n\n\n    Thanks for your attention!\n\n\n    Sincerely,\n\n    Yang Cao\n\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Dear,\n\nI have addressed the checking error of my package *microbiomeMarker* and \npushed the commit to the bioconductor repository.\n\nAs shown in the checkResults package \n(https://bioconductor.org/chec",
+      "thread_id": "thread-a2163ec36ec2",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-a91ecd59347d",
+      "message_id": "<18407505-6A88-4E8F-8BE3-C322F73C2E97@embl.org>",
+      "from_name": "Wolfgang Huber",
+      "from_email_hash": "732e3963b05946a703a53f937f28b1af790a8a5fb319a64ac141ecf95259267d",
+      "date": "2025-02-14T10:53:17+01:00",
+      "subject": "[Bioc-devel] Job: Research Software Engineer - Bioconductor tools for biological data science and AI",
+      "subject_clean": "[Bioc-devel] Job: Research Software Engineer - Bioconductor tools for biological data science and AI",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "We are looking for a research software engineer with experience in open source scientific software engineering to join the Huber group at EMBL in Heidelberg. You will maintain and future-proof widely used existing R/Bioconductor packages for single cell RNA sequencing and multi-omics data analysis, for spatial omics, for integrative / multi-modal machine learning on large datasets.\n\nYou will be working in a community of research software engineers and expert scientists, including Bioconductor, EMBL's large and active community for bioinformatic services and data science, de.NBI and ELIXIR.\n\nSpecific tasks include necessary and important reengineering work on the packages DESeq2, EBImage, biomaRt, Rarr, DEXSeq, IHW, rhdf5 (all on https://www.bioconductor.org/packages/). You will also contribute to training and support efforts for these packages and their use cases, through workflows, improved documentation, use of LLM-based tools, containerisation and cloudification. You will be embedded in a vibrant research team and wider research and scientific services community at EMBL that enables you to work at the cutting edge of scientific and technological developments\n\nPlease see here for more:\nhttps://www.huber.embl.de/group/posts/research-software-engineer.html\n\n\n\n\n---\nWolfgang Huber\nEMBL\nhttps://www.huber.embl.de/\nORCID 0000-0002-0474-2218",
+      "body_snippet": "We are looking for a research software engineer with experience in open source scientific software engineering to join the Huber group at EMBL in Heidelberg. You will maintain and future-proof widely ",
+      "thread_id": "thread-a91ecd59347d",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-0ec2dc0e1069",
+      "message_id": "<8df27957-5a04-41fe-933e-02ebcf69d67d@gmail.com>",
+      "from_name": "Hervé Pagès",
+      "from_email_hash": "3adbe49ac1267296ec6e97410f7ab72179d72b6e877662039a13da08325c17c0",
+      "date": "2025-02-14T20:23:17-08:00",
+      "subject": "[Bioc-devel] Excluding internal functions from package manual",
+      "subject_clean": "[Bioc-devel] Excluding internal functions from package manual",
+      "in_reply_to": "<CADPf3_0kq2APPsd=-4OWo2p-XcDAHh9ohNDXhvQFjDpPE4B1mA@mail.gmail.com>",
+      "references": [
+        "<CADPf3_0kq2APPsd=-4OWo2p-XcDAHh9ohNDXhvQFjDpPE4B1mA@mail.gmail.com>"
+      ],
+      "body_plain": "Hi Burak,\n\nAFAIK 'R CMD build' doesn't generate the PDF of the reference manual but \n'R CMD check' does (it puts the manual in the <pkg>.Rcheck folder). This \nis the manual that we propagate to the package landing pages, and it \nseems that it does indeed include the man pages of the internal \nfunctionality, that is, the man pages that contain \\keyword{internal}.\n\nI investigated this and here is what I found:\n\n- The reference manual can also be generated with 'R CMD Rd2pdf'.\n\n- The Rd2pdf command does NOT include the man pages of the internal \nfunctionality by default. To include them, one needs to specify the \n--internals option. See 'R CMD Rd2pdf --help'.\n\n- 'R CMD check' actually uses the Rd2pdf command internally to generate \nthe manual but for some reason it calls it with the --internals option.\n\nPropagation of the PDF manuals generated by? 'R CMD check' was \nimplemented a long time ago as part of our build system. I guess the \nreason for doing it that way was because it was the simplest way to go. \nMaybe at the time 'R CMD check' was NOT calling?Rd2pdf with the \n--internals option, so everything was fine, and the option was added \nlater in more recent versions of R, I don't know (I didn't search R NEWS \nfile for that).\n\nI don't know if there's an easy fix besides refactoring slightly the \nbuild system to include our own Rd2pdf step to generate the PDFs. Maybe \nyou want to open an issue at https://github.com/Bioconductor/BBS/issues \nto discuss this further with the BBS maintainers.\n\nBest,\n\nH.\n\nOn 13/02/2025 16:48, Burak Ogan Mancarci wrote:\n> I maintain gemma.R in bioconductor, a package with quite a few internal\n> functions with documentation. In CRAN, functions that are not exported are\n> not included in the reference pdf that is generated, however in\n> Bioconductor, we seem to have all documented functions included. I have\n> been trying to see if there's a difference I can identify but from the\n> build logs in bioconductor I see that packages are built using\n>\n> R CMD build --keep-empty-dirs --no-resave-data --md5 gemma.R\n>\n> which generates a reference pdf without internal functions.\n>\n> I am wondering what I am missing here and if there is a way to exclude\n> these internal functions from the reference. I have checked a few other\n> packages to see how they are handling the issue but I could only see the\n> internals being left undocumented entirely\n>\n> Cheers,\n> Ogan\n>\n> \t[[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n-- \nHerv? Pag?s\n\nBioconductor Core Team\nhpages.on.github at gmail.com",
+      "body_snippet": "Hi Burak,\n\nAFAIK 'R CMD build' doesn't generate the PDF of the reference manual but \n'R CMD check' does (it puts the manual in the <pkg>.Rcheck folder). This \nis the manual that we propagate to the pa",
+      "thread_id": "thread-040fed39cd10",
+      "thread_depth": 1,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-8a34df4ae50e",
+      "message_id": "<CAJ3X-4KZKCTom9hZn+4Pq1TjHY8W26VRurA0n4pZDbXkZnTdgQ@mail.gmail.com>",
+      "from_name": "Milena Andreuzo",
+      "from_email_hash": "077bf6709d9834b0e77eb3c3a905ba047739550333b7ea929e42c8d86e21e5fd",
+      "date": "2025-02-15T21:39:12-03:00",
+      "subject": "[Bioc-devel] Add maintainer to package TreeAndLeaf",
+      "subject_clean": "[Bioc-devel] Add maintainer to package TreeAndLeaf",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi Bioconductor core team!\n\nI'm the maintainer for the TreeAndLeaf package, and I'd like to request the\naddition of Mauro Castro (cc?d) as an additional maintainer. Please use the\nfollowing credentials:\n-- Email: mauro.a.castro at gmail.com (already attached to BiocCredentials)\n-- Package link: https://www.bioconductor.org/packages/TreeAndLeaf/\n\nThank you!\n\nMilena Cardoso\nBioinformatician @ Genesis Genomics\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi Bioconductor core team!\n\nI'm the maintainer for the TreeAndLeaf package, and I'd like to request the\naddition of Mauro Castro (cc?d) as an additional maintainer. Please use the\nfollowing credential",
+      "thread_id": "thread-8a34df4ae50e",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-46ca8c85f73c",
+      "message_id": "<BL1PR12MB5301B1E30A2FF20DD98529D8F9FA2@BL1PR12MB5301.namprd12.prod.outlook.com>",
+      "from_name": "Kern, Lori",
+      "from_email_hash": "ea9e9340d257178aa1b928bc69ed4277ea8643508ee1da9006b9114b56b9ff51",
+      "date": "2025-02-18T12:56:48Z",
+      "subject": "[Bioc-devel] Add maintainer to package TreeAndLeaf",
+      "subject_clean": "[Bioc-devel] Add maintainer to package TreeAndLeaf",
+      "in_reply_to": "<CAJ3X-4KZKCTom9hZn+4Pq1TjHY8W26VRurA0n4pZDbXkZnTdgQ@mail.gmail.com>",
+      "references": [
+        "<CAJ3X-4KZKCTom9hZn+4Pq1TjHY8W26VRurA0n4pZDbXkZnTdgQ@mail.gmail.com>"
+      ],
+      "body_plain": "Thank you for reaching out.  We have updated the credentials on our end to allow access.   Remember to update the DESCRIPTION of the package accordingly for automatic messages and communication if needed.\n\nCheers,\n\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Milena Andreuzo <milenandreuzo at gmail.com>\nSent: Saturday, February 15, 2025 7:39 PM\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>\nSubject: [Bioc-devel] Add maintainer to package TreeAndLeaf\n\nHi Bioconductor core team!\n\nI'm the maintainer for the TreeAndLeaf package, and I'd like to request the\naddition of Mauro Castro (cc?d) as an additional maintainer. Please use the\nfollowing credentials:\n-- Email: mauro.a.castro at gmail.com (already attached to BiocCredentials)\n-- Package link: https://secure-web.cisco.com/13K0bmO_gouQuz0OZgg1ko0RucGosODUsN5O476Xdk6VlJQBWl6PuWFEXQwrmd1EOyl-ic7K5-gQHTOkQU-CLdGzel0vYXInQm2jVBcpixPsQegLNtjGF0AoUU2Nkh0B81CsrsDE0FHebYd0bZYhqaE6gMCc11vsokg89KBsx5DsEznl--5wU5phtX2TS5EoBUZ1h5aRTza60dIWq9y4ZAVAFgQuEXa9JdQGFGC-uT67S3hrHalXQwud6GqOtp7RwOGR889w4Z2BPRau4URg6-H7CrAujxlXc06OkW3DPkNm7WoQ_yL3yegFqcP058msb/https%3A%2F%2Fwww.bioconductor.org%2Fpackages%2FTreeAndLeaf%2F\n\nThank you!\n\nMilena Cardoso\nBioinformatician @ Genesis Genomics\n\n        [[alternative HTML version deleted]]\n\n_______________________________________________\nBioc-devel at r-project.org mailing list\nhttps://secure-web.cisco.com/1_RPW3bHB3UVAcz7pZfq091-OP4t6Lxlgl87Utx6197-TOPF_OjW4cH3NcfZUW0IRizlxeYCC5GTNyhqgXKXNL9CjHbFptBAlCO7UwmAQfiwwqRpUumnQydk4DhJZbp372TtDOUkbRG02rGOVgWt8ERZ6RkjiGmnR75b1VqmqZsVqpe62VI6DWNmb7YZJ7PCuN2mYzVNPWczqYR_nvOs1pVY7dpCX_MRE83XAFatxX9r-BbbZ_7OzNfcTpWW39wiquDEjtjLNAlvNym-RGcBKfgcfVuD7nzfroTUv8_qI8iHk9RZ0bJ-PSBztpmA7xWFm/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n\n\n\nThis email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Thank you for reaching out.  We have updated the credentials on our end to allow access.   Remember to update the DESCRIPTION of the package accordingly for automatic messages and communication if nee",
+      "thread_id": "thread-8a34df4ae50e",
+      "thread_depth": 1,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-cd63248c8b49",
+      "message_id": "<BL1PR12MB53019E11950FCD8E3F4BC7EEF9FA2@BL1PR12MB5301.namprd12.prod.outlook.com>",
+      "from_name": "Kern, Lori",
+      "from_email_hash": "ea9e9340d257178aa1b928bc69ed4277ea8643508ee1da9006b9114b56b9ff51",
+      "date": "2025-02-18T13:08:26Z",
+      "subject": "[Bioc-devel]  Bioconductor checking error: example failed due to a suggest package of a dependecy package of my package",
+      "subject_clean": "[Bioc-devel]  Bioconductor checking error: example failed due to a suggest package of a dependecy package of my package",
+      "in_reply_to": "<a53cdfe7-7a92-08e5-c7d1-17153eeae907@gmail.com>",
+      "references": [
+        "<a53cdfe7-7a92-08e5-c7d1-17153eeae907@gmail.com>"
+      ],
+      "body_plain": "If the microbiome package is needed for functionality in your package, it should be listed as a dependency of your package DESCRIPTION.  It currently is not listed as a Depend, Import, or Suggest.   Linux will check that all needed dependencies are declared in the DESCRIPTION so that packages can have a clean independent install. I'm assuming since its only a suggest of  ANCOMBC it does not do this automatically.   Please consider adding microbiome as a Suggest to your package and I think the error would resolve.\n\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Cao <caoyang.name at gmail.com>\nSent: Thursday, February 13, 2025 8:15 PM\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>\nSubject: [Bioc-devel] Bioconductor checking error: example failed due to a suggest package of a dependecy package of my package\n\nDear,\n\nI have addressed the checking error of my package *microbiomeMarker* and\npushed the commit to the bioconductor repository.\n\nAs shown in the checkResults package\n(https://secure-web.cisco.com/1HQJa5oZzllcg3nbwms_UbxNkzkfvBzTGOkc3X6h3mXVI60pEFVQrJmAkA--Mz8cMbQseMKWmKhkxu_OGlVgtk10zfK5BPqFtLJlHBYbwUjBKvL445hgAExPE53sRuN-OGrGy5-ldCuPpqlaRDZ6tDvKGG7v0g-F3E1SoB_7FlD2a3RUdrOQTvspa3TJtqtUM4LYUocU8X3uac7fzBQ4_xxD-kvgZTul3nhnxaVrTXjA8G3gE_-5IWv-0m6NZNZVQ1eE7xllrfVFDvGf3ss2Dr3aFAI5aSK030jmSCdikAuHkg9eHJI5iZ6bIT4rXIjSGT4ATmUd7opfiToc6BWGkCw/https%3A%2F%2Fbioconductor.org%2FcheckResults%2Frelease%2Fbioc-LATEST%2FmicrobiomeMarker%2F),\nall checks passed for windows and mac os. But for Linux (Ubuntu), an\nerror occurred while checking the example in function /run_ancombc/:\n\n    Running examples in \u001b$B!F\u001b(BmicrobiomeMarker-Ex.R\u001b$B!G\u001b(B failed\n    The error most likely occurred in:\n\n     > base::assign(\".ptime\", proc.time(), pos = \"CheckExEnv\")\n     > ### Name: run_ancombc\n     > ### Title: Differential analysis of compositions of microbiomes\n    with bias\n     > ###   correction (ANCOM-BC).\n     > ### Aliases: run_ancombc\n     >\n     > ### ** Examples\n     >\n     > data(enterotypes_arumugam)\n     > ps <- phyloseq::subset_samples(\n    +     enterotypes_arumugam,\n    +     Enterotype %in% c(\"Enterotype 3\", \"Enterotype 2\")\n    + )\n     > run_ancombc(ps, group = \"Enterotype\")\n    'ancombc' has been fully evolved to 'ancombc2'.\n    Explore the enhanced capabilities of our refined method!\n    Checking the input data type ...\n    The input data is of type: phyloseq\n    Error in data_sanity_check(data = data, taxa_are_rows =\n    taxa_are_rows,  :\n       The 'microbiome' package is needed to process the imported data\n    but is not installed. Please install the package to continue.\n    Calls: run_ancombc -> <Anonymous> -> data_sanity_check\n    Execution halted\n\n\n    The  package *microbiome *is in  the Suggests list of *ANCOMBC\n    *packge, and ANCOMBC is in the Import list of *microbiomeMarker*.\n    Why is the *microbiome* package not installed automatically on\n    Linux\u001b$B!$\u001b(Bhow can I fix this checking error?\n\n\n    Thanks for your attention!\n\n\n    Sincerely,\n\n    Yang Cao\n\n\n        [[alternative HTML version deleted]]\n\n_______________________________________________\nBioc-devel at r-project.org mailing list\nhttps://secure-web.cisco.com/12K7YkPT2UeDPD77h5Kxk0cWbi6CFzGE8GhWaRWQGN-mpIDmgz9y0IqsUJFArGwf7ElKTFeHuL4M9-r8jCYX02l6LZAGQQsC8Qi8KHYVrdoajSjrDbcUbSd-xG1cjdHz8yU1Jy2WiQovWeMmE5S5bLjdAG3cke5zJq7_NvalWZX6DdBztaMngeAv4wDTisyKbP6PDSq2IvlgZ48cUpRXndAVeBkYp_RMoG02DKhmB4_0la8zBiwDhKkcsXKd6K5p58sYhFyWvdLSCuEvTgvCPZgU8Dvcw-kGWUt2y4v4whvT0hTjaIPB1BLT5pXK6k7FkikRsywaLSuohlI2uYohUGg/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n\n\n\nThis email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "If the microbiome package is needed for functionality in your package, it should be listed as a dependency of your package DESCRIPTION.  It currently is not listed as a Depend, Import, or Suggest.   L",
+      "thread_id": "thread-a2163ec36ec2",
+      "thread_depth": 1,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-e3d62dffe8e2",
+      "message_id": "<BL1PR12MB5301CF10D1B668E399D8B9D4F9FA2@BL1PR12MB5301.namprd12.prod.outlook.com>",
+      "from_name": "Kern, Lori",
+      "from_email_hash": "ea9e9340d257178aa1b928bc69ed4277ea8643508ee1da9006b9114b56b9ff51",
+      "date": "2025-02-18T13:18:52Z",
+      "subject": "[Bioc-devel] Add a maintainer for MuData",
+      "subject_clean": "[Bioc-devel] Add a maintainer for MuData",
+      "in_reply_to": "<CYYPR02MB990373FDC77FB09A38DEE3ECB8F22@CYYPR02MB9903.namprd02.prod.outlook.com>",
+      "references": [
+        "<CYYPR02MB990373FDC77FB09A38DEE3ECB8F22@CYYPR02MB9903.namprd02.prod.outlook.com>"
+      ],
+      "body_plain": "Yes we can assist with this request.  I will be in touch off list for more information\n\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Danila Bredikhin <danila at stanford.edu>\nSent: Monday, February 10, 2025 5:37 PM\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>\nCc: ilia-kats at gmx.net <ilia-kats at gmx.net>\nSubject: [Bioc-devel] Add a maintainer for MuData\n\nHi Bioc Core Team,\n\nCould you help with adding another maintainer to the MuData<https://secure-web.cisco.com/1seZOtNgx97mVqJTaUxfOBTewe4Zqsk2_PfnXLyYXOQxYuJL4vIsKOp1Y1n-qRb_i-49VXFx3Qrj7xbSQhb8_04S-WE3vNa6ViMiOizs6mFcnInQEv4SYYRayaDpfASdcTD92AEd5TzSO3xzDCn-fmJyitEuecaT2Ip6nHScxnfyQdkVSjCGeBxN_7O4lmbe63Bp3w0dvqbC1u6icmRuYXd5ntvrSyddfbWyXbxFYiHNnE8L1t3E7Hbrvc4nDxu_FNxCLjrdJTMO_Gpmkao43nfiQ4XqiFnRHkhO-6e_CWJ0BpsCrhvs49PpWnUp-zPa-/https%3A%2F%2Fwww.bioconductor.org%2Fpackages%2Frelease%2Fbioc%2Fhtml%2FMuData.html> package?\nCC?ing Ilia Kats for that.\n\nKind regards,\nDanila\n\n        [[alternative HTML version deleted]]\n\n\n\nThis email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Yes we can assist with this request.  I will be in touch off list for more information\n\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostati",
+      "thread_id": "thread-615dd0a7a8c7",
+      "thread_depth": 1,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-5e2b94d3b2dd",
+      "message_id": "<BL1PR12MB53010B68842BE737843C25B4F9FA2@BL1PR12MB5301.namprd12.prod.outlook.com>",
+      "from_name": "Kern, Lori",
+      "from_email_hash": "ea9e9340d257178aa1b928bc69ed4277ea8643508ee1da9006b9114b56b9ff51",
+      "date": "2025-02-18T13:30:57Z",
+      "subject": "[Bioc-devel] experimenthub package timeout and resubmission",
+      "subject_clean": "[Bioc-devel] experimenthub package timeout and resubmission",
+      "in_reply_to": "<CAFu+EnUOBaki9dOwsH7ZqKpCm8BLLWKe3x6M0xPmpGFOoK=GVw@mail.gmail.com>",
+      "references": [
+        "<CAFu+EnUOBaki9dOwsH7ZqKpCm8BLLWKe3x6M0xPmpGFOoK=GVw@mail.gmail.com>"
+      ],
+      "body_plain": "chevreulShiny needs chevreulPlot.   chevreulPlot needs chevreulData however  on the closed submission issue and according to your reviewer you were no longer submitting chevreulData to Bioconductor.   It is not available because it has not been processed.   Please continue conversation on the github issue if we need to review the data package and work to get that into Bioconductor.\n\n\n\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Kevin Stachelek <kevin.stachelek at gmail.com>\nSent: Monday, February 10, 2025 7:46 PM\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>\nSubject: [Bioc-devel] experimenthub package timeout and resubmission\n\nhttps://secure-web.cisco.com/1gdyTl2Tyw5TXC4BDToZ_BXuFMLn1FrYrTMHOuQ1-fhSLoBPrJpcnmsI59EDTJXaEF3lCkAdP7aqZ_vuJLOaDhONepkAlHoB-nCUMuaniQiMnPeA_zf-4EaYmNMl9EKg66MrK2m66RNCTlWrlNQYyMvOV5hxvNTQMngLTTGyNdYPh160JMyUoS-W8RVCiHaxYibiPCZ24ldLLB0yzdR4wYbC1WfkOruO9ZUhRCSL0_COeeL5ELqXLeuJMJEoc25tBDiRMdoUq0iQGzyP7No7tdEvSV6YtqVqTK2HLLr0KNr3BtV1a5o4KVtCSOWzhDv5LYgu9-QCOewr7IOHYFt6msA/https%3A%2F%2Fgithub.com%2FBioconductor%2FContributions%2Fissues%2F3332%23issuecomment-2631735739\n\nHello,\nI recently had several packages added to builds which collectively depend\non an experimenthub package which formerly passed checks without error or\nwarning. I am unable to interpret example check timeout warnings for the\nexperimenthub package. Should I open a new issue contribution to enable\nsubmission of the experimenthub package?\n\nThanks,\n\n--\nKevin Stachelek\n\n        [[alternative HTML version deleted]]\n\n_______________________________________________\nBioc-devel at r-project.org mailing list\nhttps://secure-web.cisco.com/1ogBYNK7tfLE69kaCMB2mSJY_wSGOeH0wT6kpni6SMu5PCJ1jdd9sAXZCJhqJDa-2nFqJ8eONroS_MxwJJLrJy6SFakmBZCvBoa88ntBxGQgRZ8HRN4o9oMSVAZXYjP7R8XIy_-tWIRCUJ2HaeXSTTV1Q8ve1Qr5QbDlApatp32S4OKxVur1j22lfvsjAyr8ARHdVMCIG50wwc0uN99gc3GHifyPAsl0_pdHCeoKD-639-DikYXVJZAaLwsis0OLnLoOiWkm6ah-9HuTiD2IeOo8vIQsqJbnb8SgC7exEYDSMEGU939Ch75AU2CnyAAJSS1_nptpk-V-TgspqeVRAPA/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n\n\n\nThis email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "chevreulShiny needs chevreulPlot.   chevreulPlot needs chevreulData however  on the closed submission issue and according to your reviewer you were no longer submitting chevreulData to Bioconductor.  ",
+      "thread_id": "thread-6a5ceecf501a",
+      "thread_depth": 1,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-581c89814749",
+      "message_id": "<DB7PR03MB5066BD9D29C5E75A00994F0EE2C42@DB7PR03MB5066.eurprd03.prod.outlook.com>",
+      "from_name": "Maria.Doyle",
+      "from_email_hash": "81da13936178a16fc0d29cdf909ea177149013fd99cf53f7ada86f29b1a5660d",
+      "date": "2025-02-20T09:01:05Z",
+      "subject": "[Bioc-devel] EuroBioC2025: Abstract Submissions Open!",
+      "subject_clean": "[Bioc-devel] EuroBioC2025: Abstract Submissions Open!",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "We?re delighted to announce that abstract submissions are now open for the European Bioconductor Conference (EuroBioC2025), taking place September 17-19, 2025, in Barcelona, Spain. This event will bring together the Bioconductor community in Europe to advance bioinformatics, data science, and open-source software.\n\n\nSubmission Types:\n\n\n\n  *   Short Talk: 10-minute talk followed by 5 minutes of questions, focused on a package, or on a research or technological question that motivates software development. Presentations seeking collaboration or input from the community are encouraged.\n  *   Workshop: 1 hour 45 minutes hands-on interactive workshop illustrating the use of a software package or workflow, where participants are expected to have the time and opportunity to follow along and perform analysis themselves.\n  *   Poster: To be showcased during a 1 hour 45 minutes poster session.\n\n\nRegistration will open later, so stay tuned for more details!\n\n\nAbstract Submission Deadline: April 24, 2025\n\nSubmit Abstract: https://eurobioc2025.bioconductor.org<https://eurobioc2025.bioconductor.org/>\n\n\nWe?re looking forward to seeing your abstracts and welcoming you to EuroBioC2025!\n\nMaria Doyle, PhD\nBioconductor Community Manager\n\nSchool of Medicine,\nUniversity of Limerick, Limerick, V94 T9PX\nIreland\nEmail: maria.doyle at ul.ie<mailto:maria.doyle at ul.ie>\nPhone (office): +353 61 234 768\nConnect with the Bioconductor community at our conferences:\n\n  *   GBCC 2025 (June 23-26, New York, USA)<https://gbcc2025.org/>\n  *   EuroBioC 2025 (September 17-19, Barcelona, Spain)<https://www.linkedin.com/posts/bioconductor_eurobioc2024-eurobioc2025-activity-7237888796564885505-hUW6>\n\nI work flexible hours across several time zones. I don't expect you to read or respond to my emails outside of your normal working hours.\n\n\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "We?re delighted to announce that abstract submissions are now open for the European Bioconductor Conference (EuroBioC2025), taking place September 17-19, 2025, in Barcelona, Spain. This event will bri",
+      "thread_id": "thread-581c89814749",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-b83e9ce39d28",
+      "message_id": "<MN2PR10MB3230B22CD4A72A74C03964C2F9C02@MN2PR10MB3230.namprd10.prod.outlook.com>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "109b9a34086cf76701f2b8d9829b34ab79f50658b0fbd49b00fae8e1665544ec",
+      "date": "2025-02-24T23:46:45Z",
+      "subject": "[Bioc-devel] FW: [US-RSE Association] USRSE'25 Call for Submissions",
+      "subject_clean": "[Bioc-devel] FW: [US-RSE Association] USRSE'25 Call for Submissions",
+      "in_reply_to": "<CADNjO_Qv0b+wMAqG=E5XFR3YMWR86v7goUN69+OMXm8S_M5k2Q@mail.gmail.com>",
+      "references": [
+        "<CADNjO_RFvFYQpU_Y5LBh9At_-OuuSYqJQn8NfZxXYP68zuOk4A@mail.gmail.com>",
+        "<CADNjO_TC+T1Gj=fd7vETcfR2D3+LJLhignYpqsnS560aXWApZg@mail.gmail.com>",
+        "<CADNjO_Qv0b+wMAqG=E5XFR3YMWR86v7goUN69+OMXm8S_M5k2Q@mail.gmail.com>"
+      ],
+      "body_plain": "This may be of interest to some folks on this list.\n\nSean\n\nFrom: US-RSE Conference <conference at us-rse.org>\nDate: Monday, February 24, 2025 at 4:47?PM\nTo: announce at us-rse.org <announce at us-rse.org>\nSubject: [US-RSE Association] USRSE'25 Call for Submissions\nWe invite submissions for USRSE'25<https://us-rse.org/usrse25/>, the third annual conference from the United States Research Software Engineer Association (US-RSE<https://us-rse.org/>), to be held in Philadelphia, Pennsylvania, October 6-8, 2025.\n\n\n\nDo you write code for your research? Are you curious about career paths available to computational researchers? If so, USRSE?25 is the perfect venue to showcase your work!\n\n\nWhether you?re a data scientist, digital humanist, scientific programmer, software developer, or research software user, US-RSE is where people at the intersection of code and research come together. The USRSE'25 conference is your chance to connect with peers, mentors, and experts in the fast-growing world of research software. Don?t just take our word for it?100% of last year's post-conference survey respondents said they would return and recommend the conference to others.\n\n\nThis year?s conference theme is ?Code, Practices, and People.? Submission formats include Birds of a Feather (BoFs), workshops, short talks (including papers, talk abstracts, and notebooks), and posters. The submission deadline for all formats (except posters) is May 2, 2025. Poster submissions are due July 20, 2025.\n\n\nVisit the conference website<https://us-rse.org/usrse25/participate/> for further details including:\n\n  *   Technical topics of interest aligned with the conference theme (see last year?s program<https://us-rse.org/usrse24/program/> for ideas)\n  *   Submission formats, templates, and associated deadlines\n  *   How and where to submit\n  *   Dates for notification of acceptance and other important dates\n  *   Venue, hotel, and travel details<https://us-rse.org/usrse25/attend/>\n\n\nInterested in reviewing submissions?  Please volunteer as a reviewer by filling out this form<https://forms.gle/wj2ufbMJaLB1ExR77> before April 1st.\n\nQuestions about the submission process? Contact usrse2025 at easychair.org<mailto:usrse2025 at easychair.org>.\n\n\nNot a member of US-RSE yet? Join for free<https://us-rse.org/get-involved/> and get involved in our active Slack community.\n--\nThis message is from the US-RSE Association, https://us-rse.org.\nTo unsubscribe from this group, send email to announce+unsubscribe at us-rse.org\nTo unsubscribe from this group and stop receiving emails from it, send an email to announce+unsubscribe at us-rse.org<mailto:announce+unsubscribe at us-rse.org>.\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "This may be of interest to some folks on this list.\n\nSean\n\nFrom: US-RSE Conference <conference at us-rse.org>\nDate: Monday, February 24, 2025 at 4:47?PM\nTo: announce at us-rse.org <announce at us-rse.",
+      "thread_id": "thread-b83e9ce39d28",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-fb416e05c09f",
+      "message_id": "<3bc46ad8-0326-46d1-a7d5-a441097590c9@stat.auckland.ac.nz>",
+      "from_name": "Paul Murrell",
+      "from_email_hash": "b3f594a422420b6b0ebe3c322adc862f12e47d04c791ab2c9b39347f77271c1b",
+      "date": "2025-02-26T12:34:27+13:00",
+      "subject": "[Bioc-devel] build/check problems with 'hyperdraw'",
+      "subject_clean": "[Bioc-devel] build/check problems with 'hyperdraw'",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi\n\nI got an automated email about build/check failures for my 'hyperdraw' \npackage, but the error logs show that the failure is because 'Rgraphviz' \nis \"not available\" ...\n\nhttps://bioconductor.org/checkResults/3.21/bioc-LATEST/hyperdraw/nebbiolo1-buildsrc.html\n\nIs my error report just a cascade from 'Rgraphviz' errors?\n\nI see that 'Rgraphviz' is producing Warnings, but otherwise appears to \nbe ok (although that is for 3.20 rather than 3.21) ...\n\nhttps://bioconductor.org/checkResults/3.20/bioc-LATEST/Rgraphviz/nebbiolo2-checksrc.html\n\nI do not see 'Rgraphviz' on the list of removed packages ...\n\nhttps://bioconductor.org/about/removed-packages/\n\nWith 'Rgraphviz' (and other dependencies) installed I can build \n'hyperdraw' fine using Bioc settings with both r-release and r-devel ...\n\nR_ENVIRON_USER=~/.Renviron.bioc R CMD build ../hyperdraw\n\nThanks for any suggestions.\n\nPaul\n-- \nDr Paul Murrell (he/him)\nTe Kura Tatauranga | Department of Statistics\nWaipapa Taumata Rau | The University of Auckland\nPrivate Bag 92019, Auckland 1142, New Zealand\n64 9 3737599 x85392\npaul at stat.auckland.ac.nz\nwww.stat.auckland.ac.nz/~paul/",
+      "body_snippet": "Hi\n\nI got an automated email about build/check failures for my 'hyperdraw' \npackage, but the error logs show that the failure is because 'Rgraphviz' \nis \"not available\" ...\n\nhttps://bioconductor.org/c",
+      "thread_id": "thread-fb416e05c09f",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-5b4ff276b813",
+      "message_id": "<CAJLyBTWjEZYwMugOdVqO1iJt5-foqGBW3Ny80Z-_B9Wc+m7uug@mail.gmail.com>",
+      "from_name": "Robert M. Flight",
+      "from_email_hash": "ecbdce68699023cba1a5d294fc84ea6e8ead5549d56b4195105e3b7178a8433d",
+      "date": "2025-02-25T21:05:20-05:00",
+      "subject": "[Bioc-devel] build/check problems with 'hyperdraw'",
+      "subject_clean": "[Bioc-devel] build/check problems with 'hyperdraw'",
+      "in_reply_to": "<3bc46ad8-0326-46d1-a7d5-a441097590c9@stat.auckland.ac.nz>",
+      "references": [
+        "<3bc46ad8-0326-46d1-a7d5-a441097590c9@stat.auckland.ac.nz>"
+      ],
+      "body_plain": "Hi Paul,\n\nI got a similar email about failures for my package (categoryCompare), but\nonly on Linux, that also seem to be due to Rgraphviz failing to compile and\ninstall on the Linux machines.\n\nI'm assuming whatever is causing Rgraphviz to not compile on Linux will be\nhopefully fixed sooner rather than later.\n\n-Robert\n\nOn Tue, Feb 25, 2025 at 6:35?PM Paul Murrell <paul at stat.auckland.ac.nz>\nwrote:\n\n> Hi\n>\n> I got an automated email about build/check failures for my 'hyperdraw'\n> package, but the error logs show that the failure is because 'Rgraphviz'\n> is \"not available\" ...\n>\n>\n> https://bioconductor.org/checkResults/3.21/bioc-LATEST/hyperdraw/nebbiolo1-buildsrc.html\n>\n> Is my error report just a cascade from 'Rgraphviz' errors?\n>\n> I see that 'Rgraphviz' is producing Warnings, but otherwise appears to\n> be ok (although that is for 3.20 rather than 3.21) ...\n>\n>\n> https://bioconductor.org/checkResults/3.20/bioc-LATEST/Rgraphviz/nebbiolo2-checksrc.html\n>\n> I do not see 'Rgraphviz' on the list of removed packages ...\n>\n> https://bioconductor.org/about/removed-packages/\n>\n> With 'Rgraphviz' (and other dependencies) installed I can build\n> 'hyperdraw' fine using Bioc settings with both r-release and r-devel ...\n>\n> R_ENVIRON_USER=~/.Renviron.bioc R CMD build ../hyperdraw\n>\n> Thanks for any suggestions.\n>\n> Paul\n> --\n> Dr Paul Murrell (he/him)\n> Te Kura Tatauranga | Department of Statistics\n> Waipapa Taumata Rau | The University of Auckland\n> Private Bag 92019, Auckland 1142, New Zealand\n> 64 9 3737599 x85392\n> paul at stat.auckland.ac.nz\n> www.stat.auckland.ac.nz/~paul/\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi Paul,\n\nI got a similar email about failures for my package (categoryCompare), but\nonly on Linux, that also seem to be due to Rgraphviz failing to compile and\ninstall on the Linux machines.\n\nI'm ass",
+      "thread_id": "thread-fb416e05c09f",
+      "thread_depth": 1,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-abe0cb109389",
+      "message_id": "<b9f5c356-3666-4e1c-a80f-3a51feeb23a6@stat.auckland.ac.nz>",
+      "from_name": "Paul Murrell",
+      "from_email_hash": "b3f594a422420b6b0ebe3c322adc862f12e47d04c791ab2c9b39347f77271c1b",
+      "date": "2025-02-26T15:10:39+13:00",
+      "subject": "[Bioc-devel] build/check problems with 'hyperdraw'",
+      "subject_clean": "[Bioc-devel] build/check problems with 'hyperdraw'",
+      "in_reply_to": "<CAJLyBTWjEZYwMugOdVqO1iJt5-foqGBW3Ny80Z-_B9Wc+m7uug@mail.gmail.com>",
+      "references": [
+        "<3bc46ad8-0326-46d1-a7d5-a441097590c9@stat.auckland.ac.nz>",
+        "<CAJLyBTWjEZYwMugOdVqO1iJt5-foqGBW3Ny80Z-_B9Wc+m7uug@mail.gmail.com>"
+      ],
+      "body_plain": "Thanks Robert.  Nice to have someone in the same boat :)\n\nI'll sit tight for now in case it just goes away.\n\nPaul\n\nOn 26/02/25 15:05, Robert M. Flight wrote:\n> \t\n> You don't often get email from rflight79 at gmail.com. Learn why this is \n> important <https://aka.ms/LearnAboutSenderIdentification>\n> \t\n> \n> Hi Paul,\n> \n> I got a similar email about failures for my package (categoryCompare), \n> but only on Linux, that also seem to be due to Rgraphviz failing to \n> compile and install on the Linux machines.\n> \n> I'm assuming whatever is causing Rgraphviz to not compile on Linux will \n> be hopefully fixed sooner rather than later.\n> \n> -Robert\n> \n> On Tue, Feb 25, 2025 at 6:35?PM Paul Murrell <paul at stat.auckland.ac.nz \n> <mailto:paul at stat.auckland.ac.nz>> wrote:\n> \n>     Hi\n> \n>     I got an automated email about build/check failures for my 'hyperdraw'\n>     package, but the error logs show that the failure is because\n>     'Rgraphviz'\n>     is \"not available\" ...\n> \n>     https://bioconductor.org/checkResults/3.21/bioc-LATEST/hyperdraw/nebbiolo1-buildsrc.html <https://bioconductor.org/checkResults/3.21/bioc-LATEST/hyperdraw/nebbiolo1-buildsrc.html>\n> \n>     Is my error report just a cascade from 'Rgraphviz' errors?\n> \n>     I see that 'Rgraphviz' is producing Warnings, but otherwise appears to\n>     be ok (although that is for 3.20 rather than 3.21) ...\n> \n>     https://bioconductor.org/checkResults/3.20/bioc-LATEST/Rgraphviz/nebbiolo2-checksrc.html <https://bioconductor.org/checkResults/3.20/bioc-LATEST/Rgraphviz/nebbiolo2-checksrc.html>\n> \n>     I do not see 'Rgraphviz' on the list of removed packages ...\n> \n>     https://bioconductor.org/about/removed-packages/\n>     <https://bioconductor.org/about/removed-packages/>\n> \n>     With 'Rgraphviz' (and other dependencies) installed I can build\n>     'hyperdraw' fine using Bioc settings with both r-release and r-devel ...\n> \n>     R_ENVIRON_USER=~/.Renviron.bioc R CMD build ../hyperdraw\n> \n>     Thanks for any suggestions.\n> \n>     Paul\n>     -- \n>     Dr Paul Murrell (he/him)\n>     Te Kura Tatauranga | Department of Statistics\n>     Waipapa Taumata Rau | The University of Auckland\n>     Private Bag 92019, Auckland 1142, New Zealand\n>     64 9 3737599 x85392\n>     paul at stat.auckland.ac.nz <mailto:paul at stat.auckland.ac.nz>\n>     www.stat.auckland.ac.nz/~paul/ <http://www.stat.auckland.ac.nz/~paul/>\n> \n>     _______________________________________________\n>     Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org> mailing list\n>     https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>     <https://stat.ethz.ch/mailman/listinfo/bioc-devel>\n> \n\n-- \nDr Paul Murrell (he/him)\nTe Kura Tatauranga | Department of Statistics\nWaipapa Taumata Rau | The University of Auckland\nPrivate Bag 92019, Auckland 1142, New Zealand\n64 9 3737599 x85392\npaul at stat.auckland.ac.nz\nwww.stat.auckland.ac.nz/~paul/",
+      "body_snippet": "Thanks Robert.  Nice to have someone in the same boat :)\n\nI'll sit tight for now in case it just goes away.\n\nPaul\n\nOn 26/02/25 15:05, Robert M. Flight wrote:\n> \t\n> You don't often get email from rflig",
+      "thread_id": "thread-fb416e05c09f",
+      "thread_depth": 2,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-3c24928a85ca",
+      "message_id": "<977e2b31e4ed34077c1f2c0038a31131@molgen.mpg.de>",
+      "from_name": "Persia Akbari Omgba",
+      "from_email_hash": "a0ac827caf1bff1df95137534f6566f41811114e866452ab86686e1e6eecda7f",
+      "date": "2025-02-26T15:21:09+01:00",
+      "subject": "[Bioc-devel] crupR submission re-activation (again)",
+      "subject_clean": "[Bioc-devel] crupR submission re-activation (again)",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hello everyone,\n\nLast year, I submitted a package (crupR) and also got some reviewer \nnotes. I was working on implementing them the last weeks, but forgot to \ngive updates on github, so my issue got de-activated. I wanted to ask \nwhether it could be opened again? Sorry for the inconvenience!\n\nBest,\nPersia Akbari Omgba",
+      "body_snippet": "Hello everyone,\n\nLast year, I submitted a package (crupR) and also got some reviewer \nnotes. I was working on implementing them the last weeks, but forgot to \ngive updates on github, so my issue got d",
+      "thread_id": "thread-3c24928a85ca",
+      "thread_depth": 0,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-2da3274e783f",
+      "message_id": "<BL1PR12MB53011BDBB1A9C037BF66C3E3F9C22@BL1PR12MB5301.namprd12.prod.outlook.com>",
+      "from_name": "Kern, Lori",
+      "from_email_hash": "ea9e9340d257178aa1b928bc69ed4277ea8643508ee1da9006b9114b56b9ff51",
+      "date": "2025-02-26T14:27:30Z",
+      "subject": "[Bioc-devel] crupR submission re-activation (again)",
+      "subject_clean": "[Bioc-devel] crupR submission re-activation (again)",
+      "in_reply_to": "<977e2b31e4ed34077c1f2c0038a31131@molgen.mpg.de>",
+      "references": [
+        "<977e2b31e4ed34077c1f2c0038a31131@molgen.mpg.de>"
+      ],
+      "body_plain": "Yes we will reopen the issue.  Can you please send me the link to the closed issue.\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Persia Akbari Omgba <omgba at molgen.mpg.de>\nSent: Wednesday, February 26, 2025 9:21 AM\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>\nSubject: [Bioc-devel] crupR submission re-activation (again)\n\nHello everyone,\n\nLast year, I submitted a package (crupR) and also got some reviewer\nnotes. I was working on implementing them the last weeks, but forgot to\ngive updates on github, so my issue got de-activated. I wanted to ask\nwhether it could be opened again? Sorry for the inconvenience!\n\nBest,\nPersia Akbari Omgba\n\n_______________________________________________\nBioc-devel at r-project.org mailing list\nhttps://secure-web.cisco.com/1pS9x0WOKAdoYIKdl2965Tx5-f9WjvWGx4_MZgWV-Xiba-Jf7y44TVNpX24Pqe3Z_nzOIVefoY4k438ulpNv7hfO2Kw2ENyjTVsUM1gGryp9AFYc1NuKDPtqNssOA9Ii5RM_YhxWjLqlu5WzIeYP6F1IHRSuQ7XbqqB5aXYuvB1D2tYRnk_DMyJ0_w0knOVYk82Mr50z9ZGczi-zcVCMTWvE54hID6__LYDaZiAqwetpXr4cqgDn4xc7epeQt6B3Zx8WmCvgjeeWzX_7OMyRNalbvABcw23Ejw_wYhStEf8FRr27lDUd1azUBHvW_KQcH/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n\n\n\nThis email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Yes we will reopen the issue.  Can you please send me the link to the closed issue.\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistic",
+      "thread_id": "thread-3c24928a85ca",
+      "thread_depth": 1,
+      "month": "2025-02"
+    },
+    {
+      "id": "msg-e1ba3202f7dc",
+      "message_id": "<DB7PR03MB506689FF3626D404030A2FBBE2CC2@DB7PR03MB5066.eurprd03.prod.outlook.com>",
+      "from_name": "Maria.Doyle",
+      "from_email_hash": "81da13936178a16fc0d29cdf909ea177149013fd99cf53f7ada86f29b1a5660d",
+      "date": "2025-02-28T16:49:39Z",
+      "subject": "[Bioc-devel] useR! 2025 at Duke University in Durham, NC (August 8-10, 2025)",
+      "subject_clean": "[Bioc-devel] useR! 2025 at Duke University in Durham, NC (August 8-10, 2025)",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Forwarding on behalf of useR! 2025 Conference Team:\n\n--------------------------------------------------------------------\n\n\nDear Bioconductor Members\n\n\nWe are thrilled to announce that useR! 2025 will be held at Duke University in Durham, NC, between August 8 and 10, 2025: https://user2025.r-project.org/.\n\n\nThe useR! conference brings together R users, developers, and enthusiasts from around the world for three days of workshops, presentations, and networking. It is aimed at beginners as well as experienced users.\n\n\nMark your calendars and join us for a weekend filled with insightful talks, tutorials, and networking opportunities.\n\n\nConference Dates: Friday, August 8 to Sunday, August 10\n\n?  Friday, August 8: Tutorials, networking and poster session, and opening keynote\n\n?  Saturday, August 9 to Sunday, August 10: Talks, keynotes, and conference social event\n\nSee https://user2025.r-project.org/program/schedule/ for more information on the schedule.\n\n\nVenue: Penn Pavillion at Duke University in Durham, NC (https://maps.app.goo.gl/w1x3btuiYyhTHFSdA)\n\n\nImportant Dates and Deadlines:\n\n?  Call for submissions deadline: Monday, March 10th, 2025, midnight anywhere on earth N.B. This is the extended deadline)\n\n?  Registration opens: Monday, March 3, 2025\n\n?  Registration closes: Tuesday, July 8, 2025\n\n\nTickets: While tickets have not yet gone on sale, you can add your name to the mailing list to be notified when they go on sale on Monday, March 3! https://user2025.r-project.org/register\n\n\nCall for Submissions: Please consider submitting a talk, tutorial, or poster to the conference\n\n?  Tutorials: (3 hours) Interactive sessions teaching practical R skills, methods, or packages. (Tutorials will be allotted 3.5 hours on the schedule to include one 30-minute break halfway through.)\n\n?  Talks: (15-20 minutes) Traditional conference talks presenting research, case studies, or technical content. (Talks will be allotted 20 minutes on the schedule to include time for Q&A. Speakers are encouraged to keep their presentation to 15-17 minutes).\n\n?  Lightning Talks: (5 minutes) Brief, focused presentations on specific R topics, innovations, or experiences.\n\n?  Posters: Visual presentations of research, methods, or applications, with opportunities for in-depth discussion.\n\nSee https://user2025.r-project.org/call for more information and access to the submission portal.\n\n\nSponsorship Opportunities: We are also offering sponsorship opportunities. For more information, see https://user2025.r-project.org/sponsors/ and please contact useR2025 at duke.edu<mailto:useR2025 at duke.edu>.\n\n\nDon't miss this opportunity to connect with fellow R enthusiasts, learn from experts in the field, and join the vibrant R community. We look forward to seeing you there!\n\n\nBest regards,\n\nuseR! 2025 Conference Team\n\n\nMaria Doyle, PhD\nBioconductor Community Manager\n\nSchool of Medicine,\nUniversity of Limerick, Limerick, V94 T9PX\nIreland\nEmail: maria.doyle at ul.ie<mailto:maria.doyle at ul.ie>\nPhone (office): +353 61 234 768\nConnect with the Bioconductor community at our conferences:\n\n  *   GBCC 2025 (June 23-26, New York, USA)<https://gbcc2025.org/>\n  *   EuroBioC 2025 (September 17-19, Barcelona, Spain)<https://eurobioc2025.bioconductor.org/>\n\nI work flexible hours across several time zones. I don't expect you to read or respond to my emails outside of your normal working hours.\n\n\n\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Forwarding on behalf of useR! 2025 Conference Team:\n\n--------------------------------------------------------------------\n\n\nDear Bioconductor Members\n\n\nWe are thrilled to announce that useR! 2025 will",
+      "thread_id": "thread-e1ba3202f7dc",
+      "thread_depth": 0,
+      "month": "2025-02"
+    }
+  ],
+  "threads": [
+    {
+      "id": "thread-c42c9d10fc9e",
+      "subject": "[Bioc-devel]  spoon problems reported Multiple platform build/check BioC 3.21",
+      "message_count": 1,
+      "participants": [
+        "Kern, Lori"
+      ],
+      "started": "2025-02-04T13:49:57+00:00",
+      "last_reply": "2025-02-04T13:49:57+00:00",
+      "root_message_id": "msg-c42c9d10fc9e"
+    },
+    {
+      "id": "thread-ef5929846969",
+      "subject": "[Bioc-devel] ExperimentHub ft resource with password",
+      "message_count": 5,
+      "participants": [
+        "Kern, Lori",
+        "Laurent Gatto",
+        "Mike Smith",
+        "Robert Castelo",
+        "Sean Davis"
+      ],
+      "started": "2025-02-06T09:53:12+00:00",
+      "last_reply": "2025-02-12T02:19:54+00:00",
+      "root_message_id": "msg-ef5929846969"
+    },
+    {
+      "id": "thread-fa7b20985d4d",
+      "subject": "[Bioc-devel] Additional maintainer for package AssessORFData",
+      "message_count": 2,
+      "participants": [
+        "Deepank Korandla",
+        "Kern, Lori"
+      ],
+      "started": "2025-02-07T08:29:46-05:00",
+      "last_reply": "2025-02-10T13:44:51+00:00",
+      "root_message_id": "msg-fa7b20985d4d"
+    },
+    {
+      "id": "thread-a4ca8917d526",
+      "subject": "[Bioc-devel] Announcing the EuroBioC2025 Sticker Design Contest!",
+      "message_count": 1,
+      "participants": [
+        "Maria.Doyle"
+      ],
+      "started": "2025-02-10T09:05:00+00:00",
+      "last_reply": "2025-02-10T09:05:00+00:00",
+      "root_message_id": "msg-a4ca8917d526"
+    },
+    {
+      "id": "thread-6a5ceecf501a",
+      "subject": "[Bioc-devel] experimenthub package timeout and resubmission",
+      "message_count": 2,
+      "participants": [
+        "Kern, Lori",
+        "Kevin Stachelek"
+      ],
+      "started": "2025-02-10T16:46:06-08:00",
+      "last_reply": "2025-02-18T13:30:57+00:00",
+      "root_message_id": "msg-6a5ceecf501a"
+    },
+    {
+      "id": "thread-615dd0a7a8c7",
+      "subject": "[Bioc-devel] Add a maintainer for MuData",
+      "message_count": 2,
+      "participants": [
+        "Danila Bredikhin",
+        "Kern, Lori"
+      ],
+      "started": "2025-02-10T22:37:31+00:00",
+      "last_reply": "2025-02-18T13:18:52+00:00",
+      "root_message_id": "msg-615dd0a7a8c7"
+    },
+    {
+      "id": "thread-d73aadb9d7a1",
+      "subject": "[Bioc-devel] Galaxy Bioconductor Community Conference (GBCC2025) Registration Open!",
+      "message_count": 1,
+      "participants": [
+        "Maria.Doyle"
+      ],
+      "started": "2025-02-11T22:06:26+00:00",
+      "last_reply": "2025-02-11T22:06:26+00:00",
+      "root_message_id": "msg-d73aadb9d7a1"
+    },
+    {
+      "id": "thread-040fed39cd10",
+      "subject": "[Bioc-devel] Excluding internal functions from package manual",
+      "message_count": 2,
+      "participants": [
+        "Burak Ogan Mancarci",
+        "Hervé Pagès"
+      ],
+      "started": "2025-02-13T16:48:51-08:00",
+      "last_reply": "2025-02-14T20:23:17-08:00",
+      "root_message_id": "msg-040fed39cd10"
+    },
+    {
+      "id": "thread-a2163ec36ec2",
+      "subject": "[Bioc-devel] Bioconductor checking error: example failed due to a suggest package of a dependecy package of my package",
+      "message_count": 2,
+      "participants": [
+        "Cao",
+        "Kern, Lori"
+      ],
+      "started": "2025-02-14T09:15:01+08:00",
+      "last_reply": "2025-02-18T13:08:26+00:00",
+      "root_message_id": "msg-a2163ec36ec2"
+    },
+    {
+      "id": "thread-a91ecd59347d",
+      "subject": "[Bioc-devel] Job: Research Software Engineer - Bioconductor tools for biological data science and AI",
+      "message_count": 1,
+      "participants": [
+        "Wolfgang Huber"
+      ],
+      "started": "2025-02-14T10:53:17+01:00",
+      "last_reply": "2025-02-14T10:53:17+01:00",
+      "root_message_id": "msg-a91ecd59347d"
+    },
+    {
+      "id": "thread-8a34df4ae50e",
+      "subject": "[Bioc-devel] Add maintainer to package TreeAndLeaf",
+      "message_count": 2,
+      "participants": [
+        "Kern, Lori",
+        "Milena Andreuzo"
+      ],
+      "started": "2025-02-15T21:39:12-03:00",
+      "last_reply": "2025-02-18T12:56:48+00:00",
+      "root_message_id": "msg-8a34df4ae50e"
+    },
+    {
+      "id": "thread-581c89814749",
+      "subject": "[Bioc-devel] EuroBioC2025: Abstract Submissions Open!",
+      "message_count": 1,
+      "participants": [
+        "Maria.Doyle"
+      ],
+      "started": "2025-02-20T09:01:05+00:00",
+      "last_reply": "2025-02-20T09:01:05+00:00",
+      "root_message_id": "msg-581c89814749"
+    },
+    {
+      "id": "thread-b83e9ce39d28",
+      "subject": "[Bioc-devel] FW: [US-RSE Association] USRSE'25 Call for Submissions",
+      "message_count": 1,
+      "participants": [
+        "Sean Davis"
+      ],
+      "started": "2025-02-24T23:46:45+00:00",
+      "last_reply": "2025-02-24T23:46:45+00:00",
+      "root_message_id": "msg-b83e9ce39d28"
+    },
+    {
+      "id": "thread-fb416e05c09f",
+      "subject": "[Bioc-devel] build/check problems with 'hyperdraw'",
+      "message_count": 3,
+      "participants": [
+        "Paul Murrell",
+        "Robert M. Flight"
+      ],
+      "started": "2025-02-26T12:34:27+13:00",
+      "last_reply": "2025-02-26T15:10:39+13:00",
+      "root_message_id": "msg-fb416e05c09f"
+    },
+    {
+      "id": "thread-3c24928a85ca",
+      "subject": "[Bioc-devel] crupR submission re-activation (again)",
+      "message_count": 2,
+      "participants": [
+        "Kern, Lori",
+        "Persia Akbari Omgba"
+      ],
+      "started": "2025-02-26T15:21:09+01:00",
+      "last_reply": "2025-02-26T14:27:30+00:00",
+      "root_message_id": "msg-3c24928a85ca"
+    },
+    {
+      "id": "thread-e1ba3202f7dc",
+      "subject": "[Bioc-devel] useR! 2025 at Duke University in Durham, NC (August 8-10, 2025)",
+      "message_count": 1,
+      "participants": [
+        "Maria.Doyle"
+      ],
+      "started": "2025-02-28T16:49:39+00:00",
+      "last_reply": "2025-02-28T16:49:39+00:00",
+      "root_message_id": "msg-e1ba3202f7dc"
+    }
+  ]
+}

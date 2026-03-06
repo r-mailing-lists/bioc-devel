@@ -1,0 +1,370 @@
+From mtmorgan at fhcrc.org  Mon Mar  1 17:35:00 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 01 Mar 2010 08:35:00 -0800
+Subject: [Bioc-devel] spring cleaning -- errors, warnings and NEWS
+Message-ID: <4B8BECB4.9080501@fhcrc.org>
+
+Hi Bioc Developers and Maintainers --
+
+Now is a good time to address the various errors and warnings showing up
+on the daily build reports
+
+  http://bioconductor.org/checkResults/2.6/bioc-LATEST/
+
+Many are documentation inconsistencies, and the error or warning
+messages point toward possible solutions. Feel free to post here with
+any hard-to-resolve issues.
+
+Many packages contain a NEWS file, either in the package base directory
+(e.g., Biobase/NEWS) or in the inst/ directory. These are viewable in R,
+once the package is installed, using news(), e.g.,
+
+> news(Version > 1.4, "ShortRead")
+Changes in version 1.5:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o   levels(strand(aln)) is c("+", "-", "*") (was c("-", "+", "*"))
+
+NEW FEATURES
+
+    o   Optionally retrieve multiplex bar code, paired read number, and
+    id from SolexaExport (contribution from Nicolas Delhomme)
+
+    o   renew() and renewable() provide an interface to updating
+    ShortRead instances
+
+    o   srapply checks for and uses multicore
+
+    o   readIntensities supports Illumina RTA '.cif' / '.cnf' files
+
+BUG FIXES
+
+    o   readIntensities type="IparIntensity" correctly handles multiple
+    tiles
+
+NEWS files can be a very useful way of letting users know about changes
+to your package. I encourage you to add a NEWS file if one does not
+already exist. And if you have added a NEWS file, you might be surprised
+to find that news() doesn't print out as nicely as you might hope,
+instead displaying a data.frame with a very wide fourth column. The
+correct format is described in ?news, and the main stumbling blocks I've
+encountered include
+
+* No lines like
+
+CHANGES IN VERSION 1.5
+
+to indicate which version the NEWS applies to. I'm numbering my versions
+to be consistent with ShortRead's DESCRIPTION file.
+
+* Heading with no content, e.g., in
+
+NEW FEATURES
+
+BUG FIXES
+
+    o fixed a bug
+
+The 'NEW FEATURES' heading has no items, and this confuses the parser.
+
+* Unfortunate use of white space. For instance, tab characters may not
+be expanded correctly, and in individual items spanning several lines
+the continuation line should be indented to the bullet (the lower case 'o')
+
+    o this is an item entry that spans several
+    lines
+
+Martin
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From paboyoun at fhcrc.org  Thu Mar 11 20:13:05 2010
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Thu, 11 Mar 2010 11:13:05 -0800
+Subject: [Bioc-devel] BioC 2.6 New Package Submission Deadline - 3/31/10
+Message-ID: <4B9940C1.4080508@fhcrc.org>
+
+BioC package maintainers,
+
+The deadline for a new BioC package submission for the upcoming BioC 2.6 
+Spring release is March 31, 2010. If you have a package that will not be 
+ready by the March 31, 2010 deadline, you need not worry as we will be 
+starting up a BioC 2.7 development branch.
+
+
+Yours truly,
+
+The Biocore Team
+
+
+From james.reid at ifom-ieo-campus.it  Thu Mar 11 22:49:06 2010
+From: james.reid at ifom-ieo-campus.it (James F. Reid)
+Date: Thu, 11 Mar 2010 22:49:06 +0100
+Subject: [Bioc-devel] makeAnnDbPkg (AnnotationDbi)
+Message-ID: <4B996552.5070803@ifom-ieo-campus.it>
+
+Dear list,
+
+I am building a custom annotation package using AnnotationDbi and I have 
+run into problems using a template package structure that does not 
+belong to the the ones supplied under AnnotatioDbi/inst.
+
+For example:
+
+makeAnnDbPkg(myseed, mydbfile, dest_dir = tempdir())
+gives
+Error in createPackage(x at Package, destinationDir = dest_dir, originDir = 
+template_path,  : 'originDir' must be a directory ()
+
+This is because 'myseed' contains a PkgTemplate pointing to my custom 
+directory "/myhome/template/mydb".
+
+The devel version of AnnotationDbi (v. 1.9.4) is doing this to assign 
+the path to the template directory:
+if (!grepl("^/", x at PkgTemplate)[1]) {
+     template_path <- system.file("AnnDbPkg-templates",
+                                  x at PkgTemplate,
+                                  package="AnnotationDbi")
+} else {
+         template_path <- x at PkgTemplate
+}
+
+Another point related to this issue of providing custom pointers for 
+annotation packages is the function mydb_dbschema() which only works if 
+the schema is present under Annotation/inst/DBSchemas/, I had to 
+substitute the code with the following:
+
+@ANNOBJPREFIX at _dbschema <- function() {
+     x <- dbconn(datacache)
+     schema <- dbmeta(x, "DBSCHEMA")
+     version <- dbmeta(x, "DBSCHEMAVERSION")
+     cat(readLines(system.file("DBschemas",
+                               paste("schemas_", version, sep=""),
+                               paste(schema, ".sql", sep=""),
+                               package=sprintf("%s.db",
+                                               "@ANNOBJPREFIX@"))),
+         sep="\n")
+}
+
+Best,
+James.
+
+
+From keith at wehi.EDU.AU  Fri Mar 26 06:27:04 2010
+From: keith at wehi.EDU.AU (Keith Satterley)
+Date: Fri, 26 Mar 2010 16:27:04 +1100
+Subject: [Bioc-devel] tkrplot not installed on pitt
+Message-ID: <4BAC45A8.5080303@wehi.edu.au>
+
+My limmaGUI and affylmGUI packages require the package tkrplot.
+On the pitt host (Mac O S X Tiger(10.4.11) they both have the following 
+error:
+
+* checking package dependencies ... ERROR
+Packages required but not available:
+  tkrplot
+
+
+They don't have this error on unix and Windows. Could you install 
+tkrplot package on pitt please,
+
+cheers,
+
+Keith
+
+========================
+Keith Satterley
+Bioinformatics Division
+The Walter and Eliza Hall Institute of Medical Research
+Parkville, Melbourne,
+Victoria, Australia
+email:keith at wehi.edu.au
+=======================
+
+
+______________________________________________________________________
+The information in this email is confidential and intend...{{dropped:4}}
+
+
+From paboyoun at fhcrc.org  Fri Mar 26 17:52:56 2010
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Fri, 26 Mar 2010 09:52:56 -0700
+Subject: [Bioc-devel] tkrplot not installed on pitt
+In-Reply-To: <4BAC45A8.5080303@wehi.edu.au>
+References: <4BAC45A8.5080303@wehi.edu.au>
+Message-ID: <4BACE668.8070000@fhcrc.org>
+
+Keith,
+CRAN will not be distributing a Mac OS X 10.4 (Tiger) binary for R 2.11. 
+As such Bioconductor is dropping support for Mac OS X 10.4 in BioC 2.6 
+and will continue to support Mac OS X 10.5 (Leopard), which is also used 
+on Mac OS X 10.6 (Snow Leopard) as well. So there is no need to worry 
+about errors on pitt when preparing for the BioC 2.6 release.
+
+Thanks,
+Patrick
+
+
+On 3/25/10 10:27 PM, Keith Satterley wrote:
+> My limmaGUI and affylmGUI packages require the package tkrplot.
+> On the pitt host (Mac O S X Tiger(10.4.11) they both have the 
+> following error:
+>
+> * checking package dependencies ... ERROR
+> Packages required but not available:
+>  tkrplot
+>
+>
+> They don't have this error on unix and Windows. Could you install 
+> tkrplot package on pitt please,
+>
+> cheers,
+>
+> Keith
+>
+> ========================
+> Keith Satterley
+> Bioinformatics Division
+> The Walter and Eliza Hall Institute of Medical Research
+> Parkville, Melbourne,
+> Victoria, Australia
+> email:keith at wehi.edu.au
+> =======================
+>
+>
+> ______________________________________________________________________
+> The information in this email is confidential and inte...{{dropped:6}}
+
+
+From paboyoun at fhcrc.org  Fri Mar 26 19:24:37 2010
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Fri, 26 Mar 2010 11:24:37 -0700
+Subject: [Bioc-devel] Bioconductor 2.6 Release Schedule
+Message-ID: <4BACFBE5.2000608@fhcrc.org>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100326/f06a8015/attachment.pl>
+
+From lmlahti at gmail.com  Mon Mar 29 10:09:44 2010
+From: lmlahti at gmail.com (Leo Lahti)
+Date: Mon, 29 Mar 2010 11:09:44 +0300
+Subject: [Bioc-devel] fyi: pint - pairwise integration of heterogeneous
+	functional genomics data
+Message-ID: <bd1ceb981003290109g8b040bdubaa9544aced019e@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100329/c068eca5/attachment.pl>
+
+From hpages at fhcrc.org  Tue Mar 30 01:01:56 2010
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Mon, 29 Mar 2010 16:01:56 -0700
+Subject: [Bioc-devel] Last release builds at the end of the week.
+Message-ID: <4BB13164.60707@fhcrc.org>
+
+Hi developers,
+
+We are planning to stop running the BioC 2.5 builds (current *release*)
+at the end of this week. The last release builds for software and
+experimental packages will run on Friday, 2 April. As usual, they will
+start around 11:30 pm (Seattle time) and the results will be online
+around noon the day after at this location:
+
+   http://bioconductor.org/checkResults/2.5/bioc-LATEST/
+
+This will give us some time to upgrade wilson2 to openSUSE 11.2 before
+the next BioC release (scheduled for April 23) so the machine is ready
+for when we start the new devel cycle (will be BioC 2.7 and will require
+R-2.12).
+
+Please let us know if you have any question.
+
+Cheers,
+H.
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From sfalcon at fhcrc.org  Tue Mar 30 21:34:10 2010
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 30 Mar 2010 12:34:10 -0700
+Subject: [Bioc-devel] R CMD check RNAither, error LiWongRank
+In-Reply-To: <20100330090313.295410@gmx.net>
+References: <4BB11BC5.2010007@fhcrc.org> <20100330090313.295410@gmx.net>
+Message-ID: <4BB25232.3070508@fhcrc.org>
+
+Hi Nora,
+
+On 3/30/10 2:03 AM, RNAither at gmx.de wrote:
+> I have checked the LiWongRank function manually and it works without
+> any problem. The problem seems to be that the function needs user
+> input to work. Here's the code of the example that is failing:
+
+
+> data(exampleHeader, package="RNAither")
+> data(exampleDataset, package="RNAither")
+>
+
+
+
+> However, the "0.5" does not seem to get acknowledged during the check
+> any more (it definitely did before), which is why NA is taken as a
+> value, which yields an error later in the function. Is there some way
+> around this?
+
+Examples that require user input should not be run during automated 
+testing.  One way to avoid this is to wrap the example code in an if 
+block like this:
+
+
+    if (interactive()) {
+        # code here that needs user input
+    }
+
+But I wonder if you can provide a means of specifying the required input 
+all at once when the function is called?  There is considerable benefit 
+in having code in your package executed during R CMD check so that its 
+functionality is continuously and automatically getting some verification.
+
+To make this suggestion concrete, could you add some additional optional 
+argument to LiWongRank so it might look like:
+
+    LiWongRank <- function(header, dataset, list("SigIntensity", 
+"GeneName", v1=NULL, v2=NULL, v3=NULL, v4=NULL) { ...}
+
+Then the call in the example could be:
+
+ > normres<- LiWongRank(header, dataset, list("SigIntensity", 
+"GeneName"), 0.5, 3, 2, 3)
+
+The code could determine whether these arguments had been provided and 
+if not, query the user for additional input.
+
++ seth
+
+-- 
+Seth Falcon
+Bioconductor Core Team | FHCRC
+
+

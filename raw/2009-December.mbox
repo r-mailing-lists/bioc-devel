@@ -1,0 +1,1501 @@
+From mcarlson at fhcrc.org  Tue Dec  1 22:35:30 2009
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Tue, 01 Dec 2009 13:35:30 -0800
+Subject: [Bioc-devel] Oddity in hgu133plus2.db?
+In-Reply-To: <4d9dc8480911250732w3748d0fdof9e10d9345cd380@mail.gmail.com>
+References: <4B0CD7DC020000EE0009027E@gwia01x.med.umich.edu>
+	<4d9dc8480911250449n4b67f796qb6cd97a70bb9b08f@mail.gmail.com>
+	<4B0D353B.5010606@med.umich.edu>
+	<4d9dc8480911250732w3748d0fdof9e10d9345cd380@mail.gmail.com>
+Message-ID: <4B158C22.6010806@fhcrc.org>
+
+Hi Lasse,
+
+Just to clarify and add some comments:  The behavior of Rkeys() on these
+mappings is actually the same as it has been before, it has always
+returned the total right keys (whether they have been mapped or not). 
+To get mapped right keys you would want to use mappedRkeys().  The
+difference is that now the possible unmapped right keys have been
+expanded to include all possible keys (gene symbols for this example),
+while before this was artificially subset to only the keys for genes
+represented by the platform. 
+
+Now for some platforms, this may mean that before the value of Rkeys(x)
+could have sometimes been the same as mappedRkeys(x).  And this could
+have happened if everything in 'x' was mapped on that platform.  But
+this was only ever a serendipitous situation, and not meant to be relied
+upon.  So if you want to really check for mapped keys you will should
+use mappedRkeys().
+
+I hope this clarifies things,
+
+
+  Marc
+
+
+
+Lasse Folkersen wrote:
+> Ok. I'll put checks for gensymbols linking to NA values for probeset
+> into my code in the future. Thank you so much for the info.
+> Lasse
+>
+> 2009/11/25 James W. MacDonald <jmacdon at med.umich.edu>:
+>   
+>> I should change slightly what I have said. The hgu133plus2.db package in the
+>> new version of BioC has changed quite a bit, and no longer contains much
+>> data. Instead, it is a thin wrapper for the org.Hs.eg.db package.
+>>
+>> Since org.Hs.eg.db *does* contain mappings for this symbol, the Rkey exists:
+>>
+>>     
+>>> grep("CD68", Rkeys(hgu133plus2SYMBOL), value=T)
+>>>       
+>> [1] "CD68"
+>>
+>> But this doesn't mean this gene product is interrogated by the hgu133plus2
+>> chip. The Lkey for this symbol is NA, because a matching probeset is Not
+>> Available on the hgu133plus2 chip.
+>>
+>> So the behavior is consistent - there is a Rkey for this symbol, but the
+>> Lkey is NA.
+>>
+>> Best,
+>>
+>> Jim
+>>
+>>
+>>
+>> Lasse Folkersen wrote:
+>>     
+>>> I see. Its just when genes doesn't exist in a table they usually gives
+>>> error messages, like this:
+>>>
+>>> get("whatever", revmap(hgu133plus2SYMBOL))
+>>> Error in .checkKeys(value, Rkeys(x), x at ifnotfound) :
+>>>  value for "whatever" not found
+>>>
+>>> instead of NA. When asking for existence
+>>> "CD68" %in% Rkeys(hgu133plus2SYMBOL)
+>>> it does gives TRUE
+>>>
+>>> So I thought it could have been a bug or un-wanted behaviour. But
+>>> thanks for your answer.
+>>> Lasse
+>>>
+>>> 2009/11/25 James MacDonald <jmacdon at med.umich.edu>:
+>>>       
+>>>> Hi Lasse,
+>>>>
+>>>> This gene doesn't exist in that table:
+>>>>
+>>>>         
+>>>>> get("CD68", revmap(hgu133plus2SYMBOL))
+>>>>>           
+>>>> [1] NA
+>>>>
+>>>> It just so happens that selecting things the way you did returns an empty
+>>>> ProbeAnnDbBimap, which when converted to character gives you character(0).
+>>>>
+>>>>         
+>>>>> revmap(hgu133plus2SYMBOL)["CD68"]
+>>>>>           
+>>>> revmap(SYMBOL) submap for chip hgu133plus2 (object of class
+>>>> "ProbeAnnDbBimap")
+>>>>
+>>>> Best,
+>>>>
+>>>> Jim
+>>>>
+>>>>
+>>>>         
+>>>>>>> Lasse Folkersen <lasse.folkersen at ki.se> 11/25/09 6:40 AM >>>
+>>>>>>>               
+>>>> I know it is a very specific case, but this seems to me like a general
+>>>> error:
+>>>>
+>>>> in hgu133plus2.db package, using
+>>>> as.character(revmap(hgu133plus2SYMBOL)["CD68"])
+>>>> returns
+>>>> named character(0)
+>>>> Now, it may be that annotations change, but isn't it a mistake that
+>>>> there exists an Rkey entry for the gene which links to nothing?
+>>>> Usually genes with no known probesets just didn't exist in the
+>>>> database at all.
+>>>>
+>>>> Best regards
+>>>> Lasse
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>>> **********************************************************
+>>>> Electronic Mail is not secure, may not be read every day, and should not
+>>>> be used for urgent or sensitive issues
+>>>>
+>>>>         
+>> --
+>> James W. MacDonald, M.S.
+>> Biostatistician
+>> Douglas Lab
+>> University of Michigan
+>> Department of Human Genetics
+>> 5912 Buhl
+>> 1241 E. Catherine St.
+>> Ann Arbor MI 48109-5618
+>> 734-615-7826
+>> **********************************************************
+>> Electronic Mail is not secure, may not be read every day, and should not be
+>> used for urgent or sensitive issues
+>>
+>>     
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+From hpages at fhcrc.org  Wed Dec  2 20:02:32 2009
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Wed, 02 Dec 2009 11:02:32 -0800
+Subject: [Bioc-devel] our svn server is down
+Message-ID: <4B16B9C8.80203@fhcrc.org>
+
+Hi developers,
+
+Our Subversion server at hedgehog.fhcrc.org is currently down due
+to a hardware failure early this morning. The IT people here at the
+Hutch are working hard to come with a rescue plan. They've replaced
+the hardware, the new hedgehog is up and running again, and, if
+everything goes well, access to our Subversion repo should be
+working again towards the end of the day. We'll keep you updated.
+
+Thanks for your patience and sorry for the inconvenience!
+
+- The Seattle Team
+
+
+From paboyoun at fhcrc.org  Wed Dec  2 20:41:11 2009
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Wed, 02 Dec 2009 11:41:11 -0800
+Subject: [Bioc-devel] our svn server is down
+In-Reply-To: <4B16B9C8.80203@fhcrc.org>
+References: <4B16B9C8.80203@fhcrc.org>
+Message-ID: <4B16C2D7.7060906@fhcrc.org>
+
+I just received word that the Subversion server is back up again. IT is 
+still working on configuring the new hedgehog.fhcrc.org server, however, 
+so there may be intermittent downtimes over the next four hours. To be 
+on the safe side, I would recommend using svn for check outs only until 
+the four hour window for IT work has completed. Thanks again for your 
+patience!
+
+
+Cheers,
+Patrick
+
+
+
+Herv? Pag?s wrote:
+> Hi developers,
+>
+> Our Subversion server at hedgehog.fhcrc.org is currently down due
+> to a hardware failure early this morning. The IT people here at the
+> Hutch are working hard to come with a rescue plan. They've replaced
+> the hardware, the new hedgehog is up and running again, and, if
+> everything goes well, access to our Subversion repo should be
+> working again towards the end of the day. We'll keep you updated.
+>
+> Thanks for your patience and sorry for the inconvenience!
+>
+> - The Seattle Team
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From J.J.Goeman at lumc.nl  Fri Dec  4 14:09:23 2009
+From: J.J.Goeman at lumc.nl (J.J.Goeman at lumc.nl)
+Date: Fri, 4 Dec 2009 14:09:23 +0100
+Subject: [Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi
+Message-ID: <38475A805F094643B2BDE29E85B12E1B01521B79@maild.lumcnet.prod.intern>
+
+
+ Dear all,
+
+I ran into a NAMESPACE problem, which I solved (more or less) but which
+I still want to share, because I do not completely understand what is
+happening.
+
+On Rcmd check, my package vignette gave the error
+
+Error in as.list.default(alias) : 
+  no method for coercing this S4 class to a vector
+
+The culprit was a call of as.list(alias), where alias = hu6800SYMBOL,
+inside a function. Similar errors arose using mget on hu6800SYMBOL.
+
+As the vignette ran without errors if I just sourced all my R files, I
+concluded it must be a namespace problem. I INSTALLed my package with a
+browser() in the right location, and I was able to produce the following
+output:
+
+> features(res, alias=hu6800SYMBOL)
+Called from: covariates(...)
+Browse[1]> class(alias)
+[1] "ProbeAnnDbBimap"
+attr(,"package")
+[1] "AnnotationDbi"
+Browse[1]> showMethods("as.list")
+Function: as.list (package base)
+x="AgiAnnDbMap"
+x="AnnDbBimap"
+x="ANY"
+x="Bimap"
+x="EBMTP"
+x="FlatBimap"
+    (inherited from: x="Bimap")
+x="GoAnnDbBimap"
+x="GOTermsAnnDbBimap"
+x="IpiAnnDbMap"
+x="logical"
+    (inherited from: x="ANY")
+x="MTP"
+x="ProbeAnnDbBimap"
+    (inherited from: x="AnnDbBimap")
+Browse[1]> as.list(alias)
+Error in as.list.default(alias) : 
+  no method for coercing this S4 class to a vector
+
+Clearly, AnnotationDbi is attached, but somehow as.list() is not able to
+find the method for the ProbeAnnDbBimap object that is inherited from
+AnnDbBimap.
+
+As I had already concluded that it was a namespace problem, I tried
+adding 
+
+importFrom(AnnotationDbi, as.list)
+
+to my NAMESPACE file. That solved the error (or worked around it?), but
+I don't really understand why.
+
+I'd be grateful if somebody who knows more about namespaces could
+explain this issue to me.
+
+Session info below.
+
+Jelle
+
+
+R version 2.10.0 (2009-10-26) 
+i386-pc-mingw32 
+
+locale:
+[1] LC_COLLATE=English_United Kingdom.1252 
+[2] LC_CTYPE=English_United Kingdom.1252   
+[3] LC_MONETARY=English_United Kingdom.1252
+[4] LC_NUMERIC=C                           
+[5] LC_TIME=English_United Kingdom.1252    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+
+other attached packages:
+ [1] annotate_1.24.0     KEGG.db_2.3.5       hu6800.db_2.3.5    
+ [4] org.Hs.eg.db_2.3.6  RSQLite_0.7-3       DBI_0.2-4          
+ [7] AnnotationDbi_1.8.1 vsn_3.14.0          golubEsets_1.4.7   
+[10] globaltest_5.1.1    Biobase_2.5.8      
+
+loaded via a namespace (and not attached):
+ [1] affy_1.24.2          affyio_1.14.0        grid_2.10.0         
+ [4] lattice_0.17-26      limma_2.19.1         MASS_7.3-4          
+ [7] multtest_2.2.0       preprocessCore_1.7.4 splines_2.10.0      
+[10] survival_2.35-7      tools_2.10.0         xtable_1.5-6 
+
+www.msbi.nl/goeman 
+
+
+From mtmorgan at fhcrc.org  Fri Dec  4 18:34:42 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Fri, 04 Dec 2009 09:34:42 -0800
+Subject: [Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi
+In-Reply-To: <38475A805F094643B2BDE29E85B12E1B01521B79@maild.lumcnet.prod.intern>
+References: <38475A805F094643B2BDE29E85B12E1B01521B79@maild.lumcnet.prod.intern>
+Message-ID: <4B194832.8050201@fhcrc.org>
+
+Hi Jelle --
+
+J.J.Goeman at lumc.nl wrote:
+>  Dear all,
+> 
+> I ran into a NAMESPACE problem, which I solved (more or less) but which
+> I still want to share, because I do not completely understand what is
+> happening.
+> 
+> On Rcmd check, my package vignette gave the error
+> 
+> Error in as.list.default(alias) : 
+>   no method for coercing this S4 class to a vector
+> 
+> The culprit was a call of as.list(alias), where alias = hu6800SYMBOL,
+> inside a function. Similar errors arose using mget on hu6800SYMBOL.
+> 
+> As the vignette ran without errors if I just sourced all my R files, I
+> concluded it must be a namespace problem. I INSTALLed my package with a
+> browser() in the right location, and I was able to produce the following
+> output:
+> 
+>> features(res, alias=hu6800SYMBOL)
+> Called from: covariates(...)
+> Browse[1]> class(alias)
+> [1] "ProbeAnnDbBimap"
+> attr(,"package")
+> [1] "AnnotationDbi"
+> Browse[1]> showMethods("as.list")
+> Function: as.list (package base)
+> x="AgiAnnDbMap"
+> x="AnnDbBimap"
+> x="ANY"
+> x="Bimap"
+> x="EBMTP"
+> x="FlatBimap"
+>     (inherited from: x="Bimap")
+> x="GoAnnDbBimap"
+> x="GOTermsAnnDbBimap"
+> x="IpiAnnDbMap"
+> x="logical"
+>     (inherited from: x="ANY")
+> x="MTP"
+> x="ProbeAnnDbBimap"
+>     (inherited from: x="AnnDbBimap")
+> Browse[1]> as.list(alias)
+> Error in as.list.default(alias) : 
+>   no method for coercing this S4 class to a vector
+> 
+> Clearly, AnnotationDbi is attached, but somehow as.list() is not able to
+> find the method for the ProbeAnnDbBimap object that is inherited from
+> AnnDbBimap.
+> 
+> As I had already concluded that it was a namespace problem, I tried
+> adding 
+> 
+> importFrom(AnnotationDbi, as.list)
+> 
+> to my NAMESPACE file. That solved the error (or worked around it?), but
+> I don't really understand why.
+
+AnnotationDbi promotes as.list to an S4 generic. Without the import,
+your package finds base::as.list, which knows nothing of the generic
+(and methods associated with it). This is analogous to the situation
+with a regular function.
+
+There might be some additional complexity with the showMethods output.
+Consistent with my understanding, if in a new R session I
+
+library(Biobase)
+library(AnnotationDbi)
+data(sample.ExpressionSet)
+trace(pData, browser) # I'll be inside the Biobase name space
+
+I get
+
+> showMethods(as.list)
+Function: as.list (package base)
+x="AgiAnnDbMap"
+x="AnnDbBimap"
+x="ANY"
+x="Bimap"
+x="GoAnnDbBimap"
+x="GOTermsAnnDbBimap"
+x="IpiAnnDbMap"
+
+> pData(sample.ExpressionSet)
+Tracing pData(phenoData(object)) on entry
+Called from: eval(expr, envir, enclos)
+Browse[1]> showMethods(as.list)
+
+Function "as.list":
+ <not a generic function>
+
+There does seem to be a glitch here, though, because forcing name
+resolution rather than symbol look up results in
+
+Browse[1]> showMethods("as.list")
+Function: as.list (package base)
+x="AgiAnnDbMap"
+x="AnnDbBimap"
+x="ANY"
+x="Bimap"
+x="GoAnnDbBimap"
+x="GOTermsAnnDbBimap"
+x="IpiAnnDbMap"
+
+I guess logically this is making some sense -- as.list is not a generic,
+whereas showMethods("as.list") says explicitly to look for the methods
+on the as.list generic, and since base::as.list is not a generic the
+search continues until AnnotationDbi::as.list is encountered.
+
+Martin
+
+> 
+> I'd be grateful if somebody who knows more about namespaces could
+> explain this issue to me.
+> 
+> Session info below.
+> 
+> Jelle
+> 
+> 
+> R version 2.10.0 (2009-10-26) 
+> i386-pc-mingw32 
+> 
+> locale:
+> [1] LC_COLLATE=English_United Kingdom.1252 
+> [2] LC_CTYPE=English_United Kingdom.1252   
+> [3] LC_MONETARY=English_United Kingdom.1252
+> [4] LC_NUMERIC=C                           
+> [5] LC_TIME=English_United Kingdom.1252    
+> 
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+> 
+> 
+> other attached packages:
+>  [1] annotate_1.24.0     KEGG.db_2.3.5       hu6800.db_2.3.5    
+>  [4] org.Hs.eg.db_2.3.6  RSQLite_0.7-3       DBI_0.2-4          
+>  [7] AnnotationDbi_1.8.1 vsn_3.14.0          golubEsets_1.4.7   
+> [10] globaltest_5.1.1    Biobase_2.5.8      
+> 
+> loaded via a namespace (and not attached):
+>  [1] affy_1.24.2          affyio_1.14.0        grid_2.10.0         
+>  [4] lattice_0.17-26      limma_2.19.1         MASS_7.3-4          
+>  [7] multtest_2.2.0       preprocessCore_1.7.4 splines_2.10.0      
+> [10] survival_2.35-7      tools_2.10.0         xtable_1.5-6 
+> 
+> www.msbi.nl/goeman 
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From sfalcon at fhcrc.org  Fri Dec  4 20:34:58 2009
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 04 Dec 2009 11:34:58 -0800
+Subject: [Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi
+In-Reply-To: <4B194832.8050201@fhcrc.org>
+References: <38475A805F094643B2BDE29E85B12E1B01521B79@maild.lumcnet.prod.intern>
+	<4B194832.8050201@fhcrc.org>
+Message-ID: <4B196462.5070003@fhcrc.org>
+
+Hi Jelle,
+
+I think I have an explanation for you.  Prior to your change, you had 
+AnnotationDbi listed in the 'Imports' field of the DESCRIPTION file for 
+your globaltest package.  Listing a package in Imports tells R that 
+these packges are dependencies, but does not actually cause these 
+packages to be imported into your package's name space.  For that you 
+have to add something to NAMESPACE.
+
+The addition you made is fine.  You can also do a wholesale import as:
+
+   import("AnnotationDbi")
+
+And then you should not need the more granular imports.  However, the 
+granular imports where you import specific symbols is generally a good 
+practice since it avoids unintentional name conflicts.  A change in a 
+package you import could introduce a symbol clash, but this will not be 
+an issue if you have imported the minimal set of symbols.
+
+Does that help?
+
++ seth
+
+-- 
+Seth Falcon
+Program in Computational Biology | Fred Hutchinson Cancer Research Center
+
+
+From mwkimpel at gmail.com  Sat Dec  5 05:40:19 2009
+From: mwkimpel at gmail.com (Mark Kimpel)
+Date: Fri, 4 Dec 2009 23:40:19 -0500
+Subject: [Bioc-devel] package "oligo" fails to build on R-devel using 64-bit
+	Ubuntu 9.10 Karmic Koala
+Message-ID: <6b93d1830912042040w6182adf1k887ce394cd97b2e7@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091204/56834c85/attachment.pl>
+
+From bcarvalh at jhsph.edu  Sat Dec  5 06:08:37 2009
+From: bcarvalh at jhsph.edu (Benilton Carvalho)
+Date: Sat, 5 Dec 2009 03:08:37 -0200
+Subject: [Bioc-devel] package "oligo" fails to build on R-devel using
+	64-bit Ubuntu 9.10 Karmic Koala
+In-Reply-To: <6b93d1830912042040w6182adf1k887ce394cd97b2e7@mail.gmail.com>
+References: <6b93d1830912042040w6182adf1k887ce394cd97b2e7@mail.gmail.com>
+Message-ID: <24CC1B04-24D8-4261-9083-5181388F6342@jhsph.edu>
+
+Hi Mark,
+
+Apologies for the inconvenience this may cause. We've been working on oligo & friends, implementing changes that will simplify usage and improve user's experience.
+
+Slowly things are falling back in place: earlier today I committed changes that address some of the problems below. And I believe that this particular version isn't yet visible for most of the users, although you will be able to get it straight from the svn server.
+
+In the meantime, I hope that oligo on the release branch is sufficient for your tasks.
+
+Cheers,
+
+b
+
+On Dec 5, 2009, at 2:40 AM, Mark Kimpel wrote:
+
+> Today I installed the current R-devel for the first time and all packages
+> build except "oligo" and a couple packages that depend on it. Below is my
+> buid output followed by sessionInfo(). Please let me know if I can provide
+> any other information that might be helpful. Thanks,
+> D
+> Mark
+> 
+> downloaded 696 Kb
+> 
+> Loading required package: utils
+> * installing *source* package ?oligo? ...
+> ** libs
+> gcc -std=gnu99 -I/home/mkimpel/R_HOME/R-devel/R-build/lib64/R/include
+> -I/usr/local/include
+> -I"/home/mkimpel/R_HOME/site-library-2.11.0/preprocessCore/include"   -fpic
+> -g -O2 -c ParserXYS.c -o ParserXYS.o
+> ParserXYS.c: In function ?xys_header_field?:
+> ParserXYS.c:144: warning: ignoring return value of ?fgets?, declared with
+> attribute warn_unused_result
+> ParserXYS.c: In function ?R_read_xys_header?:
+> ParserXYS.c:318: warning: ignoring return value of ?fgets?, declared with
+> attribute warn_unused_result
+> gcc -std=gnu99 -I/home/mkimpel/R_HOME/R-devel/R-build/lib64/R/include
+> -I/usr/local/include
+> -I"/home/mkimpel/R_HOME/site-library-2.11.0/preprocessCore/include"   -fpic
+> -g -O2 -c baseProfile.c -o baseProfile.o
+> gcc -std=gnu99 -I/home/mkimpel/R_HOME/R-devel/R-build/lib64/R/include
+> -I/usr/local/include
+> -I"/home/mkimpel/R_HOME/site-library-2.11.0/preprocessCore/include"   -fpic
+> -g -O2 -c basecontent.c -o basecontent.o
+> gcc -std=gnu99 -I/home/mkimpel/R_HOME/R-devel/R-build/lib64/R/include
+> -I/usr/local/include
+> -I"/home/mkimpel/R_HOME/site-library-2.11.0/preprocessCore/include"   -fpic
+> -g -O2 -c rma2.c -o rma2.o
+> gcc -std=gnu99 -I/home/mkimpel/R_HOME/R-devel/R-build/lib64/R/include
+> -I/usr/local/include
+> -I"/home/mkimpel/R_HOME/site-library-2.11.0/preprocessCore/include"   -fpic
+> -g -O2 -c rma_common.c -o rma_common.o
+> gcc -std=gnu99 -I/home/mkimpel/R_HOME/R-devel/R-build/lib64/R/include
+> -I/usr/local/include
+> -I"/home/mkimpel/R_HOME/site-library-2.11.0/preprocessCore/include"   -fpic
+> -g -O2 -c trimmed.c -o trimmed.o
+> gcc -std=gnu99 -shared -L/usr/local/lib64 -o oligo.so ParserXYS.o
+> baseProfile.o basecontent.o rma2.o rma_common.o trimmed.o
+> ** R
+> ** inst
+> ** preparing package for lazy loading
+> Loading required package: Biobase
+> 
+> Welcome to Bioconductor
+> 
+>  Vignettes contain introductory material. To view, type
+>  'openVignette()'. To cite Bioconductor, see
+>  'citation("Biobase")' and for packages 'citation(pkgname)'.
+> 
+> Error in setMethod("pmSequence", "FeatureSet", function(object)
+> pmSequence(getPD(object))) :
+>  no existing definition for function "pmSequence"
+> Error : unable to load R code in package 'oligo'
+> ERROR: lazy loading failed for package ?oligo?
+> * removing ?/home/mkimpel/R_HOME/site-library-2.11.0/oligo?
+> 
+> The downloaded packages are in
+> ?/tmp/RtmpTF8R6F/downloaded_packages?
+> Warning message:
+> In install.packages(pkgs = pkgs, repos = repos, ...) :
+>  installation of package 'oligo' had non-zero exit status
+>> sessionInfo()
+> R version 2.11.0 Under development (unstable) (2009-12-03 r50653)
+> x86_64-unknown-linux-gnu
+> 
+> locale:
+> [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+> [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+> [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+> [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+> [9] LC_ADDRESS=C               LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+> 
+> attached base packages:
+> [1] stats     graphics  grDevices datasets  utils     methods   base
+> 
+> other attached packages:
+> [1] Biobase_2.7.0
+> 
+> loaded via a namespace (and not attached):
+> [1] tools_2.11.0
+> 
+> Mark W. Kimpel MD  ** Neuroinformatics ** Dept. of Psychiatry
+> Indiana University School of Medicine
+> 
+> 15032 Hunter Court, Westfield, IN  46074
+> 
+> (317) 490-5129 Work, & Mobile & VoiceMail
+> (317) 399-1219 Skype No Voicemail please
+> 
+>        [[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From mwkimpel at gmail.com  Sat Dec  5 18:57:49 2009
+From: mwkimpel at gmail.com (Mark Kimpel)
+Date: Sat, 5 Dec 2009 12:57:49 -0500
+Subject: [Bioc-devel] package "oligo" fails to build on R-devel using
+	64-bit Ubuntu 9.10 Karmic Koala
+In-Reply-To: <24CC1B04-24D8-4261-9083-5181388F6342@jhsph.edu>
+References: <6b93d1830912042040w6182adf1k887ce394cd97b2e7@mail.gmail.com>
+	<24CC1B04-24D8-4261-9083-5181388F6342@jhsph.edu>
+Message-ID: <6b93d1830912050957v16f0c9a0o9f12b5af29125e7b@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091205/8d44dd0a/attachment.pl>
+
+From bcarvalh at jhsph.edu  Sat Dec  5 23:50:54 2009
+From: bcarvalh at jhsph.edu (Benilton Carvalho)
+Date: Sat, 5 Dec 2009 20:50:54 -0200
+Subject: [Bioc-devel] package "oligo" fails to build on R-devel using
+	64-bit Ubuntu 9.10 Karmic Koala
+In-Reply-To: <6b93d1830912050957v16f0c9a0o9f12b5af29125e7b@mail.gmail.com>
+References: <6b93d1830912042040w6182adf1k887ce394cd97b2e7@mail.gmail.com>
+	<24CC1B04-24D8-4261-9083-5181388F6342@jhsph.edu>
+	<6b93d1830912050957v16f0c9a0o9f12b5af29125e7b@mail.gmail.com>
+Message-ID: <4E25B744-DF40-42A8-BA89-199699FC06FE@jhsph.edu>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091205/738f615e/attachment.pl>
+
+From J.J.Goeman at lumc.nl  Mon Dec  7 09:51:22 2009
+From: J.J.Goeman at lumc.nl (J.J.Goeman at lumc.nl)
+Date: Mon, 7 Dec 2009 09:51:22 +0100
+Subject: [Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi
+In-Reply-To: <4B196462.5070003@fhcrc.org>
+References: <38475A805F094643B2BDE29E85B12E1B01521B79@maild.lumcnet.prod.intern><4B194832.8050201@fhcrc.org>
+	<4B196462.5070003@fhcrc.org>
+Message-ID: <38475A805F094643B2BDE29E85B12E1B01521BF3@maild.lumcnet.prod.intern>
+
+
+ Dear Seth and Martin,
+
+Thank you very much for your explanation. So, what is happening is that
+we have two functions
+
+- as.list, the base function, from the base package and therefore always
+in my namespace.
+- as.list, the S4 generic based on the function above, in AnnotationDbi
+which had been attached to the user workspace with require().
+
+In the namespace hierarchy the function (in the namespace) takes
+precedence over the generic (in the user workspace), resulting in R
+stubbornly trying to apply the base function to an object from the
+AnnotationDbi package, even though a method for that object is
+available.
+
+I can see that this makes perfect sense from a namespace perspective,
+but it is rather peculiar from an S4 classes perspective. Would it not
+be sensible if generics would always override the base functions they
+are based on?
+
+Best regards,
+
+Jelle
+
+ 
+
+> -----Original Message-----
+> From: bioc-devel-bounces at stat.math.ethz.ch 
+> [mailto:bioc-devel-bounces at stat.math.ethz.ch] On Behalf Of Seth Falcon
+> Sent: 04 December 2009 20:35
+> To: bioc-devel at stat.math.ethz.ch
+> Subject: Re: [Bioc-devel] NAMESPACE issue, possibly related 
+> to AnnotationDbi
+> 
+> Hi Jelle,
+> 
+> I think I have an explanation for you.  Prior to your change, 
+> you had AnnotationDbi listed in the 'Imports' field of the 
+> DESCRIPTION file for your globaltest package.  Listing a 
+> package in Imports tells R that these packges are 
+> dependencies, but does not actually cause these packages to 
+> be imported into your package's name space.  For that you 
+> have to add something to NAMESPACE.
+> 
+> The addition you made is fine.  You can also do a wholesale import as:
+> 
+>    import("AnnotationDbi")
+> 
+> And then you should not need the more granular imports.  
+> However, the granular imports where you import specific 
+> symbols is generally a good practice since it avoids 
+> unintentional name conflicts.  A change in a package you 
+> import could introduce a symbol clash, but this will not be 
+> an issue if you have imported the minimal set of symbols.
+> 
+> Does that help?
+> 
+> + seth
+> 
+> --
+> Seth Falcon
+> Program in Computational Biology | Fred Hutchinson Cancer 
+> Research Center
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list 
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+
+From mtmorgan at fhcrc.org  Mon Dec  7 15:24:46 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 07 Dec 2009 06:24:46 -0800
+Subject: [Bioc-devel] NAMESPACE issue, possibly related to AnnotationDbi
+In-Reply-To: <38475A805F094643B2BDE29E85B12E1B01521BF3@maild.lumcnet.prod.intern>
+References: <38475A805F094643B2BDE29E85B12E1B01521B79@maild.lumcnet.prod.intern><4B194832.8050201@fhcrc.org>	<4B196462.5070003@fhcrc.org>
+	<38475A805F094643B2BDE29E85B12E1B01521BF3@maild.lumcnet.prod.intern>
+Message-ID: <4B1D102E.8050206@fhcrc.org>
+
+J.J.Goeman at lumc.nl wrote:
+>  Dear Seth and Martin,
+> 
+> Thank you very much for your explanation. So, what is happening is that
+> we have two functions
+> 
+> - as.list, the base function, from the base package and therefore always
+> in my namespace.
+> - as.list, the S4 generic based on the function above, in AnnotationDbi
+> which had been attached to the user workspace with require().
+> 
+> In the namespace hierarchy the function (in the namespace) takes
+> precedence over the generic (in the user workspace), resulting in R
+> stubbornly trying to apply the base function to an object from the
+> AnnotationDbi package, even though a method for that object is
+> available.
+> 
+> I can see that this makes perfect sense from a namespace perspective,
+> but it is rather peculiar from an S4 classes perspective. Would it not
+> be sensible if generics would always override the base functions they
+> are based on?
+
+Hi Jelle --
+
+Yes, if S4 generics and base functions were more tightly integrated, one
+might expect methods attached in the user name space to be reached. One
+would still like name space protection -- the package author would want
+to specify that the desired method comes from AnnotationDbi.
+
+Martin
+
+> 
+> Best regards,
+> 
+> Jelle
+> 
+>  
+> 
+>> -----Original Message-----
+>> From: bioc-devel-bounces at stat.math.ethz.ch 
+>> [mailto:bioc-devel-bounces at stat.math.ethz.ch] On Behalf Of Seth Falcon
+>> Sent: 04 December 2009 20:35
+>> To: bioc-devel at stat.math.ethz.ch
+>> Subject: Re: [Bioc-devel] NAMESPACE issue, possibly related 
+>> to AnnotationDbi
+>>
+>> Hi Jelle,
+>>
+>> I think I have an explanation for you.  Prior to your change, 
+>> you had AnnotationDbi listed in the 'Imports' field of the 
+>> DESCRIPTION file for your globaltest package.  Listing a 
+>> package in Imports tells R that these packges are 
+>> dependencies, but does not actually cause these packages to 
+>> be imported into your package's name space.  For that you 
+>> have to add something to NAMESPACE.
+>>
+>> The addition you made is fine.  You can also do a wholesale import as:
+>>
+>>    import("AnnotationDbi")
+>>
+>> And then you should not need the more granular imports.  
+>> However, the granular imports where you import specific 
+>> symbols is generally a good practice since it avoids 
+>> unintentional name conflicts.  A change in a package you 
+>> import could introduce a symbol clash, but this will not be 
+>> an issue if you have imported the minimal set of symbols.
+>>
+>> Does that help?
+>>
+>> + seth
+>>
+>> --
+>> Seth Falcon
+>> Program in Computational Biology | Fred Hutchinson Cancer 
+>> Research Center
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list 
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From paolo.sonego at gmail.com  Thu Dec 10 16:37:05 2009
+From: paolo.sonego at gmail.com (Paolo Sonego)
+Date: Thu, 10 Dec 2009 16:37:05 +0100
+Subject: [Bioc-devel] get rid of require/depends warning
+Message-ID: <4B2115A1.5060603@gmail.com>
+
+Hi,
+
+I'm working on a package and I'd like to get rid of the following warning:
+
+* checking for unstated dependencies in R code ... WARNING
+'library' or 'require' calls not declared from:
+   paste(eset at annotation, ".db", sep = "") raw.data at annotation
+See the information on DESCRIPTION files in the chapter 'Creating R
+packages' of the 'Writing R Extensions' manual.
+
+ From this thread 
+(https://stat.ethz.ch/pipermail/bioc-devel/2008-July/001662.html) I know 
+I should add the required annotation libraries in 'Suggests' but,
+as you can see from the above warning, some functions load the 
+appropriate annotation package (if they're installed) according to the 
+string saved in the annotation slot.
+
+Any help would appreciated!
+
+Regards,
+Paolo
+
+
+From sfalcon at fhcrc.org  Thu Dec 10 18:11:13 2009
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 10 Dec 2009 09:11:13 -0800
+Subject: [Bioc-devel] get rid of require/depends warning
+In-Reply-To: <4B2115A1.5060603@gmail.com>
+References: <4B2115A1.5060603@gmail.com>
+Message-ID: <4B212BB1.2090400@fhcrc.org>
+
+On 12/10/09 7:37 AM, Paolo Sonego wrote:
+> Hi,
+>
+> I'm working on a package and I'd like to get rid of the following warning:
+>
+> * checking for unstated dependencies in R code ... WARNING
+> 'library' or 'require' calls not declared from:
+> paste(eset at annotation, ".db", sep = "") raw.data at annotation
+> See the information on DESCRIPTION files in the chapter 'Creating R
+> packages' of the 'Writing R Extensions' manual.
+>
+>  From this thread
+> (https://stat.ethz.ch/pipermail/bioc-devel/2008-July/001662.html) I know
+> I should add the required annotation libraries in 'Suggests' but,
+> as you can see from the above warning, some functions load the
+> appropriate annotation package (if they're installed) according to the
+> string saved in the annotation slot.
+>
+> Any help would appreciated!
+
+It would help if you could provide a bit more of the code you are using. 
+  You might take a look at the annotate package that uses require() to 
+load annotation packages and does not have warnings on check (and does 
+not list every annotation package in Suggests).
+
++ seth
+
+-- 
+Seth Falcon
+Program in Computational Biology | Fred Hutchinson Cancer Research Center
+
+
+From paolo.sonego at gmail.com  Fri Dec 11 15:03:46 2009
+From: paolo.sonego at gmail.com (Paolo Sonego)
+Date: Fri, 11 Dec 2009 15:03:46 +0100
+Subject: [Bioc-devel] get rid of require/depends warning
+In-Reply-To: <mailman.27.1260529207.29081.bioc-devel@stat.math.ethz.ch>
+References: <mailman.27.1260529207.29081.bioc-devel@stat.math.ethz.ch>
+Message-ID: <4B225142.5060400@gmail.com>
+
+Dear Seth,
+Thanks for the useful suggestions. I'm digging the source code of the 
+annotate package, it seems really interesting...
+Below a chunk of my code that use require:
+
+imp.data <- function(...){
+     # importing raw.data
+     ...
+     ...
+     ## load the proper annotation package regardless the technology
+     if( !grepl("\\.db", raw.data at annotation) ) {
+         raw.data at annotation <- paste(raw.data at annotation, ".db", sep="")
+     }
+     require( raw.data at annotation, character.only=T )
+
+     return(raw.data)
+}
+
+raw.data is an object of class 'ExpressionSet'.
+
+Thanks again for the help!
+
+Regards,
+Paolo
+
+
+From sfalcon at fhcrc.org  Fri Dec 11 23:04:56 2009
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 11 Dec 2009 14:04:56 -0800
+Subject: [Bioc-devel] get rid of require/depends warning
+In-Reply-To: <4B225142.5060400@gmail.com>
+References: <mailman.27.1260529207.29081.bioc-devel@stat.math.ethz.ch>
+	<4B225142.5060400@gmail.com>
+Message-ID: <4B22C208.30507@fhcrc.org>
+
+On 12/11/09 6:03 AM, Paolo Sonego wrote:
+> Dear Seth,
+> Thanks for the useful suggestions. I'm digging the source code of the
+> annotate package, it seems really interesting...
+> Below a chunk of my code that use require:
+>
+> imp.data <- function(...){
+> # importing raw.data
+> ...
+> ...
+> ## load the proper annotation package regardless the technology
+> if( !grepl("\\.db", raw.data at annotation) ) {
+> raw.data at annotation <- paste(raw.data at annotation, ".db", sep="")
+> }
+> require( raw.data at annotation, character.only=T )
+>
+> return(raw.data)
+> }
+
+You can avoid the warning by specifying character.only=TRUE.  The check 
+actually examines the source code for TRUE so T will not work to avoid 
+the warning message.
+
+That said, based on your example, it looks like your actual goal is to 
+dynamically load annotation packages.  If that is the case, I would 
+recommend using the code that already does this for you in the annotate 
+package, and in particular the getAnnMap function might be of use.
+
+One advantage of using the annotate functions is that you should not 
+have to worry about the ".db" extension, those functions should figure 
+out the right thing.
+
+Best,
+
++ seth
+
+-- 
+Seth Falcon
+Program in Computational Biology | Fred Hutchinson Cancer Research Center
+
+
+From paolo.sonego at gmail.com  Sat Dec 12 14:57:28 2009
+From: paolo.sonego at gmail.com (Paolo Sonego)
+Date: Sat, 12 Dec 2009 14:57:28 +0100
+Subject: [Bioc-devel] get rid of require/depends warning
+In-Reply-To: <mailman.19.1260615605.17287.bioc-devel@stat.math.ethz.ch>
+References: <mailman.19.1260615605.17287.bioc-devel@stat.math.ethz.ch>
+Message-ID: <4B23A148.7000903@gmail.com>
+
+Dear Seth,
+
+Thanks so much! You identifiedmy intention correctly and your suggestion 
+solved my problem!
+
+Regards,
+Paolo
+
+On 12/12/09 12:00 PM, bioc-devel-request at stat.math.ethz.ch wrote:
+> Send Bioc-devel mailing list submissions to
+> 	bioc-devel at stat.math.ethz.ch
+>
+> To subscribe or unsubscribe via the World Wide Web, visit
+> 	https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> or, via email, send a message with subject or body 'help' to
+> 	bioc-devel-request at stat.math.ethz.ch
+>
+> You can reach the person managing the list at
+> 	bioc-devel-owner at stat.math.ethz.ch
+>
+> When replying, please edit your Subject line so it is more specific
+> than "Re: Contents of Bioc-devel digest..."
+>
+>
+> Today's Topics:
+>
+>     1. Re: get rid of require/depends warning (Paolo Sonego)
+>     2. Re: get rid of require/depends warning (Seth Falcon)
+>
+>
+> ----------------------------------------------------------------------
+>
+> Message: 1
+> Date: Fri, 11 Dec 2009 15:03:46 +0100
+> From: Paolo Sonego<paolo.sonego at gmail.com>
+> Subject: Re: [Bioc-devel] get rid of require/depends warning
+> To: bioc-devel at stat.math.ethz.ch
+> Cc: sfalcon at fhcrc.org
+> Message-ID:<4B225142.5060400 at gmail.com>
+> Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+>
+> Dear Seth,
+> Thanks for the useful suggestions. I'm digging the source code of the
+> annotate package, it seems really interesting...
+> Below a chunk of my code that use require:
+>
+> imp.data<- function(...){
+>       # importing raw.data
+>       ...
+>       ...
+>       ## load the proper annotation package regardless the technology
+>       if( !grepl("\\.db", raw.data at annotation) ) {
+>           raw.data at annotation<- paste(raw.data at annotation, ".db", sep="")
+>       }
+>       require( raw.data at annotation, character.only=T )
+>
+>       return(raw.data)
+> }
+>
+> raw.data is an object of class 'ExpressionSet'.
+>
+> Thanks again for the help!
+>
+> Regards,
+> Paolo
+>
+>
+>
+> ------------------------------
+>
+> Message: 2
+> Date: Fri, 11 Dec 2009 14:04:56 -0800
+> From: Seth Falcon<sfalcon at fhcrc.org>
+> Subject: Re: [Bioc-devel] get rid of require/depends warning
+> To: bioc-devel at stat.math.ethz.ch
+> Message-ID:<4B22C208.30507 at fhcrc.org>
+> Content-Type: text/plain; charset=UTF-8; format=flowed
+>
+> On 12/11/09 6:03 AM, Paolo Sonego wrote:
+>    
+>> Dear Seth,
+>> Thanks for the useful suggestions. I'm digging the source code of the
+>> annotate package, it seems really interesting...
+>> Below a chunk of my code that use require:
+>>
+>> imp.data<- function(...){
+>> # importing raw.data
+>> ...
+>> ...
+>> ## load the proper annotation package regardless the technology
+>> if( !grepl("\\.db", raw.data at annotation) ) {
+>> raw.data at annotation<- paste(raw.data at annotation, ".db", sep="")
+>> }
+>> require( raw.data at annotation, character.only=T )
+>>
+>> return(raw.data)
+>> }
+>>      
+> You can avoid the warning by specifying character.only=TRUE.  The check
+> actually examines the source code for TRUE so T will not work to avoid
+> the warning message.
+>
+> That said, based on your example, it looks like your actual goal is to
+> dynamically load annotation packages.  If that is the case, I would
+> recommend using the code that already does this for you in the annotate
+> package, and in particular the getAnnMap function might be of use.
+>
+> One advantage of using the annotate functions is that you should not
+> have to worry about the ".db" extension, those functions should figure
+> out the right thing.
+>
+> Best,
+>
+> + seth
+>
+>
+
+
+From julie.zhu at umassmed.edu  Sat Dec 12 21:31:28 2009
+From: julie.zhu at umassmed.edu (Julie Zhu)
+Date: Sat, 12 Dec 2009 15:31:28 -0500
+Subject: [Bioc-devel] BSgenome error
+Message-ID: <C74967D0.2017%julie.zhu@umassmed.edu>
+
+Hi Herve,
+
+I encountered problem loading Bsgenome. Please let me know how to fix it.
+The ChIPpeakAnno package I am working on relies on Bsgenome. Thank you very
+much for your help!
+
+Best regards,
+
+Julie
+
+> library(BSgenome)
+Error: package 'IRanges' 1.3.49 is loaded, but >= 1.3.79 is required by
+'BSgenome'
+In addition: Warning message:
+package 'BSgenome' claims to be built under R version 2.10.0 but is missing
+some help files and needs to be re-installed
+
+
+> sessionInfo()
+R version 2.10.0 (2009-10-26)
+i386-apple-darwin8.11.1
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/C/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+ [1] Biostrings_2.13.30            IRanges_1.3.49
+multtest_2.1.2                biomaRt_2.1.0
+ [5] mogene10stv1.r3.xdacdf_1.24.0 makecdfenv_1.24.0
+affyio_1.14.0                 mogene10stv1.r3cdf_2.5.0
+ [9] annaffy_1.17.1                KEGG.db_2.3.5                 GO.db_2.3.5
+RSQLite_0.7-1      
+[13] DBI_0.2-4                     AnnotationDbi_1.8.1
+affxparser_1.18.0             affy_1.23.5
+[17] Biobase_2.5.5 
+
+loaded via a namespace (and not attached):
+[1] MASS_7.3-3           preprocessCore_1.8.0 RCurl_0.98-1
+splines_2.10.0       survival_2.35-7      tools_2.10.0
+[7] XML_2.3-0      
+>
+
+
+From tchiang at fhcrc.org  Sat Dec 12 22:18:36 2009
+From: tchiang at fhcrc.org (Tony Chiang)
+Date: Sat, 12 Dec 2009 13:18:36 -0800
+Subject: [Bioc-devel] BSgenome error
+In-Reply-To: <C74967D0.2017%julie.zhu@umassmed.edu>
+References: <C74967D0.2017%julie.zhu@umassmed.edu>
+Message-ID: <52f663c40912121318o239f3860idc492f07c981c96f@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091212/27960e96/attachment.pl>
+
+From msettles at uidaho.edu  Mon Dec 14 18:46:09 2009
+From: msettles at uidaho.edu (Matt Settles)
+Date: Mon, 14 Dec 2009 09:46:09 -0800
+Subject: [Bioc-devel] reverseComplement broken in development version of R
+	and Biostrings
+Message-ID: <4B2679E1.8070409@uidaho.edu>
+
+the function reverseComplement in Biostrings appears to be broken in the 
+development version of R and Biostrings
+Matt Settles
+
+ > library(Biostrings)
+Loading required package: IRanges
+
+Attaching package: 'IRanges'
+
+
+    The following object(s) are masked from package:base :
+
+     cbind,
+     Map,
+     mapply,
+     order,
+     pmax,
+     pmax.int,
+     pmin,
+     pmin.int,
+     rbind,
+     rep.int,
+     table
+
+ > example(reverseComplement)
+
+rvrsCm>   ## 
+---------------------------------------------------------------------
+rvrsCm>   ## A. SOME SIMPLE EXAMPLES
+rvrsCm>   ## 
+---------------------------------------------------------------------
+rvrsCm>
+rvrsCm>   x <- DNAString("ACGT-YN-")
+
+rvrsCm>   reverseComplement(x)
+Error in reverseComplement(x) : could not find function "xvcopy"
+ > sessionInfo()
+R version 2.11.0 Under development (unstable) (2009-12-14 r50724)
+x86_64-unknown-linux-gnu
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               
+LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8     
+LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8    
+LC_PAPER=en_US.UTF-8     
+ [8] LC_NAME=C                  LC_ADDRESS=C               
+LC_TELEPHONE=C             LC_MEASUREMENT=en_US.UTF-8 
+LC_IDENTIFICATION=C      
+
+attached base packages:
+[1] stats     graphics  grDevices datasets  utils     methods   base    
+
+other attached packages:
+[1] Biostrings_2.14.8 IRanges_1.5.2   
+
+loaded via a namespace (and not attached):
+[1] Biobase_2.6.1 tools_2.11.0
+ >
+
+-- 
+------------------------------------
+Matt Settles
+Bioinformatics Scientist
+IBEST DNA Sequencing Analysis Core
+Department of Biological Sciences
+University of Idaho
+Moscow, Idaho 83844
+
+
+From mtmorgan at fhcrc.org  Mon Dec 14 18:56:11 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 14 Dec 2009 09:56:11 -0800
+Subject: [Bioc-devel] reverseComplement broken in development version of
+ R	and Biostrings
+In-Reply-To: <4B2679E1.8070409@uidaho.edu>
+References: <4B2679E1.8070409@uidaho.edu>
+Message-ID: <4B267C3B.5090401@fhcrc.org>
+
+Hi Matt --
+
+'devel' packages have odd-numbered y in version string x.y.z, so you've 
+got a mix of devel and release packages. So update packages as at
+
+  http://bioconductor.org/docs/install/
+
+See also the build report
+
+  http://bioconductor.org/checkResults/2.6/bioc-LATEST/
+
+which shows Biostrings passing build and check (which implies that the 
+examples run without error).
+
+Martin
+
+Matt Settles wrote:
+> the function reverseComplement in Biostrings appears to be broken in 
+> the development version of R and Biostrings
+> Matt Settles
+>
+> > library(Biostrings)
+> Loading required package: IRanges
+>
+> Attaching package: 'IRanges'
+>
+>
+>    The following object(s) are masked from package:base :
+>
+>     cbind,
+>     Map,
+>     mapply,
+>     order,
+>     pmax,
+>     pmax.int,
+>     pmin,
+>     pmin.int,
+>     rbind,
+>     rep.int,
+>     table
+>
+> > example(reverseComplement)
+>
+> rvrsCm>   ## 
+> ---------------------------------------------------------------------
+> rvrsCm>   ## A. SOME SIMPLE EXAMPLES
+> rvrsCm>   ## 
+> ---------------------------------------------------------------------
+> rvrsCm>
+> rvrsCm>   x <- DNAString("ACGT-YN-")
+>
+> rvrsCm>   reverseComplement(x)
+> Error in reverseComplement(x) : could not find function "xvcopy"
+> > sessionInfo()
+> R version 2.11.0 Under development (unstable) (2009-12-14 r50724)
+> x86_64-unknown-linux-gnu
+>
+> locale:
+> [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               
+> LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8     
+> LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8    
+> LC_PAPER=en_US.UTF-8     [8] LC_NAME=C                  
+> LC_ADDRESS=C               LC_TELEPHONE=C             
+> LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C     
+> attached base packages:
+> [1] stats     graphics  grDevices datasets  utils     methods   base   
+> other attached packages:
+> [1] Biostrings_2.14.8 IRanges_1.5.2  
+> loaded via a namespace (and not attached):
+> [1] Biobase_2.6.1 tools_2.11.0
+> >
+>
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From sfalcon at fhcrc.org  Mon Dec 21 19:59:48 2009
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 21 Dec 2009 10:59:48 -0800
+Subject: [Bioc-devel] License change for package mclust
+Message-ID: <4B2FC5A4.2080202@fhcrc.org>
+
+Hi all,
+
+I've been informed that the license for the mclust package has changed. 
+  If you maintain a package that uses mclust, I encourage you to review 
+the mclust license terms and make sure that the license of your package 
+is compatible.
+
+When mclust is loaded it displays the following message:
+
+>> library("mclust")
+>
+> by using mclust, or by using any other package that invokes mclust,
+> you accept the license agreement in the mclust LICENSE file
+> and at http://www.stat.washington.edu/mclust/license.txt
+
+The terms suggest that a package depending on mclust is only free for 
+academic use.  Such restrictions are, in my opinion, not in the spirit 
+of the Bioconductor project.  As such, you may wish to reconsider use of 
+mclust in your packages.
+
++ seth
+
+PS: Packages that currently list mclust in Depends or Suggests are:
+
+Ringo
+Rolexa
+SpeCond
+arrayQuality
+FlowClust
+flowMerge
+puma
+spotSegmentation
+
+-- 
+Seth Falcon
+Program in Computational Biology | Fred Hutchinson Cancer Research Center
+
+
+From mtmorgan at fhcrc.org  Mon Dec 28 17:48:47 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 28 Dec 2009 08:48:47 -0800
+Subject: [Bioc-devel] Changing 'release' versus 'devel' branches of
+	Bioconductor
+Message-ID: <4B38E16F.9050707@fhcrc.org>
+
+Developers --
+
+Only critical bug-fix changes are appropriate for the 'release' branch
+of Bioconductor, i.e., in the svn repository beginning with
+
+ https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_2_5/
+
+All other changes, including introduction of new features and minor bug
+fixes, must be restricted to the 'devel' repository
+
+  https://hedgehog.fhcrc.org/bioconductor/trunk/
+
+Please ask if you are uncertain about whether changes you are
+considering are appropriate for the release branch.
+
+The release branch is meant to provide a stable environment for
+reproducible research, and this stability is compromised whenever change
+is introduced.
+
+A consequence of this is that users seeking new features MUST use the
+development version of R. This is appropriate, because it represents an
+explicit choice on the part of the user, showing that they are willing
+to take on the added instability of software that is still under active
+development.
+
+It is NOT appropriate to suggest that the user install the development
+version of a package on top of the release version of other packages.
+The mailing list is littered with posts where this leads to
+unanticipated problems.
+
+Under extraordinary conditions, the Bioconductor team will take active
+steps to enforce this policy, including reverting non-critical changes
+and restricting access to the svn release branch repository.
+
+Additional developer information is available at
+
+  http://wiki.fhcrc.org/bioc/DeveloperPage
+  http://wiki.fhcrc.org/bioc/HowTo
+  http://wiki.fhcrc.org/bioc/HowTo/Update_Release_Branch
+
+
+Best wishes,
+
+Martin
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+

@@ -1,0 +1,461 @@
+From sdavis2 at mail.nih.gov  Wed Jan  4 17:56:10 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Wed, 04 Jan 2006 11:56:10 -0500
+Subject: [Bioc-devel] Different behavior under windows causing build failure
+	and errors
+Message-ID: <BFE1685A.2FD1%sdavis2@mail.nih.gov>
+
+I have a question that is going to be ill-formed and lacking in detail (and
+perhaps unanswerable here).  I have recently uploaded a package, GEOquery,
+that works fine on my MacOS 10.4.3 system and appears to have no problems
+building on other platforms, except Windows.  However, I do not have access
+to a Windows build machine to even troubleshoot.  The Build check results on
+windows as reported here:
+
+http://www.bioconductor.org/checkResults/1.8/html/lemming/GEOquery.buildsrc.
+html
+
+The offending error seems to come up when a command like the following (and
+Build fails because the vignette does this in one of the code blocks):
+
+ getGEO('GSE462')
+
+The function getGEO downloads a file from a url and then parses it.  With
+other format files (GDS, GSM, GSE), the command seems to work fine.  Does
+anyone have any ideas what might be up?  I would really like to troubleshoot
+here, but I just can't think of a way to do so, as the error is clearly
+windows-specific.  Have others faced similar problems with Windows behaving
+quite differently, even when the package contains only R code?
+
+Thanks,
+Sean
+
+
+From sfalcon at fhcrc.org  Wed Jan  4 22:17:51 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 04 Jan 2006 13:17:51 -0800
+Subject: [Bioc-devel] Different behavior under windows causing build
+	failure and errors
+In-Reply-To: <BFE1685A.2FD1%sdavis2@mail.nih.gov> (Sean Davis's message of
+	"Wed, 04 Jan 2006 11:56:10 -0500")
+References: <BFE1685A.2FD1%sdavis2@mail.nih.gov>
+Message-ID: <m2fyo38zgg.fsf@ziti.local>
+
+Hi Sean,
+
+On  4 Jan 2006, sdavis2 at mail.nih.gov wrote:
+> The function getGEO downloads a file from a url and then parses it.
+> With other format files (GDS, GSM, GSE), the command seems to work
+> fine.  Does anyone have any ideas what might be up?  I would really
+> like to troubleshoot here, but I just can't think of a way to do so,
+> as the error is clearly windows-specific.  Have others faced similar
+> problems with Windows behaving quite differently, even when the
+> package contains only R code?
+
+Yes, Windows often behaves... diferently :-)
+
+One area that has caused many issues in the past is the mode with
+which a file is opened.  On Windows there is a difference between
+"text" files and "binary" files.  Using open="rb" or open="wb" is
+vital on Windows and harmless on unix-like when you are writting or
+reading binary data (like a .gz file).
+
++ seth
+
+
+From steffen.durinck at esat.kuleuven.be  Mon Jan 23 16:23:42 2006
+From: steffen.durinck at esat.kuleuven.be (Steffen Durinck)
+Date: Mon, 23 Jan 2006 16:23:42 +0100
+Subject: [Bioc-devel] HTTP GET and POST with RCurl | RMySQL
+Message-ID: <43D4F4FE.4020107@esat.kuleuven.be>
+
+Hi,
+
+I want to rewrite a package that currently uses MySQL queries with the 
+use of a webservice that does these queries over HTTP, and need simple 
+HTTP POST and HTTP GET methods. 
+RCurl has postForm and getURL and does the job. However one of the 
+reasons to use a webservice over providing MySQL queries was that I want 
+to make the package as userfriendly to install as possible, on all 
+platforms.  With MySQL  there is the problem that for Windows, the 
+RMySQL package is not maintained on CRAN and during installation users 
+have to intervene to get a proper installation.  RCurl is also not 
+maintained by CRAN but by omegahat and requires libcurl to be installed.
+
+here my questions:
+
+- Do users find RCurl hard to install and is it easier to install than 
+RMySQL on all platforms.
+
+- Will a package that depends on RCurl be build on the bioconductor 
+repository for all platforms? (With RMySQL my package is not being build 
+on Windows as RMySQL is not installed)
+
+- I've also tried the httpRequest package available from CRAN, but in my 
+hands R crashes on both Windows and Linux  when trying  to use the 
+webservice and it is very slow. Have others experienced the same?
+
+- Are there any other options to consider to have an HTTP GET and POST 
+method in R?
+
+Thanks,
+Steffen
+
+Disclaimer: http://www.kuleuven.be/cwis/email_disclaimer.htm
+
+
+From stvjc at channing.harvard.edu  Mon Jan 23 16:49:53 2006
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Mon, 23 Jan 2006 10:49:53 -0500 (EST)
+Subject: [Bioc-devel] HTTP GET and POST with RCurl | RMySQL
+In-Reply-To: <43D4F4FE.4020107@esat.kuleuven.be>
+References: <43D4F4FE.4020107@esat.kuleuven.be>
+Message-ID: <Pine.GSO.4.58.0601231044500.17800@capecod.bwh.harvard.edu>
+
+
+> Hi,
+>
+> I want to rewrite a package that currently uses MySQL queries with the
+> use of a webservice that does these queries over HTTP, and need simple
+> HTTP POST and HTTP GET methods.
+> RCurl has postForm and getURL and does the job. However one of the
+> reasons to use a webservice over providing MySQL queries was that I want
+> to make the package as userfriendly to install as possible, on all
+> platforms.  With MySQL  there is the problem that for Windows, the
+> RMySQL package is not maintained on CRAN and during installation users
+> have to intervene to get a proper installation.  RCurl is also not
+> maintained by CRAN but by omegahat and requires libcurl to be installed.
+>
+> here my questions:
+
+Here are my 2c worth:
+
+>
+> - Do users find RCurl hard to install and is it easier to install than
+> RMySQL on all platforms.
+
+I found RMySQL a bit difficult to install because if you have MySQL
+installed it may conflict with the version required by the package;
+on windows I think the package image does come with a mysql infrastructure.
+
+RCurl i had fewer problems with but I am not sure I ever built it
+on windows.
+
+Omegahat does point to binaries for R 2.1.0 for both RCurl and SSOAP
+(see below)
+
+>
+> - Will a package that depends on RCurl be build on the bioconductor
+> repository for all platforms? (With RMySQL my package is not being build
+> on Windows as RMySQL is not installed)
+
+KEGGSOAP depends on RCurl and I see that bioc 1.7 does not
+distribute a windows image. ???  This suggests that windows may
+not fly.
+
+>
+> - I've also tried the httpRequest package available from CRAN, but in my
+> hands R crashes on both Windows and Linux  when trying  to use the
+> webservice and it is very slow. Have others experienced the same?
+
+haven't tried
+
+>
+> - Are there any other options to consider to have an HTTP GET and POST
+> method in R?
+
+your question here might best be directed to r-devel.
+
+
+From hpages at fhcrc.org  Mon Jan 23 20:46:21 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Mon, 23 Jan 2006 11:46:21 -0800
+Subject: [Bioc-devel] HTTP GET and POST with RCurl | RMySQL
+In-Reply-To: <Pine.GSO.4.58.0601231044500.17800@capecod.bwh.harvard.edu>
+References: <43D4F4FE.4020107@esat.kuleuven.be>
+	<Pine.GSO.4.58.0601231044500.17800@capecod.bwh.harvard.edu>
+Message-ID: <43D5328D.9080501@fhcrc.org>
+
+Vincent Carey 525-2265 wrote:
+
+>your question here might best be directed to r-devel.
+>
+>  
+>
+Also for DB related stuff, you can try r-sig-db at stat.math.ethz.ch
+Regards,
+
+H.
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+ Phone: (206) 667-5791
+   Fax: (206) 667-1319
+
+
+From sfalcon at fhcrc.org  Tue Jan 24 18:01:48 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 24 Jan 2006 09:01:48 -0800
+Subject: [Bioc-devel] HTTP GET and POST with RCurl | RMySQL
+References: <43D4F4FE.4020107@esat.kuleuven.be>
+Message-ID: <m264o9pnk3.fsf@ziti.local>
+
+Hi Steffen,
+
+Overall, I think making use of RCurl, and for webservices, SSOAP, is a
+good idea and something that we would like to encourage.
+
+On 23 Jan 2006, steffen.durinck at esat.kuleuven.be wrote:
+> - Do users find RCurl hard to install and is it easier to install
+>   than RMySQL on all platforms.
+
+In general, I think the answer is yes.  As long as an appropriate
+version of the RCurl binary package has been made available (by
+Omegahat) then installation is entirely trivial on Windows.  On
+unix-like systems, libcurl is commonly available.
+
+> - Will a package that depends on RCurl be build on the bioconductor 
+> repository for all platforms? (With RMySQL my package is not being
+> build on Windows as RMySQL is not installed)
+
+Yes, although as you can see, we seem not to have a binary version of
+RCurl available for R-devel.  We will fix this.  Note that for us,
+keeping RCurl going on Windows is *much* easier than keeping RMySQL
+going.
+
+Best Wishes,
+
++ seth
+
+
+From mtmorgan at fhcrc.org  Tue Jan 24 20:38:27 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Tue, 24 Jan 2006 11:38:27 -0800
+Subject: [Bioc-devel] HTTP GET and POST with RCurl | RMySQL
+References: <43D4F4FE.4020107@esat.kuleuven.be> <m264o9pnk3.fsf@ziti.local>
+Message-ID: <6ph64o9h0wc.fsf@wellington.fhcrc.org>
+
+
+Seth Falcon <sfalcon at fhcrc.org> writes:
+> On 23 Jan 2006, steffen.durinck at esat.kuleuven.be wrote:
+>> - Do users find RCurl hard to install and is it easier to install
+>>   than RMySQL on all platforms.
+>
+> In general, I think the answer is yes.  As long as an appropriate
+> version of the RCurl binary package has been made available (by
+> Omegahat) then installation is entirely trivial on Windows.  On
+> unix-like systems, libcurl is commonly available.
+>
+>> - Will a package that depends on RCurl be build on the bioconductor 
+>> repository for all platforms? (With RMySQL my package is not being
+>> build on Windows as RMySQL is not installed)
+>
+> Yes, although as you can see, we seem not to have a binary version of
+> RCurl available for R-devel.  We will fix this.  Note that for us,
+> keeping RCurl going on Windows is *much* easier than keeping RMySQL
+> going.
+
+An update on this. RCurl _is_ available for R-devel, in the 1.8
+repository. There is a build system issue so that packages depending
+on RCurl were not being built. This should be fixed, with the next
+build.
+
+For security reasons, the Windows binary RCurl on Bioconductor does
+not have SSL support. This will not be a problem, provided your
+use does not require secure access.
+
+For SSL, RCurl has to be built 'by hand'. This can be quite involved
+on any platform, and especially on Windows; most users don't want to
+do this, but if you're eager the general steps are
+
+0. (hard -- has to be exactly right) Have the R source and tools
+   required for building R from source available and working, as
+   described in
+
+     http://cran.fhcrc.org/doc/manuals/R-admin.html
+
+1. (easier -- on Windows mingw needs to be used, but not mingw-make)
+   If SSL-enabled libcurl not already available, download and build
+   openssl from
+
+     http://www.openssl.org/source/.
+
+   (easier -- Windows users should look for the mingw32 target in the
+   Makefile, and set ZLIB_PATH (to files in the R source distibution)
+   and OPENSSL_PATH) Download and build the libcurl library from
+   source, from
+
+     http://curl.haxx.se/download.html
+
+2. (easy) Download & unpack the source package for RCurl from, e.g.,
+
+     http://www.omegahat.org/RCurl/RCurl_0.6-0.tar.gz
+
+3. (easy) Make a binary version of RCurl, moving a copy of the
+   libcurl.dll you created in step 1 into the RCurl source
+   directory. Something like
+
+     mkdir RCurl/inst/libs
+     cp CURL_HOME/libs/libcurl.ddl RCurl/inst/libs
+     R CMD build RCurl
+     R CMD INSTALL --build RCurl_0.6-0.tar.gz
+
+   You might need to specify the location ofthe libcurl 'header' files
+   in R CMD build.
+
+4. (easy) Install the binary version, e.g., using the Packages -->
+   Install packages from local zip files menu item. Alternatively
+   install RCurl from the command line without building a binary
+
+     R CMD INSTALL RCurl
+
+
+From steffen.durinck at esat.kuleuven.be  Wed Jan 25 10:41:03 2006
+From: steffen.durinck at esat.kuleuven.be (Steffen Durinck)
+Date: Wed, 25 Jan 2006 10:41:03 +0100
+Subject: [Bioc-devel] HTTP GET and POST with RCurl | RMySQL
+In-Reply-To: <6ph64o9h0wc.fsf@wellington.fhcrc.org>
+References: <43D4F4FE.4020107@esat.kuleuven.be> <m264o9pnk3.fsf@ziti.local>
+	<6ph64o9h0wc.fsf@wellington.fhcrc.org>
+Message-ID: <43D747AF.7080702@esat.kuleuven.be>
+
+Hi Seth, Martin,
+
+No I don't expect we need SSL, the current BioMart webservices are all 
+"http://".
+Many thanks for the comments, the biomaRt package will be converted to 
+use RCurl by early February.
+
+best,
+Steffen
+
+Martin Morgan wrote:
+
+>Seth Falcon <sfalcon at fhcrc.org> writes:
+>  
+>
+>>On 23 Jan 2006, steffen.durinck at esat.kuleuven.be wrote:
+>>    
+>>
+>>>- Do users find RCurl hard to install and is it easier to install
+>>>  than RMySQL on all platforms.
+>>>      
+>>>
+>>In general, I think the answer is yes.  As long as an appropriate
+>>version of the RCurl binary package has been made available (by
+>>Omegahat) then installation is entirely trivial on Windows.  On
+>>unix-like systems, libcurl is commonly available.
+>>
+>>    
+>>
+>>>- Will a package that depends on RCurl be build on the bioconductor 
+>>>repository for all platforms? (With RMySQL my package is not being
+>>>build on Windows as RMySQL is not installed)
+>>>      
+>>>
+>>Yes, although as you can see, we seem not to have a binary version of
+>>RCurl available for R-devel.  We will fix this.  Note that for us,
+>>keeping RCurl going on Windows is *much* easier than keeping RMySQL
+>>going.
+>>    
+>>
+>
+>An update on this. RCurl _is_ available for R-devel, in the 1.8
+>repository. There is a build system issue so that packages depending
+>on RCurl were not being built. This should be fixed, with the next
+>build.
+>
+>For security reasons, the Windows binary RCurl on Bioconductor does
+>not have SSL support. This will not be a problem, provided your
+>use does not require secure access.
+>
+>For SSL, RCurl has to be built 'by hand'. This can be quite involved
+>on any platform, and especially on Windows; most users don't want to
+>do this, but if you're eager the general steps are
+>
+>0. (hard -- has to be exactly right) Have the R source and tools
+>   required for building R from source available and working, as
+>   described in
+>
+>     http://cran.fhcrc.org/doc/manuals/R-admin.html
+>
+>1. (easier -- on Windows mingw needs to be used, but not mingw-make)
+>   If SSL-enabled libcurl not already available, download and build
+>   openssl from
+>
+>     http://www.openssl.org/source/.
+>
+>   (easier -- Windows users should look for the mingw32 target in the
+>   Makefile, and set ZLIB_PATH (to files in the R source distibution)
+>   and OPENSSL_PATH) Download and build the libcurl library from
+>   source, from
+>
+>     http://curl.haxx.se/download.html
+>
+>2. (easy) Download & unpack the source package for RCurl from, e.g.,
+>
+>     http://www.omegahat.org/RCurl/RCurl_0.6-0.tar.gz
+>
+>3. (easy) Make a binary version of RCurl, moving a copy of the
+>   libcurl.dll you created in step 1 into the RCurl source
+>   directory. Something like
+>
+>     mkdir RCurl/inst/libs
+>     cp CURL_HOME/libs/libcurl.ddl RCurl/inst/libs
+>     R CMD build RCurl
+>     R CMD INSTALL --build RCurl_0.6-0.tar.gz
+>
+>   You might need to specify the location ofthe libcurl 'header' files
+>   in R CMD build.
+>
+>4. (easy) Install the binary version, e.g., using the Packages -->
+>   Install packages from local zip files menu item. Alternatively
+>   install RCurl from the command line without building a binary
+>
+>     R CMD INSTALL RCurl
+>
+>_______________________________________________
+>Bioc-devel at stat.math.ethz.ch mailing list
+>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>  
+>
+
+
+Disclaimer: http://www.kuleuven.be/cwis/email_disclaimer.htm
+
+
+From huber at ebi.ac.uk  Wed Jan 25 23:55:12 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Wed, 25 Jan 2006 22:55:12 +0000
+Subject: [Bioc-devel] R News special issue Bioinformatics
+Message-ID: <43D801D0.9050000@ebi.ac.uk>
+
+Dear Developpers,
+
+we are planning to have a special issue of R-News
+(http://cran.r-project.org/doc/Rnews) with a Bioconductor or
+Bioinformatics focus. If you are interested in contributing a short 
+article (3-4 pages; see above URL for examples) either about your own 
+package, or about interesting ways to use other people's package(s)
+for genomics or "systems biology" related applications, I would like to 
+ask for a proposals, in the form of an O(10^2) words abstract.
+
+We would need the contributions by the end of June.
+
+  Best wishes
+  Wolfgang
+
+-------------------------------------
+Wolfgang Huber
+European Bioinformatics Institute
+European Molecular Biology Laboratory
+Cambridge CB10 1SD
+England
+Phone: +44 1223 494642
+Fax:   +44 1223 494486
+Http:  www.ebi.ac.uk/huber
+
+

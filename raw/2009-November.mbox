@@ -1,0 +1,3264 @@
+From sejjmba at ucl.ac.uk  Mon Nov  2 17:15:33 2009
+From: sejjmba at ucl.ac.uk (Martino Barenco)
+Date: Mon, 2 Nov 2009 16:15:33 +0000
+Subject: [Bioc-devel] annotation data in package
+Message-ID: <28554D42-BDE3-4585-B4B7-6C43FB0D82A2@ucl.ac.uk>
+
+Dear list,
+
+I am maintaining a package (rHVDM) and I have the following problem.  
+One of the commands in the package needs as input, plattform-specific  
+data. I started by putting the plattform-specific data in the data  
+directory of the package but this required, on the part of the user,  
+to load the data first (with a command data(...)) prior to using the  
+command. In a bid to avoid that step I have embedded the relevant  
+tables directly in one of the .R files. However this is not terribly  
+elegant, if not completely wrong from a programming point of view.  
+Moreover, these tables will be growing in size which makes the  
+present situation even more shaky.
+
+So, is there a way, upon loading the package to automatically load  
+these data too, and how? (for example, the affy package recognizes  
+the main affy chips).
+
+In advance, many thanks
+
+Martino
+
+
+From mtmorgan at fhcrc.org  Mon Nov  2 18:27:13 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 02 Nov 2009 09:27:13 -0800
+Subject: [Bioc-devel] annotation data in package
+In-Reply-To: <28554D42-BDE3-4585-B4B7-6C43FB0D82A2@ucl.ac.uk>
+References: <28554D42-BDE3-4585-B4B7-6C43FB0D82A2@ucl.ac.uk>
+Message-ID: <4AEF1671.2040705@fhcrc.org>
+
+Hi Martino --
+
+see ?.onLoad for evaluating code when the package is loaded. Basically,
+include in your package a function
+
+.onLoad <- function(libname, pkgname)
+{
+   <your code here>
+}
+
+Martin
+
+Martino Barenco wrote:
+> Dear list,
+> 
+> I am maintaining a package (rHVDM) and I have the following problem. One
+> of the commands in the package needs as input, plattform-specific data.
+> I started by putting the plattform-specific data in the data directory
+> of the package but this required, on the part of the user, to load the
+> data first (with a command data(...)) prior to using the command. In a
+> bid to avoid that step I have embedded the relevant tables directly in
+> one of the .R files. However this is not terribly elegant, if not
+> completely wrong from a programming point of view. Moreover, these
+> tables will be growing in size which makes the present situation even
+> more shaky.
+> 
+> So, is there a way, upon loading the package to automatically load these
+> data too, and how? (for example, the affy package recognizes the main
+> affy chips).
+> 
+> In advance, many thanks
+> 
+> Martino
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From marchion at jhu.edu  Wed Nov  4 05:37:04 2009
+From: marchion at jhu.edu (Luigi Marchionni)
+Date: Tue, 3 Nov 2009 23:37:04 -0500
+Subject: [Bioc-devel] Different behavior of get() between 2.9.0 and later
+	versions`
+In-Reply-To: <mailman.21.1257246006.9376.bioc-devel@stat.math.ethz.ch>
+References: <mailman.21.1257246006.9376.bioc-devel@stat.math.ethz.ch>
+Message-ID: <AAF1EDED-532E-4F3D-8ADB-7995F64C2AB1@jhu.edu>
+
+Hi guys,
+here is Luigi. I am developing a package which heavily relies on  
+AnnotationDbi, annotate, and metadatata packages from bioconductor.
+I noticed I weird behavior of the get() function for the  
+mgug4122a.db() package moving from 2.9.1 to later versions (2.10.0 and  
+2.11.0 the one I am running).
+Basically, an ID pointing to an 'NA' is not properly handled in the  
+newer versions, see below.
+The same ID in one case returns 'NA', in the other case returns an  
+error.
+If also checked if this happened with other package (hgu133a.db) and  
+the behavior is different, for both an ID that was there and now is  
+missing, and an ID that was not there, and now is not there as well....
+I give you the details below. Do you have any idea of what is going on?
+
+Luigi
+
+########################################################
+###FOR R-2.9.1:
+########################################################
+ > sessionInfo()
+R version 2.9.1 (2009-06-26)
+i386-apple-darwin9.7.0
+
+locale:
+en_US.UTF-8/en_US.UTF-8/C/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets
+[6] methods   base
+
+other attached packages:
+[1] hgu133a.db_2.2.12   mgug4122a.db_2.2.11
+[3] RSQLite_0.7-3       DBI_0.2-4
+[5] AnnotationDbi_1.6.1 Biobase_2.4.1
+
+ > get("A_52_P71146", mgug4122aSYMBOL)
+[1] NA
+
+ >  get("201265_at", hgu133aSYMBOL)
+[1] NA
+
+ > get("200080_s_at", hgu133aSYMBOL)
+[1] "H3F3A"
+
+########################################################
+###FOR R-2.10.0:
+########################################################
+ > sessionInfo()
+R version 2.10.0 (2009-10-26)
+i386-apple-darwin9.8.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/C/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets
+[6] methods   base
+
+other attached packages:
+[1] hgu133a.db_2.3.5    org.Hs.eg.db_2.3.6
+[3] mgug4122a.db_2.3.5  org.Mm.eg.db_2.3.6
+[5] RSQLite_0.7-3       DBI_0.2-4
+[7] AnnotationDbi_1.8.0 Biobase_2.6.0
+
+ > get("A_52_P71146", mgug4122aSYMBOL)
+Error in .checkKeys(value, Lkeys(x), x at ifnotfound) :
+   value for "A_52_P71146" not found
+
+ > get("201265_at", hgu133aSYMBOL)
+[1] NA
+
+ > get("200080_s_at", hgu133aSYMBOL)
+[1] NA
+
+
+
+--
+Ulisse: "Considerate la vostra semenza:
+fatti non foste a viver come bruti,
+ma per seguir virtute e canoscenza".
+(Dante, Divina Commedia, Canto XXVI)
+--
+      G-C
+     T---A    Luigi Marchionni, M.D., Ph.D.
+    C----G    The Sidney Kimmel Comprehensive Cancer Center
+G-------C    Johns Hopkins University -  School of Medicine
+   A------T     1550 Orleans St., CRB2, Rm 554
+     C----G    Baltimore, MD, 21231, USA
+     G--C    Tel: (001) 410-502-8179
+      C-G    Fax: (001) 410-502-5742
+     T---A    e-mail: marchion at jhmi.edu
+    G-----C    URL: http://astor.som.jhmi.edu/~marchion/
+   A-------T
+
+
+From seth at userprimary.net  Wed Nov  4 06:54:18 2009
+From: seth at userprimary.net (Seth Falcon)
+Date: Tue, 03 Nov 2009 21:54:18 -0800
+Subject: [Bioc-devel] Different behavior of get() between 2.9.0 and
+ later versions`
+In-Reply-To: <AAF1EDED-532E-4F3D-8ADB-7995F64C2AB1@jhu.edu>
+References: <mailman.21.1257246006.9376.bioc-devel@stat.math.ethz.ch>
+	<AAF1EDED-532E-4F3D-8ADB-7995F64C2AB1@jhu.edu>
+Message-ID: <4AF1170A.9020406@userprimary.net>
+
+Hi Luigi,
+
+On 11/3/09 8:37 PM, Luigi Marchionni wrote:
+> here is Luigi. I am developing a package which heavily relies on
+> AnnotationDbi, annotate, and metadatata packages from bioconductor.
+> I noticed I weird behavior of the get() function for the mgug4122a.db()
+> package moving from 2.9.1 to later versions (2.10.0 and 2.11.0 the one I
+> am running).
+> Basically, an ID pointing to an 'NA' is not properly handled in the
+> newer versions, see below.
+> The same ID in one case returns 'NA', in the other case returns an error.
+> If also checked if this happened with other package (hgu133a.db) and the
+> behavior is different, for both an ID that was there and now is missing,
+> and an ID that was not there, and now is not there as well....
+> I give you the details below. Do you have any idea of what is going on?
+
+Partial details...
+
+When you call get() or otherwise retrieve a value from an annotation 
+package object using a key, like a probe ID, there are three situations:
+
+1. The probe ID is valid and maps to a value in the given object.
+2. The probe ID is valid, but does not map to a value so NA is returned.
+3. The probe ID is not valid, an error is raised.
+
+So using a part of your example I see:
+
+ > get("A_52_P71146", mgug4122aSYMBOL)
+Error in .checkKeys(value, Lkeys(x), x at ifnotfound) :
+   value for "A_52_P71146" not found
+ > "A_52_P71146" %in% keys(mgug4122aSYMBOL)
+[1] FALSE
+
+I'll let someone else take a crack at why the key sets would have changed.
+
++ seth
+
+ > sessionInfo()
+R version 2.11.0 Under development (unstable) (--)
+x86_64-unknown-linux-gnu
+
+locale:
+  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+  [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+  [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices datasets  utils     methods   base
+
+other attached packages:
+[1] mgug4122a.db_2.3.5  org.Mm.eg.db_2.3.6  RSQLite_0.7-3
+[4] DBI_0.2-4           AnnotationDbi_1.9.0 Biobase_2.5.8
+
+loaded via a namespace (and not attached):
+[1] tools_2.11.0
+
+
+>
+> Luigi
+>
+> ########################################################
+> ###FOR R-2.9.1:
+> ########################################################
+>  > sessionInfo()
+> R version 2.9.1 (2009-06-26)
+> i386-apple-darwin9.7.0
+>
+> locale:
+> en_US.UTF-8/en_US.UTF-8/C/C/en_US.UTF-8/en_US.UTF-8
+>
+> attached base packages:
+> [1] stats graphics grDevices utils datasets
+> [6] methods base
+>
+> other attached packages:
+> [1] hgu133a.db_2.2.12 mgug4122a.db_2.2.11
+> [3] RSQLite_0.7-3 DBI_0.2-4
+> [5] AnnotationDbi_1.6.1 Biobase_2.4.1
+>
+>  > get("A_52_P71146", mgug4122aSYMBOL)
+> [1] NA
+>
+>  > get("201265_at", hgu133aSYMBOL)
+> [1] NA
+>
+>  > get("200080_s_at", hgu133aSYMBOL)
+> [1] "H3F3A"
+>
+> ########################################################
+> ###FOR R-2.10.0:
+> ########################################################
+>  > sessionInfo()
+> R version 2.10.0 (2009-10-26)
+> i386-apple-darwin9.8.0
+>
+> locale:
+> [1] en_US.UTF-8/en_US.UTF-8/C/C/en_US.UTF-8/en_US.UTF-8
+>
+> attached base packages:
+> [1] stats graphics grDevices utils datasets
+> [6] methods base
+>
+> other attached packages:
+> [1] hgu133a.db_2.3.5 org.Hs.eg.db_2.3.6
+> [3] mgug4122a.db_2.3.5 org.Mm.eg.db_2.3.6
+> [5] RSQLite_0.7-3 DBI_0.2-4
+> [7] AnnotationDbi_1.8.0 Biobase_2.6.0
+>
+>  > get("A_52_P71146", mgug4122aSYMBOL)
+> Error in .checkKeys(value, Lkeys(x), x at ifnotfound) :
+> value for "A_52_P71146" not found
+>
+>  > get("201265_at", hgu133aSYMBOL)
+> [1] NA
+>
+>  > get("200080_s_at", hgu133aSYMBOL)
+> [1] NA
+>
+>
+>
+> --
+> Ulisse: "Considerate la vostra semenza:
+> fatti non foste a viver come bruti,
+> ma per seguir virtute e canoscenza".
+> (Dante, Divina Commedia, Canto XXVI)
+> --
+> G-C
+> T---A Luigi Marchionni, M.D., Ph.D.
+> C----G The Sidney Kimmel Comprehensive Cancer Center
+> G-------C Johns Hopkins University - School of Medicine
+> A------T 1550 Orleans St., CRB2, Rm 554
+> C----G Baltimore, MD, 21231, USA
+> G--C Tel: (001) 410-502-8179
+> C-G Fax: (001) 410-502-5742
+> T---A e-mail: marchion at jhmi.edu
+> G-----C URL: http://astor.som.jhmi.edu/~marchion/
+> A-------T
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From marchion at jhu.edu  Wed Nov  4 07:40:25 2009
+From: marchion at jhu.edu (Luigi Marchionni)
+Date: Wed, 4 Nov 2009 01:40:25 -0500
+Subject: [Bioc-devel] Different behavior of get() between 2.9.0 and
+	later versions`
+In-Reply-To: <4AF1170A.9020406@userprimary.net>
+References: <mailman.21.1257246006.9376.bioc-devel@stat.math.ethz.ch>
+	<AAF1EDED-532E-4F3D-8ADB-7995F64C2AB1@jhu.edu>
+	<4AF1170A.9020406@userprimary.net>
+Message-ID: <3ADDFF43-65B6-4D72-B9D4-52A187B5A2B6@jhu.edu>
+
+Thanks.
+I'll try to see whether if I build my mgug4122a.db package this happens.
+maybe the problem is in org.Mm.eg.db
+luigi
+
+On Nov 4, 2009, at 12:54 AM, Seth Falcon wrote:
+
+> Hi Luigi,
+>
+> On 11/3/09 8:37 PM, Luigi Marchionni wrote:
+>> here is Luigi. I am developing a package which heavily relies on
+>> AnnotationDbi, annotate, and metadatata packages from bioconductor.
+>> I noticed I weird behavior of the get() function for the  
+>> mgug4122a.db()
+>> package moving from 2.9.1 to later versions (2.10.0 and 2.11.0 the  
+>> one I
+>> am running).
+>> Basically, an ID pointing to an 'NA' is not properly handled in the
+>> newer versions, see below.
+>> The same ID in one case returns 'NA', in the other case returns an  
+>> error.
+>> If also checked if this happened with other package (hgu133a.db)  
+>> and the
+>> behavior is different, for both an ID that was there and now is  
+>> missing,
+>> and an ID that was not there, and now is not there as well....
+>> I give you the details below. Do you have any idea of what is going  
+>> on?
+>
+> Partial details...
+>
+> When you call get() or otherwise retrieve a value from an annotation  
+> package object using a key, like a probe ID, there are three  
+> situations:
+>
+> 1. The probe ID is valid and maps to a value in the given object.
+> 2. The probe ID is valid, but does not map to a value so NA is  
+> returned.
+> 3. The probe ID is not valid, an error is raised.
+>
+> So using a part of your example I see:
+>
+> > get("A_52_P71146", mgug4122aSYMBOL)
+> Error in .checkKeys(value, Lkeys(x), x at ifnotfound) :
+>  value for "A_52_P71146" not found
+> > "A_52_P71146" %in% keys(mgug4122aSYMBOL)
+> [1] FALSE
+>
+> I'll let someone else take a crack at why the key sets would have  
+> changed.
+>
+> + seth
+>
+> > sessionInfo()
+> R version 2.11.0 Under development (unstable) (--)
+> x86_64-unknown-linux-gnu
+>
+> locale:
+> [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+> [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+> [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+> [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+> [9] LC_ADDRESS=C               LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+>
+> attached base packages:
+> [1] stats     graphics  grDevices datasets  utils     methods   base
+>
+> other attached packages:
+> [1] mgug4122a.db_2.3.5  org.Mm.eg.db_2.3.6  RSQLite_0.7-3
+> [4] DBI_0.2-4           AnnotationDbi_1.9.0 Biobase_2.5.8
+>
+> loaded via a namespace (and not attached):
+> [1] tools_2.11.0
+>
+>
+>>
+>> Luigi
+>>
+>> ########################################################
+>> ###FOR R-2.9.1:
+>> ########################################################
+>> > sessionInfo()
+>> R version 2.9.1 (2009-06-26)
+>> i386-apple-darwin9.7.0
+>>
+>> locale:
+>> en_US.UTF-8/en_US.UTF-8/C/C/en_US.UTF-8/en_US.UTF-8
+>>
+>> attached base packages:
+>> [1] stats graphics grDevices utils datasets
+>> [6] methods base
+>>
+>> other attached packages:
+>> [1] hgu133a.db_2.2.12 mgug4122a.db_2.2.11
+>> [3] RSQLite_0.7-3 DBI_0.2-4
+>> [5] AnnotationDbi_1.6.1 Biobase_2.4.1
+>>
+>> > get("A_52_P71146", mgug4122aSYMBOL)
+>> [1] NA
+>>
+>> > get("201265_at", hgu133aSYMBOL)
+>> [1] NA
+>>
+>> > get("200080_s_at", hgu133aSYMBOL)
+>> [1] "H3F3A"
+>>
+>> ########################################################
+>> ###FOR R-2.10.0:
+>> ########################################################
+>> > sessionInfo()
+>> R version 2.10.0 (2009-10-26)
+>> i386-apple-darwin9.8.0
+>>
+>> locale:
+>> [1] en_US.UTF-8/en_US.UTF-8/C/C/en_US.UTF-8/en_US.UTF-8
+>>
+>> attached base packages:
+>> [1] stats graphics grDevices utils datasets
+>> [6] methods base
+>>
+>> other attached packages:
+>> [1] hgu133a.db_2.3.5 org.Hs.eg.db_2.3.6
+>> [3] mgug4122a.db_2.3.5 org.Mm.eg.db_2.3.6
+>> [5] RSQLite_0.7-3 DBI_0.2-4
+>> [7] AnnotationDbi_1.8.0 Biobase_2.6.0
+>>
+>> > get("A_52_P71146", mgug4122aSYMBOL)
+>> Error in .checkKeys(value, Lkeys(x), x at ifnotfound) :
+>> value for "A_52_P71146" not found
+>>
+>> > get("201265_at", hgu133aSYMBOL)
+>> [1] NA
+>>
+>> > get("200080_s_at", hgu133aSYMBOL)
+>> [1] NA
+>>
+>>
+>>
+>> --
+>> Ulisse: "Considerate la vostra semenza:
+>> fatti non foste a viver come bruti,
+>> ma per seguir virtute e canoscenza".
+>> (Dante, Divina Commedia, Canto XXVI)
+>> --
+>> G-C
+>> T---A Luigi Marchionni, M.D., Ph.D.
+>> C----G The Sidney Kimmel Comprehensive Cancer Center
+>> G-------C Johns Hopkins University - School of Medicine
+>> A------T 1550 Orleans St., CRB2, Rm 554
+>> C----G Baltimore, MD, 21231, USA
+>> G--C Tel: (001) 410-502-8179
+>> C-G Fax: (001) 410-502-5742
+>> T---A e-mail: marchion at jhmi.edu
+>> G-----C URL: http://astor.som.jhmi.edu/~marchion/
+>> A-------T
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From marchion at jhu.edu  Wed Nov  4 08:07:25 2009
+From: marchion at jhu.edu (Luigi Marchionni)
+Date: Wed, 4 Nov 2009 02:07:25 -0500
+Subject: [Bioc-devel] Different behavior of get() between 2.9.0 and
+	later versions`
+In-Reply-To: <4AF1170A.9020406@userprimary.net>
+References: <mailman.21.1257246006.9376.bioc-devel@stat.math.ethz.ch>
+	<AAF1EDED-532E-4F3D-8ADB-7995F64C2AB1@jhu.edu>
+	<4AF1170A.9020406@userprimary.net>
+Message-ID: <3C7694EB-76C0-41F7-B481-334D18D36667@jhu.edu>
+
+Maybe you all guys already discussed that, but the  
+stringsAsFactors=TRUE as global setting for R in genomics can be a  
+problem.
+Clearly this is not the case for the problem I raised (or maybe it  
+is,,, in my .Rprofile I set it to FALSE..., il check this), however,  
+for annotation purposes factors (and cbind, data.frame, and the like)  
+do not work.
+I ask you to make a major philosophical decision here...
+Either everybody set the option to FALSE in the code, orx the base  
+setting change. or. I do not know.
+Or maybe there is a shortcut I am not aware of.
+You cannot really anticipate what the end-user will do...
+but if  stringsAsFactors=TRUE is the scenario, one must take to keep  
+it in mind.
+Am I making too complicate?
+Is that irrelevant?
+Luigi
+PS:abusing of your patience, I know
+
+On Nov 4, 2009, at 12:54 AM, Seth Falcon wrote:
+
+> Hi Luigi,
+>
+> On 11/3/09 8:37 PM, Luigi Marchionni wrote:
+>> here is Luigi. I am developing a package which heavily relies on
+>> AnnotationDbi, annotate, and metadatata packages from bioconductor.
+>> I noticed I weird behavior of the get() function for the  
+>> mgug4122a.db()
+>> package moving from 2.9.1 to later versions (2.10.0 and 2.11.0 the  
+>> one I
+>> am running).
+>> Basically, an ID pointing to an 'NA' is not properly handled in the
+>> newer versions, see below.
+>> The same ID in one case returns 'NA', in the other case returns an  
+>> error.
+>> If also checked if this happened with other package (hgu133a.db)  
+>> and the
+>> behavior is different, for both an ID that was there and now is  
+>> missing,
+>> and an ID that was not there, and now is not there as well....
+>> I give you the details below. Do you have any idea of what is going  
+>> on?
+>
+> Partial details...
+>
+> When you call get() or otherwise retrieve a value from an annotation  
+> package object using a key, like a probe ID, there are three  
+> situations:
+>
+> 1. The probe ID is valid and maps to a value in the given object.
+> 2. The probe ID is valid, but does not map to a value so NA is  
+> returned.
+> 3. The probe ID is not valid, an error is raised.
+>
+> So using a part of your example I see:
+>
+> > get("A_52_P71146", mgug4122aSYMBOL)
+> Error in .checkKeys(value, Lkeys(x), x at ifnotfound) :
+>  value for "A_52_P71146" not found
+> > "A_52_P71146" %in% keys(mgug4122aSYMBOL)
+> [1] FALSE
+>
+> I'll let someone else take a crack at why the key sets would have  
+> changed.
+>
+> + seth
+>
+> > sessionInfo()
+> R version 2.11.0 Under development (unstable) (--)
+> x86_64-unknown-linux-gnu
+>
+> locale:
+> [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+> [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+> [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+> [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+> [9] LC_ADDRESS=C               LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+>
+> attached base packages:
+> [1] stats     graphics  grDevices datasets  utils     methods   base
+>
+> other attached packages:
+> [1] mgug4122a.db_2.3.5  org.Mm.eg.db_2.3.6  RSQLite_0.7-3
+> [4] DBI_0.2-4           AnnotationDbi_1.9.0 Biobase_2.5.8
+>
+> loaded via a namespace (and not attached):
+> [1] tools_2.11.0
+>
+>
+>>
+>> Luigi
+>>
+>> ########################################################
+>> ###FOR R-2.9.1:
+>> ########################################################
+>> > sessionInfo()
+>> R version 2.9.1 (2009-06-26)
+>> i386-apple-darwin9.7.0
+>>
+>> locale:
+>> en_US.UTF-8/en_US.UTF-8/C/C/en_US.UTF-8/en_US.UTF-8
+>>
+>> attached base packages:
+>> [1] stats graphics grDevices utils datasets
+>> [6] methods base
+>>
+>> other attached packages:
+>> [1] hgu133a.db_2.2.12 mgug4122a.db_2.2.11
+>> [3] RSQLite_0.7-3 DBI_0.2-4
+>> [5] AnnotationDbi_1.6.1 Biobase_2.4.1
+>>
+>> > get("A_52_P71146", mgug4122aSYMBOL)
+>> [1] NA
+>>
+>> > get("201265_at", hgu133aSYMBOL)
+>> [1] NA
+>>
+>> > get("200080_s_at", hgu133aSYMBOL)
+>> [1] "H3F3A"
+>>
+>> ########################################################
+>> ###FOR R-2.10.0:
+>> ########################################################
+>> > sessionInfo()
+>> R version 2.10.0 (2009-10-26)
+>> i386-apple-darwin9.8.0
+>>
+>> locale:
+>> [1] en_US.UTF-8/en_US.UTF-8/C/C/en_US.UTF-8/en_US.UTF-8
+>>
+>> attached base packages:
+>> [1] stats graphics grDevices utils datasets
+>> [6] methods base
+>>
+>> other attached packages:
+>> [1] hgu133a.db_2.3.5 org.Hs.eg.db_2.3.6
+>> [3] mgug4122a.db_2.3.5 org.Mm.eg.db_2.3.6
+>> [5] RSQLite_0.7-3 DBI_0.2-4
+>> [7] AnnotationDbi_1.8.0 Biobase_2.6.0
+>>
+>> > get("A_52_P71146", mgug4122aSYMBOL)
+>> Error in .checkKeys(value, Lkeys(x), x at ifnotfound) :
+>> value for "A_52_P71146" not found
+>>
+>> > get("201265_at", hgu133aSYMBOL)
+>> [1] NA
+>>
+>> > get("200080_s_at", hgu133aSYMBOL)
+>> [1] NA
+>>
+>>
+>>
+>> --
+>> Ulisse: "Considerate la vostra semenza:
+>> fatti non foste a viver come bruti,
+>> ma per seguir virtute e canoscenza".
+>> (Dante, Divina Commedia, Canto XXVI)
+>> --
+>> G-C
+>> T---A Luigi Marchionni, M.D., Ph.D.
+>> C----G The Sidney Kimmel Comprehensive Cancer Center
+>> G-------C Johns Hopkins University - School of Medicine
+>> A------T 1550 Orleans St., CRB2, Rm 554
+>> C----G Baltimore, MD, 21231, USA
+>> G--C Tel: (001) 410-502-8179
+>> C-G Fax: (001) 410-502-5742
+>> T---A e-mail: marchion at jhmi.edu
+>> G-----C URL: http://astor.som.jhmi.edu/~marchion/
+>> A-------T
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From robert.castelo at upf.edu  Wed Nov  4 14:05:55 2009
+From: robert.castelo at upf.edu (Robert Castelo)
+Date: Wed, 04 Nov 2009 14:05:55 +0100
+Subject: [Bioc-devel] Different behavior of get() between 2.9.0
+	and	later versions`
+In-Reply-To: <4AF1170A.9020406@userprimary.net>
+References: <mailman.21.1257246006.9376.bioc-devel@stat.math.ethz.ch>
+	<AAF1EDED-532E-4F3D-8ADB-7995F64C2AB1@jhu.edu>
+	<4AF1170A.9020406@userprimary.net>
+Message-ID: <1257339955.14684.21.camel@llull.imim.es>
+
+hi Seth and rest of the list,
+
+never thought about this till i saw your email and in particular this
+clarification:
+
+> When you call get() or otherwise retrieve a value from an annotation 
+> package object using a key, like a probe ID, there are three situations:
+> 
+> 1. The probe ID is valid and maps to a value in the given object.
+> 2. The probe ID is valid, but does not map to a value so NA is returned.
+> 3. The probe ID is not valid, an error is raised.
+
+i've built an annotation package for a custom array to which i've added
+a few new sql tables to provide additional mappings to various
+non-standard annotations on the probes (following section 3 -how to add
+extra data into your packages- from vignette SQLForge of AnnotationDbi).
+the way in which i add these data is by creating a flat file with the
+"records" and importing them into the SQL database of the package
+through the unix shell with
+
+sqlite3 dbName << EOF
+import newdata.txt newtable
+.exit
+EOF
+
+where dbName should be the .sqlite file created by popXXXCHIPDB(),
+newdata.txt is the flat file with the data of this new mapping and
+newtable is the SQL table i've specifically created on the .sqlite file
+to support the mapping in my annotation package.
+
+however, in this way i don't know how to implement the second situation
+you describe. i tried to associate NA's to valid keys having lines
+
+..
+whateverkey|NA
+..
+
+in the flat file that is imported later but then this NA is not
+interpreted as an NA value but as a string "NA". then i concluded that
+the way i had to do it was to remove those lines and having the user to
+specify the parametere ifnotfound=NA in their get/mget commands.
+
+
+so now my question would be (either for you or for whoever in the list
+knows about this). how do i introduce a new mapping into my annotation
+package such that a key is valid but it does not map to a value so that
+NA is returned?
+
+
+thanks!
+robert.
+
+
+From seth at userprimary.net  Wed Nov  4 18:02:54 2009
+From: seth at userprimary.net (Seth Falcon)
+Date: Wed, 04 Nov 2009 09:02:54 -0800
+Subject: [Bioc-devel] Different behavior of get() between 2.9.0 and
+ later versions`
+In-Reply-To: <3C7694EB-76C0-41F7-B481-334D18D36667@jhu.edu>
+References: <mailman.21.1257246006.9376.bioc-devel@stat.math.ethz.ch>
+	<AAF1EDED-532E-4F3D-8ADB-7995F64C2AB1@jhu.edu>
+	<4AF1170A.9020406@userprimary.net>
+	<3C7694EB-76C0-41F7-B481-334D18D36667@jhu.edu>
+Message-ID: <4AF1B3BE.9060408@userprimary.net>
+
+On 11/3/09 11:07 PM, Luigi Marchionni wrote:
+> Maybe you all guys already discussed that, but the stringsAsFactors=TRUE
+> as global setting for R in genomics can be a problem.
+
+Yes, in general global configuration that changes the behavior of many R 
+functions poses a potential problem.  I would generally recommend not 
+modifying such global options.  The Bioconductor project, for example, 
+tests all software using default options (at least as far as I know).
+
+> Clearly this is not the case for the problem I raised (or maybe it is,,,
+> in my .Rprofile I set it to FALSE..., il check this), however, for
+> annotation purposes factors (and cbind, data.frame, and the like) do not
+> work.
+> I ask you to make a major philosophical decision here...
+> Either everybody set the option to FALSE in the code, orx the base
+> setting change. or. I do not know.
+> Or maybe there is a shortcut I am not aware of.
+> You cannot really anticipate what the end-user will do...
+> but if stringsAsFactors=TRUE is the scenario, one must take to keep it
+> in mind.
+> Am I making too complicate?
+
+You have not described very clearly a specific problem you are having so 
+it is difficult to provide any further assistance.
+
++ seth
+
+
+From mcarlson at fhcrc.org  Wed Nov  4 21:12:40 2009
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Wed, 04 Nov 2009 12:12:40 -0800
+Subject: [Bioc-devel] Different behavior of get() between
+ 2.9.0	and	later versions`
+In-Reply-To: <1257339955.14684.21.camel@llull.imim.es>
+References: <mailman.21.1257246006.9376.bioc-devel@stat.math.ethz.ch>	<AAF1EDED-532E-4F3D-8ADB-7995F64C2AB1@jhu.edu>	<4AF1170A.9020406@userprimary.net>
+	<1257339955.14684.21.camel@llull.imim.es>
+Message-ID: <4AF1E038.10304@fhcrc.org>
+
+Hi Luigi and Robert,
+
+For Luigi:  The inconsistency appears to be originating from missing
+probes in the mgug4122a probes table.  This only seems to be happening
+for certain "corner case" probe packages.  But in the meantime, this is
+not a problem with get() or with the org packages.  I will get to the
+bottom of what caused this and apply a fix it ASAP wherever it is a
+problem (so far very few things seem to be affected).  Thank you for
+pointing this out!
+
+And to answer Roberts question:  To get an NA back (in R) from one of
+these accessory tables you are adding, you should only have to have null
+values in the relevant fields after the import.  No need to put NA
+strings into your input files as that will result in NA strings being
+stored in the DB.  Just leaving those portions of the input table blank
+should result in null values in your database table, which should give
+you the results you want when you look at those from R using
+AnnotationDbi (meaning NAs). 
+
+So basically your database table should look like this when you query it:
+
+whateverkey|
+
+
+Please let me know if I need to clarify that.
+
+
+  Marc
+
+
+
+
+Robert Castelo wrote:
+> hi Seth and rest of the list,
+>
+> never thought about this till i saw your email and in particular this
+> clarification:
+>
+>   
+>> When you call get() or otherwise retrieve a value from an annotation 
+>> package object using a key, like a probe ID, there are three situations:
+>>
+>> 1. The probe ID is valid and maps to a value in the given object.
+>> 2. The probe ID is valid, but does not map to a value so NA is returned.
+>> 3. The probe ID is not valid, an error is raised.
+>>     
+>
+> i've built an annotation package for a custom array to which i've added
+> a few new sql tables to provide additional mappings to various
+> non-standard annotations on the probes (following section 3 -how to add
+> extra data into your packages- from vignette SQLForge of AnnotationDbi).
+> the way in which i add these data is by creating a flat file with the
+> "records" and importing them into the SQL database of the package
+> through the unix shell with
+>
+> sqlite3 dbName << EOF
+> import newdata.txt newtable
+> .exit
+> EOF
+>
+> where dbName should be the .sqlite file created by popXXXCHIPDB(),
+> newdata.txt is the flat file with the data of this new mapping and
+> newtable is the SQL table i've specifically created on the .sqlite file
+> to support the mapping in my annotation package.
+>
+> however, in this way i don't know how to implement the second situation
+> you describe. i tried to associate NA's to valid keys having lines
+>
+> ..
+> whateverkey|NA
+> ..
+>
+> in the flat file that is imported later but then this NA is not
+> interpreted as an NA value but as a string "NA". then i concluded that
+> the way i had to do it was to remove those lines and having the user to
+> specify the parametere ifnotfound=NA in their get/mget commands.
+>
+>
+> so now my question would be (either for you or for whoever in the list
+> knows about this). how do i introduce a new mapping into my annotation
+> package such that a key is valid but it does not map to a value so that
+> NA is returned?
+>
+>
+> thanks!
+> robert.
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+From sneumann at ipb-halle.de  Thu Nov  5 21:49:35 2009
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Thu, 05 Nov 2009 21:49:35 +0100
+Subject: [Bioc-devel] SVN changes bloxsom are out of date
+Message-ID: <1257454175.1234.166.camel@paddy>
+
+Hi,
+
+the last changes here are from October:
+http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/
+
+Did I miss anything ?
+
+Yours,
+Steffen
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From paboyoun at fhcrc.org  Thu Nov  5 22:07:25 2009
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Thu, 05 Nov 2009 13:07:25 -0800
+Subject: [Bioc-devel] SVN changes bloxsom are out of date
+In-Reply-To: <1257454175.1234.166.camel@paddy>
+References: <1257454175.1234.166.camel@paddy>
+Message-ID: <4AF33E8D.7060508@fhcrc.org>
+
+Steffen,
+We are in the process of moving the blosxom changelog from U of M to the 
+Hutch and it is due to competing efforts in other areas that it hasn't 
+been completed yet. Now that the BioC 2.5 release is out we can spend 
+some time getting the changelog online.
+
+
+Patrick
+
+
+Steffen Neumann wrote:
+> Hi,
+>
+> the last changes here are from October:
+> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/
+>
+> Did I miss anything ?
+>
+> Yours,
+> Steffen
+>
+>
+
+
+From jmacdon at med.umich.edu  Thu Nov  5 22:10:41 2009
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Thu, 05 Nov 2009 16:10:41 -0500
+Subject: [Bioc-devel] SVN changes bloxsom are out of date
+In-Reply-To: <1257454175.1234.166.camel@paddy>
+References: <1257454175.1234.166.camel@paddy>
+Message-ID: <4AF33F51.9030907@med.umich.edu>
+
+Hi Steffen,
+
+Steffen Neumann wrote:
+> Hi,
+> 
+> the last changes here are from October:
+> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/
+> 
+> Did I miss anything ?
+
+No, that is the state of affairs right now. I was running the changelog 
+on a server at UM that I don't have any control over and it was becoming 
+untenable, so it will now be hosted in Seattle.
+
+Unfortunately the change occurred close to the release (when things get 
+crazy), so it has yet to be reconstituted.
+
+Best,
+
+Jim
+
+
+> 
+> Yours,
+> Steffen
+> 
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Douglas Lab
+University of Michigan
+Department of Human Genetics
+5912 Buhl
+1241 E. Catherine St.
+Ann Arbor MI 48109-5618
+734-615-7826
+
+
+From marchion at jhu.edu  Fri Nov  6 07:10:25 2009
+From: marchion at jhu.edu (Luigi Marchionni)
+Date: Fri, 6 Nov 2009 01:10:25 -0500
+Subject: [Bioc-devel] homolog.db package
+In-Reply-To: <mailman.29.1257418807.13787.bioc-devel@stat.math.ethz.ch>
+References: <mailman.29.1257418807.13787.bioc-devel@stat.math.ethz.ch>
+Message-ID: <B2881F83-0640-4A0C-8E0F-66958B1F8D5F@jhu.edu>
+
+Dear All,
+As I  wrote to the list a couple of weeks ago I took on the endeavor  
+of creating an S4 package for storing genomics results data and  
+further analyze them.
+I had already code working to compare results across experiments,  
+platform and species.
+To be a good citizen I start using S4, and I start relying on all  
+classes already existing in Bioc.
+Now I came to the issue of dealing with mapping genes (and features)  
+across species.
+I see that Hong Li maintains a package (homolog.db) containing such  
+information, which depends on several other packages.
+I installed them and found difficult to use it.
+I will give you few examples:
+
+This retrieves the mapping between the Homologene ID and the Entrez  
+Gene ID.
+Obviously each list element has a different length, however there is  
+not easy way to tell the correspondence between organism and Entrez  
+gene ID.
+I can say that the first 1 in both elements below is Human, then...
+If this has to be the structure, then each element in xx below should  
+be names with the corresponding taxonomy id.
+See the chunk of code below:
+
+################################################################################
+ > xx <- as.list(homologHOMOLOG2GENEID)
+ > xx[1]
+$`3`
+  [1]      34  469356  490207  505968   11364   24158  406283
+  [8]   38864 1276346  181757  173979  181758
+################################################################################
+
+By using the code below I can however retrieve the mapping between  
+Entrez gene identifiers to Homologene identifiers.
+Lets consider the first two elements of xx[1] above:
+
+################################################################################
+ > yy <- as.list(homologHOMOLOG)
+ > yy["34"]
+$`34`
+[1] 3
+ > yy["469356"]
+$`469356`
+[1] 3
+################################################################################
+
+Using a little coding I can now map from one Entrez ID to another  
+across species, although without knowing which species. So I can use  
+species information:
+
+################################################################################
+ > zz["34"]
+$`34`
+[1] 9606
+ > zz["469356"]
+$`469356`
+[1] 9598
+################################################################################
+
+OK. now I know that Entrez ID "34" in Taxonomy "9006" (human)  
+correspond to Entrez ID "469356" in n Taxonomy "9598" (which I do not  
+know by heart), through the Homologene id "3". To learn the the second  
+taxonomy I can do:
+
+################################################################################
+ > ff <- as.list(homologORGANISM)
+ > ff["9598"]
+$`9598`
+[1] "Pan troglodytes"
+################################################################################
+
+Good!  I had to play around a little with the code, however I could  
+map the human Entrez ID "34" to the monkey "469356" one.
+However I think this is a little too complicated. To install  
+homolog.db and (with dependencies=TRUE) I also had to install:
+org.Hs.ipi.db_1.1.1.tar.gz
+org.Hs.sp.db_1.1.1.tar.gz
+PAnnBuilder_1.9.0.tar.gz
+And the package does not point to a library that implements the chunks  
+of code above to map Entrez ids across species.
+
+Look the code below, I load my mapping library (where the cross- 
+mapping homologene table takes 3.2 Mb), I load this object, and the  
+taxonomy information:
+
+################################################################################
+ > library(moreFGS)
+ > data(homol)
+ > data(tax)
+ > ls()
+[1] "ff"    "homol" "tax"   "xx"    "yy"    "zz"
+################################################################################
+
+Finally I load a library containing the  taxSwitch() function:
+
+################################################################################
+ > library(funcBox)
+ > args(taxSwitch)
+function (IDs, org1, org2, whatIn = "EGID", whatOut = "EGID")
+NULL
+################################################################################
+
+Now look at this, for one ID:
+
+################################################################################
+ > taxSwitch("34","Homo","Pan","EGID","EGID")
+[1] "469356"
+ > taxSwitch("34","Homo","Pan","EGID","EGID")
+[1] "469356"
+ > taxSwitch("469356","Pan","Homo","EGID","EGID")
+[1] "34"
+ > taxSwitch("469356","Pan","Homo","EGID","symbol")
+[1] "ACADM"
+ > taxSwitch("34","Homo","Mus","EGID","symbol")
+[1] "Acadm"
+ > taxSwitch("Acadm","Mus","Homo","symbol","EGID")
+[1] "34"
+ > taxSwitch("Acadm","Mus","Pan","symbol","EGID")
+[1] "469356"
+ > taxSwitch("Acadm","Mus","Bos","symbol","EGID")
+[1] "505968"
+ > taxSwitch("Acadm","Mus","Bos","symbol","Acc")
+[1] "NP_001068703"
+ > taxSwitch("NP_001068703","Bos","Rattus","Acc","symbol")
+[1] "Acadm"
+################################################################################
+
+Or more than one ID:
+
+################################################################################
+ > taxSwitch(c("34","37","3211"),"Homo","Mus","EGID","Acc")
+[1] "NP_031408" "NP_059062" "NP_032292"
+ > taxSwitch(c("34","37","3211"),"Homo","Mus","EGID","symbol")
+[1] "Acadm"  "Acadvl" "Hoxb1"
+################################################################################
+
+and so on.
+I would be very happy to provide bioconductor with the code to make  
+the moreFGS library and with the taxSwitch() function.
+
+Luigi
+
+PS: the session info is below
+
+################################################################################
+ > sessionInfo()
+R version 2.11.0 Under development (unstable) (2009-10-01 r49916)
+i386-apple-darwin9.8.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/C/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets
+[6] methods   base
+
+other attached packages:
+  [1] moreFGS_1.0.2       homolog.db_1.1.1
+  [3] PAnnBuilder_1.9.0   RSQLite_0.7-3
+  [5] DBI_0.2-4           funcBox_0.0.3
+  [7] annotate_1.25.0     AnnotationDbi_1.9.0
+  [9] Biobase_2.7.0       limma_3.3.1
+
+loaded via a namespace (and not attached):
+[1] tools_2.11.0 xtable_1.5-5
+################################################################################
+
+
+From tchiang at fhcrc.org  Fri Nov  6 08:41:04 2009
+From: tchiang at fhcrc.org (Tony Chiang)
+Date: Fri, 6 Nov 2009 00:41:04 -0700
+Subject: [Bioc-devel] homolog.db package
+In-Reply-To: <B2881F83-0640-4A0C-8E0F-66958B1F8D5F@jhu.edu>
+References: <mailman.29.1257418807.13787.bioc-devel@stat.math.ethz.ch>
+	<B2881F83-0640-4A0C-8E0F-66958B1F8D5F@jhu.edu>
+Message-ID: <52f663c40911052341k65488aeap277ce6f11aac76c1@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091106/a44d8b83/attachment.pl>
+
+From marchion at jhu.edu  Fri Nov  6 09:02:10 2009
+From: marchion at jhu.edu (Luigi Marchionni)
+Date: Fri, 6 Nov 2009 03:02:10 -0500
+Subject: [Bioc-devel] homolog.db package
+In-Reply-To: <52f663c40911052341k65488aeap277ce6f11aac76c1@mail.gmail.com>
+References: <mailman.29.1257418807.13787.bioc-devel@stat.math.ethz.ch>
+	<B2881F83-0640-4A0C-8E0F-66958B1F8D5F@jhu.edu>
+	<52f663c40911052341k65488aeap277ce6f11aac76c1@mail.gmail.com>
+Message-ID: <846232AE-48AE-4BFA-95B9-98FD6BB915B7@jhu.edu>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091106/85faa594/attachment.pl>
+
+From hb at stat.berkeley.edu  Fri Nov  6 09:07:56 2009
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Fri, 6 Nov 2009 08:07:56 +0000
+Subject: [Bioc-devel] SVN changes bloxsom are out of date
+In-Reply-To: <4AF33E8D.7060508@fhcrc.org>
+References: <1257454175.1234.166.camel@paddy> <4AF33E8D.7060508@fhcrc.org>
+Message-ID: <59d7961d0911060007y5bb17497n3e33ecc5a1e34cd4@mail.gmail.com>
+
+Hi,
+
+could you then please fix the bug that causes problems for packages
+with periods in their name, e.g.
+
+http://bioconductor.org/packages/2.5/bioc/html/aroma.light.html
+
+Example:
+
+http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma.light
+
+gives
+
+"Error: I'm afraid this is the first I've heard of a "light" flavoured
+Blosxom. Try dropping the "/+light" bit from the end of the URL."
+
+Workaround:
+
+http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma
+
+but picks up more than one package.
+
+Thanks
+
+/Henrik
+
+On Thu, Nov 5, 2009 at 9:07 PM, Patrick Aboyoun <paboyoun at fhcrc.org> wrote:
+> Steffen,
+> We are in the process of moving the blosxom changelog from U of M to the
+> Hutch and it is due to competing efforts in other areas that it hasn't been
+> completed yet. Now that the BioC 2.5 release is out we can spend some time
+> getting the changelog online.
+>
+>
+> Patrick
+>
+>
+> Steffen Neumann wrote:
+>>
+>> Hi,
+>>
+>> the last changes here are from October:
+>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/
+>>
+>> Did I miss anything ?
+>>
+>> Yours,
+>> Steffen
+>>
+>>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From tchiang at fhcrc.org  Fri Nov  6 09:10:35 2009
+From: tchiang at fhcrc.org (Tony Chiang)
+Date: Fri, 6 Nov 2009 01:10:35 -0700
+Subject: [Bioc-devel] homolog.db package
+In-Reply-To: <846232AE-48AE-4BFA-95B9-98FD6BB915B7@jhu.edu>
+References: <mailman.29.1257418807.13787.bioc-devel@stat.math.ethz.ch>
+	<B2881F83-0640-4A0C-8E0F-66958B1F8D5F@jhu.edu>
+	<52f663c40911052341k65488aeap277ce6f11aac76c1@mail.gmail.com>
+	<846232AE-48AE-4BFA-95B9-98FD6BB915B7@jhu.edu>
+Message-ID: <52f663c40911060010v8e17401m23d451af6a70ae39@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091106/d94452ee/attachment.pl>
+
+From jmacdon at med.umich.edu  Fri Nov  6 14:58:55 2009
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Fri, 06 Nov 2009 08:58:55 -0500
+Subject: [Bioc-devel] SVN changes bloxsom are out of date
+In-Reply-To: <59d7961d0911060007y5bb17497n3e33ecc5a1e34cd4@mail.gmail.com>
+References: <1257454175.1234.166.camel@paddy> <4AF33E8D.7060508@fhcrc.org>
+	<59d7961d0911060007y5bb17497n3e33ecc5a1e34cd4@mail.gmail.com>
+Message-ID: <4AF42B9F.1080509@med.umich.edu>
+
+Hi Henrik,
+
+Henrik Bengtsson wrote:
+> Hi,
+> 
+> could you then please fix the bug that causes problems for packages
+> with periods in their name, e.g.
+
+You will be hard pressed to fix this 'bug', as in the Blosxom world this 
+is a feature. You tell Blosxom which 'flavour' to use by passing a URI 
+with the form
+
+http://www.theserver.org/cgi-bin/blosxom.cgi/myfavorite.flavour
+
+where 'flavour' indicates what templates to use for the webpage.
+
+Since this is a basic feature of Blosxom you will not be able to get the 
+maintainer to make any changes, nor would it be simple to make the 
+necessary changes to the code ourselves.
+
+Best,
+
+Jim
+
+
+> 
+> http://bioconductor.org/packages/2.5/bioc/html/aroma.light.html
+> 
+> Example:
+> 
+> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma.light
+> 
+> gives
+> 
+> "Error: I'm afraid this is the first I've heard of a "light" flavoured
+> Blosxom. Try dropping the "/+light" bit from the end of the URL."
+> 
+> Workaround:
+> 
+> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/aroma
+> 
+> but picks up more than one package.
+> 
+> Thanks
+> 
+> /Henrik
+> 
+> On Thu, Nov 5, 2009 at 9:07 PM, Patrick Aboyoun <paboyoun at fhcrc.org> wrote:
+>> Steffen,
+>> We are in the process of moving the blosxom changelog from U of M to the
+>> Hutch and it is due to competing efforts in other areas that it hasn't been
+>> completed yet. Now that the BioC 2.5 release is out we can spend some time
+>> getting the changelog online.
+>>
+>>
+>> Patrick
+>>
+>>
+>> Steffen Neumann wrote:
+>>> Hi,
+>>>
+>>> the last changes here are from October:
+>>> http://fgc.lsi.umich.edu/cgi-bin/blosxom.cgi/
+>>>
+>>> Did I miss anything ?
+>>>
+>>> Yours,
+>>> Steffen
+>>>
+>>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Douglas Lab
+University of Michigan
+Department of Human Genetics
+5912 Buhl
+1241 E. Catherine St.
+Ann Arbor MI 48109-5618
+734-615-7826
+
+
+From tchiang at fhcrc.org  Fri Nov  6 18:56:39 2009
+From: tchiang at fhcrc.org (Tony Chiang)
+Date: Fri, 6 Nov 2009 09:56:39 -0800
+Subject: [Bioc-devel] homolog.db package
+In-Reply-To: <7C4495E0-C81E-42BF-B159-8AA79A76A4F1@jhu.edu>
+References: <mailman.29.1257418807.13787.bioc-devel@stat.math.ethz.ch>
+	<B2881F83-0640-4A0C-8E0F-66958B1F8D5F@jhu.edu>
+	<52f663c40911052341k65488aeap277ce6f11aac76c1@mail.gmail.com>
+	<846232AE-48AE-4BFA-95B9-98FD6BB915B7@jhu.edu>
+	<52f663c40911060010v8e17401m23d451af6a70ae39@mail.gmail.com>
+	<7C4495E0-C81E-42BF-B159-8AA79A76A4F1@jhu.edu>
+Message-ID: <52f663c40911060956g7adeb060n9ab911185e71987@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091106/c52c2b88/attachment.pl>
+
+From mcarlson at fhcrc.org  Fri Nov  6 19:47:08 2009
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Fri, 06 Nov 2009 10:47:08 -0800
+Subject: [Bioc-devel] homolog.db package
+In-Reply-To: <52f663c40911060956g7adeb060n9ab911185e71987@mail.gmail.com>
+References: <mailman.29.1257418807.13787.bioc-devel@stat.math.ethz.ch>	<B2881F83-0640-4A0C-8E0F-66958B1F8D5F@jhu.edu>	<52f663c40911052341k65488aeap277ce6f11aac76c1@mail.gmail.com>	<846232AE-48AE-4BFA-95B9-98FD6BB915B7@jhu.edu>	<52f663c40911060010v8e17401m23d451af6a70ae39@mail.gmail.com>	<7C4495E0-C81E-42BF-B159-8AA79A76A4F1@jhu.edu>
+	<52f663c40911060956g7adeb060n9ab911185e71987@mail.gmail.com>
+Message-ID: <4AF46F2C.6080100@fhcrc.org>
+
+Hi Luigi,
+
+I am the one responsible for trying to maintain order with the
+annotations in this project.  To date, there has not been a lot of
+external interest in cross-species mappings.  Hong built the homolog.db
+package that you found, but he didn't update these packages for the most
+recent release, so unless Hong speaks up rather soon, it really seems
+that might be more or less abandoned at this point.  I have built the
+inparanoid packages in anticipation that someone like you might come
+along some day, but it is difficult to predict the future, let alone
+write software for it, which is why there are not a lot of functions to
+make use of these packages yet.  I have experimented with some of these
+mapping problems, but they are not simple problems as the mappings
+frequently tend to be many to one or many to many.  And layered on top
+of that is the fact that the inparanoid project uses inconsistent labels
+for protein sequences which means that you have additional mapping steps
+to do once you find a match.  Anyhow the way that you want to handle
+this mapping will depend almost entirely on the context of what
+questions you are asking.  If you have a particular use case in mind, or
+a specific need, lets discuss it offline and see what can be done about
+it.  It might be that we can add some methods to improve things.  The
+inparanoid packages themselves are due for a major overhaul very soon as
+the sources have very recently undergone a major revision.
+
+  Marc
+
+ 
+
+
+Tony Chiang wrote:
+> Let's keep this onlist so others can also respond. I don't know about
+> conference calls...I am certainly not apart of any if there are. I
+> completely agree with you about efficiency and usability. It might be
+> worthwhile to talk to the maintainers of the packages to see if methods
+> already exist. You could always create your own package that depends on the
+> .db packages and submit to Bioc.
+>
+> On Fri, Nov 6, 2009 at 12:45 AM, Luigi Marchionni <marchion at jhu.edu> wrote:
+>
+>   
+>> Is there any conference call or something like that where developer talk
+>> and discuss this?
+>> I do not want to annoy anyone, though I think I have a perspective about
+>> annotation that can contribute overall.
+>> I am a professional annotator, so to speak, from sequences, to ids, to
+>> ontologies, and I am a biologist, and R end user.
+>> My perspective is that something must be computational efficient, AND
+>> usable.
+>> I am not saying there is the need to change the packages, but that there is
+>> the need to provide methods.
+>> Maybe I am not aware of them if they exist (that's why I ask), but I can
+>> definitely can tell you what biologist-not-scared-of-R needs.
+>> One line of code to a bunch of tasks.
+>> like:
+>>
+>>     
+>>> ReadAffy()
+>>>       
+>> imagine:
+>>     
+>>> mapEntrez(ids,'Mmu','Hsa')
+>>>       
+>> The latter is what my code does.
+>> If I have to recode everything to make it work with maintained bioc
+>> metadata packages I'll do it.
+>> However, still remains the problem of where such methods should sit.
+>> A new package?
+>> annotate?
+>> AnnotationBbi?
+>>
+>> Thanks, and now I go to bed.
+>> Luigi
+>>
+>> On Nov 6, 2009, at 3:10 AM, Tony Chiang wrote:
+>>
+>> Hi Luigi,
+>>
+>> I was not criticizing...I just thought I might point you to some other
+>> packages. I believe that the annotation packages do have methods that allow
+>> for the translation fairly easily as these are now SQL databases (please
+>> correct me if I am wrong anyone). I don't maintain these packages. I
+>> certainly would not mind if someone were to write some simple methods or
+>> functions that wrapped around these data packages.
+>>
+>> There is always the problem of the many to many mapping though....and this
+>> might be why the annotation package is used rather than a flat file.
+>>
+>> Cheers,
+>> --Tony
+>>
+>> On Fri, Nov 6, 2009 at 1:02 AM, Luigi Marchionni <marchion at jhu.edu> wrote:
+>>
+>>     
+>>> Thanks.
+>>> I am a good citizen overall.
+>>> I see now where all I needed is sitting.
+>>> Though, metadata packages come with a drawback (I just expecting to be
+>>> wrong again), they do not contain methods to do stuff.
+>>> I really would like to provide people bioC compliant ways to run one line
+>>> of code and get mapping done.
+>>> This can go in any "software" package I am not aware of, however this is
+>>> going to make the difference.
+>>> I do not want to change the way things are, I want to make them works
+>>> easily to the end user  (a non-scared-by-R biologist).
+>>> Anything maintained is fine by me, I mean it, I recode everything needed
+>>> in my software, but methods are needed for the average user.
+>>> If they are existing I apologize, otherwise I just say let's add them to
+>>> "annotate", "AnnotationDbi", or where you think they should sit.
+>>> Out of my ignorance, still, I ask:
+>>> do we need species metadata packages for what it is in 1 flat file in
+>>> Homologene?
+>>> Since it is ignorance, be nice.
+>>> Luigi
+>>>
+>>>
+>>> On Nov 6, 2009, at 2:41 AM, Tony Chiang wrote:
+>>>
+>>> Hi Luigi,
+>>>
+>>> You might want to also have a look at the homologue annotation packages
+>>> that can be found in Bioc. They are based up imparanoid. For instance the
+>>> package for human would be
+>>>
+>>> hom.Hs.imp.db
+>>>
+>>> Cheers,
+>>> --Tony
+>>>
+>>> On Thu, Nov 5, 2009 at 11:10 PM, Luigi Marchionni <marchion at jhu.edu>wrote:
+>>>
+>>>       
+>>>> Dear All,
+>>>> As I  wrote to the list a couple of weeks ago I took on the endeavor of
+>>>> creating an S4 package for storing genomics results data and further analyze
+>>>> them.
+>>>> I had already code working to compare results across experiments,
+>>>> platform and species.
+>>>> To be a good citizen I start using S4, and I start relying on all classes
+>>>> already existing in Bioc.
+>>>> Now I came to the issue of dealing with mapping genes (and features)
+>>>> across species.
+>>>> I see that Hong Li maintains a package (homolog.db) containing such
+>>>> information, which depends on several other packages.
+>>>> I installed them and found difficult to use it.
+>>>> I will give you few examples:
+>>>>
+>>>> This retrieves the mapping between the Homologene ID and the Entrez Gene
+>>>> ID.
+>>>> Obviously each list element has a different length, however there is not
+>>>> easy way to tell the correspondence between organism and Entrez gene ID.
+>>>> I can say that the first 1 in both elements below is Human, then...
+>>>> If this has to be the structure, then each element in xx below should be
+>>>> names with the corresponding taxonomy id.
+>>>> See the chunk of code below:
+>>>>
+>>>>
+>>>> ################################################################################
+>>>>         
+>>>>> xx <- as.list(homologHOMOLOG2GENEID)
+>>>>> xx[1]
+>>>>>           
+>>>> $`3`
+>>>>  [1]      34  469356  490207  505968   11364   24158  406283
+>>>>  [8]   38864 1276346  181757  173979  181758
+>>>>
+>>>> ################################################################################
+>>>>
+>>>> By using the code below I can however retrieve the mapping between Entrez
+>>>> gene identifiers to Homologene identifiers.
+>>>> Lets consider the first two elements of xx[1] above:
+>>>>
+>>>>
+>>>> ################################################################################
+>>>>         
+>>>>> yy <- as.list(homologHOMOLOG)
+>>>>> yy["34"]
+>>>>>           
+>>>> $`34`
+>>>> [1] 3
+>>>>         
+>>>>> yy["469356"]
+>>>>>           
+>>>> $`469356`
+>>>> [1] 3
+>>>>
+>>>> ################################################################################
+>>>>
+>>>> Using a little coding I can now map from one Entrez ID to another across
+>>>> species, although without knowing which species. So I can use species
+>>>> information:
+>>>>
+>>>>
+>>>> ################################################################################
+>>>>         
+>>>>> zz["34"]
+>>>>>           
+>>>> $`34`
+>>>> [1] 9606
+>>>>         
+>>>>> zz["469356"]
+>>>>>           
+>>>> $`469356`
+>>>> [1] 9598
+>>>>
+>>>> ################################################################################
+>>>>
+>>>> OK. now I know that Entrez ID "34" in Taxonomy "9006" (human) correspond
+>>>> to Entrez ID "469356" in n Taxonomy "9598" (which I do not know by heart),
+>>>> through the Homologene id "3". To learn the the second taxonomy I can do:
+>>>>
+>>>>
+>>>> ################################################################################
+>>>>         
+>>>>> ff <- as.list(homologORGANISM)
+>>>>> ff["9598"]
+>>>>>           
+>>>> $`9598`
+>>>> [1] "Pan troglodytes"
+>>>>
+>>>> ################################################################################
+>>>>
+>>>> Good!  I had to play around a little with the code, however I could map
+>>>> the human Entrez ID "34" to the monkey "469356" one.
+>>>> However I think this is a little too complicated. To install homolog.db
+>>>> and (with dependencies=TRUE) I also had to install:
+>>>> org.Hs.ipi.db_1.1.1.tar.gz
+>>>> org.Hs.sp.db_1.1.1.tar.gz
+>>>> PAnnBuilder_1.9.0.tar.gz
+>>>> And the package does not point to a library that implements the chunks of
+>>>> code above to map Entrez ids across species.
+>>>>
+>>>> Look the code below, I load my mapping library (where the cross-mapping
+>>>> homologene table takes 3.2 Mb), I load this object, and the taxonomy
+>>>> information:
+>>>>
+>>>>
+>>>> ################################################################################
+>>>>         
+>>>>> library(moreFGS)
+>>>>> data(homol)
+>>>>> data(tax)
+>>>>> ls()
+>>>>>           
+>>>> [1] "ff"    "homol" "tax"   "xx"    "yy"    "zz"
+>>>>
+>>>> ################################################################################
+>>>>
+>>>> Finally I load a library containing the  taxSwitch() function:
+>>>>
+>>>>
+>>>> ################################################################################
+>>>>         
+>>>>> library(funcBox)
+>>>>> args(taxSwitch)
+>>>>>           
+>>>> function (IDs, org1, org2, whatIn = "EGID", whatOut = "EGID")
+>>>> NULL
+>>>>
+>>>> ################################################################################
+>>>>
+>>>> Now look at this, for one ID:
+>>>>
+>>>>
+>>>> ################################################################################
+>>>>         
+>>>>> taxSwitch("34","Homo","Pan","EGID","EGID")
+>>>>>           
+>>>> [1] "469356"
+>>>>         
+>>>>> taxSwitch("34","Homo","Pan","EGID","EGID")
+>>>>>           
+>>>> [1] "469356"
+>>>>         
+>>>>> taxSwitch("469356","Pan","Homo","EGID","EGID")
+>>>>>           
+>>>> [1] "34"
+>>>>         
+>>>>> taxSwitch("469356","Pan","Homo","EGID","symbol")
+>>>>>           
+>>>> [1] "ACADM"
+>>>>         
+>>>>> taxSwitch("34","Homo","Mus","EGID","symbol")
+>>>>>           
+>>>> [1] "Acadm"
+>>>>         
+>>>>> taxSwitch("Acadm","Mus","Homo","symbol","EGID")
+>>>>>           
+>>>> [1] "34"
+>>>>         
+>>>>> taxSwitch("Acadm","Mus","Pan","symbol","EGID")
+>>>>>           
+>>>> [1] "469356"
+>>>>         
+>>>>> taxSwitch("Acadm","Mus","Bos","symbol","EGID")
+>>>>>           
+>>>> [1] "505968"
+>>>>         
+>>>>> taxSwitch("Acadm","Mus","Bos","symbol","Acc")
+>>>>>           
+>>>> [1] "NP_001068703"
+>>>>         
+>>>>> taxSwitch("NP_001068703","Bos","Rattus","Acc","symbol")
+>>>>>           
+>>>> [1] "Acadm"
+>>>>
+>>>> ################################################################################
+>>>>
+>>>> Or more than one ID:
+>>>>
+>>>>
+>>>> ################################################################################
+>>>>         
+>>>>> taxSwitch(c("34","37","3211"),"Homo","Mus","EGID","Acc")
+>>>>>           
+>>>> [1] "NP_031408" "NP_059062" "NP_032292"
+>>>>         
+>>>>> taxSwitch(c("34","37","3211"),"Homo","Mus","EGID","symbol")
+>>>>>           
+>>>> [1] "Acadm"  "Acadvl" "Hoxb1"
+>>>>
+>>>> ################################################################################
+>>>>
+>>>> and so on.
+>>>> I would be very happy to provide bioconductor with the code to make the
+>>>> moreFGS library and with the taxSwitch() function.
+>>>>
+>>>> Luigi
+>>>>
+>>>> PS: the session info is below
+>>>>
+>>>>
+>>>> ################################################################################
+>>>>         
+>>>>> sessionInfo()
+>>>>>           
+>>>> R version 2.11.0 Under development (unstable) (2009-10-01 r49916)
+>>>> i386-apple-darwin9.8.0
+>>>>
+>>>> locale:
+>>>> [1] en_US.UTF-8/en_US.UTF-8/C/C/en_US.UTF-8/en_US.UTF-8
+>>>>
+>>>> attached base packages:
+>>>> [1] stats     graphics  grDevices utils     datasets
+>>>> [6] methods   base
+>>>>
+>>>> other attached packages:
+>>>>  [1] moreFGS_1.0.2       homolog.db_1.1.1
+>>>>  [3] PAnnBuilder_1.9.0   RSQLite_0.7-3
+>>>>  [5] DBI_0.2-4           funcBox_0.0.3
+>>>>  [7] annotate_1.25.0     AnnotationDbi_1.9.0
+>>>>  [9] Biobase_2.7.0       limma_3.3.1
+>>>>
+>>>> loaded via a namespace (and not attached):
+>>>> [1] tools_2.11.0 xtable_1.5-5
+>>>>
+>>>> ################################################################################
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>>>         
+>>>
+>>>       
+>>     
+>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+From sneumann at ipb-halle.de  Fri Nov  6 20:00:52 2009
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Fri, 06 Nov 2009 20:00:52 +0100
+Subject: [Bioc-devel] SVN changes bloxsom are out of date
+In-Reply-To: <4AF42B9F.1080509@med.umich.edu>
+References: <1257454175.1234.166.camel@paddy> <4AF33E8D.7060508@fhcrc.org>
+	<59d7961d0911060007y5bb17497n3e33ecc5a1e34cd4@mail.gmail.com>
+	<4AF42B9F.1080509@med.umich.edu>
+Message-ID: <1257534052.1234.214.camel@paddy>
+
+On Fri, 2009-11-06 at 08:58 -0500, James W. MacDonald wrote:
+> You will be hard pressed to fix this 'bug', as in the Blosxom world this 
+A kind of workaround would be 
+to mangle all package names upon changelog-creation:
+e.g. blosxom.cgi/aroma.light -> blosxom.cgi/aroma_light
+
+and to avoid confusion with people trying to access 
+blosxom.cgi/aroma.light you add an apache rewrite-rule:
+
+	RewriteRule aroma.light aroma_light [P] 
+
+that rule would have to be added to e.g. the .htaccess
+for each package with a "." in the name.
+
+I don't know how the blog is created and what scripts are involved,
+but you get the idea...
+
+Yours,
+Steffen
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From marchion at jhu.edu  Fri Nov  6 23:49:37 2009
+From: marchion at jhu.edu (Luigi Marchionni)
+Date: Fri, 6 Nov 2009 17:49:37 -0500
+Subject: [Bioc-devel] homolog.db package
+In-Reply-To: <4AF46F2C.6080100@fhcrc.org>
+References: <mailman.29.1257418807.13787.bioc-devel@stat.math.ethz.ch>
+	<B2881F83-0640-4A0C-8E0F-66958B1F8D5F@jhu.edu>
+	<52f663c40911052341k65488aeap277ce6f11aac76c1@mail.gmail.com>
+	<846232AE-48AE-4BFA-95B9-98FD6BB915B7@jhu.edu>
+	<52f663c40911060010v8e17401m23d451af6a70ae39@mail.gmail.com>
+	<7C4495E0-C81E-42BF-B159-8AA79A76A4F1@jhu.edu>
+	<52f663c40911060956g7adeb060n9ab911185e71987@mail.gmail.com>
+	<4AF46F2C.6080100@fhcrc.org>
+Message-ID: <E20FB171-C16D-4893-862B-83B99E24FA6A@jhu.edu>
+
+Thank  you Marc,
+I really appreciate the time you spent answering to me and the effort  
+of creating the packages.
+Since all this involves a lot of work from you and the other  
+maintainers I just think that few methods and a vignettes would make  
+these packages live.
+I think that these methods should be in the annotate package (or maybe  
+in AnnotationDbi), rather than in a package created ad hoc.
+I will definitely included in my package, which I'll submit to bioC as  
+soon as ready, however, add one method to annotate would have a  
+greater "impact" on the users' end.
+Let's discuss this off-line.
+
+Ciao
+
+Luigi
+
+On Nov 6, 2009, at 1:47 PM, Marc Carlson wrote:
+
+> Hi Luigi,
+>
+> I am the one responsible for trying to maintain order with the
+> annotations in this project.  To date, there has not been a lot of
+> external interest in cross-species mappings.  Hong built the  
+> homolog.db
+> package that you found, but he didn't update these packages for the  
+> most
+> recent release, so unless Hong speaks up rather soon, it really seems
+> that might be more or less abandoned at this point.  I have built the
+> inparanoid packages in anticipation that someone like you might come
+> along some day, but it is difficult to predict the future, let alone
+> write software for it, which is why there are not a lot of functions  
+> to
+> make use of these packages yet.  I have experimented with some of  
+> these
+> mapping problems, but they are not simple problems as the mappings
+> frequently tend to be many to one or many to many.  And layered on top
+> of that is the fact that the inparanoid project uses inconsistent  
+> labels
+> for protein sequences which means that you have additional mapping  
+> steps
+> to do once you find a match.  Anyhow the way that you want to handle
+> this mapping will depend almost entirely on the context of what
+> questions you are asking.  If you have a particular use case in  
+> mind, or
+> a specific need, lets discuss it offline and see what can be done  
+> about
+> it.  It might be that we can add some methods to improve things.  The
+> inparanoid packages themselves are due for a major overhaul very  
+> soon as
+> the sources have very recently undergone a major revision.
+>
+>  Marc
+>
+>
+>
+>
+> Tony Chiang wrote:
+>> Let's keep this onlist so others can also respond. I don't know about
+>> conference calls...I am certainly not apart of any if there are. I
+>> completely agree with you about efficiency and usability. It might be
+>> worthwhile to talk to the maintainers of the packages to see if  
+>> methods
+>> already exist. You could always create your own package that  
+>> depends on the
+>> .db packages and submit to Bioc.
+>>
+>> On Fri, Nov 6, 2009 at 12:45 AM, Luigi Marchionni  
+>> <marchion at jhu.edu> wrote:
+>>
+>>
+>>> Is there any conference call or something like that where  
+>>> developer talk
+>>> and discuss this?
+>>> I do not want to annoy anyone, though I think I have a perspective  
+>>> about
+>>> annotation that can contribute overall.
+>>> I am a professional annotator, so to speak, from sequences, to  
+>>> ids, to
+>>> ontologies, and I am a biologist, and R end user.
+>>> My perspective is that something must be computational efficient,  
+>>> AND
+>>> usable.
+>>> I am not saying there is the need to change the packages, but that  
+>>> there is
+>>> the need to provide methods.
+>>> Maybe I am not aware of them if they exist (that's why I ask), but  
+>>> I can
+>>> definitely can tell you what biologist-not-scared-of-R needs.
+>>> One line of code to a bunch of tasks.
+>>> like:
+>>>
+>>>
+>>>> ReadAffy()
+>>>>
+>>> imagine:
+>>>
+>>>> mapEntrez(ids,'Mmu','Hsa')
+>>>>
+>>> The latter is what my code does.
+>>> If I have to recode everything to make it work with maintained bioc
+>>> metadata packages I'll do it.
+>>> However, still remains the problem of where such methods should sit.
+>>> A new package?
+>>> annotate?
+>>> AnnotationBbi?
+>>>
+>>> Thanks, and now I go to bed.
+>>> Luigi
+>>>
+>>> On Nov 6, 2009, at 3:10 AM, Tony Chiang wrote:
+>>>
+>>> Hi Luigi,
+>>>
+>>> I was not criticizing...I just thought I might point you to some  
+>>> other
+>>> packages. I believe that the annotation packages do have methods  
+>>> that allow
+>>> for the translation fairly easily as these are now SQL databases  
+>>> (please
+>>> correct me if I am wrong anyone). I don't maintain these packages. I
+>>> certainly would not mind if someone were to write some simple  
+>>> methods or
+>>> functions that wrapped around these data packages.
+>>>
+>>> There is always the problem of the many to many mapping  
+>>> though....and this
+>>> might be why the annotation package is used rather than a flat file.
+>>>
+>>> Cheers,
+>>> --Tony
+>>>
+>>> On Fri, Nov 6, 2009 at 1:02 AM, Luigi Marchionni  
+>>> <marchion at jhu.edu> wrote:
+>>>
+>>>
+>>>> Thanks.
+>>>> I am a good citizen overall.
+>>>> I see now where all I needed is sitting.
+>>>> Though, metadata packages come with a drawback (I just expecting  
+>>>> to be
+>>>> wrong again), they do not contain methods to do stuff.
+>>>> I really would like to provide people bioC compliant ways to run  
+>>>> one line
+>>>> of code and get mapping done.
+>>>> This can go in any "software" package I am not aware of, however  
+>>>> this is
+>>>> going to make the difference.
+>>>> I do not want to change the way things are, I want to make them  
+>>>> works
+>>>> easily to the end user  (a non-scared-by-R biologist).
+>>>> Anything maintained is fine by me, I mean it, I recode everything  
+>>>> needed
+>>>> in my software, but methods are needed for the average user.
+>>>> If they are existing I apologize, otherwise I just say let's add  
+>>>> them to
+>>>> "annotate", "AnnotationDbi", or where you think they should sit.
+>>>> Out of my ignorance, still, I ask:
+>>>> do we need species metadata packages for what it is in 1 flat  
+>>>> file in
+>>>> Homologene?
+>>>> Since it is ignorance, be nice.
+>>>> Luigi
+>>>>
+>>>>
+>>>> On Nov 6, 2009, at 2:41 AM, Tony Chiang wrote:
+>>>>
+>>>> Hi Luigi,
+>>>>
+>>>> You might want to also have a look at the homologue annotation  
+>>>> packages
+>>>> that can be found in Bioc. They are based up imparanoid. For  
+>>>> instance the
+>>>> package for human would be
+>>>>
+>>>> hom.Hs.imp.db
+>>>>
+>>>> Cheers,
+>>>> --Tony
+>>>>
+>>>> On Thu, Nov 5, 2009 at 11:10 PM, Luigi Marchionni  
+>>>> <marchion at jhu.edu>wrote:
+>>>>
+>>>>
+>>>>> Dear All,
+>>>>> As I  wrote to the list a couple of weeks ago I took on the  
+>>>>> endeavor of
+>>>>> creating an S4 package for storing genomics results data and  
+>>>>> further analyze
+>>>>> them.
+>>>>> I had already code working to compare results across experiments,
+>>>>> platform and species.
+>>>>> To be a good citizen I start using S4, and I start relying on  
+>>>>> all classes
+>>>>> already existing in Bioc.
+>>>>> Now I came to the issue of dealing with mapping genes (and  
+>>>>> features)
+>>>>> across species.
+>>>>> I see that Hong Li maintains a package (homolog.db) containing  
+>>>>> such
+>>>>> information, which depends on several other packages.
+>>>>> I installed them and found difficult to use it.
+>>>>> I will give you few examples:
+>>>>>
+>>>>> This retrieves the mapping between the Homologene ID and the  
+>>>>> Entrez Gene
+>>>>> ID.
+>>>>> Obviously each list element has a different length, however  
+>>>>> there is not
+>>>>> easy way to tell the correspondence between organism and Entrez  
+>>>>> gene ID.
+>>>>> I can say that the first 1 in both elements below is Human,  
+>>>>> then...
+>>>>> If this has to be the structure, then each element in xx below  
+>>>>> should be
+>>>>> names with the corresponding taxonomy id.
+>>>>> See the chunk of code below:
+>>>>>
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>>> xx <- as.list(homologHOMOLOG2GENEID)
+>>>>>> xx[1]
+>>>>>>
+>>>>> $`3`
+>>>>> [1]      34  469356  490207  505968   11364   24158  406283
+>>>>> [8]   38864 1276346  181757  173979  181758
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>> By using the code below I can however retrieve the mapping  
+>>>>> between Entrez
+>>>>> gene identifiers to Homologene identifiers.
+>>>>> Lets consider the first two elements of xx[1] above:
+>>>>>
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>>> yy <- as.list(homologHOMOLOG)
+>>>>>> yy["34"]
+>>>>>>
+>>>>> $`34`
+>>>>> [1] 3
+>>>>>
+>>>>>> yy["469356"]
+>>>>>>
+>>>>> $`469356`
+>>>>> [1] 3
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>> Using a little coding I can now map from one Entrez ID to  
+>>>>> another across
+>>>>> species, although without knowing which species. So I can use  
+>>>>> species
+>>>>> information:
+>>>>>
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>>> zz["34"]
+>>>>>>
+>>>>> $`34`
+>>>>> [1] 9606
+>>>>>
+>>>>>> zz["469356"]
+>>>>>>
+>>>>> $`469356`
+>>>>> [1] 9598
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>> OK. now I know that Entrez ID "34" in Taxonomy "9006" (human)  
+>>>>> correspond
+>>>>> to Entrez ID "469356" in n Taxonomy "9598" (which I do not know  
+>>>>> by heart),
+>>>>> through the Homologene id "3". To learn the the second taxonomy  
+>>>>> I can do:
+>>>>>
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>>> ff <- as.list(homologORGANISM)
+>>>>>> ff["9598"]
+>>>>>>
+>>>>> $`9598`
+>>>>> [1] "Pan troglodytes"
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>> Good!  I had to play around a little with the code, however I  
+>>>>> could map
+>>>>> the human Entrez ID "34" to the monkey "469356" one.
+>>>>> However I think this is a little too complicated. To install  
+>>>>> homolog.db
+>>>>> and (with dependencies=TRUE) I also had to install:
+>>>>> org.Hs.ipi.db_1.1.1.tar.gz
+>>>>> org.Hs.sp.db_1.1.1.tar.gz
+>>>>> PAnnBuilder_1.9.0.tar.gz
+>>>>> And the package does not point to a library that implements the  
+>>>>> chunks of
+>>>>> code above to map Entrez ids across species.
+>>>>>
+>>>>> Look the code below, I load my mapping library (where the cross- 
+>>>>> mapping
+>>>>> homologene table takes 3.2 Mb), I load this object, and the  
+>>>>> taxonomy
+>>>>> information:
+>>>>>
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>>> library(moreFGS)
+>>>>>> data(homol)
+>>>>>> data(tax)
+>>>>>> ls()
+>>>>>>
+>>>>> [1] "ff"    "homol" "tax"   "xx"    "yy"    "zz"
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>> Finally I load a library containing the  taxSwitch() function:
+>>>>>
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>>> library(funcBox)
+>>>>>> args(taxSwitch)
+>>>>>>
+>>>>> function (IDs, org1, org2, whatIn = "EGID", whatOut = "EGID")
+>>>>> NULL
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>> Now look at this, for one ID:
+>>>>>
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>>> taxSwitch("34","Homo","Pan","EGID","EGID")
+>>>>>>
+>>>>> [1] "469356"
+>>>>>
+>>>>>> taxSwitch("34","Homo","Pan","EGID","EGID")
+>>>>>>
+>>>>> [1] "469356"
+>>>>>
+>>>>>> taxSwitch("469356","Pan","Homo","EGID","EGID")
+>>>>>>
+>>>>> [1] "34"
+>>>>>
+>>>>>> taxSwitch("469356","Pan","Homo","EGID","symbol")
+>>>>>>
+>>>>> [1] "ACADM"
+>>>>>
+>>>>>> taxSwitch("34","Homo","Mus","EGID","symbol")
+>>>>>>
+>>>>> [1] "Acadm"
+>>>>>
+>>>>>> taxSwitch("Acadm","Mus","Homo","symbol","EGID")
+>>>>>>
+>>>>> [1] "34"
+>>>>>
+>>>>>> taxSwitch("Acadm","Mus","Pan","symbol","EGID")
+>>>>>>
+>>>>> [1] "469356"
+>>>>>
+>>>>>> taxSwitch("Acadm","Mus","Bos","symbol","EGID")
+>>>>>>
+>>>>> [1] "505968"
+>>>>>
+>>>>>> taxSwitch("Acadm","Mus","Bos","symbol","Acc")
+>>>>>>
+>>>>> [1] "NP_001068703"
+>>>>>
+>>>>>> taxSwitch("NP_001068703","Bos","Rattus","Acc","symbol")
+>>>>>>
+>>>>> [1] "Acadm"
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>> Or more than one ID:
+>>>>>
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>>> taxSwitch(c("34","37","3211"),"Homo","Mus","EGID","Acc")
+>>>>>>
+>>>>> [1] "NP_031408" "NP_059062" "NP_032292"
+>>>>>
+>>>>>> taxSwitch(c("34","37","3211"),"Homo","Mus","EGID","symbol")
+>>>>>>
+>>>>> [1] "Acadm"  "Acadvl" "Hoxb1"
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>> and so on.
+>>>>> I would be very happy to provide bioconductor with the code to  
+>>>>> make the
+>>>>> moreFGS library and with the taxSwitch() function.
+>>>>>
+>>>>> Luigi
+>>>>>
+>>>>> PS: the session info is below
+>>>>>
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>>> sessionInfo()
+>>>>>>
+>>>>> R version 2.11.0 Under development (unstable) (2009-10-01 r49916)
+>>>>> i386-apple-darwin9.8.0
+>>>>>
+>>>>> locale:
+>>>>> [1] en_US.UTF-8/en_US.UTF-8/C/C/en_US.UTF-8/en_US.UTF-8
+>>>>>
+>>>>> attached base packages:
+>>>>> [1] stats     graphics  grDevices utils     datasets
+>>>>> [6] methods   base
+>>>>>
+>>>>> other attached packages:
+>>>>> [1] moreFGS_1.0.2       homolog.db_1.1.1
+>>>>> [3] PAnnBuilder_1.9.0   RSQLite_0.7-3
+>>>>> [5] DBI_0.2-4           funcBox_0.0.3
+>>>>> [7] annotate_1.25.0     AnnotationDbi_1.9.0
+>>>>> [9] Biobase_2.7.0       limma_3.3.1
+>>>>>
+>>>>> loaded via a namespace (and not attached):
+>>>>> [1] tools_2.11.0 xtable_1.5-5
+>>>>>
+>>>>> ################################################################################
+>>>>>
+>>>>> _______________________________________________
+>>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>>
+>>>>>
+>>>>
+>>>>
+>>>
+>>
+>> 	[[alternative HTML version deleted]]
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>
+>
+
+
+From bcarvalh at jhsph.edu  Sat Nov  7 21:11:47 2009
+From: bcarvalh at jhsph.edu (Benilton Carvalho)
+Date: Sat, 7 Nov 2009 18:11:47 -0200
+Subject: [Bioc-devel] minimizing copies when creating ExpressionSet
+Message-ID: <DC1598F7-1233-4915-BDC9-2EA519AFEAC7@jhsph.edu>
+
+Hi,
+
+given the following:
+
+
+library(Biobase)
+x = matrix(pi, nr=6.5e6, nc=70)  ##3.4GB
+y1 = new("ExpressionSet", exprs=x)
+y2 = new("ExpressionSet", assayData=assayDataNew("environment",  
+exprs=x))
+
+Is there any obvious way of reducing the memory footprint when  
+creating y1 and/or y2?  With y1, it takes me around 18GB RAM... with  
+y2, around 10GB. Is there anything else I can do from my end to  
+minimize this?
+
+Thanks a lot,
+
+b
+
+
+From bcarvalh at jhsph.edu  Sat Nov  7 21:42:22 2009
+From: bcarvalh at jhsph.edu (Benilton Carvalho)
+Date: Sat, 7 Nov 2009 18:42:22 -0200
+Subject: [Bioc-devel] minimizing copies when creating ExpressionSet
+In-Reply-To: <DC1598F7-1233-4915-BDC9-2EA519AFEAC7@jhsph.edu>
+References: <DC1598F7-1233-4915-BDC9-2EA519AFEAC7@jhsph.edu>
+Message-ID: <C841257B-F2FB-4030-8520-1BE5F08BBE58@jhsph.edu>
+
+my bad... after creating either y1 or y1, resident memory used is  
+rouhgly 10GB (i'm counting here the 'x' object too, so i think about  
+7GB is used to create either object).
+
+my question is if there's something i'm missing that would minimize  
+the use of these 7gb....
+
+sorry for the typo and possibly not making myself clear.
+
+b
+
+
+On Nov 7, 2009, at 6:11 PM, Benilton Carvalho wrote:
+
+> Hi,
+>
+> given the following:
+>
+>
+> library(Biobase)
+> x = matrix(pi, nr=6.5e6, nc=70)  ##3.4GB
+> y1 = new("ExpressionSet", exprs=x)
+> y2 = new("ExpressionSet", assayData=assayDataNew("environment",
+> exprs=x))
+>
+> Is there any obvious way of reducing the memory footprint when
+> creating y1 and/or y2?  With y1, it takes me around 18GB RAM... with
+> y2, around 10GB. Is there anything else I can do from my end to
+> minimize this?
+>
+> Thanks a lot,
+>
+> b
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From mtmorgan at fhcrc.org  Sun Nov  8 02:24:42 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Sat, 07 Nov 2009 17:24:42 -0800
+Subject: [Bioc-devel] minimizing copies when creating ExpressionSet
+In-Reply-To: <C841257B-F2FB-4030-8520-1BE5F08BBE58@jhsph.edu>
+References: <DC1598F7-1233-4915-BDC9-2EA519AFEAC7@jhsph.edu>
+	<C841257B-F2FB-4030-8520-1BE5F08BBE58@jhsph.edu>
+Message-ID: <4AF61DDA.6040407@fhcrc.org>
+
+Hi Benilton --
+
+I think through the 'front door' and in the current release / devel
+versions, the answer is no. The problem is that the row and column names
+of assayData, phenoData, protocolData and featureData are all made to be
+the same, and this is done by identifying the appropriate names and
+doing the assignment, e.g., the equivalent of
+colnames(assayData[["exprs"]]) <- ... But this triggers a copy of
+assayData[["exprs"]], so doubles the memory requirement.
+
+But if the row / col names are made identical ahead of time, then one
+can make some headway by building up the appropriate data components,
+including coordinating the row and column names 'up front'
+
+library(Biobase)
+assayData <- assayDataNew(exprs=matrix(0., 6.5e6, 70,
+                            dimnames=list(seq_len(6.5e6), seq_len(70))))
+phenoData <- annotatedDataFrameFrom(assayData[["exprs"]], FALSE)
+protocolData <- annotatedDataFrameFrom(assayData[["exprs"]], FALSE)
+featureData <- annotatedDataFrameFrom(assayData[["exprs"]], TRUE)
+
+and then creating and assembling the ExpressionSet one slot at a time,
+being careful to ensure that the resulting object is valid
+
+eset <- new("ExpressionSet")
+slot(eset, "assayData") <- assayData
+slot(eset, "phenoData") <- phenoData
+slot(eset, "featureData") <- featureData
+slot(eset, "protocolData") <- protocolData
+
+> validObject(eset)
+[1] TRUE
+> dim(eset)
+Features  Samples
+ 6500000       70
+
+I sort of feel like this is a "rogue's game", where the user will fairly
+quickly run into the situation where they want to do something that
+triggers a copy of the large data, and then they're in trouble again.
+
+> eset1 <- eset[,-1]
+Error: cannot allocate vector of size 3.3 Gb
+
+Martin
+
+
+Benilton Carvalho wrote:
+> my bad... after creating either y1 or y1, resident memory used is
+> rouhgly 10GB (i'm counting here the 'x' object too, so i think about 7GB
+> is used to create either object).
+> 
+> my question is if there's something i'm missing that would minimize the
+> use of these 7gb....
+> 
+> sorry for the typo and possibly not making myself clear.
+> 
+> b
+> 
+> 
+> On Nov 7, 2009, at 6:11 PM, Benilton Carvalho wrote:
+> 
+>> Hi,
+>>
+>> given the following:
+>>
+>>
+>> library(Biobase)
+>> x = matrix(pi, nr=6.5e6, nc=70)  ##3.4GB
+>> y1 = new("ExpressionSet", exprs=x)
+>> y2 = new("ExpressionSet", assayData=assayDataNew("environment",
+>> exprs=x))
+>>
+>> Is there any obvious way of reducing the memory footprint when
+>> creating y1 and/or y2?  With y1, it takes me around 18GB RAM... with
+>> y2, around 10GB. Is there anything else I can do from my end to
+>> minimize this?
+>>
+>> Thanks a lot,
+>>
+>> b
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From bcarvalh at jhsph.edu  Tue Nov 10 22:58:13 2009
+From: bcarvalh at jhsph.edu (Benilton Carvalho)
+Date: Tue, 10 Nov 2009 19:58:13 -0200
+Subject: [Bioc-devel] minimizing copies when creating ExpressionSet
+In-Reply-To: <4AF61DDA.6040407@fhcrc.org>
+References: <DC1598F7-1233-4915-BDC9-2EA519AFEAC7@jhsph.edu>
+	<C841257B-F2FB-4030-8520-1BE5F08BBE58@jhsph.edu>
+	<4AF61DDA.6040407@fhcrc.org>
+Message-ID: <4CA72869-3604-410E-93D0-0221805F488C@jhsph.edu>
+
+Hi Martin,
+
+thanks a lot for your help on this matter. I'll give your suggestions  
+a try.
+
+With best wishes,
+
+b
+
+On Nov 7, 2009, at 11:24 PM, Martin Morgan wrote:
+
+> Hi Benilton --
+>
+> I think through the 'front door' and in the current release / devel
+> versions, the answer is no. The problem is that the row and column  
+> names
+> of assayData, phenoData, protocolData and featureData are all made  
+> to be
+> the same, and this is done by identifying the appropriate names and
+> doing the assignment, e.g., the equivalent of
+> colnames(assayData[["exprs"]]) <- ... But this triggers a copy of
+> assayData[["exprs"]], so doubles the memory requirement.
+>
+> But if the row / col names are made identical ahead of time, then one
+> can make some headway by building up the appropriate data components,
+> including coordinating the row and column names 'up front'
+>
+> library(Biobase)
+> assayData <- assayDataNew(exprs=matrix(0., 6.5e6, 70,
+>                            dimnames=list(seq_len(6.5e6),  
+> seq_len(70))))
+> phenoData <- annotatedDataFrameFrom(assayData[["exprs"]], FALSE)
+> protocolData <- annotatedDataFrameFrom(assayData[["exprs"]], FALSE)
+> featureData <- annotatedDataFrameFrom(assayData[["exprs"]], TRUE)
+>
+> and then creating and assembling the ExpressionSet one slot at a time,
+> being careful to ensure that the resulting object is valid
+>
+> eset <- new("ExpressionSet")
+> slot(eset, "assayData") <- assayData
+> slot(eset, "phenoData") <- phenoData
+> slot(eset, "featureData") <- featureData
+> slot(eset, "protocolData") <- protocolData
+>
+>> validObject(eset)
+> [1] TRUE
+>> dim(eset)
+> Features  Samples
+> 6500000       70
+>
+> I sort of feel like this is a "rogue's game", where the user will  
+> fairly
+> quickly run into the situation where they want to do something that
+> triggers a copy of the large data, and then they're in trouble again.
+>
+>> eset1 <- eset[,-1]
+> Error: cannot allocate vector of size 3.3 Gb
+>
+> Martin
+>
+>
+> Benilton Carvalho wrote:
+>> my bad... after creating either y1 or y1, resident memory used is
+>> rouhgly 10GB (i'm counting here the 'x' object too, so i think  
+>> about 7GB
+>> is used to create either object).
+>>
+>> my question is if there's something i'm missing that would minimize  
+>> the
+>> use of these 7gb....
+>>
+>> sorry for the typo and possibly not making myself clear.
+>>
+>> b
+>>
+>>
+>> On Nov 7, 2009, at 6:11 PM, Benilton Carvalho wrote:
+>>
+>>> Hi,
+>>>
+>>> given the following:
+>>>
+>>>
+>>> library(Biobase)
+>>> x = matrix(pi, nr=6.5e6, nc=70)  ##3.4GB
+>>> y1 = new("ExpressionSet", exprs=x)
+>>> y2 = new("ExpressionSet", assayData=assayDataNew("environment",
+>>> exprs=x))
+>>>
+>>> Is there any obvious way of reducing the memory footprint when
+>>> creating y1 and/or y2?  With y1, it takes me around 18GB RAM... with
+>>> y2, around 10GB. Is there anything else I can do from my end to
+>>> minimize this?
+>>>
+>>> Thanks a lot,
+>>>
+>>> b
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+> --
+> Martin Morgan
+> Computational Biology / Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N.
+> PO Box 19024 Seattle, WA 98109
+>
+> Location: Arnold Building M1 B861
+> Phone: (206) 667-2793
+
+
+From bcarvalh at jhsph.edu  Wed Nov 11 14:45:44 2009
+From: bcarvalh at jhsph.edu (Benilton Carvalho)
+Date: Wed, 11 Nov 2009 11:45:44 -0200
+Subject: [Bioc-devel] minimizing copies when creating ExpressionSet
+In-Reply-To: <4AF61DDA.6040407@fhcrc.org>
+References: <DC1598F7-1233-4915-BDC9-2EA519AFEAC7@jhsph.edu>
+	<C841257B-F2FB-4030-8520-1BE5F08BBE58@jhsph.edu>
+	<4AF61DDA.6040407@fhcrc.org>
+Message-ID: <78F94029-763A-475E-B053-C4C13EE633C8@jhsph.edu>
+
+Hi Martin,
+
+thanks for your suggestion. It is of significant help.
+
+Unfortunately, I have an extra issue: the parser I use does not set  
+dimnames as I expect. So, I have to set dimnames() and that triggers a  
+copy of the matrix. So, at least for now, there isn't anything I can do.
+
+But thank you very much for the hint,
+
+With best wishes,
+
+b
+
+On Nov 7, 2009, at 11:24 PM, Martin Morgan wrote:
+
+> Hi Benilton --
+>
+> I think through the 'front door' and in the current release / devel
+> versions, the answer is no. The problem is that the row and column  
+> names
+> of assayData, phenoData, protocolData and featureData are all made  
+> to be
+> the same, and this is done by identifying the appropriate names and
+> doing the assignment, e.g., the equivalent of
+> colnames(assayData[["exprs"]]) <- ... But this triggers a copy of
+> assayData[["exprs"]], so doubles the memory requirement.
+>
+> But if the row / col names are made identical ahead of time, then one
+> can make some headway by building up the appropriate data components,
+> including coordinating the row and column names 'up front'
+>
+> library(Biobase)
+> assayData <- assayDataNew(exprs=matrix(0., 6.5e6, 70,
+>                            dimnames=list(seq_len(6.5e6),  
+> seq_len(70))))
+> phenoData <- annotatedDataFrameFrom(assayData[["exprs"]], FALSE)
+> protocolData <- annotatedDataFrameFrom(assayData[["exprs"]], FALSE)
+> featureData <- annotatedDataFrameFrom(assayData[["exprs"]], TRUE)
+>
+> and then creating and assembling the ExpressionSet one slot at a time,
+> being careful to ensure that the resulting object is valid
+>
+> eset <- new("ExpressionSet")
+> slot(eset, "assayData") <- assayData
+> slot(eset, "phenoData") <- phenoData
+> slot(eset, "featureData") <- featureData
+> slot(eset, "protocolData") <- protocolData
+>
+>> validObject(eset)
+> [1] TRUE
+>> dim(eset)
+> Features  Samples
+> 6500000       70
+>
+> I sort of feel like this is a "rogue's game", where the user will  
+> fairly
+> quickly run into the situation where they want to do something that
+> triggers a copy of the large data, and then they're in trouble again.
+>
+>> eset1 <- eset[,-1]
+> Error: cannot allocate vector of size 3.3 Gb
+>
+> Martin
+>
+>
+> Benilton Carvalho wrote:
+>> my bad... after creating either y1 or y1, resident memory used is
+>> rouhgly 10GB (i'm counting here the 'x' object too, so i think  
+>> about 7GB
+>> is used to create either object).
+>>
+>> my question is if there's something i'm missing that would minimize  
+>> the
+>> use of these 7gb....
+>>
+>> sorry for the typo and possibly not making myself clear.
+>>
+>> b
+>>
+>>
+>> On Nov 7, 2009, at 6:11 PM, Benilton Carvalho wrote:
+>>
+>>> Hi,
+>>>
+>>> given the following:
+>>>
+>>>
+>>> library(Biobase)
+>>> x = matrix(pi, nr=6.5e6, nc=70)  ##3.4GB
+>>> y1 = new("ExpressionSet", exprs=x)
+>>> y2 = new("ExpressionSet", assayData=assayDataNew("environment",
+>>> exprs=x))
+>>>
+>>> Is there any obvious way of reducing the memory footprint when
+>>> creating y1 and/or y2?  With y1, it takes me around 18GB RAM... with
+>>> y2, around 10GB. Is there anything else I can do from my end to
+>>> minimize this?
+>>>
+>>> Thanks a lot,
+>>>
+>>> b
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+> --
+> Martin Morgan
+> Computational Biology / Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N.
+> PO Box 19024 Seattle, WA 98109
+>
+> Location: Arnold Building M1 B861
+> Phone: (206) 667-2793
+
+
+From sneumann at ipb-halle.de  Wed Nov 11 14:58:53 2009
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Wed, 11 Nov 2009 14:58:53 +0100
+Subject: [Bioc-devel] CHM and HTML help files missing ?
+Message-ID: <1257947933.13097.377.camel@paddy>
+
+Hi,
+
+In the current windows binary downloads
+the CHM help files are missing, 
+and in fact also HTML (or text) manpages. 
+
+Has BioC adopted a different policy,
+or are these problems in the windows build system(s) ?
+
+Yours,
+Steffen
+
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From seandavi at gmail.com  Wed Nov 11 15:08:22 2009
+From: seandavi at gmail.com (Sean Davis)
+Date: Wed, 11 Nov 2009 09:08:22 -0500
+Subject: [Bioc-devel] CHM and HTML help files missing ?
+In-Reply-To: <1257947933.13097.377.camel@paddy>
+References: <1257947933.13097.377.camel@paddy>
+Message-ID: <264855a00911110608r18f0872ene02f2d373f97dc89@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091111/37d36167/attachment.pl>
+
+From hb at stat.berkeley.edu  Wed Nov 11 15:16:10 2009
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Wed, 11 Nov 2009 15:16:10 +0100
+Subject: [Bioc-devel] CHM and HTML help files missing ?
+In-Reply-To: <1257947933.13097.377.camel@paddy>
+References: <1257947933.13097.377.camel@paddy>
+Message-ID: <59d7961d0911110616m370befcbm1479bada61b4e3aa@mail.gmail.com>
+
+Support for CHM help has been drop starting with R v2.10.0.  It has
+been discussed and motivated on the r-help mailing list several times,
+e.g.
+
+http://old.nabble.com/new-help-pages-in-R-2.10.0-td26221481.html
+
+This is actually a bit hard to find out, but it is explicit in the
+'Windows specific' change file
+
+http://cran.r-project.org/bin/windows/base/CHANGES.R-2.10.0
+
+that you find via the CRAN installation page for Windows.
+
+/Henrik
+
+
+On Wed, Nov 11, 2009 at 2:58 PM, Steffen Neumann <sneumann at ipb-halle.de> wrote:
+> Hi,
+>
+> In the current windows binary downloads
+> the CHM help files are missing,
+> and in fact also HTML (or text) manpages.
+>
+> Has BioC adopted a different policy,
+> or are these problems in the windows build system(s) ?
+>
+> Yours,
+> Steffen
+>
+>
+> --
+> IPB Halle ? ? ? ? ? ? ? ? ? ?AG Massenspektrometrie & Bioinformatik
+> Dr. Steffen Neumann ? ? ? ? ?http://www.IPB-Halle.DE
+> Weinberg 3 ? ? ? ? ? ? ? ? ? http://msbi.bic-gh.de
+> 06120 Halle ? ? ? ? ? ? ? ? ?Tel. +49 (0) 345 5582 - 1470
+> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?+49 (0) 345 5582 - 0
+> sneumann(at)IPB-Halle.DE ? ? Fax. +49 (0) 345 5582 - 1409
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From sneumann at ipb-halle.de  Wed Nov 11 16:15:39 2009
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Wed, 11 Nov 2009 16:15:39 +0100
+Subject: [Bioc-devel] CHM and HTML help files missing ?
+In-Reply-To: <59d7961d0911110616m370befcbm1479bada61b4e3aa@mail.gmail.com>
+References: <1257947933.13097.377.camel@paddy>
+	<59d7961d0911110616m370befcbm1479bada61b4e3aa@mail.gmail.com>
+Message-ID: <1257952539.13097.378.camel@paddy>
+
+On Wed, 2009-11-11 at 15:16 +0100, Henrik Bengtsson wrote:
+> Support for CHM help has been drop starting with R v2.10.0.  It has
+Yes, got it. Thanks both of you for the quick reply.
+
+/me is now upgrading our 2.7.1 installation ...
+
+Yours,
+Steffen
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From keith at wehi.EDU.AU  Tue Nov 24 00:33:40 2009
+From: keith at wehi.EDU.AU (Keith Satterley)
+Date: Tue, 24 Nov 2009 10:33:40 +1100
+Subject: [Bioc-devel] GEOQuery on Windows?
+Message-ID: <4B0B1BD4.60204@wehi.edu.au>
+
+Hi Sean,
+
+I was reading your response to Amit Mandal's query re normalization of 
+affy data and it prompted me to check my installation of GEOquery on 
+R-2.10.0 on my Windows box and of course you know that it is not 
+available at the moment.
+
+Wondering if it maybe come available soon as I generally work on Windows 
+and have used your package very successfully on R-2.9.2,
+
+cheers,
+
+Keith
+
+========================
+Keith Satterley
+Bioinformatics Division
+The Walter and Eliza Hall Institute of Medical Research
+Parkville, Melbourne,
+Victoria, Australia
+
+
+From sdavis2 at mail.nih.gov  Tue Nov 24 14:13:15 2009
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Tue, 24 Nov 2009 08:13:15 -0500
+Subject: [Bioc-devel] GEOQuery on Windows?
+In-Reply-To: <4B0B1BD4.60204@wehi.edu.au>
+References: <4B0B1BD4.60204@wehi.edu.au>
+Message-ID: <264855a00911240513m6839eb1fi9face23da176e716@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20091124/bc913bca/attachment.pl>
+
+From lasse.folkersen at ki.se  Wed Nov 25 12:39:10 2009
+From: lasse.folkersen at ki.se (Lasse Folkersen)
+Date: Wed, 25 Nov 2009 12:39:10 +0100
+Subject: [Bioc-devel] Oddity in hgu133plus2.db?
+Message-ID: <4d9dc8480911250339w15d35da3tf030df4a12b3ff1a@mail.gmail.com>
+
+I know it is a very specific case, but this seems to me like a general error:
+
+in hgu133plus2.db package, using
+as.character(revmap(hgu133plus2SYMBOL)["CD68"])
+returns
+named character(0)
+Now, it may be that annotations change, but isn't it a mistake that
+there exists an Rkey entry for the gene which links to nothing?
+Usually genes with no known probesets just didn't exist in the
+database at all.
+
+Best regards
+Lasse
+
+
+From jmacdon at med.umich.edu  Wed Nov 25 13:08:12 2009
+From: jmacdon at med.umich.edu (James MacDonald)
+Date: Wed, 25 Nov 2009 07:08:12 -0500
+Subject: [Bioc-devel] Oddity in hgu133plus2.db?
+Message-ID: <4B0CD7DC020000EE0009027E@gwia01x.med.umich.edu>
+
+Hi Lasse,
+
+This gene doesn't exist in that table:
+
+> get("CD68", revmap(hgu133plus2SYMBOL))
+[1] NA
+
+It just so happens that selecting things the way you did returns an empty ProbeAnnDbBimap, which when converted to character gives you character(0).
+
+> revmap(hgu133plus2SYMBOL)["CD68"]
+revmap(SYMBOL) submap for chip hgu133plus2 (object of class "ProbeAnnDbBimap")
+
+Best,
+
+Jim
+
+
+>>> Lasse Folkersen <lasse.folkersen at ki.se> 11/25/09 6:40 AM >>>
+I know it is a very specific case, but this seems to me like a general error:
+
+in hgu133plus2.db package, using
+as.character(revmap(hgu133plus2SYMBOL)["CD68"])
+returns
+named character(0)
+Now, it may be that annotations change, but isn't it a mistake that
+there exists an Rkey entry for the gene which links to nothing?
+Usually genes with no known probesets just didn't exist in the
+database at all.
+
+Best regards
+Lasse
+
+_______________________________________________
+Bioc-devel at stat.math.ethz.ch mailing list
+https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues
+
+
+From lasse.folkersen at ki.se  Wed Nov 25 13:49:12 2009
+From: lasse.folkersen at ki.se (Lasse Folkersen)
+Date: Wed, 25 Nov 2009 13:49:12 +0100
+Subject: [Bioc-devel] Oddity in hgu133plus2.db?
+In-Reply-To: <4B0CD7DC020000EE0009027E@gwia01x.med.umich.edu>
+References: <4B0CD7DC020000EE0009027E@gwia01x.med.umich.edu>
+Message-ID: <4d9dc8480911250449n4b67f796qb6cd97a70bb9b08f@mail.gmail.com>
+
+I see. Its just when genes doesn't exist in a table they usually gives
+error messages, like this:
+
+get("whatever", revmap(hgu133plus2SYMBOL))
+Error in .checkKeys(value, Rkeys(x), x at ifnotfound) :
+  value for "whatever" not found
+
+instead of NA. When asking for existence
+"CD68" %in% Rkeys(hgu133plus2SYMBOL)
+it does gives TRUE
+
+So I thought it could have been a bug or un-wanted behaviour. But
+thanks for your answer.
+Lasse
+
+2009/11/25 James MacDonald <jmacdon at med.umich.edu>:
+> Hi Lasse,
+>
+> This gene doesn't exist in that table:
+>
+>> get("CD68", revmap(hgu133plus2SYMBOL))
+> [1] NA
+>
+> It just so happens that selecting things the way you did returns an empty ProbeAnnDbBimap, which when converted to character gives you character(0).
+>
+>> revmap(hgu133plus2SYMBOL)["CD68"]
+> revmap(SYMBOL) submap for chip hgu133plus2 (object of class "ProbeAnnDbBimap")
+>
+> Best,
+>
+> Jim
+>
+>
+>>>> Lasse Folkersen <lasse.folkersen at ki.se> 11/25/09 6:40 AM >>>
+> I know it is a very specific case, but this seems to me like a general error:
+>
+> in hgu133plus2.db package, using
+> as.character(revmap(hgu133plus2SYMBOL)["CD68"])
+> returns
+> named character(0)
+> Now, it may be that annotations change, but isn't it a mistake that
+> there exists an Rkey entry for the gene which links to nothing?
+> Usually genes with no known probesets just didn't exist in the
+> database at all.
+>
+> Best regards
+> Lasse
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> **********************************************************
+> Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues
+>
+
+
+From jmacdon at med.umich.edu  Wed Nov 25 14:46:35 2009
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Wed, 25 Nov 2009 08:46:35 -0500
+Subject: [Bioc-devel] Oddity in hgu133plus2.db?
+In-Reply-To: <4d9dc8480911250449n4b67f796qb6cd97a70bb9b08f@mail.gmail.com>
+References: <4B0CD7DC020000EE0009027E@gwia01x.med.umich.edu>
+	<4d9dc8480911250449n4b67f796qb6cd97a70bb9b08f@mail.gmail.com>
+Message-ID: <4B0D353B.5010606@med.umich.edu>
+
+I should change slightly what I have said. The hgu133plus2.db package in 
+the new version of BioC has changed quite a bit, and no longer contains 
+much data. Instead, it is a thin wrapper for the org.Hs.eg.db package.
+
+Since org.Hs.eg.db *does* contain mappings for this symbol, the Rkey exists:
+
+ > grep("CD68", Rkeys(hgu133plus2SYMBOL), value=T)
+[1] "CD68"
+
+But this doesn't mean this gene product is interrogated by the 
+hgu133plus2 chip. The Lkey for this symbol is NA, because a matching 
+probeset is Not Available on the hgu133plus2 chip.
+
+So the behavior is consistent - there is a Rkey for this symbol, but the 
+Lkey is NA.
+
+Best,
+
+Jim
+
+
+
+Lasse Folkersen wrote:
+> I see. Its just when genes doesn't exist in a table they usually gives
+> error messages, like this:
+> 
+> get("whatever", revmap(hgu133plus2SYMBOL))
+> Error in .checkKeys(value, Rkeys(x), x at ifnotfound) :
+>   value for "whatever" not found
+> 
+> instead of NA. When asking for existence
+> "CD68" %in% Rkeys(hgu133plus2SYMBOL)
+> it does gives TRUE
+> 
+> So I thought it could have been a bug or un-wanted behaviour. But
+> thanks for your answer.
+> Lasse
+> 
+> 2009/11/25 James MacDonald <jmacdon at med.umich.edu>:
+>> Hi Lasse,
+>>
+>> This gene doesn't exist in that table:
+>>
+>>> get("CD68", revmap(hgu133plus2SYMBOL))
+>> [1] NA
+>>
+>> It just so happens that selecting things the way you did returns an empty ProbeAnnDbBimap, which when converted to character gives you character(0).
+>>
+>>> revmap(hgu133plus2SYMBOL)["CD68"]
+>> revmap(SYMBOL) submap for chip hgu133plus2 (object of class "ProbeAnnDbBimap")
+>>
+>> Best,
+>>
+>> Jim
+>>
+>>
+>>>>> Lasse Folkersen <lasse.folkersen at ki.se> 11/25/09 6:40 AM >>>
+>> I know it is a very specific case, but this seems to me like a general error:
+>>
+>> in hgu133plus2.db package, using
+>> as.character(revmap(hgu133plus2SYMBOL)["CD68"])
+>> returns
+>> named character(0)
+>> Now, it may be that annotations change, but isn't it a mistake that
+>> there exists an Rkey entry for the gene which links to nothing?
+>> Usually genes with no known probesets just didn't exist in the
+>> database at all.
+>>
+>> Best regards
+>> Lasse
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>> **********************************************************
+>> Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues
+>>
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Douglas Lab
+University of Michigan
+Department of Human Genetics
+5912 Buhl
+1241 E. Catherine St.
+Ann Arbor MI 48109-5618
+734-615-7826
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues 
+
+
+From lasse.folkersen at ki.se  Wed Nov 25 16:32:44 2009
+From: lasse.folkersen at ki.se (Lasse Folkersen)
+Date: Wed, 25 Nov 2009 16:32:44 +0100
+Subject: [Bioc-devel] Oddity in hgu133plus2.db?
+In-Reply-To: <4B0D353B.5010606@med.umich.edu>
+References: <4B0CD7DC020000EE0009027E@gwia01x.med.umich.edu> 
+	<4d9dc8480911250449n4b67f796qb6cd97a70bb9b08f@mail.gmail.com> 
+	<4B0D353B.5010606@med.umich.edu>
+Message-ID: <4d9dc8480911250732w3748d0fdof9e10d9345cd380@mail.gmail.com>
+
+Ok. I'll put checks for gensymbols linking to NA values for probeset
+into my code in the future. Thank you so much for the info.
+Lasse
+
+2009/11/25 James W. MacDonald <jmacdon at med.umich.edu>:
+> I should change slightly what I have said. The hgu133plus2.db package in the
+> new version of BioC has changed quite a bit, and no longer contains much
+> data. Instead, it is a thin wrapper for the org.Hs.eg.db package.
+>
+> Since org.Hs.eg.db *does* contain mappings for this symbol, the Rkey exists:
+>
+>> grep("CD68", Rkeys(hgu133plus2SYMBOL), value=T)
+> [1] "CD68"
+>
+> But this doesn't mean this gene product is interrogated by the hgu133plus2
+> chip. The Lkey for this symbol is NA, because a matching probeset is Not
+> Available on the hgu133plus2 chip.
+>
+> So the behavior is consistent - there is a Rkey for this symbol, but the
+> Lkey is NA.
+>
+> Best,
+>
+> Jim
+>
+>
+>
+> Lasse Folkersen wrote:
+>>
+>> I see. Its just when genes doesn't exist in a table they usually gives
+>> error messages, like this:
+>>
+>> get("whatever", revmap(hgu133plus2SYMBOL))
+>> Error in .checkKeys(value, Rkeys(x), x at ifnotfound) :
+>> ?value for "whatever" not found
+>>
+>> instead of NA. When asking for existence
+>> "CD68" %in% Rkeys(hgu133plus2SYMBOL)
+>> it does gives TRUE
+>>
+>> So I thought it could have been a bug or un-wanted behaviour. But
+>> thanks for your answer.
+>> Lasse
+>>
+>> 2009/11/25 James MacDonald <jmacdon at med.umich.edu>:
+>>>
+>>> Hi Lasse,
+>>>
+>>> This gene doesn't exist in that table:
+>>>
+>>>> get("CD68", revmap(hgu133plus2SYMBOL))
+>>>
+>>> [1] NA
+>>>
+>>> It just so happens that selecting things the way you did returns an empty
+>>> ProbeAnnDbBimap, which when converted to character gives you character(0).
+>>>
+>>>> revmap(hgu133plus2SYMBOL)["CD68"]
+>>>
+>>> revmap(SYMBOL) submap for chip hgu133plus2 (object of class
+>>> "ProbeAnnDbBimap")
+>>>
+>>> Best,
+>>>
+>>> Jim
+>>>
+>>>
+>>>>>> Lasse Folkersen <lasse.folkersen at ki.se> 11/25/09 6:40 AM >>>
+>>>
+>>> I know it is a very specific case, but this seems to me like a general
+>>> error:
+>>>
+>>> in hgu133plus2.db package, using
+>>> as.character(revmap(hgu133plus2SYMBOL)["CD68"])
+>>> returns
+>>> named character(0)
+>>> Now, it may be that annotations change, but isn't it a mistake that
+>>> there exists an Rkey entry for the gene which links to nothing?
+>>> Usually genes with no known probesets just didn't exist in the
+>>> database at all.
+>>>
+>>> Best regards
+>>> Lasse
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>> **********************************************************
+>>> Electronic Mail is not secure, may not be read every day, and should not
+>>> be used for urgent or sensitive issues
+>>>
+>
+> --
+> James W. MacDonald, M.S.
+> Biostatistician
+> Douglas Lab
+> University of Michigan
+> Department of Human Genetics
+> 5912 Buhl
+> 1241 E. Catherine St.
+> Ann Arbor MI 48109-5618
+> 734-615-7826
+> **********************************************************
+> Electronic Mail is not secure, may not be read every day, and should not be
+> used for urgent or sensitive issues
+>
+
+

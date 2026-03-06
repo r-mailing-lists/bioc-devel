@@ -1,0 +1,5023 @@
+From huber at ebi.ac.uk  Tue Feb  3 15:38:06 2009
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Tue, 03 Feb 2009 15:38:06 +0100
+Subject: [Bioc-devel] Bug in rma: zero variance of probeset summaries across
+	arrays
+Message-ID: <498856CE.5040705@ebi.ac.uk>
+
+Hi,
+
+I am getting puzzling results from the rma function in the affy package, 
+and furthermore they are different depending on whether quantile 
+normalisation is called within rma or explicitely. The puzzling part is 
+that some probesets, in a perfectly ordinary experiment with 4 different 
+arrays, are summarized with exactly identical values across all arrays 
+(i.e. zero variance); while the underlying probe level data for these 
+probesets is variable and sits right in the middle of the dynamic range 
+(i.e. not at any of the extremes).
+
+The code:
+---------
+
+library("affy")
+library("genefilter")
+library("preprocessCore")
+options(error=recover)
+
+files = c("PP_T1_1.CEL", "PP_T1_2.CEL", "PP_T2_1.CEL", "PP_T2_2c.CEL")
+
+for(f in files)
+   download.file(file.path("http://www.ebi.ac.uk/~huber/pub", f),
+                 file.path(tempdir(), f))
+
+a = ReadAffy(filenames=file.path(tempdir(), files))
+
+x1 = rma(a)
+
+aq = a
+exprs(aq) = normalize.quantiles(exprs(aq))
+x2 = rma(aq, normalize=FALSE)
+
+probeVars = function(x) {
+  r = rowSds(exprs(x))
+  ps = names(which(r==0))
+  cat(sprintf("%s: %d probes with zero variance.\n", 
+deparse(substitute(x)), length(ps)))
+  return(ps)
+}
+
+probeVars(a)
+ps = probeVars(x1)
+probeVars(x2)
+
+print(exprs(a)[yeast2cdf[[ps[1]]][,1],])
+
+-----------------------------------------------------------------------------
+
+The output:
+-----------
+Background correcting
+Normalizing
+Calculating Expression
+Background correcting
+Calculating Expression
+
+a: 0 probes with zero variance.
+x1: 3 probes with zero variance.
+x2: 0 probes with zero variance.
+
+        PP_T1_1.CEL PP_T1_2.CEL PP_T2_1.CEL PP_T2_2c.CEL
+35244          185         236         269          253
+198153         226         314         320          213
+48500          375         370         408          373
+109094         125         157         201          175
+144686         107         131         153          100
+214110         181         296         307          234
+47302          355         430         397          282
+108656         117         130         150          118
+147528         158         144         159          135
+237691         208         244         253          169
+229910          94         138         147          133
+
+ > sessionInfo()
+R version 2.9.0 Under development (unstable) (2009-02-03 r47829)
+x86_64-unknown-linux-gnu
+
+locale:
+LC_CTYPE=it_IT.UTF-8;LC_NUMERIC=C;LC_TIME=it_IT.UTF-8;LC_COLLATE=it_IT.UTF-8;LC_MONETARY=C;LC_MESSAGES=it_IT.UTF-8;LC_PAPER=it_IT.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=it_IT.UTF-8;LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices datasets  utils     methods   base
+
+other attached packages:
+[1] yeast2cdf_2.3.0      preprocessCore_1.5.3 genefilter_1.23.1
+[4] affy_1.21.7          Biobase_2.3.10       fortunes_1.3-6
+
+loaded via a namespace (and not attached):
+[1] affyio_1.11.3        annotate_1.21.3      AnnotationDbi_1.5.14
+[4] DBI_0.2-4            RSQLite_0.7-1        splines_2.9.0
+[7] survival_2.34-1      tools_2.9.0          xtable_1.5-4
+
+
+
+Best wishes
+      Wolfgang
+
+
+PS While trying to dissect this, I also experimented with constructing 
+special CDF environments (e.g. one that had one 'probeset' for each 
+probe), and I noted that repeatedly the C code of rma caused core dumps. 
+Perhaps a better response to unexpected shapes of CDF environments would 
+be to issue an error message. I can provide details if interested.
+
+----------------------------------------------------
+Wolfgang Huber, EMBL-EBI, http://www.ebi.ac.uk/huber
+
+
+From huber at ebi.ac.uk  Tue Feb  3 16:13:04 2009
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Tue, 03 Feb 2009 15:13:04 +0000
+Subject: [Bioc-devel] Bug in rma: zero variance of probeset summaries
+ across	arrays
+In-Reply-To: <498856CE.5040705@ebi.ac.uk>
+References: <498856CE.5040705@ebi.ac.uk>
+Message-ID: <49885F00.3050806@ebi.ac.uk>
+
+Hi
+
+I realised that x1 and x2 below cannot be expected to be the same, since
+background correction and quantile normalisation are done in different
+orders when they are produced.
+
+My puzzlement about the many probesets that get assigned identical
+summary values across arrays persists. Any hints about how to further
+dissect this problem would be welcome!
+
+	Cheers
+	Wolfgang
+
+03/02/2009 14:38 Wolfgang Huber scripsit
+> Hi,
+> 
+> I am getting puzzling results from the rma function in the affy package,
+> and furthermore they are different depending on whether quantile
+> normalisation is called within rma or explicitely. The puzzling part is
+> that some probesets, in a perfectly ordinary experiment with 4 different
+> arrays, are summarized with exactly identical values across all arrays
+> (i.e. zero variance); while the underlying probe level data for these
+> probesets is variable and sits right in the middle of the dynamic range
+> (i.e. not at any of the extremes).
+> 
+> The code:
+> ---------
+> 
+> library("affy")
+> library("genefilter")
+> library("preprocessCore")
+> options(error=recover)
+> 
+> files = c("PP_T1_1.CEL", "PP_T1_2.CEL", "PP_T2_1.CEL", "PP_T2_2c.CEL")
+> 
+> for(f in files)
+>   download.file(file.path("http://www.ebi.ac.uk/~huber/pub", f),
+>                 file.path(tempdir(), f))
+> 
+> a = ReadAffy(filenames=file.path(tempdir(), files))
+> 
+> x1 = rma(a)
+> 
+> aq = a
+> exprs(aq) = normalize.quantiles(exprs(aq))
+> x2 = rma(aq, normalize=FALSE)
+> 
+> probeVars = function(x) {
+>  r = rowSds(exprs(x))
+>  ps = names(which(r==0))
+>  cat(sprintf("%s: %d probes with zero variance.\n",
+> deparse(substitute(x)), length(ps)))
+>  return(ps)
+> }
+> 
+> probeVars(a)
+> ps = probeVars(x1)
+> probeVars(x2)
+> 
+> print(exprs(a)[yeast2cdf[[ps[1]]][,1],])
+> 
+> -----------------------------------------------------------------------------
+> 
+> 
+> The output:
+> -----------
+> Background correcting
+> Normalizing
+> Calculating Expression
+> Background correcting
+> Calculating Expression
+> 
+> a: 0 probes with zero variance.
+> x1: 3 probes with zero variance.
+> x2: 0 probes with zero variance.
+> 
+>        PP_T1_1.CEL PP_T1_2.CEL PP_T2_1.CEL PP_T2_2c.CEL
+> 35244          185         236         269          253
+> 198153         226         314         320          213
+> 48500          375         370         408          373
+> 109094         125         157         201          175
+> 144686         107         131         153          100
+> 214110         181         296         307          234
+> 47302          355         430         397          282
+> 108656         117         130         150          118
+> 147528         158         144         159          135
+> 237691         208         244         253          169
+> 229910          94         138         147          133
+> 
+>> sessionInfo()
+> R version 2.9.0 Under development (unstable) (2009-02-03 r47829)
+> x86_64-unknown-linux-gnu
+> 
+> locale:
+> LC_CTYPE=it_IT.UTF-8;LC_NUMERIC=C;LC_TIME=it_IT.UTF-8;LC_COLLATE=it_IT.UTF-8;LC_MONETARY=C;LC_MESSAGES=it_IT.UTF-8;LC_PAPER=it_IT.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=it_IT.UTF-8;LC_IDENTIFICATION=C
+> 
+> 
+> attached base packages:
+> [1] stats     graphics  grDevices datasets  utils     methods   base
+> 
+> other attached packages:
+> [1] yeast2cdf_2.3.0      preprocessCore_1.5.3 genefilter_1.23.1
+> [4] affy_1.21.7          Biobase_2.3.10       fortunes_1.3-6
+> 
+> loaded via a namespace (and not attached):
+> [1] affyio_1.11.3        annotate_1.21.3      AnnotationDbi_1.5.14
+> [4] DBI_0.2-4            RSQLite_0.7-1        splines_2.9.0
+> [7] survival_2.34-1      tools_2.9.0          xtable_1.5-4
+> 
+> 
+> 
+> Best wishes
+>      Wolfgang
+> 
+> 
+> PS While trying to dissect this, I also experimented with constructing
+> special CDF environments (e.g. one that had one 'probeset' for each
+> probe), and I noted that repeatedly the C code of rma caused core dumps.
+> Perhaps a better response to unexpected shapes of CDF environments would
+> be to issue an error message. I can provide details if interested.
+> 
+> ----------------------------------------------------
+> Wolfgang Huber, EMBL-EBI, http://www.ebi.ac.uk/huber
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From holger.schw at gmx.de  Tue Feb  3 16:18:55 2009
+From: holger.schw at gmx.de (Holger Schwender)
+Date: Tue, 03 Feb 2009 16:18:55 +0100
+Subject: [Bioc-devel] Bug in rma: zero variance of probeset summaries
+ across	arrays
+In-Reply-To: <498856CE.5040705@ebi.ac.uk>
+References: <498856CE.5040705@ebi.ac.uk>
+Message-ID: <20090203151855.133700@gmx.net>
+
+Hi Wolfgang,
+
+the difference between the two outputs x1 and x2 are due to that in x1 the probe intensities are background-corrected first and then normalized, while in x2 they are first normalized and then background-corrected.
+
+The constant values are a feature of median polish: If median polish is applied to four or six samples, then this can lead to constant values for some of the probe sets. This has been mentioned years ago by Jim (I couldn't find his original email on this topic in the mailing list archive).
+
+Best,
+Holger
+
+
+-------- Original-Nachricht --------
+> Datum: Tue, 03 Feb 2009 15:38:06 +0100
+> Von: Wolfgang Huber <huber at ebi.ac.uk>
+> An: Bioconductor Developers <bioc-devel at stat.math.ethz.ch>
+> Betreff: [Bioc-devel] Bug in rma: zero variance of probeset summaries across	arrays
+
+> Hi,
+> 
+> I am getting puzzling results from the rma function in the affy package, 
+> and furthermore they are different depending on whether quantile 
+> normalisation is called within rma or explicitely. The puzzling part is 
+> that some probesets, in a perfectly ordinary experiment with 4 different 
+> arrays, are summarized with exactly identical values across all arrays 
+> (i.e. zero variance); while the underlying probe level data for these 
+> probesets is variable and sits right in the middle of the dynamic range 
+> (i.e. not at any of the extremes).
+> 
+> The code:
+> ---------
+> 
+> library("affy")
+> library("genefilter")
+> library("preprocessCore")
+> options(error=recover)
+> 
+> files = c("PP_T1_1.CEL", "PP_T1_2.CEL", "PP_T2_1.CEL", "PP_T2_2c.CEL")
+> 
+> for(f in files)
+>    download.file(file.path("http://www.ebi.ac.uk/~huber/pub", f),
+>                  file.path(tempdir(), f))
+> 
+> a = ReadAffy(filenames=file.path(tempdir(), files))
+> 
+> x1 = rma(a)
+> 
+> aq = a
+> exprs(aq) = normalize.quantiles(exprs(aq))
+> x2 = rma(aq, normalize=FALSE)
+> 
+> probeVars = function(x) {
+>   r = rowSds(exprs(x))
+>   ps = names(which(r==0))
+>   cat(sprintf("%s: %d probes with zero variance.\n", 
+> deparse(substitute(x)), length(ps)))
+>   return(ps)
+> }
+> 
+> probeVars(a)
+> ps = probeVars(x1)
+> probeVars(x2)
+> 
+> print(exprs(a)[yeast2cdf[[ps[1]]][,1],])
+> 
+> -----------------------------------------------------------------------------
+> 
+> The output:
+> -----------
+> Background correcting
+> Normalizing
+> Calculating Expression
+> Background correcting
+> Calculating Expression
+> 
+> a: 0 probes with zero variance.
+> x1: 3 probes with zero variance.
+> x2: 0 probes with zero variance.
+> 
+>         PP_T1_1.CEL PP_T1_2.CEL PP_T2_1.CEL PP_T2_2c.CEL
+> 35244          185         236         269          253
+> 198153         226         314         320          213
+> 48500          375         370         408          373
+> 109094         125         157         201          175
+> 144686         107         131         153          100
+> 214110         181         296         307          234
+> 47302          355         430         397          282
+> 108656         117         130         150          118
+> 147528         158         144         159          135
+> 237691         208         244         253          169
+> 229910          94         138         147          133
+> 
+>  > sessionInfo()
+> R version 2.9.0 Under development (unstable) (2009-02-03 r47829)
+> x86_64-unknown-linux-gnu
+> 
+> locale:
+> LC_CTYPE=it_IT.UTF-8;LC_NUMERIC=C;LC_TIME=it_IT.UTF-8;LC_COLLATE=it_IT.UTF-8;LC_MONETARY=C;LC_MESSAGES=it_IT.UTF-8;LC_PAPER=it_IT.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=it_IT.UTF-8;LC_IDENTIFICATION=C
+> 
+> attached base packages:
+> [1] stats     graphics  grDevices datasets  utils     methods   base
+> 
+> other attached packages:
+> [1] yeast2cdf_2.3.0      preprocessCore_1.5.3 genefilter_1.23.1
+> [4] affy_1.21.7          Biobase_2.3.10       fortunes_1.3-6
+> 
+> loaded via a namespace (and not attached):
+> [1] affyio_1.11.3        annotate_1.21.3      AnnotationDbi_1.5.14
+> [4] DBI_0.2-4            RSQLite_0.7-1        splines_2.9.0
+> [7] survival_2.34-1      tools_2.9.0          xtable_1.5-4
+> 
+> 
+> 
+> Best wishes
+>       Wolfgang
+> 
+> 
+> PS While trying to dissect this, I also experimented with constructing 
+> special CDF environments (e.g. one that had one 'probeset' for each 
+> probe), and I noted that repeatedly the C code of rma caused core dumps. 
+> Perhaps a better response to unexpected shapes of CDF environments would 
+> be to issue an error message. I can provide details if interested.
+> 
+> ----------------------------------------------------
+> Wolfgang Huber, EMBL-EBI, http://www.ebi.ac.uk/huber
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+--
+
+
+From bmb at bmbolstad.com  Tue Feb  3 16:33:49 2009
+From: bmb at bmbolstad.com (Ben Bolstad)
+Date: Tue, 03 Feb 2009 07:33:49 -0800
+Subject: [Bioc-devel] Bug in rma: zero variance of probeset summaries
+ across	arrays
+In-Reply-To: <20090203151855.133700@gmx.net>
+References: <498856CE.5040705@ebi.ac.uk>  <20090203151855.133700@gmx.net>
+Message-ID: <1233675229.3638.4.camel@localhost.localdomain>
+
+Indeed it is a feature of median polish. See
+
+https://stat.ethz.ch/pipermail/bioconductor/2004-June/004941.html
+
+https://stat.ethz.ch/pipermail/bioconductor/2003-September/002499.html
+
+
+
+On Tue, 2009-02-03 at 16:18 +0100, Holger Schwender wrote:
+> Hi Wolfgang,
+> 
+> the difference between the two outputs x1 and x2 are due to that in x1 the probe intensities are background-corrected first and then normalized, while in x2 they are first normalized and then background-corrected.
+> 
+> The constant values are a feature of median polish: If median polish is applied to four or six samples, then this can lead to constant values for some of the probe sets. This has been mentioned years ago by Jim (I couldn't find his original email on this topic in the mailing list archive).
+> 
+> Best,
+> Holger
+> 
+> 
+> -------- Original-Nachricht --------
+> > Datum: Tue, 03 Feb 2009 15:38:06 +0100
+> > Von: Wolfgang Huber <huber at ebi.ac.uk>
+> > An: Bioconductor Developers <bioc-devel at stat.math.ethz.ch>
+> > Betreff: [Bioc-devel] Bug in rma: zero variance of probeset summaries across	arrays
+> 
+> > Hi,
+> > 
+> > I am getting puzzling results from the rma function in the affy package, 
+> > and furthermore they are different depending on whether quantile 
+> > normalisation is called within rma or explicitely. The puzzling part is 
+> > that some probesets, in a perfectly ordinary experiment with 4 different 
+> > arrays, are summarized with exactly identical values across all arrays 
+> > (i.e. zero variance); while the underlying probe level data for these 
+> > probesets is variable and sits right in the middle of the dynamic range 
+> > (i.e. not at any of the extremes).
+> > 
+> > The code:
+> > ---------
+> > 
+> > library("affy")
+> > library("genefilter")
+> > library("preprocessCore")
+> > options(error=recover)
+> > 
+> > files = c("PP_T1_1.CEL", "PP_T1_2.CEL", "PP_T2_1.CEL", "PP_T2_2c.CEL")
+> > 
+> > for(f in files)
+> >    download.file(file.path("http://www.ebi.ac.uk/~huber/pub", f),
+> >                  file.path(tempdir(), f))
+> > 
+> > a = ReadAffy(filenames=file.path(tempdir(), files))
+> > 
+> > x1 = rma(a)
+> > 
+> > aq = a
+> > exprs(aq) = normalize.quantiles(exprs(aq))
+> > x2 = rma(aq, normalize=FALSE)
+> > 
+> > probeVars = function(x) {
+> >   r = rowSds(exprs(x))
+> >   ps = names(which(r==0))
+> >   cat(sprintf("%s: %d probes with zero variance.\n", 
+> > deparse(substitute(x)), length(ps)))
+> >   return(ps)
+> > }
+> > 
+> > probeVars(a)
+> > ps = probeVars(x1)
+> > probeVars(x2)
+> > 
+> > print(exprs(a)[yeast2cdf[[ps[1]]][,1],])
+> > 
+> > -----------------------------------------------------------------------------
+> > 
+> > The output:
+> > -----------
+> > Background correcting
+> > Normalizing
+> > Calculating Expression
+> > Background correcting
+> > Calculating Expression
+> > 
+> > a: 0 probes with zero variance.
+> > x1: 3 probes with zero variance.
+> > x2: 0 probes with zero variance.
+> > 
+> >         PP_T1_1.CEL PP_T1_2.CEL PP_T2_1.CEL PP_T2_2c.CEL
+> > 35244          185         236         269          253
+> > 198153         226         314         320          213
+> > 48500          375         370         408          373
+> > 109094         125         157         201          175
+> > 144686         107         131         153          100
+> > 214110         181         296         307          234
+> > 47302          355         430         397          282
+> > 108656         117         130         150          118
+> > 147528         158         144         159          135
+> > 237691         208         244         253          169
+> > 229910          94         138         147          133
+> > 
+> >  > sessionInfo()
+> > R version 2.9.0 Under development (unstable) (2009-02-03 r47829)
+> > x86_64-unknown-linux-gnu
+> > 
+> > locale:
+> > LC_CTYPE=it_IT.UTF-8;LC_NUMERIC=C;LC_TIME=it_IT.UTF-8;LC_COLLATE=it_IT.UTF-8;LC_MONETARY=C;LC_MESSAGES=it_IT.UTF-8;LC_PAPER=it_IT.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=it_IT.UTF-8;LC_IDENTIFICATION=C
+> > 
+> > attached base packages:
+> > [1] stats     graphics  grDevices datasets  utils     methods   base
+> > 
+> > other attached packages:
+> > [1] yeast2cdf_2.3.0      preprocessCore_1.5.3 genefilter_1.23.1
+> > [4] affy_1.21.7          Biobase_2.3.10       fortunes_1.3-6
+> > 
+> > loaded via a namespace (and not attached):
+> > [1] affyio_1.11.3        annotate_1.21.3      AnnotationDbi_1.5.14
+> > [4] DBI_0.2-4            RSQLite_0.7-1        splines_2.9.0
+> > [7] survival_2.34-1      tools_2.9.0          xtable_1.5-4
+> > 
+> > 
+> > 
+> > Best wishes
+> >       Wolfgang
+> > 
+> > 
+> > PS While trying to dissect this, I also experimented with constructing 
+> > special CDF environments (e.g. one that had one 'probeset' for each 
+> > probe), and I noted that repeatedly the C code of rma caused core dumps. 
+> > Perhaps a better response to unexpected shapes of CDF environments would 
+> > be to issue an error message. I can provide details if interested.
+> > 
+> > ----------------------------------------------------
+> > Wolfgang Huber, EMBL-EBI, http://www.ebi.ac.uk/huber
+> > 
+> > _______________________________________________
+> > Bioc-devel at stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> --
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From jmacdon at med.umich.edu  Tue Feb  3 16:34:28 2009
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Tue, 03 Feb 2009 10:34:28 -0500
+Subject: [Bioc-devel] Bug in rma: zero variance of probeset summaries
+ across	arrays
+In-Reply-To: <20090203151855.133700@gmx.net>
+References: <498856CE.5040705@ebi.ac.uk> <20090203151855.133700@gmx.net>
+Message-ID: <49886404.9020100@med.umich.edu>
+
+Hi Holger,
+
+Holger Schwender wrote:
+> Hi Wolfgang,
+> 
+> the difference between the two outputs x1 and x2 are due to that in
+> x1 the probe intensities are background-corrected first and then
+> normalized, while in x2 they are first normalized and then
+> background-corrected.
+> 
+> The constant values are a feature of median polish: If median polish
+> is applied to four or six samples, then this can lead to constant
+> values for some of the probe sets. This has been mentioned years ago
+> by Jim (I couldn't find his original email on this topic in the
+> mailing list archive).
+
+Actually this only occurs with a small, odd number of samples, not even. 
+Well, it could happen for a small number of probesets if the n/2 and n/2 
++ 1 ordered values were identical, but it is much more common in the 
+case of 3 or 5 samples.
+
+Best,
+
+Jim
+
+
+> 
+> Best, Holger
+> 
+> 
+> -------- Original-Nachricht --------
+>> Datum: Tue, 03 Feb 2009 15:38:06 +0100 Von: Wolfgang Huber
+>> <huber at ebi.ac.uk> An: Bioconductor Developers
+>> <bioc-devel at stat.math.ethz.ch> Betreff: [Bioc-devel] Bug in rma:
+>> zero variance of probeset summaries across	arrays
+> 
+>> Hi,
+>> 
+>> I am getting puzzling results from the rma function in the affy
+>> package, and furthermore they are different depending on whether
+>> quantile normalisation is called within rma or explicitely. The
+>> puzzling part is that some probesets, in a perfectly ordinary
+>> experiment with 4 different arrays, are summarized with exactly
+>> identical values across all arrays (i.e. zero variance); while the
+>> underlying probe level data for these probesets is variable and
+>> sits right in the middle of the dynamic range (i.e. not at any of
+>> the extremes).
+>> 
+>> The code: ---------
+>> 
+>> library("affy") library("genefilter") library("preprocessCore") 
+>> options(error=recover)
+>> 
+>> files = c("PP_T1_1.CEL", "PP_T1_2.CEL", "PP_T2_1.CEL",
+>> "PP_T2_2c.CEL")
+>> 
+>> for(f in files) 
+>> download.file(file.path("http://www.ebi.ac.uk/~huber/pub", f), 
+>> file.path(tempdir(), f))
+>> 
+>> a = ReadAffy(filenames=file.path(tempdir(), files))
+>> 
+>> x1 = rma(a)
+>> 
+>> aq = a exprs(aq) = normalize.quantiles(exprs(aq)) x2 = rma(aq,
+>> normalize=FALSE)
+>> 
+>> probeVars = function(x) { r = rowSds(exprs(x)) ps =
+>> names(which(r==0)) cat(sprintf("%s: %d probes with zero
+>> variance.\n", deparse(substitute(x)), length(ps))) return(ps) }
+>> 
+>> probeVars(a) ps = probeVars(x1) probeVars(x2)
+>> 
+>> print(exprs(a)[yeast2cdf[[ps[1]]][,1],])
+>> 
+>> -----------------------------------------------------------------------------
+>> 
+>> 
+>> The output: ----------- Background correcting Normalizing 
+>> Calculating Expression Background correcting Calculating Expression
+>> 
+>> 
+>> a: 0 probes with zero variance. x1: 3 probes with zero variance. 
+>> x2: 0 probes with zero variance.
+>> 
+>> PP_T1_1.CEL PP_T1_2.CEL PP_T2_1.CEL PP_T2_2c.CEL 35244          185
+>> 236         269          253 198153         226         314
+>> 320          213 48500          375         370         408
+>> 373 109094         125         157         201          175 144686
+>> 107         131         153          100 214110         181
+>> 296         307          234 47302          355         430
+>> 397          282 108656         117         130         150
+>> 118 147528         158         144         159          135 237691
+>> 208         244         253          169 229910          94
+>> 138         147          133
+>> 
+>>> sessionInfo()
+>> R version 2.9.0 Under development (unstable) (2009-02-03 r47829) 
+>> x86_64-unknown-linux-gnu
+>> 
+>> locale: 
+>> LC_CTYPE=it_IT.UTF-8;LC_NUMERIC=C;LC_TIME=it_IT.UTF-8;LC_COLLATE=it_IT.UTF-8;LC_MONETARY=C;LC_MESSAGES=it_IT.UTF-8;LC_PAPER=it_IT.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=it_IT.UTF-8;LC_IDENTIFICATION=C
+>> 
+>> 
+>> attached base packages: [1] stats     graphics  grDevices datasets
+>> utils     methods   base
+>> 
+>> other attached packages: [1] yeast2cdf_2.3.0
+>> preprocessCore_1.5.3 genefilter_1.23.1 [4] affy_1.21.7
+>> Biobase_2.3.10       fortunes_1.3-6
+>> 
+>> loaded via a namespace (and not attached): [1] affyio_1.11.3
+>> annotate_1.21.3      AnnotationDbi_1.5.14 [4] DBI_0.2-4
+>> RSQLite_0.7-1        splines_2.9.0 [7] survival_2.34-1
+>> tools_2.9.0          xtable_1.5-4
+>> 
+>> 
+>> 
+>> Best wishes Wolfgang
+>> 
+>> 
+>> PS While trying to dissect this, I also experimented with
+>> constructing special CDF environments (e.g. one that had one
+>> 'probeset' for each probe), and I noted that repeatedly the C code
+>> of rma caused core dumps. Perhaps a better response to unexpected
+>> shapes of CDF environments would be to issue an error message. I
+>> can provide details if interested.
+>> 
+>> ---------------------------------------------------- Wolfgang
+>> Huber, EMBL-EBI, http://www.ebi.ac.uk/huber
+>> 
+>> _______________________________________________ 
+>> Bioc-devel at stat.math.ethz.ch mailing list 
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> --
+> 
+> _______________________________________________ 
+> Bioc-devel at stat.math.ethz.ch mailing list 
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Hildebrandt Lab
+8220D MSRB III
+1150 W. Medical Center Drive
+Ann Arbor MI 48109-0646
+734-936-8662
+
+
+From huber at ebi.ac.uk  Tue Feb  3 20:14:57 2009
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Tue, 03 Feb 2009 19:14:57 +0000
+Subject: [Bioc-devel] Bug in rma: zero variance of probeset summaries
+ across	arrays
+In-Reply-To: <49886404.9020100@med.umich.edu>
+References: <498856CE.5040705@ebi.ac.uk> <20090203151855.133700@gmx.net>
+	<49886404.9020100@med.umich.edu>
+Message-ID: <498897B1.4030008@ebi.ac.uk>
+
+Thank you, Holger, Jim, Ben,
+
+(1) this is indeed a peculiar feature of the medianpolish part of RMA. I 
+apologize to Ben for using the harsh word "bug" inappropriately in this 
+context. I was misled by observations that using different normalisation 
+or background correction methods seemed to "fix" the problem, and had 
+forgotten about those previous threads. Sorry.
+
+I wonder whether anyone has done research on how to improve on 
+medianpolish for small datasets and why people haven't adapted it.
+
+(2) One further potential problem remains, and I hope that bringing this 
+up might help to make sure that rma (which is obviously a core component 
+of Bioconductor) is robust even under the most adverse circumstances 
+(e.g. myself :). With the script below, I get a core dump. This is on a 
+freshly checked out and built R (from today) and all packages then 
+installed from scratch (sessionInfo as in previous mail below). It does 
+not seem to happen on R-2.8.1. and Bioc release 2.3., and even on R-dev, 
+whether it happens seems to depend on the history of the R session. One 
+hypothesis is that this could be related to the "destructive=TRUE" 
+parameter of rma?
+
+Can anyone reproduce this?
+
+  Best wishes
+	Wolfgang
+
+
+library("affy")
+library("genefilter")
+options(error=recover)
+
+files = c("PP_T1_1.CEL", "PP_T1_2.CEL", "PP_T2_1.CEL", "PP_T2_2c.CEL")
+
+#celdir = tempdir()
+#for(f in files)
+#  download.file(file.path("http://www.ebi.ac.uk/~huber/pub", f),
+#                file.path(celdir, f))
+celdir="."
+
+a = ReadAffy(filenames=file.path(celdir, files))
+
+## Define a CDF with one probeset per probe
+testcdf = new.env(hash=TRUE)
+for(i in seq_len(nrow(exprs(a))))
+     assign(paste(i), matrix(i, ncol=1, nrow=1), envir=testcdf)
+a at cdfName = "testcdf"
+
+x = rma(a)
+
+
+----------------------
+
+Background correcting
+Normalizing
+Calculating Expression
+Error in `colnames<-`(`*tmp*`, value = c("PP_T1_1.CEL", "PP_T1_2.CEL",  :
+   attempt to set colnames on object with less than two dimensions
+
+Enter a frame number, or 0 to exit
+
+1: source("rma2.R")
+2: eval.with.vis(ei, envir)
+3: eval.with.vis(expr, envir, enclos)
+4: rma(a)
+5: `colnames<-`(`*tmp*`, value = c("PP_T1_1.CEL", "PP_T1_2.CEL", 
+"PP_T2_1.CEL"
+
+Selection:  4
+Called from: eval(expr, envir, enclos)
+Browse[1]>  ls()
+  [1] "*tmp*"       "background"  "bgversion"   "cols"        "destructive"
+  [6] "exprs"       "ngenes"      "normalize"   "object"      "pNList"
+[11] "rows"        "subset"      "verbose"
+Browse[1]> str(exprs)
+
+........ long dump of text ....
+
+
+496: stop("attempt to set colnames on object with less than two dimensions")
+497: `colnames<-`(`*tmp*`, value = c("PP_T1_1.CEL", "PP_T1_2.CEL", 
+"PP_T2_1.CEL", "PP_T2_2c.CEL"))
+498: rma(a)
+499: eval.with.vis(expr, envir, enclos)
+500: eval.with.vis(ei, envir)
+501: source("rma2.R")
+
+Possible actions:
+1: abort (with core dump, if enabled)
+2: normal R exit
+3: exit R without saving workspace
+4: exit R saving workspace
+Selection:
+
+
+James W. MacDonald wrote:
+> Hi Holger,
+> 
+> Holger Schwender wrote:
+>> Hi Wolfgang,
+>>
+>> the difference between the two outputs x1 and x2 are due to that in
+>> x1 the probe intensities are background-corrected first and then
+>> normalized, while in x2 they are first normalized and then
+>> background-corrected.
+>>
+>> The constant values are a feature of median polish: If median polish
+>> is applied to four or six samples, then this can lead to constant
+>> values for some of the probe sets. This has been mentioned years ago
+>> by Jim (I couldn't find his original email on this topic in the
+>> mailing list archive).
+> 
+> Actually this only occurs with a small, odd number of samples, not even. 
+> Well, it could happen for a small number of probesets if the n/2 and n/2 
+> + 1 ordered values were identical, but it is much more common in the 
+> case of 3 or 5 samples.
+> 
+> Best,
+> 
+> Jim
+> 
+> 
+>>
+>> Best, Holger
+>>
+>>
+>> -------- Original-Nachricht --------
+>>> Datum: Tue, 03 Feb 2009 15:38:06 +0100 Von: Wolfgang Huber
+>>> <huber at ebi.ac.uk> An: Bioconductor Developers
+>>> <bioc-devel at stat.math.ethz.ch> Betreff: [Bioc-devel] Bug in rma:
+>>> zero variance of probeset summaries across    arrays
+>>
+>>> Hi,
+>>>
+>>> I am getting puzzling results from the rma function in the affy
+>>> package, and furthermore they are different depending on whether
+>>> quantile normalisation is called within rma or explicitely. The
+>>> puzzling part is that some probesets, in a perfectly ordinary
+>>> experiment with 4 different arrays, are summarized with exactly
+>>> identical values across all arrays (i.e. zero variance); while the
+>>> underlying probe level data for these probesets is variable and
+>>> sits right in the middle of the dynamic range (i.e. not at any of
+>>> the extremes).
+>>>
+>>> The code: ---------
+>>>
+>>> library("affy") library("genefilter") library("preprocessCore") 
+>>> options(error=recover)
+>>>
+>>> files = c("PP_T1_1.CEL", "PP_T1_2.CEL", "PP_T2_1.CEL",
+>>> "PP_T2_2c.CEL")
+>>>
+>>> for(f in files) 
+>>> download.file(file.path("http://www.ebi.ac.uk/~huber/pub", f), 
+>>> file.path(tempdir(), f))
+>>>
+>>> a = ReadAffy(filenames=file.path(tempdir(), files))
+>>>
+>>> x1 = rma(a)
+>>>
+>>> aq = a exprs(aq) = normalize.quantiles(exprs(aq)) x2 = rma(aq,
+>>> normalize=FALSE)
+>>>
+>>> probeVars = function(x) { r = rowSds(exprs(x)) ps =
+>>> names(which(r==0)) cat(sprintf("%s: %d probes with zero
+>>> variance.\n", deparse(substitute(x)), length(ps))) return(ps) }
+>>>
+>>> probeVars(a) ps = probeVars(x1) probeVars(x2)
+>>>
+>>> print(exprs(a)[yeast2cdf[[ps[1]]][,1],])
+>>>
+>>> ----------------------------------------------------------------------------- 
+>>>
+>>>
+>>>
+>>> The output: ----------- Background correcting Normalizing Calculating 
+>>> Expression Background correcting Calculating Expression
+>>>
+>>>
+>>> a: 0 probes with zero variance. x1: 3 probes with zero variance. x2: 
+>>> 0 probes with zero variance.
+>>>
+>>> PP_T1_1.CEL PP_T1_2.CEL PP_T2_1.CEL PP_T2_2c.CEL 35244          185
+>>> 236         269          253 198153         226         314
+>>> 320          213 48500          375         370         408
+>>> 373 109094         125         157         201          175 144686
+>>> 107         131         153          100 214110         181
+>>> 296         307          234 47302          355         430
+>>> 397          282 108656         117         130         150
+>>> 118 147528         158         144         159          135 237691
+>>> 208         244         253          169 229910          94
+>>> 138         147          133
+>>>
+>>>> sessionInfo()
+>>> R version 2.9.0 Under development (unstable) (2009-02-03 r47829) 
+>>> x86_64-unknown-linux-gnu
+>>>
+>>> locale: 
+>>> LC_CTYPE=it_IT.UTF-8;LC_NUMERIC=C;LC_TIME=it_IT.UTF-8;LC_COLLATE=it_IT.UTF-8;LC_MONETARY=C;LC_MESSAGES=it_IT.UTF-8;LC_PAPER=it_IT.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=it_IT.UTF-8;LC_IDENTIFICATION=C 
+>>>
+>>>
+>>>
+>>> attached base packages: [1] stats     graphics  grDevices datasets
+>>> utils     methods   base
+>>>
+>>> other attached packages: [1] yeast2cdf_2.3.0
+>>> preprocessCore_1.5.3 genefilter_1.23.1 [4] affy_1.21.7
+>>> Biobase_2.3.10       fortunes_1.3-6
+>>>
+>>> loaded via a namespace (and not attached): [1] affyio_1.11.3
+>>> annotate_1.21.3      AnnotationDbi_1.5.14 [4] DBI_0.2-4
+>>> RSQLite_0.7-1        splines_2.9.0 [7] survival_2.34-1
+>>> tools_2.9.0          xtable_1.5-4
+>>>
+>>>
+>>>
+>>> Best wishes Wolfgang
+>>>
+>>>
+>>> PS While trying to dissect this, I also experimented with
+>>> constructing special CDF environments (e.g. one that had one
+>>> 'probeset' for each probe), and I noted that repeatedly the C code
+>>> of rma caused core dumps. Perhaps a better response to unexpected
+>>> shapes of CDF environments would be to issue an error message. I
+>>> can provide details if interested.
+>>>
+>>> ---------------------------------------------------- Wolfgang
+>>> Huber, EMBL-EBI, http://www.ebi.ac.uk/huber
+>>>
+>>> _______________________________________________ 
+>>> Bioc-devel at stat.math.ethz.ch mailing list 
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>> -- 
+>>
+>> _______________________________________________ 
+>> Bioc-devel at stat.math.ethz.ch mailing list 
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+
+-- 
+----------------------------------------------------
+Wolfgang Huber  EMBL-EBI  http://www.ebi.ac.uk/huber
+
+
+From khansen at stat.berkeley.edu  Tue Feb  3 20:08:49 2009
+From: khansen at stat.berkeley.edu (Kasper Daniel Hansen)
+Date: Tue, 3 Feb 2009 11:08:49 -0800
+Subject: [Bioc-devel] Bug in rma: zero variance of probeset summaries
+	across	arrays
+In-Reply-To: <498897B1.4030008@ebi.ac.uk>
+References: <498856CE.5040705@ebi.ac.uk> <20090203151855.133700@gmx.net>
+	<49886404.9020100@med.umich.edu> <498897B1.4030008@ebi.ac.uk>
+Message-ID: <6C02B8C2-5113-410F-9700-0E036D9EA157@stat.berkeley.edu>
+
+The rma command works fine on my system - fresh svn checkout of R- 
+devel from today, all relevant packages updated. I did not load  
+genefilter as you do below, but aside from that it is the same.
+
+I have only tried once, and I ran it with R CMD BATCH.
+
+2 comments:
+1) It seems to complain about colnames and an object with no  
+dimension. Perhaps a drop = FALSE needs to be put in place somewhere  
+in the code (but why it works for me, I have no idea about)
+2) In general, I would also have put a colnames = "pm" on the probeset  
+matrices you make below. Hard to know whether it is a requirement in  
+all parts of the code, but seems safer.
+
+Kasper
+
+On Feb 3, 2009, at 11:14 , Wolfgang Huber wrote:
+
+> Thank you, Holger, Jim, Ben,
+>
+> (1) this is indeed a peculiar feature of the medianpolish part of  
+> RMA. I apologize to Ben for using the harsh word "bug"  
+> inappropriately in this context. I was misled by observations that  
+> using different normalisation or background correction methods  
+> seemed to "fix" the problem, and had forgotten about those previous  
+> threads. Sorry.
+>
+> I wonder whether anyone has done research on how to improve on  
+> medianpolish for small datasets and why people haven't adapted it.
+>
+> (2) One further potential problem remains, and I hope that bringing  
+> this up might help to make sure that rma (which is obviously a core  
+> component of Bioconductor) is robust even under the most adverse  
+> circumstances (e.g. myself :). With the script below, I get a core  
+> dump. This is on a freshly checked out and built R (from today) and  
+> all packages then installed from scratch (sessionInfo as in previous  
+> mail below). It does not seem to happen on R-2.8.1. and Bioc release  
+> 2.3., and even on R-dev, whether it happens seems to depend on the  
+> history of the R session. One hypothesis is that this could be  
+> related to the "destructive=TRUE" parameter of rma?
+>
+> Can anyone reproduce this?
+>
+> Best wishes
+> 	Wolfgang
+>
+>
+> library("affy")
+> library("genefilter")
+> options(error=recover)
+>
+> files = c("PP_T1_1.CEL", "PP_T1_2.CEL", "PP_T2_1.CEL", "PP_T2_2c.CEL")
+>
+> #celdir = tempdir()
+> #for(f in files)
+> #  download.file(file.path("http://www.ebi.ac.uk/~huber/pub", f),
+> #                file.path(celdir, f))
+> celdir="."
+>
+> a = ReadAffy(filenames=file.path(celdir, files))
+>
+> ## Define a CDF with one probeset per probe
+> testcdf = new.env(hash=TRUE)
+> for(i in seq_len(nrow(exprs(a))))
+>    assign(paste(i), matrix(i, ncol=1, nrow=1), envir=testcdf)
+> a at cdfName = "testcdf"
+>
+> x = rma(a)
+>
+>
+> ----------------------
+>
+> Background correcting
+> Normalizing
+> Calculating Expression
+> Error in `colnames<-`(`*tmp*`, value = c("PP_T1_1.CEL",  
+> "PP_T1_2.CEL",  :
+>  attempt to set colnames on object with less than two dimensions
+>
+> Enter a frame number, or 0 to exit
+>
+> 1: source("rma2.R")
+> 2: eval.with.vis(ei, envir)
+> 3: eval.with.vis(expr, envir, enclos)
+> 4: rma(a)
+> 5: `colnames<-`(`*tmp*`, value = c("PP_T1_1.CEL", "PP_T1_2.CEL",  
+> "PP_T2_1.CEL"
+>
+> Selection:  4
+> Called from: eval(expr, envir, enclos)
+> Browse[1]>  ls()
+> [1] "*tmp*"       "background"  "bgversion"   "cols"         
+> "destructive"
+> [6] "exprs"       "ngenes"      "normalize"   "object"      "pNList"
+> [11] "rows"        "subset"      "verbose"
+> Browse[1]> str(exprs)
+>
+> ........ long dump of text ....
+>
+>
+> 496: stop("attempt to set colnames on object with less than two  
+> dimensions")
+> 497: `colnames<-`(`*tmp*`, value = c("PP_T1_1.CEL", "PP_T1_2.CEL",  
+> "PP_T2_1.CEL", "PP_T2_2c.CEL"))
+> 498: rma(a)
+> 499: eval.with.vis(expr, envir, enclos)
+> 500: eval.with.vis(ei, envir)
+> 501: source("rma2.R")
+>
+> Possible actions:
+> 1: abort (with core dump, if enabled)
+> 2: normal R exit
+> 3: exit R without saving workspace
+> 4: exit R saving workspace
+> Selection:
+>
+>
+> James W. MacDonald wrote:
+>> Hi Holger,
+>> Holger Schwender wrote:
+>>> Hi Wolfgang,
+>>>
+>>> the difference between the two outputs x1 and x2 are due to that in
+>>> x1 the probe intensities are background-corrected first and then
+>>> normalized, while in x2 they are first normalized and then
+>>> background-corrected.
+>>>
+>>> The constant values are a feature of median polish: If median polish
+>>> is applied to four or six samples, then this can lead to constant
+>>> values for some of the probe sets. This has been mentioned years ago
+>>> by Jim (I couldn't find his original email on this topic in the
+>>> mailing list archive).
+>> Actually this only occurs with a small, odd number of samples, not  
+>> even. Well, it could happen for a small number of probesets if the  
+>> n/2 and n/2 + 1 ordered values were identical, but it is much more  
+>> common in the case of 3 or 5 samples.
+>> Best,
+>> Jim
+>>>
+>>> Best, Holger
+>>>
+>>>
+>>> -------- Original-Nachricht --------
+>>>> Datum: Tue, 03 Feb 2009 15:38:06 +0100 Von: Wolfgang Huber
+>>>> <huber at ebi.ac.uk> An: Bioconductor Developers
+>>>> <bioc-devel at stat.math.ethz.ch> Betreff: [Bioc-devel] Bug in rma:
+>>>> zero variance of probeset summaries across    arrays
+>>>
+>>>> Hi,
+>>>>
+>>>> I am getting puzzling results from the rma function in the affy
+>>>> package, and furthermore they are different depending on whether
+>>>> quantile normalisation is called within rma or explicitely. The
+>>>> puzzling part is that some probesets, in a perfectly ordinary
+>>>> experiment with 4 different arrays, are summarized with exactly
+>>>> identical values across all arrays (i.e. zero variance); while the
+>>>> underlying probe level data for these probesets is variable and
+>>>> sits right in the middle of the dynamic range (i.e. not at any of
+>>>> the extremes).
+>>>>
+>>>> The code: ---------
+>>>>
+>>>> library("affy") library("genefilter") library("preprocessCore")  
+>>>> options(error=recover)
+>>>>
+>>>> files = c("PP_T1_1.CEL", "PP_T1_2.CEL", "PP_T2_1.CEL",
+>>>> "PP_T2_2c.CEL")
+>>>>
+>>>> for(f in files) download.file(file.path("http://www.ebi.ac.uk/~huber/pub 
+>>>> ", f), file.path(tempdir(), f))
+>>>>
+>>>> a = ReadAffy(filenames=file.path(tempdir(), files))
+>>>>
+>>>> x1 = rma(a)
+>>>>
+>>>> aq = a exprs(aq) = normalize.quantiles(exprs(aq)) x2 = rma(aq,
+>>>> normalize=FALSE)
+>>>>
+>>>> probeVars = function(x) { r = rowSds(exprs(x)) ps =
+>>>> names(which(r==0)) cat(sprintf("%s: %d probes with zero
+>>>> variance.\n", deparse(substitute(x)), length(ps))) return(ps) }
+>>>>
+>>>> probeVars(a) ps = probeVars(x1) probeVars(x2)
+>>>>
+>>>> print(exprs(a)[yeast2cdf[[ps[1]]][,1],])
+>>>>
+>>>> -----------------------------------------------------------------------------
+>>>>
+>>>>
+>>>> The output: ----------- Background correcting Normalizing  
+>>>> Calculating Expression Background correcting Calculating Expression
+>>>>
+>>>>
+>>>> a: 0 probes with zero variance. x1: 3 probes with zero variance.  
+>>>> x2: 0 probes with zero variance.
+>>>>
+>>>> PP_T1_1.CEL PP_T1_2.CEL PP_T2_1.CEL PP_T2_2c.CEL 35244          185
+>>>> 236         269          253 198153         226         314
+>>>> 320          213 48500          375         370         408
+>>>> 373 109094         125         157         201          175 144686
+>>>> 107         131         153          100 214110         181
+>>>> 296         307          234 47302          355         430
+>>>> 397          282 108656         117         130         150
+>>>> 118 147528         158         144         159          135 237691
+>>>> 208         244         253          169 229910          94
+>>>> 138         147          133
+>>>>
+>>>>> sessionInfo()
+>>>> R version 2.9.0 Under development (unstable) (2009-02-03 r47829)  
+>>>> x86_64-unknown-linux-gnu
+>>>>
+>>>> locale:  
+>>>> LC_CTYPE 
+>>>> = 
+>>>> it_IT 
+>>>> .UTF 
+>>>> -8 
+>>>> ;LC_NUMERIC 
+>>>> = 
+>>>> C 
+>>>> ;LC_TIME 
+>>>> = 
+>>>> it_IT 
+>>>> .UTF 
+>>>> -8 
+>>>> ;LC_COLLATE 
+>>>> = 
+>>>> it_IT 
+>>>> .UTF 
+>>>> -8 
+>>>> ;LC_MONETARY 
+>>>> = 
+>>>> C 
+>>>> ;LC_MESSAGES 
+>>>> = 
+>>>> it_IT 
+>>>> .UTF 
+>>>> -8 
+>>>> ;LC_PAPER 
+>>>> = 
+>>>> it_IT 
+>>>> .UTF 
+>>>> -8 
+>>>> ;LC_NAME 
+>>>> = 
+>>>> C 
+>>>> ;LC_ADDRESS 
+>>>> =C;LC_TELEPHONE=C;LC_MEASUREMENT=it_IT.UTF-8;LC_IDENTIFICATION=C
+>>>>
+>>>>
+>>>> attached base packages: [1] stats     graphics  grDevices datasets
+>>>> utils     methods   base
+>>>>
+>>>> other attached packages: [1] yeast2cdf_2.3.0
+>>>> preprocessCore_1.5.3 genefilter_1.23.1 [4] affy_1.21.7
+>>>> Biobase_2.3.10       fortunes_1.3-6
+>>>>
+>>>> loaded via a namespace (and not attached): [1] affyio_1.11.3
+>>>> annotate_1.21.3      AnnotationDbi_1.5.14 [4] DBI_0.2-4
+>>>> RSQLite_0.7-1        splines_2.9.0 [7] survival_2.34-1
+>>>> tools_2.9.0          xtable_1.5-4
+>>>>
+>>>>
+>>>>
+>>>> Best wishes Wolfgang
+>>>>
+>>>>
+>>>> PS While trying to dissect this, I also experimented with
+>>>> constructing special CDF environments (e.g. one that had one
+>>>> 'probeset' for each probe), and I noted that repeatedly the C code
+>>>> of rma caused core dumps. Perhaps a better response to unexpected
+>>>> shapes of CDF environments would be to issue an error message. I
+>>>> can provide details if interested.
+>>>>
+>>>> ---------------------------------------------------- Wolfgang
+>>>> Huber, EMBL-EBI, http://www.ebi.ac.uk/huber
+>>>>
+>>>> _______________________________________________ Bioc-devel at stat.math.ethz.ch 
+>>>>  mailing list https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>> -- 
+>>>
+>>> _______________________________________________ Bioc-devel at stat.math.ethz.ch 
+>>>  mailing list https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+> -- 
+> ----------------------------------------------------
+> Wolfgang Huber  EMBL-EBI  http://www.ebi.ac.uk/huber
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From hb at stat.berkeley.edu  Tue Feb  3 20:26:38 2009
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Tue, 3 Feb 2009 11:26:38 -0800
+Subject: [Bioc-devel] Bug in rma: zero variance of probeset summaries
+	across arrays
+In-Reply-To: <498897B1.4030008@ebi.ac.uk>
+References: <498856CE.5040705@ebi.ac.uk> <20090203151855.133700@gmx.net>
+	<49886404.9020100@med.umich.edu> <498897B1.4030008@ebi.ac.uk>
+Message-ID: <59d7961d0902031126g5dd3a8d3wb7de8a8cd915c4ce@mail.gmail.com>
+
+Hi,
+
+On Tue, Feb 3, 2009 at 11:14 AM, Wolfgang Huber <huber at ebi.ac.uk> wrote:
+> Thank you, Holger, Jim, Ben,
+>
+> (1) this is indeed a peculiar feature of the medianpolish part of RMA. I
+> apologize to Ben for using the harsh word "bug" inappropriately in this
+> context. I was misled by observations that using different normalisation or
+> background correction methods seemed to "fix" the problem, and had forgotten
+> about those previous threads. Sorry.
+>
+> I wonder whether anyone has done research on how to improve on medianpolish
+> for small datasets and why people haven't adapted it.
+
+For the purpose of fitting the RMA-style log-additive model, I'd say
+that Ben's robust estimators implemented in preprocessCore are much
+better (and more flexible, e.g. support weights) than using median
+polish.  See
+
+   help("rcModelPLM", package="preprocessCore")
+
+/Henrik
+
+>
+> (2) One further potential problem remains, and I hope that bringing this up
+> might help to make sure that rma (which is obviously a core component of
+> Bioconductor) is robust even under the most adverse circumstances (e.g.
+> myself :). With the script below, I get a core dump. This is on a freshly
+> checked out and built R (from today) and all packages then installed from
+> scratch (sessionInfo as in previous mail below). It does not seem to happen
+> on R-2.8.1. and Bioc release 2.3., and even on R-dev, whether it happens
+> seems to depend on the history of the R session. One hypothesis is that this
+> could be related to the "destructive=TRUE" parameter of rma?
+>
+> Can anyone reproduce this?
+>
+>  Best wishes
+>        Wolfgang
+>
+>
+> library("affy")
+> library("genefilter")
+> options(error=recover)
+>
+> files = c("PP_T1_1.CEL", "PP_T1_2.CEL", "PP_T2_1.CEL", "PP_T2_2c.CEL")
+>
+> #celdir = tempdir()
+> #for(f in files)
+> #  download.file(file.path("http://www.ebi.ac.uk/~huber/pub", f),
+> #                file.path(celdir, f))
+> celdir="."
+>
+> a = ReadAffy(filenames=file.path(celdir, files))
+>
+> ## Define a CDF with one probeset per probe
+> testcdf = new.env(hash=TRUE)
+> for(i in seq_len(nrow(exprs(a))))
+>    assign(paste(i), matrix(i, ncol=1, nrow=1), envir=testcdf)
+> a at cdfName = "testcdf"
+>
+> x = rma(a)
+>
+>
+> ----------------------
+>
+> Background correcting
+> Normalizing
+> Calculating Expression
+> Error in `colnames<-`(`*tmp*`, value = c("PP_T1_1.CEL", "PP_T1_2.CEL",  :
+>  attempt to set colnames on object with less than two dimensions
+>
+> Enter a frame number, or 0 to exit
+>
+> 1: source("rma2.R")
+> 2: eval.with.vis(ei, envir)
+> 3: eval.with.vis(expr, envir, enclos)
+> 4: rma(a)
+> 5: `colnames<-`(`*tmp*`, value = c("PP_T1_1.CEL", "PP_T1_2.CEL",
+> "PP_T2_1.CEL"
+>
+> Selection:  4
+> Called from: eval(expr, envir, enclos)
+> Browse[1]>  ls()
+>  [1] "*tmp*"       "background"  "bgversion"   "cols"        "destructive"
+>  [6] "exprs"       "ngenes"      "normalize"   "object"      "pNList"
+> [11] "rows"        "subset"      "verbose"
+> Browse[1]> str(exprs)
+>
+> ........ long dump of text ....
+>
+>
+> 496: stop("attempt to set colnames on object with less than two dimensions")
+> 497: `colnames<-`(`*tmp*`, value = c("PP_T1_1.CEL", "PP_T1_2.CEL",
+> "PP_T2_1.CEL", "PP_T2_2c.CEL"))
+> 498: rma(a)
+> 499: eval.with.vis(expr, envir, enclos)
+> 500: eval.with.vis(ei, envir)
+> 501: source("rma2.R")
+>
+> Possible actions:
+> 1: abort (with core dump, if enabled)
+> 2: normal R exit
+> 3: exit R without saving workspace
+> 4: exit R saving workspace
+> Selection:
+>
+>
+> James W. MacDonald wrote:
+>>
+>> Hi Holger,
+>>
+>> Holger Schwender wrote:
+>>>
+>>> Hi Wolfgang,
+>>>
+>>> the difference between the two outputs x1 and x2 are due to that in
+>>> x1 the probe intensities are background-corrected first and then
+>>> normalized, while in x2 they are first normalized and then
+>>> background-corrected.
+>>>
+>>> The constant values are a feature of median polish: If median polish
+>>> is applied to four or six samples, then this can lead to constant
+>>> values for some of the probe sets. This has been mentioned years ago
+>>> by Jim (I couldn't find his original email on this topic in the
+>>> mailing list archive).
+>>
+>> Actually this only occurs with a small, odd number of samples, not even.
+>> Well, it could happen for a small number of probesets if the n/2 and n/2 + 1
+>> ordered values were identical, but it is much more common in the case of 3
+>> or 5 samples.
+>>
+>> Best,
+>>
+>> Jim
+>>
+>>
+>>>
+>>> Best, Holger
+>>>
+>>>
+>>> -------- Original-Nachricht --------
+>>>>
+>>>> Datum: Tue, 03 Feb 2009 15:38:06 +0100 Von: Wolfgang Huber
+>>>> <huber at ebi.ac.uk> An: Bioconductor Developers
+>>>> <bioc-devel at stat.math.ethz.ch> Betreff: [Bioc-devel] Bug in rma:
+>>>> zero variance of probeset summaries across    arrays
+>>>
+>>>> Hi,
+>>>>
+>>>> I am getting puzzling results from the rma function in the affy
+>>>> package, and furthermore they are different depending on whether
+>>>> quantile normalisation is called within rma or explicitely. The
+>>>> puzzling part is that some probesets, in a perfectly ordinary
+>>>> experiment with 4 different arrays, are summarized with exactly
+>>>> identical values across all arrays (i.e. zero variance); while the
+>>>> underlying probe level data for these probesets is variable and
+>>>> sits right in the middle of the dynamic range (i.e. not at any of
+>>>> the extremes).
+>>>>
+>>>> The code: ---------
+>>>>
+>>>> library("affy") library("genefilter") library("preprocessCore")
+>>>> options(error=recover)
+>>>>
+>>>> files = c("PP_T1_1.CEL", "PP_T1_2.CEL", "PP_T2_1.CEL",
+>>>> "PP_T2_2c.CEL")
+>>>>
+>>>> for(f in files)
+>>>> download.file(file.path("http://www.ebi.ac.uk/~huber/pub", f),
+>>>> file.path(tempdir(), f))
+>>>>
+>>>> a = ReadAffy(filenames=file.path(tempdir(), files))
+>>>>
+>>>> x1 = rma(a)
+>>>>
+>>>> aq = a exprs(aq) = normalize.quantiles(exprs(aq)) x2 = rma(aq,
+>>>> normalize=FALSE)
+>>>>
+>>>> probeVars = function(x) { r = rowSds(exprs(x)) ps =
+>>>> names(which(r==0)) cat(sprintf("%s: %d probes with zero
+>>>> variance.\n", deparse(substitute(x)), length(ps))) return(ps) }
+>>>>
+>>>> probeVars(a) ps = probeVars(x1) probeVars(x2)
+>>>>
+>>>> print(exprs(a)[yeast2cdf[[ps[1]]][,1],])
+>>>>
+>>>>
+>>>> -----------------------------------------------------------------------------
+>>>>
+>>>>
+>>>> The output: ----------- Background correcting Normalizing Calculating
+>>>> Expression Background correcting Calculating Expression
+>>>>
+>>>>
+>>>> a: 0 probes with zero variance. x1: 3 probes with zero variance. x2: 0
+>>>> probes with zero variance.
+>>>>
+>>>> PP_T1_1.CEL PP_T1_2.CEL PP_T2_1.CEL PP_T2_2c.CEL 35244          185
+>>>> 236         269          253 198153         226         314
+>>>> 320          213 48500          375         370         408
+>>>> 373 109094         125         157         201          175 144686
+>>>> 107         131         153          100 214110         181
+>>>> 296         307          234 47302          355         430
+>>>> 397          282 108656         117         130         150
+>>>> 118 147528         158         144         159          135 237691
+>>>> 208         244         253          169 229910          94
+>>>> 138         147          133
+>>>>
+>>>>> sessionInfo()
+>>>>
+>>>> R version 2.9.0 Under development (unstable) (2009-02-03 r47829)
+>>>> x86_64-unknown-linux-gnu
+>>>>
+>>>> locale:
+>>>> LC_CTYPE=it_IT.UTF-8;LC_NUMERIC=C;LC_TIME=it_IT.UTF-8;LC_COLLATE=it_IT.UTF-8;LC_MONETARY=C;LC_MESSAGES=it_IT.UTF-8;LC_PAPER=it_IT.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=it_IT.UTF-8;LC_IDENTIFICATION=C
+>>>>
+>>>>
+>>>> attached base packages: [1] stats     graphics  grDevices datasets
+>>>> utils     methods   base
+>>>>
+>>>> other attached packages: [1] yeast2cdf_2.3.0
+>>>> preprocessCore_1.5.3 genefilter_1.23.1 [4] affy_1.21.7
+>>>> Biobase_2.3.10       fortunes_1.3-6
+>>>>
+>>>> loaded via a namespace (and not attached): [1] affyio_1.11.3
+>>>> annotate_1.21.3      AnnotationDbi_1.5.14 [4] DBI_0.2-4
+>>>> RSQLite_0.7-1        splines_2.9.0 [7] survival_2.34-1
+>>>> tools_2.9.0          xtable_1.5-4
+>>>>
+>>>>
+>>>>
+>>>> Best wishes Wolfgang
+>>>>
+>>>>
+>>>> PS While trying to dissect this, I also experimented with
+>>>> constructing special CDF environments (e.g. one that had one
+>>>> 'probeset' for each probe), and I noted that repeatedly the C code
+>>>> of rma caused core dumps. Perhaps a better response to unexpected
+>>>> shapes of CDF environments would be to issue an error message. I
+>>>> can provide details if interested.
+>>>>
+>>>> ---------------------------------------------------- Wolfgang
+>>>> Huber, EMBL-EBI, http://www.ebi.ac.uk/huber
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>> --
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+>
+> --
+> ----------------------------------------------------
+> Wolfgang Huber  EMBL-EBI  http://www.ebi.ac.uk/huber
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From xuzhang at uchicago.edu  Tue Feb  3 21:50:01 2009
+From: xuzhang at uchicago.edu (Xu Zhang)
+Date: Tue,  3 Feb 2009 14:50:01 -0600 (CST)
+Subject: [Bioc-devel] Install EBImage
+Message-ID: <20090203145001.BRR48369@m4500-02.uchicago.edu>
+
+
+Hi -
+
+I have a problem when installing EBImage 2.6.0 under R-2.8.1 
+on my win XP. I installed "ImageMagick-6.4.8-10-Q16-windows-
+dll.exe"  and "gtk-2.12.9-win32-2", also set the system Path 
+as the HOWTO pdf suggested.  
+
+When I loaded the library, there is an error like this:
+
+Runtime Error!
+Program:C:\Program Files\R\R-2.8.1/bin\Rgui.exe
+R6034
+An application has made an attempt to load the C runtime 
+library incorrectly.
+
+Thanks in advance for any suggestion!
+Xu
+-------
+Xu Zhang
+Ecology and Evolution
+University of Chicago
+773-834-4055
+
+
+From diez at kuicr.kyoto-u.ac.jp  Wed Feb  4 10:22:22 2009
+From: diez at kuicr.kyoto-u.ac.jp (Diego Diez)
+Date: Wed, 4 Feb 2009 18:22:22 +0900
+Subject: [Bioc-devel] GenomeGraphs: makeIdeogram and Ideogram class spelling
+	error
+Message-ID: <f53197870902040122v225e1265ve48df7759552d458@mail.gmail.com>
+
+Hello,
+
+I would like make note of an spelling error I found in the package
+GenomeGraphs. The issue is similar to that found and fixed some time
+ago for the 'idiogram' package (formerly known as 'ideogram'). See the
+following post:
+
+https://stat.ethz.ch/pipermail/bioc-devel/2006-March/000433.html
+
+As a non-English native speaker myself, I feel a little bit
+embarrassed for pointing this out. But since this package has been
+around for a while and the development version has the same problem...
+well someone has to say it. Anyway, the problem affects to my
+knowledge the class and method definitions as well as the dataset
+'ideogram.rda' found in the data directory.
+
+Best wishes,
+
+Diego.
+
+-- 
+Diego Diez, Ph
+Bioinformatics center,
+Institute for Chemical Research,
+Kyoto University.
+Gokasho, Uji, Kyoto 611-0011 JAPAN
+diez at kuicr.kyoto-u.ac.jp
+
+
+From diez at kuicr.kyoto-u.ac.jp  Wed Feb  4 10:36:41 2009
+From: diez at kuicr.kyoto-u.ac.jp (Diego Diez)
+Date: Wed, 4 Feb 2009 18:36:41 +0900
+Subject: [Bioc-devel] GenomeGraphs: makeIdeogram and Ideogram class
+	spelling error
+In-Reply-To: <f53197870902040122v225e1265ve48df7759552d458@mail.gmail.com>
+References: <f53197870902040122v225e1265ve48df7759552d458@mail.gmail.com>
+Message-ID: <f53197870902040136r207ecb2ak53b0be83cd2105eb@mail.gmail.com>
+
+I should have check this in more detail before spamming the bioc-devel list.
+
+Although I cannot find ideogram as a chromosome representation in the
+merriam webster dictionary (but I can find idiogram in the medical
+version), there is actually a link from the ideogram entry in
+wikipedia to Cytogenetic ideograms. Also from the idiogram entry
+though. And at least I found also a link to a Nature education entry
+where they use the term idiogram instead of ideogram:
+
+http://www.nature.com/scitable/topicpage/Chromosome-Mapping-Idiograms-302
+
+however a search in google for "chromosome ideogram" returns a lot of
+hits that look trustworthy.
+
+Can somebody with more knowledge than me put some light into this?
+
+Best,
+Diego.
+
+On Wed, Feb 4, 2009 at 6:22 PM, Diego Diez <diez at kuicr.kyoto-u.ac.jp> wrote:
+> Hello,
+>
+> I would like make note of an spelling error I found in the package
+> GenomeGraphs. The issue is similar to that found and fixed some time
+> ago for the 'idiogram' package (formerly known as 'ideogram'). See the
+> following post:
+>
+> https://stat.ethz.ch/pipermail/bioc-devel/2006-March/000433.html
+>
+> As a non-English native speaker myself, I feel a little bit
+> embarrassed for pointing this out. But since this package has been
+> around for a while and the development version has the same problem...
+> well someone has to say it. Anyway, the problem affects to my
+> knowledge the class and method definitions as well as the dataset
+> 'ideogram.rda' found in the data directory.
+>
+> Best wishes,
+>
+> Diego.
+>
+> --
+> Diego Diez, Ph
+> Bioinformatics center,
+> Institute for Chemical Research,
+> Kyoto University.
+> Gokasho, Uji, Kyoto 611-0011 JAPAN
+> diez at kuicr.kyoto-u.ac.jp
+>
+
+
+
+-- 
+Diego Diez, Ph
+Bioinformatics center,
+Institute for Chemical Research,
+Kyoto University.
+Gokasho, Uji, Kyoto 611-0011 JAPAN
+diez at kuicr.kyoto-u.ac.jp
+
+
+From ngopalak at fhcrc.org  Thu Feb  5 22:41:54 2009
+From: ngopalak at fhcrc.org (Nishant Gopalakrishnan)
+Date: Thu, 05 Feb 2009 13:41:54 -0800
+Subject: [Bioc-devel] Updating biocViews of your package
+Message-ID: <498B5D22.1030707@fhcrc.org>
+
+Dear Bioconductor developers,
+
+We have been reviewing the cataloging of Bioconductor packages to ensure
+that new users can easily identify packages that meet their
+requirements. biocViews is a categorization system that helps users
+navigate the growing collection of packages in Bioconductor. The
+biocViews field in the DESCRIPTION file of each package determines the
+views under which each package appears in.
+
+The Bioconductor task views can be found at
+
+http://bioconductor.org/packages/release/BiocViews.html
+
+The views provided by biocViews integrate the software, annotation data
+and experiment data repositories provided by Bioconductor, thereby
+helping users identify packages that best suit their requirements.
+
+With the Bioconductor 2.3 release, we have updated the list of biocViews
+terms.
+The updated list can be found at
+
+http://bioconductor.org/packages/devel/biocViews/index.php
+
+With the upcoming release of Bioconductor 2.4, we would like to
+encourage use of appropriate biocViews. We request all package
+maintainers to update their package DESCRIPTION files with updated
+biocViews terms most appropriate for their package.
+
+If you have additional questions, please contact us by posting to the
+bioc-devel mailing list.  We will be glad to help.
+
+Thanks in advance for your time and effort,
+
+The Bioconductor core team
+
+
+From hb at stat.berkeley.edu  Thu Feb  5 23:22:51 2009
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Thu, 5 Feb 2009 14:22:51 -0800
+Subject: [Bioc-devel] Suggestion for additional BiocViews (Was: Re: Updating
+	biocViews of your package)
+Message-ID: <59d7961d0902051422r60a7c76cg8b1fd60a9f2c4f39@mail.gmail.com>
+
+Suggestion for additional BiocViews:
+
+* Software / AssayTechnologies / Microarray / MultiChannel:
+  For K channel platforms, where K >= 2 (or K > 2?), e.g. four-color arrays.
+
+/Henrik
+
+
+On Thu, Feb 5, 2009 at 1:41 PM, Nishant Gopalakrishnan
+<ngopalak at fhcrc.org> wrote:
+> Dear Bioconductor developers,
+>
+> We have been reviewing the cataloging of Bioconductor packages to ensure
+> that new users can easily identify packages that meet their
+> requirements. biocViews is a categorization system that helps users
+> navigate the growing collection of packages in Bioconductor. The
+> biocViews field in the DESCRIPTION file of each package determines the
+> views under which each package appears in.
+>
+> The Bioconductor task views can be found at
+>
+> http://bioconductor.org/packages/release/BiocViews.html
+>
+> The views provided by biocViews integrate the software, annotation data
+> and experiment data repositories provided by Bioconductor, thereby
+> helping users identify packages that best suit their requirements.
+>
+> With the Bioconductor 2.3 release, we have updated the list of biocViews
+> terms.
+> The updated list can be found at
+>
+> http://bioconductor.org/packages/devel/biocViews/index.php
+>
+> With the upcoming release of Bioconductor 2.4, we would like to
+> encourage use of appropriate biocViews. We request all package
+> maintainers to update their package DESCRIPTION files with updated
+> biocViews terms most appropriate for their package.
+>
+> If you have additional questions, please contact us by posting to the
+> bioc-devel mailing list.  We will be glad to help.
+>
+> Thanks in advance for your time and effort,
+>
+> The Bioconductor core team
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From atarca at med.wayne.edu  Fri Feb  6 20:05:09 2009
+From: atarca at med.wayne.edu (Tarca, Adi)
+Date: Fri, 6 Feb 2009 14:05:09 -0500
+Subject: [Bioc-devel] Zipped Rdata files in windows binaries
+In-Reply-To: <mailman.17.1233745209.24560.bioc-devel@stat.math.ethz.ch>
+References: <mailman.17.1233745209.24560.bioc-devel@stat.math.ethz.ch>
+Message-ID: <05F1F2150E331540ADFD78E2AE933A3B41780EC250@MED-CORE05.med.wayne.edu>
+
+
+ 
+Hi all,
+I am writing an R packge and at a given point I need to load an Rdata file from the "data" folder of the installed package, and in case the file it is not there I try to download it from somwhere.
+
+I used to do the following test to see if a file called "datload" is NOT there, case in which I need to download it:
+
+ if(! paste(datload,".RData",sep="") %in% dir(system.file("data",package="SPIA"))) {
+ ...download the file from somwhere else
+}
+
+It works fine except that the windows binary package created by bioconductor scripts from my source, puts all RData file in a Rdata.zip file. Is there a way to list the files in Rdata.zip to see if my file is in there? 
+
+Alternatively I tried to use the data() function and try to load it (in a private environment), and in case it is not loaded  then try to download it. However, the data() function does not return an error but only a warning.
+I tried to use:
+
+ow <- options("warn") 
+options(warn=2) # to make warnings into errors 
+errs<-try(data(list=datload, envir=.myDataEnv),silent=TRUE)
+
+ if(class(errs)!="try-error"){
+  ...download the file from somwhere else
+ }
+ 
+This works fine, except that a warning is still printed when the function returns.
+
+Any ideas would be appreciated.
+
+
+Thanks,
+Adi Laurentiu Tarca
+
+
+From rgentlem at fhcrc.org  Fri Feb  6 21:56:15 2009
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Fri, 6 Feb 2009 12:56:15 -0800
+Subject: [Bioc-devel] Zipped Rdata files in windows binaries
+In-Reply-To: <05F1F2150E331540ADFD78E2AE933A3B41780EC250@MED-CORE05.med.wayne.edu>
+References: <mailman.17.1233745209.24560.bioc-devel@stat.math.ethz.ch>
+	<05F1F2150E331540ADFD78E2AE933A3B41780EC250@MED-CORE05.med.wayne.edu>
+Message-ID: <b796582f0902061256o400a9096o8d19e5724d567aad@mail.gmail.com>
+
+Hi,
+
+On Fri, Feb 6, 2009 at 11:05 AM, Tarca, Adi <atarca at med.wayne.edu> wrote:
+>
+>
+> Hi all,
+> I am writing an R packge and at a given point I need to load an Rdata file from the "data" folder of the installed package, and in case the file it is not there I try to download it from somwhere.
+>
+  That does not sound like a good thing to do.  The data folder is
+exclusively for data that is stored essentially at package build time
+and is not a place to put other files, or to use during a session to
+store objects.  Objects there are platform independent and are
+accessed using the data command in R.  Please don't try to modify this
+behavior.
+
+   If you want/need to have your own data storage type and want to
+control it, you should use a different folder.  A common choice is
+inst/extdata.  And then you are in control of everything.
+
+   Since lots of people use R in cases where they do not have access
+to the internet, the idea that they should download something for your
+package to work seems problematic.  Why not just use one of
+the many platform independent formats and distribute the data on all
+platforms in the same way.
+
+   There are a number of examples in Bioconductor packages (eg
+simpleaffy or flowCore)
+
+  Best wishes
+    Robert
+
+
+> I used to do the following test to see if a file called "datload" is NOT there, case in which I need to download it:
+>
+>  if(! paste(datload,".RData",sep="") %in% dir(system.file("data",package="SPIA"))) {
+>  ...download the file from somwhere else
+> }
+>
+> It works fine except that the windows binary package created by bioconductor scripts from my source, puts all RData file in a Rdata.zip file. Is there a way to list the files in Rdata.zip to see if my file is in there?
+>
+> Alternatively I tried to use the data() function and try to load it (in a private environment), and in case it is not loaded  then try to download it. However, the data() function does not return an error but only a warning.
+> I tried to use:
+>
+> ow <- options("warn")
+> options(warn=2) # to make warnings into errors
+> errs<-try(data(list=datload, envir=.myDataEnv),silent=TRUE)
+>
+>  if(class(errs)!="try-error"){
+>  ...download the file from somwhere else
+>  }
+>
+> This works fine, except that a warning is still printed when the function returns.
+>
+> Any ideas would be appreciated.
+>
+>
+> Thanks,
+> Adi Laurentiu Tarca
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From lgautier at gmail.com  Fri Feb  6 21:58:30 2009
+From: lgautier at gmail.com (Laurent Gautier)
+Date: Fri, 06 Feb 2009 21:58:30 +0100
+Subject: [Bioc-devel] Problem with subset("AnnDbBimap", ...) ?
+Message-ID: <498CA476.4010809@gmail.com>
+
+Dear list,
+
+The function subset("AnnDbBimap", ...) is returning an error whenever 
+the resulting subset should be the empty set.
+
+Example:
+
+library(mouse4302.db)
+subset(mouse4302SYMBOL,
+        Rkeys="foo")
+
+
+returns:
+Error in .checkKeys(value, Rkeys(x), x at ifnotfound) :
+   value for "foo" not found
+
+This is true for either Lkeys or Rkeys.
+
+
+The man page does say "
+Lkeys
+The new Lkeys (must be a subset of the current Lkeys).
+
+Rkeys
+The new Rkeys (must be a subset of the current Rkeys).
+"
+
+but this is limiting the use for the function and encourages the use of 
+the environment-like API, although marked as provided "for backward 
+compatibility".
+
+Wouldn't it be good to either have:
+
+- have subset return without an error
+
+- have at least functions such as hasLkey and hasRkey ?
+
+
+
+L.
+
+
+From atarca at med.wayne.edu  Fri Feb  6 22:36:35 2009
+From: atarca at med.wayne.edu (Tarca, Adi)
+Date: Fri, 6 Feb 2009 16:36:35 -0500
+Subject: [Bioc-devel] Zipped Rdata files in windows binaries
+In-Reply-To: <b796582f0902061256o400a9096o8d19e5724d567aad@mail.gmail.com>
+References: <mailman.17.1233745209.24560.bioc-devel@stat.math.ethz.ch>
+	<05F1F2150E331540ADFD78E2AE933A3B41780EC250@MED-CORE05.med.wayne.edu>
+	<b796582f0902061256o400a9096o8d19e5724d567aad@mail.gmail.com>
+Message-ID: <05F1F2150E331540ADFD78E2AE933A3B41780EC251@MED-CORE05.med.wayne.edu>
+
+Dear Robert,
+
+Thank you for your advice. I will then put all the data at the build time as .RData files. The only issue I had was that I did not know if there is a limitation in terms of disk space occupied by these files. I am talking here about around 10 MB but it may double in the future releases. 
+I was not too worried about people needing an internet connection when using my package in conjunction with a new organism for the first time, since is the same thing as trying to use some affy functions on a chip for which you do not have the cdf (except that you do not download a file but an additional package). 
+
+Regards,
+Adi  
+
+  
+
+
+Adi Laurentiu Tarca, PhD
+Assistant Professor (Research), 
+Bioinformatics and Computational Biology Unit of the NIH Perinatology Research Branch,
+Department of Computer Science & Center for Molecular Medicine and Genetics,
+Wayne State University, 
+3990 John R., Office 4809,
+Detroit, Michigan 48201
+Tel: 1-313-5775305 
+Cell: 1-313-4043116 
+http://bioinformaticsprb.med.wayne.edu/tarca/
+
+-----Original Message-----
+From: rgentlem at gmail.com [mailto:rgentlem at gmail.com] On Behalf Of Robert Gentleman
+Sent: Friday, February 06, 2009 3:56 PM
+To: Tarca, Adi
+Cc: bioc-devel at stat.math.ethz.ch
+Subject: Re: [Bioc-devel] Zipped Rdata files in windows binaries
+
+Hi,
+
+On Fri, Feb 6, 2009 at 11:05 AM, Tarca, Adi <atarca at med.wayne.edu> wrote:
+>
+>
+> Hi all,
+> I am writing an R packge and at a given point I need to load an Rdata file from the "data" folder of the installed package, and in case the file it is not there I try to download it from somwhere.
+>
+  That does not sound like a good thing to do.  The data folder is exclusively for data that is stored essentially at package build time and is not a place to put other files, or to use during a session to store objects.  Objects there are platform independent and are accessed using the data command in R.  Please don't try to modify this behavior.
+
+   If you want/need to have your own data storage type and want to control it, you should use a different folder.  A common choice is inst/extdata.  And then you are in control of everything.
+
+   Since lots of people use R in cases where they do not have access to the internet, the idea that they should download something for your package to work seems problematic.  Why not just use one of the many platform independent formats and distribute the data on all platforms in the same way.
+
+   There are a number of examples in Bioconductor packages (eg simpleaffy or flowCore)
+
+  Best wishes
+    Robert
+
+
+> I used to do the following test to see if a file called "datload" is NOT there, case in which I need to download it:
+>
+>  if(! paste(datload,".RData",sep="") %in% 
+> dir(system.file("data",package="SPIA"))) {  ...download the file from 
+> somwhere else }
+>
+> It works fine except that the windows binary package created by bioconductor scripts from my source, puts all RData file in a Rdata.zip file. Is there a way to list the files in Rdata.zip to see if my file is in there?
+>
+> Alternatively I tried to use the data() function and try to load it (in a private environment), and in case it is not loaded  then try to download it. However, the data() function does not return an error but only a warning.
+> I tried to use:
+>
+> ow <- options("warn")
+> options(warn=2) # to make warnings into errors 
+> errs<-try(data(list=datload, envir=.myDataEnv),silent=TRUE)
+>
+>  if(class(errs)!="try-error"){
+>  ...download the file from somwhere else  }
+>
+> This works fine, except that a warning is still printed when the function returns.
+>
+> Any ideas would be appreciated.
+>
+>
+> Thanks,
+> Adi Laurentiu Tarca
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list 
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+
+--
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From hpages at fhcrc.org  Fri Feb  6 23:13:59 2009
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Fri, 06 Feb 2009 14:13:59 -0800
+Subject: [Bioc-devel] Problem with subset("AnnDbBimap", ...) ?
+In-Reply-To: <498CA476.4010809@gmail.com>
+References: <498CA476.4010809@gmail.com>
+Message-ID: <498CB627.5000402@fhcrc.org>
+
+Hi Laurent,
+
+All this is consistent. One important part of the contract for
+subset(), Lkeys<-, Rkeys<-, [ is that they behave like endomorphisms
+i.e. they return an instance of the same class as the original
+object.
+mouse4302SYMBOL is an AnnDbBimap object so any of the functions above
+must return a (valid) AnnDbBimap object.
+The keys of a valid AnnDbBimap object cannot be anything. For example
+if 'x' is a mapping from probeset ids to entrez ids, the left keys
+must be valid probeset ids (for this chip) and the right keys must be
+valid entrez ids.
+What kind of AnnDbBimap object would be returned by
+subset(mouse4302SYMBOL, Rkeys="foo") ? Or equivalently, what
+kind of AnnDbBimap object would become 'x' after
+   x <- mouse4302SYMBOL; Rkeys(x) <- "foo".
+It would be an AnnDbBimap object with junk keys but valid
+AnnDbBimap objects don't support this.
+
+I added these functions when I worked on faking the environment
+interface for SQLite-based annotations. Note that they are not
+part of the environment-like API. They are low-level
+functions that I first wrote and used internally so it would
+be easier for me to build the environment-like API (mget, get,
+ls, etc...). My first intention was not to export them but then
+I realized they had their own added-value so I exported and
+documented them. Since they are not part of the environment-like
+API, I had no constraint of backward compatibility which was nice
+because then I could decide to make them do what I considered the
+right thing. OTOH I had to make the environment-like API ackward
+compatible and that's why you can use junk keys in mget (granted
+that you specify ifnotfound=NA):
+
+   > mget("foo", mouse4302SYMBOL, ifnotfound=NA)
+   $foo
+   [1] NA
+
+mget() returns a list, not an AnnDbBimap instance (it's not an
+endomorphism) so it can return a list with anything in it without
+breaking any rule.
+
+We could add the hasLkey() and hasRkey() but since this would be
+equivalent to "foo" %in% Rkeys(x), I'm not sure they would have
+a lot of added value though. The performance of "foo" %in% Rkeys(x)
+should be good enough, especially the 2nd time you do this on 'x'
+because Rkeys() (like Lkeys() and other low-level functions in
+AnnotationDbi) cache their result (in a hidden environment).
+
+H.
+
+
+Laurent Gautier wrote:
+> Dear list,
+> 
+> The function subset("AnnDbBimap", ...) is returning an error whenever 
+> the resulting subset should be the empty set.
+> 
+> Example:
+> 
+> library(mouse4302.db)
+> subset(mouse4302SYMBOL,
+>        Rkeys="foo")
+> 
+> 
+> returns:
+> Error in .checkKeys(value, Rkeys(x), x at ifnotfound) :
+>   value for "foo" not found
+> 
+> This is true for either Lkeys or Rkeys.
+> 
+> 
+> The man page does say "
+> Lkeys
+> The new Lkeys (must be a subset of the current Lkeys).
+> 
+> Rkeys
+> The new Rkeys (must be a subset of the current Rkeys).
+> "
+> 
+> but this is limiting the use for the function and encourages the use of 
+> the environment-like API, although marked as provided "for backward 
+> compatibility".
+> 
+> Wouldn't it be good to either have:
+> 
+> - have subset return without an error
+> 
+> - have at least functions such as hasLkey and hasRkey ?
+> 
+> 
+> 
+> L.
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From ngopalak at fhcrc.org  Sat Feb  7 00:01:46 2009
+From: ngopalak at fhcrc.org (Nishant Gopalakrishnan)
+Date: Fri, 06 Feb 2009 15:01:46 -0800
+Subject: [Bioc-devel] Zipped Rdata files in windows binaries
+In-Reply-To: <05F1F2150E331540ADFD78E2AE933A3B41780EC251@MED-CORE05.med.wayne.edu>
+References: <mailman.17.1233745209.24560.bioc-devel@stat.math.ethz.ch>	<05F1F2150E331540ADFD78E2AE933A3B41780EC250@MED-CORE05.med.wayne.edu>	<b796582f0902061256o400a9096o8d19e5724d567aad@mail.gmail.com>
+	<05F1F2150E331540ADFD78E2AE933A3B41780EC251@MED-CORE05.med.wayne.edu>
+Message-ID: <498CC15A.7030901@fhcrc.org>
+
+Hi Adi
+
+The recommended size for software packages is less than 2 MB on disk
+http://wiki.fhcrc.org/bioc/Package_Guidelines#size-requirements
+
+Data files in the range of 10 ~ 20 MB will need to be built into a
+separate data package and would typically go  into our experimental data
+package repository.
+http://bioconductor.org/packages/release/ExperimentData.html
+
+A typical user of your software package would probably not need the
+large  experiment data files for their application and hence we would
+like to maintain them as separate packages.  I can help you with
+creating the data package once you have the data files ready.
+
+Nishant
+
+Tarca, Adi wrote:
+> Dear Robert,
+>
+> Thank you for your advice. I will then put all the data at the build time as .RData files. The only issue I had was that I did not know if there is a limitation in terms of disk space occupied by these files. I am talking here about around 10 MB but it may double in the future releases. 
+> I was not too worried about people needing an internet connection when using my package in conjunction with a new organism for the first time, since is the same thing as trying to use some affy functions on a chip for which you do not have the cdf (except that you do not download a file but an additional package). 
+>
+> Regards,
+> Adi  
+>
+>   
+>
+>
+> Adi Laurentiu Tarca, PhD
+> Assistant Professor (Research), 
+> Bioinformatics and Computational Biology Unit of the NIH Perinatology Research Branch,
+> Department of Computer Science & Center for Molecular Medicine and Genetics,
+> Wayne State University, 
+> 3990 John R., Office 4809,
+> Detroit, Michigan 48201
+> Tel: 1-313-5775305 
+> Cell: 1-313-4043116 
+> http://bioinformaticsprb.med.wayne.edu/tarca/
+>
+> -----Original Message-----
+> From: rgentlem at gmail.com [mailto:rgentlem at gmail.com] On Behalf Of Robert Gentleman
+> Sent: Friday, February 06, 2009 3:56 PM
+> To: Tarca, Adi
+> Cc: bioc-devel at stat.math.ethz.ch
+> Subject: Re: [Bioc-devel] Zipped Rdata files in windows binaries
+>
+> Hi,
+>
+> On Fri, Feb 6, 2009 at 11:05 AM, Tarca, Adi <atarca at med.wayne.edu> wrote:
+>   
+>> Hi all,
+>> I am writing an R packge and at a given point I need to load an Rdata file from the "data" folder of the installed package, and in case the file it is not there I try to download it from somwhere.
+>>
+>>     
+>   That does not sound like a good thing to do.  The data folder is exclusively for data that is stored essentially at package build time and is not a place to put other files, or to use during a session to store objects.  Objects there are platform independent and are accessed using the data command in R.  Please don't try to modify this behavior.
+>
+>    If you want/need to have your own data storage type and want to control it, you should use a different folder.  A common choice is inst/extdata.  And then you are in control of everything.
+>
+>    Since lots of people use R in cases where they do not have access to the internet, the idea that they should download something for your package to work seems problematic.  Why not just use one of the many platform independent formats and distribute the data on all platforms in the same way.
+>
+>    There are a number of examples in Bioconductor packages (eg simpleaffy or flowCore)
+>
+>   Best wishes
+>     Robert
+>
+>
+>   
+>> I used to do the following test to see if a file called "datload" is NOT there, case in which I need to download it:
+>>
+>>  if(! paste(datload,".RData",sep="") %in% 
+>> dir(system.file("data",package="SPIA"))) {  ...download the file from 
+>> somwhere else }
+>>
+>> It works fine except that the windows binary package created by bioconductor scripts from my source, puts all RData file in a Rdata.zip file. Is there a way to list the files in Rdata.zip to see if my file is in there?
+>>
+>> Alternatively I tried to use the data() function and try to load it (in a private environment), and in case it is not loaded  then try to download it. However, the data() function does not return an error but only a warning.
+>> I tried to use:
+>>
+>> ow <- options("warn")
+>> options(warn=2) # to make warnings into errors 
+>> errs<-try(data(list=datload, envir=.myDataEnv),silent=TRUE)
+>>
+>>  if(class(errs)!="try-error"){
+>>  ...download the file from somwhere else  }
+>>
+>> This works fine, except that a warning is still printed when the function returns.
+>>
+>> Any ideas would be appreciated.
+>>
+>>
+>> Thanks,
+>> Adi Laurentiu Tarca
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list 
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>
+>>     
+>
+>
+>
+> --
+> Robert Gentleman, PhD
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M2-B876
+> PO Box 19024
+> Seattle, Washington 98109-1024
+> 206-667-7700
+> rgentlem at fhcrc.org
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From lgautier at gmail.com  Sat Feb  7 15:13:40 2009
+From: lgautier at gmail.com (Laurent Gautier)
+Date: Sat, 07 Feb 2009 15:13:40 +0100
+Subject: [Bioc-devel] Problem with subset("AnnDbBimap", ...) ?
+In-Reply-To: <498CB627.5000402@fhcrc.org>
+References: <498CA476.4010809@gmail.com> <498CB627.5000402@fhcrc.org>
+Message-ID: <498D9714.1060404@gmail.com>
+
+Hi Herv?,
+
+Thanks for for detailled answer.
+
+I understand that the choice was made to forbid the addition of 
+[L|R]keys to a Bimap (which you call "junk keys"). I suspect that
+implementation concerns weighted in the decision, but that's for a
+separate thread.
+
+Unless the message is that the environment-like API is not around only 
+for back-compatibility reasons, the main (consistency) problem I am 
+having with subset("AnnDbBimap", ...) is  still present after reading 
+your explanations, although it might be coming from the use of the 
+function subset in R's base working on data.frame.
+
+I'll illustrate it with an example:
+
+> subset(CO2, Treatment == "unfair")
+[1] Plant     Type      Treatment conc      uptake
+<0 rows> (or 0-length row.names)
+
+The function subset("data.frame", ...) is then no less endomorphic than
+subset("AnnDbBimap", ...), yet it returns an empty data.frame rather 
+than raise an error such as 'no "unfair" Treatment'.
+
+In its current instance, the function subset("AnnDbBimap", ...) might be 
+pushing complexity toward the user for use-cases such as:
+"I have a list of arbitrary gene symbols, and I'd like to get the
+probes/probesets associated with those".
+
+The current (as of today) implementation for subset("Bimap", ...) is:
+
+setMethod("subset", "Bimap",
+     function(x, Lkeys=NULL, Rkeys=NULL)
+     {
+         Lkeys(x) <- Lkeys
+         Rkeys(x) <- Rkeys
+         x
+     }
+)
+
+while it could be like:
+
+setMethod("subset", "Bimap",
+     function(x, Lkeys=NULL, Rkeys=NULL, quiet=FALSE)
+     {
+         if (quiet) {
+             Lkeys(x) <- Lkeys[Lkeys %in% Lkeys(x)]
+             Rkeys(x) <- Rkeys[Rkeys %in% Rkeys(x)]
+         } else {
+             Lkeys(x) <- Lkeys
+             Rkeys(x) <- Rkeys
+         }
+         x
+     }
+)
+
+
+Just a thought,
+
+
+
+L.
+
+
+
+
+Herv? Pag?s wrote:
+> Hi Laurent,
+> 
+> All this is consistent. One important part of the contract for
+> subset(), Lkeys<-, Rkeys<-, [ is that they behave like endomorphisms
+> i.e. they return an instance of the same class as the original
+> object.
+> mouse4302SYMBOL is an AnnDbBimap object so any of the functions above
+> must return a (valid) AnnDbBimap object.
+> The keys of a valid AnnDbBimap object cannot be anything. For example
+> if 'x' is a mapping from probeset ids to entrez ids, the left keys
+> must be valid probeset ids (for this chip) and the right keys must be
+> valid entrez ids.
+> What kind of AnnDbBimap object would be returned by
+> subset(mouse4302SYMBOL, Rkeys="foo") ? Or equivalently, what
+> kind of AnnDbBimap object would become 'x' after
+>   x <- mouse4302SYMBOL; Rkeys(x) <- "foo".
+> It would be an AnnDbBimap object with junk keys but valid
+> AnnDbBimap objects don't support this.
+> 
+> I added these functions when I worked on faking the environment
+> interface for SQLite-based annotations. Note that they are not
+> part of the environment-like API. They are low-level
+> functions that I first wrote and used internally so it would
+> be easier for me to build the environment-like API (mget, get,
+> ls, etc...). My first intention was not to export them but then
+> I realized they had their own added-value so I exported and
+> documented them. Since they are not part of the environment-like
+> API, I had no constraint of backward compatibility which was nice
+> because then I could decide to make them do what I considered the
+> right thing. OTOH I had to make the environment-like API ackward
+> compatible and that's why you can use junk keys in mget (granted
+> that you specify ifnotfound=NA):
+> 
+>   > mget("foo", mouse4302SYMBOL, ifnotfound=NA)
+>   $foo
+>   [1] NA
+> 
+> mget() returns a list, not an AnnDbBimap instance (it's not an
+> endomorphism) so it can return a list with anything in it without
+> breaking any rule.
+> 
+> We could add the hasLkey() and hasRkey() but since this would be
+> equivalent to "foo" %in% Rkeys(x), I'm not sure they would have
+> a lot of added value though. The performance of "foo" %in% Rkeys(x)
+> should be good enough, especially the 2nd time you do this on 'x'
+> because Rkeys() (like Lkeys() and other low-level functions in
+> AnnotationDbi) cache their result (in a hidden environment).
+> 
+> H.
+> 
+> 
+> Laurent Gautier wrote:
+>> Dear list,
+>>
+>> The function subset("AnnDbBimap", ...) is returning an error whenever 
+>> the resulting subset should be the empty set.
+>>
+>> Example:
+>>
+>> library(mouse4302.db)
+>> subset(mouse4302SYMBOL,
+>>        Rkeys="foo")
+>>
+>>
+>> returns:
+>> Error in .checkKeys(value, Rkeys(x), x at ifnotfound) :
+>>   value for "foo" not found
+>>
+>> This is true for either Lkeys or Rkeys.
+>>
+>>
+>> The man page does say "
+>> Lkeys
+>> The new Lkeys (must be a subset of the current Lkeys).
+>>
+>> Rkeys
+>> The new Rkeys (must be a subset of the current Rkeys).
+>> "
+>>
+>> but this is limiting the use for the function and encourages the use 
+>> of the environment-like API, although marked as provided "for backward 
+>> compatibility".
+>>
+>> Wouldn't it be good to either have:
+>>
+>> - have subset return without an error
+>>
+>> - have at least functions such as hasLkey and hasRkey ?
+>>
+>>
+>>
+>> L.
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From hpages at fhcrc.org  Tue Feb 10 03:13:35 2009
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Mon, 09 Feb 2009 18:13:35 -0800
+Subject: [Bioc-devel] Problem with subset("AnnDbBimap", ...) ?
+In-Reply-To: <498D9714.1060404@gmail.com>
+References: <498CA476.4010809@gmail.com> <498CB627.5000402@fhcrc.org>
+	<498D9714.1060404@gmail.com>
+Message-ID: <4990E2CF.9000807@fhcrc.org>
+
+Hi Laurent,
+
+OK I have to admit that I added "subset" as a convenient way
+of reducing the sets of Lkeys and Rkeys in a single call.
+But I didn't really take the time to check what "subset" is
+doing exactly on data frames and I agree that it should
+behave as consistently as possible across data structures.
+
+I'll add the 'quiet' argument to subset("AnnDbBimap", ...).
+You suggest to use 'quiet=FALSE' as default so by default
+it won't behave like for data frames but I guess at this point
+we don't want to make a change that could potentially turn into
+less safe code written by people who expect "subset" to check
+the validity of their keys.
+
+I'll let you know when the change is ready.
+
+Thanks for the feedback!
+
+H.
+
+
+Laurent Gautier wrote:
+> Hi Herv?,
+> 
+> Thanks for for detailled answer.
+> 
+> I understand that the choice was made to forbid the addition of 
+> [L|R]keys to a Bimap (which you call "junk keys"). I suspect that
+> implementation concerns weighted in the decision, but that's for a
+> separate thread.
+> 
+> Unless the message is that the environment-like API is not around only 
+> for back-compatibility reasons, the main (consistency) problem I am 
+> having with subset("AnnDbBimap", ...) is  still present after reading 
+> your explanations, although it might be coming from the use of the 
+> function subset in R's base working on data.frame.
+> 
+> I'll illustrate it with an example:
+> 
+>> subset(CO2, Treatment == "unfair")
+> [1] Plant     Type      Treatment conc      uptake
+> <0 rows> (or 0-length row.names)
+> 
+> The function subset("data.frame", ...) is then no less endomorphic than
+> subset("AnnDbBimap", ...), yet it returns an empty data.frame rather 
+> than raise an error such as 'no "unfair" Treatment'.
+> 
+> In its current instance, the function subset("AnnDbBimap", ...) might be 
+> pushing complexity toward the user for use-cases such as:
+> "I have a list of arbitrary gene symbols, and I'd like to get the
+> probes/probesets associated with those".
+> 
+> The current (as of today) implementation for subset("Bimap", ...) is:
+> 
+> setMethod("subset", "Bimap",
+>     function(x, Lkeys=NULL, Rkeys=NULL)
+>     {
+>         Lkeys(x) <- Lkeys
+>         Rkeys(x) <- Rkeys
+>         x
+>     }
+> )
+> 
+> while it could be like:
+> 
+> setMethod("subset", "Bimap",
+>     function(x, Lkeys=NULL, Rkeys=NULL, quiet=FALSE)
+>     {
+>         if (quiet) {
+>             Lkeys(x) <- Lkeys[Lkeys %in% Lkeys(x)]
+>             Rkeys(x) <- Rkeys[Rkeys %in% Rkeys(x)]
+>         } else {
+>             Lkeys(x) <- Lkeys
+>             Rkeys(x) <- Rkeys
+>         }
+>         x
+>     }
+> )
+> 
+> 
+> Just a thought,
+> 
+> 
+> 
+> L.
+> 
+> 
+> 
+> 
+> Herv? Pag?s wrote:
+>> Hi Laurent,
+>>
+>> All this is consistent. One important part of the contract for
+>> subset(), Lkeys<-, Rkeys<-, [ is that they behave like endomorphisms
+>> i.e. they return an instance of the same class as the original
+>> object.
+>> mouse4302SYMBOL is an AnnDbBimap object so any of the functions above
+>> must return a (valid) AnnDbBimap object.
+>> The keys of a valid AnnDbBimap object cannot be anything. For example
+>> if 'x' is a mapping from probeset ids to entrez ids, the left keys
+>> must be valid probeset ids (for this chip) and the right keys must be
+>> valid entrez ids.
+>> What kind of AnnDbBimap object would be returned by
+>> subset(mouse4302SYMBOL, Rkeys="foo") ? Or equivalently, what
+>> kind of AnnDbBimap object would become 'x' after
+>>   x <- mouse4302SYMBOL; Rkeys(x) <- "foo".
+>> It would be an AnnDbBimap object with junk keys but valid
+>> AnnDbBimap objects don't support this.
+>>
+>> I added these functions when I worked on faking the environment
+>> interface for SQLite-based annotations. Note that they are not
+>> part of the environment-like API. They are low-level
+>> functions that I first wrote and used internally so it would
+>> be easier for me to build the environment-like API (mget, get,
+>> ls, etc...). My first intention was not to export them but then
+>> I realized they had their own added-value so I exported and
+>> documented them. Since they are not part of the environment-like
+>> API, I had no constraint of backward compatibility which was nice
+>> because then I could decide to make them do what I considered the
+>> right thing. OTOH I had to make the environment-like API ackward
+>> compatible and that's why you can use junk keys in mget (granted
+>> that you specify ifnotfound=NA):
+>>
+>>   > mget("foo", mouse4302SYMBOL, ifnotfound=NA)
+>>   $foo
+>>   [1] NA
+>>
+>> mget() returns a list, not an AnnDbBimap instance (it's not an
+>> endomorphism) so it can return a list with anything in it without
+>> breaking any rule.
+>>
+>> We could add the hasLkey() and hasRkey() but since this would be
+>> equivalent to "foo" %in% Rkeys(x), I'm not sure they would have
+>> a lot of added value though. The performance of "foo" %in% Rkeys(x)
+>> should be good enough, especially the 2nd time you do this on 'x'
+>> because Rkeys() (like Lkeys() and other low-level functions in
+>> AnnotationDbi) cache their result (in a hidden environment).
+>>
+>> H.
+>>
+>>
+>> Laurent Gautier wrote:
+>>> Dear list,
+>>>
+>>> The function subset("AnnDbBimap", ...) is returning an error whenever 
+>>> the resulting subset should be the empty set.
+>>>
+>>> Example:
+>>>
+>>> library(mouse4302.db)
+>>> subset(mouse4302SYMBOL,
+>>>        Rkeys="foo")
+>>>
+>>>
+>>> returns:
+>>> Error in .checkKeys(value, Rkeys(x), x at ifnotfound) :
+>>>   value for "foo" not found
+>>>
+>>> This is true for either Lkeys or Rkeys.
+>>>
+>>>
+>>> The man page does say "
+>>> Lkeys
+>>> The new Lkeys (must be a subset of the current Lkeys).
+>>>
+>>> Rkeys
+>>> The new Rkeys (must be a subset of the current Rkeys).
+>>> "
+>>>
+>>> but this is limiting the use for the function and encourages the use 
+>>> of the environment-like API, although marked as provided "for 
+>>> backward compatibility".
+>>>
+>>> Wouldn't it be good to either have:
+>>>
+>>> - have subset return without an error
+>>>
+>>> - have at least functions such as hasLkey and hasRkey ?
+>>>
+>>>
+>>>
+>>> L.
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+> 
+> 
+> 
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From hpages at fhcrc.org  Tue Feb 10 22:11:44 2009
+From: hpages at fhcrc.org (hpages at fhcrc.org)
+Date: Tue, 10 Feb 2009 13:11:44 -0800
+Subject: [Bioc-devel] Problem with subset("AnnDbBimap", ...) ?
+In-Reply-To: <4990E2CF.9000807@fhcrc.org>
+References: <498CA476.4010809@gmail.com> <498CB627.5000402@fhcrc.org>
+	<498D9714.1060404@gmail.com> <4990E2CF.9000807@fhcrc.org>
+Message-ID: <20090210131144.m5yi5x2qp2ccgswo@webmail.fhcrc.org>
+
+Hi all,
+
+I added the 'drop.invalid.keys' arg to the "subset" methods for Bimap
+and AnnDbBimap objects in AnnotationDbi (devel and release):
+
+   > library(hgu95av2.db)
+   > subset(hgu95av2SYMBOL, Rkeys="foo")
+   Error in .checkKeys(value, Rkeys(x), x at ifnotfound) :
+     value for "foo" not found
+   > mymap <- subset(hgu95av2SYMBOL, Rkeys="foo", drop.invalid.keys=TRUE)
+   > mymap
+   SYMBOL submap for chip hgu95av2 (object of class "AnnDbBimap")
+   > summary(mymap)
+   SYMBOL submap for chip hgu95av2 (object of class "AnnDbBimap")
+   |
+   | Lkeyname: probe_id (Ltablename: probes)
+   |    Lkeys: "1000_at", "1001_at", ... (total=12625/mapped=0)
+   |
+   | Rkeyname: symbol (Rtablename: gene_info)
+   |    Rkeys:
+   |
+   | direction: L --> R
+
+(Note that an argument named 'quiet' is generally not expected to
+modify what a function is doing, only what the function is reporting,
+hence the choice of 'drop.invalid.keys' for this arg.)
+
+The new version of AnnotationDbi will propagate to the public repos
+in about 24 hours.
+
+Cheers,
+H.
+
+
+Quoting Herv? Pag?s <hpages at fhcrc.org>:
+
+> Hi Laurent,
+>
+> OK I have to admit that I added "subset" as a convenient way
+> of reducing the sets of Lkeys and Rkeys in a single call.
+> But I didn't really take the time to check what "subset" is
+> doing exactly on data frames and I agree that it should
+> behave as consistently as possible across data structures.
+>
+> I'll add the 'quiet' argument to subset("AnnDbBimap", ...).
+> You suggest to use 'quiet=FALSE' as default so by default
+> it won't behave like for data frames but I guess at this point
+> we don't want to make a change that could potentially turn into
+> less safe code written by people who expect "subset" to check
+> the validity of their keys.
+>
+> I'll let you know when the change is ready.
+>
+> Thanks for the feedback!
+>
+> H.
+>
+>
+> Laurent Gautier wrote:
+>> Hi Herv?,
+>>
+>> Thanks for for detailled answer.
+>>
+>> I understand that the choice was made to forbid the addition of   
+>> [L|R]keys to a Bimap (which you call "junk keys"). I suspect that
+>> implementation concerns weighted in the decision, but that's for a
+>> separate thread.
+>>
+>> Unless the message is that the environment-like API is not around   
+>> only for back-compatibility reasons, the main (consistency) problem  
+>>  I am having with subset("AnnDbBimap", ...) is  still present after  
+>>  reading your explanations, although it might be coming from the  
+>> use  of the function subset in R's base working on data.frame.
+>>
+>> I'll illustrate it with an example:
+>>
+>>> subset(CO2, Treatment == "unfair")
+>> [1] Plant     Type      Treatment conc      uptake
+>> <0 rows> (or 0-length row.names)
+>>
+>> The function subset("data.frame", ...) is then no less endomorphic than
+>> subset("AnnDbBimap", ...), yet it returns an empty data.frame   
+>> rather than raise an error such as 'no "unfair" Treatment'.
+>>
+>> In its current instance, the function subset("AnnDbBimap", ...)   
+>> might be pushing complexity toward the user for use-cases such as:
+>> "I have a list of arbitrary gene symbols, and I'd like to get the
+>> probes/probesets associated with those".
+>>
+>> The current (as of today) implementation for subset("Bimap", ...) is:
+>>
+>> setMethod("subset", "Bimap",
+>>    function(x, Lkeys=NULL, Rkeys=NULL)
+>>    {
+>>        Lkeys(x) <- Lkeys
+>>        Rkeys(x) <- Rkeys
+>>        x
+>>    }
+>> )
+>>
+>> while it could be like:
+>>
+>> setMethod("subset", "Bimap",
+>>    function(x, Lkeys=NULL, Rkeys=NULL, quiet=FALSE)
+>>    {
+>>        if (quiet) {
+>>            Lkeys(x) <- Lkeys[Lkeys %in% Lkeys(x)]
+>>            Rkeys(x) <- Rkeys[Rkeys %in% Rkeys(x)]
+>>        } else {
+>>            Lkeys(x) <- Lkeys
+>>            Rkeys(x) <- Rkeys
+>>        }
+>>        x
+>>    }
+>> )
+>>
+>>
+>> Just a thought,
+>>
+>>
+>>
+>> L.
+>>
+>>
+>>
+>>
+>> Herv? Pag?s wrote:
+>>> Hi Laurent,
+>>>
+>>> All this is consistent. One important part of the contract for
+>>> subset(), Lkeys<-, Rkeys<-, [ is that they behave like endomorphisms
+>>> i.e. they return an instance of the same class as the original
+>>> object.
+>>> mouse4302SYMBOL is an AnnDbBimap object so any of the functions above
+>>> must return a (valid) AnnDbBimap object.
+>>> The keys of a valid AnnDbBimap object cannot be anything. For example
+>>> if 'x' is a mapping from probeset ids to entrez ids, the left keys
+>>> must be valid probeset ids (for this chip) and the right keys must be
+>>> valid entrez ids.
+>>> What kind of AnnDbBimap object would be returned by
+>>> subset(mouse4302SYMBOL, Rkeys="foo") ? Or equivalently, what
+>>> kind of AnnDbBimap object would become 'x' after
+>>>  x <- mouse4302SYMBOL; Rkeys(x) <- "foo".
+>>> It would be an AnnDbBimap object with junk keys but valid
+>>> AnnDbBimap objects don't support this.
+>>>
+>>> I added these functions when I worked on faking the environment
+>>> interface for SQLite-based annotations. Note that they are not
+>>> part of the environment-like API. They are low-level
+>>> functions that I first wrote and used internally so it would
+>>> be easier for me to build the environment-like API (mget, get,
+>>> ls, etc...). My first intention was not to export them but then
+>>> I realized they had their own added-value so I exported and
+>>> documented them. Since they are not part of the environment-like
+>>> API, I had no constraint of backward compatibility which was nice
+>>> because then I could decide to make them do what I considered the
+>>> right thing. OTOH I had to make the environment-like API ackward
+>>> compatible and that's why you can use junk keys in mget (granted
+>>> that you specify ifnotfound=NA):
+>>>
+>>>  > mget("foo", mouse4302SYMBOL, ifnotfound=NA)
+>>>  $foo
+>>>  [1] NA
+>>>
+>>> mget() returns a list, not an AnnDbBimap instance (it's not an
+>>> endomorphism) so it can return a list with anything in it without
+>>> breaking any rule.
+>>>
+>>> We could add the hasLkey() and hasRkey() but since this would be
+>>> equivalent to "foo" %in% Rkeys(x), I'm not sure they would have
+>>> a lot of added value though. The performance of "foo" %in% Rkeys(x)
+>>> should be good enough, especially the 2nd time you do this on 'x'
+>>> because Rkeys() (like Lkeys() and other low-level functions in
+>>> AnnotationDbi) cache their result (in a hidden environment).
+>>>
+>>> H.
+>>>
+>>>
+>>> Laurent Gautier wrote:
+>>>> Dear list,
+>>>>
+>>>> The function subset("AnnDbBimap", ...) is returning an error   
+>>>> whenever the resulting subset should be the empty set.
+>>>>
+>>>> Example:
+>>>>
+>>>> library(mouse4302.db)
+>>>> subset(mouse4302SYMBOL,
+>>>>       Rkeys="foo")
+>>>>
+>>>>
+>>>> returns:
+>>>> Error in .checkKeys(value, Rkeys(x), x at ifnotfound) :
+>>>>  value for "foo" not found
+>>>>
+>>>> This is true for either Lkeys or Rkeys.
+>>>>
+>>>>
+>>>> The man page does say "
+>>>> Lkeys
+>>>> The new Lkeys (must be a subset of the current Lkeys).
+>>>>
+>>>> Rkeys
+>>>> The new Rkeys (must be a subset of the current Rkeys).
+>>>> "
+>>>>
+>>>> but this is limiting the use for the function and encourages the   
+>>>> use of the environment-like API, although marked as provided "for  
+>>>>  backward compatibility".
+>>>>
+>>>> Wouldn't it be good to either have:
+>>>>
+>>>> - have subset return without an error
+>>>>
+>>>> - have at least functions such as hasLkey and hasRkey ?
+>>>>
+>>>>
+>>>>
+>>>> L.
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>>
+>>
+>
+> -- 
+> Herv? Pag?s
+>
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M2-B876
+> P.O. Box 19024
+> Seattle, WA 98109-1024
+>
+> E-mail: hpages at fhcrc.org
+> Phone:  (206) 667-5791
+> Fax:    (206) 667-1319
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From lgautier at gmail.com  Tue Feb 10 22:38:34 2009
+From: lgautier at gmail.com (Laurent Gautier)
+Date: Tue, 10 Feb 2009 22:38:34 +0100
+Subject: [Bioc-devel] Problem with subset("AnnDbBimap", ...) ?
+In-Reply-To: <20090210131144.m5yi5x2qp2ccgswo@webmail.fhcrc.org>
+References: <498CA476.4010809@gmail.com>
+	<498CB627.5000402@fhcrc.org>	<498D9714.1060404@gmail.com>
+	<4990E2CF.9000807@fhcrc.org>
+	<20090210131144.m5yi5x2qp2ccgswo@webmail.fhcrc.org>
+Message-ID: <4991F3DA.5070903@gmail.com>
+
+hpages at fhcrc.org wrote:
+> Hi all,
+> 
+> I added the 'drop.invalid.keys' arg to the "subset" methods for Bimap
+> and AnnDbBimap objects in AnnotationDbi (devel and release):
+> 
+>   > library(hgu95av2.db)
+>   > subset(hgu95av2SYMBOL, Rkeys="foo")
+>   Error in .checkKeys(value, Rkeys(x), x at ifnotfound) :
+>     value for "foo" not found
+>   > mymap <- subset(hgu95av2SYMBOL, Rkeys="foo", drop.invalid.keys=TRUE)
+>   > mymap
+>   SYMBOL submap for chip hgu95av2 (object of class "AnnDbBimap")
+>   > summary(mymap)
+>   SYMBOL submap for chip hgu95av2 (object of class "AnnDbBimap")
+>   |
+>   | Lkeyname: probe_id (Ltablename: probes)
+>   |    Lkeys: "1000_at", "1001_at", ... (total=12625/mapped=0)
+>   |
+>   | Rkeyname: symbol (Rtablename: gene_info)
+>   |    Rkeys:
+>   |
+>   | direction: L --> R
+> 
+> (Note that an argument named 'quiet' is generally not expected to
+> modify what a function is doing, only what the function is reporting,
+> hence the choice of 'drop.invalid.keys' for this arg.)
+
+Indeed. The name for the parameter was not very well chosen... not 
+chosen at all for the long term in fact, just to illustrate with an 
+example what subset() could do.
+
+
+> The new version of AnnotationDbi will propagate to the public repos
+> in about 24 hours.
+
+Thanks for the quick response,
+
+
+L.
+
+> Cheers,
+> H.
+> 
+> 
+> Quoting Herv? Pag?s <hpages at fhcrc.org>:
+> 
+>> Hi Laurent,
+>>
+>> OK I have to admit that I added "subset" as a convenient way
+>> of reducing the sets of Lkeys and Rkeys in a single call.
+>> But I didn't really take the time to check what "subset" is
+>> doing exactly on data frames and I agree that it should
+>> behave as consistently as possible across data structures.
+>>
+>> I'll add the 'quiet' argument to subset("AnnDbBimap", ...).
+>> You suggest to use 'quiet=FALSE' as default so by default
+>> it won't behave like for data frames but I guess at this point
+>> we don't want to make a change that could potentially turn into
+>> less safe code written by people who expect "subset" to check
+>> the validity of their keys.
+>>
+>> I'll let you know when the change is ready.
+>>
+>> Thanks for the feedback!
+>>
+>> H.
+>>
+>>
+>> Laurent Gautier wrote:
+>>> Hi Herv?,
+>>>
+>>> Thanks for for detailled answer.
+>>>
+>>> I understand that the choice was made to forbid the addition of  
+>>> [L|R]keys to a Bimap (which you call "junk keys"). I suspect that
+>>> implementation concerns weighted in the decision, but that's for a
+>>> separate thread.
+>>>
+>>> Unless the message is that the environment-like API is not around  
+>>> only for back-compatibility reasons, the main (consistency) problem 
+>>>  I am having with subset("AnnDbBimap", ...) is  still present after 
+>>>  reading your explanations, although it might be coming from the use  
+>>> of the function subset in R's base working on data.frame.
+>>>
+>>> I'll illustrate it with an example:
+>>>
+>>>> subset(CO2, Treatment == "unfair")
+>>> [1] Plant     Type      Treatment conc      uptake
+>>> <0 rows> (or 0-length row.names)
+>>>
+>>> The function subset("data.frame", ...) is then no less endomorphic than
+>>> subset("AnnDbBimap", ...), yet it returns an empty data.frame  rather 
+>>> than raise an error such as 'no "unfair" Treatment'.
+>>>
+>>> In its current instance, the function subset("AnnDbBimap", ...)  
+>>> might be pushing complexity toward the user for use-cases such as:
+>>> "I have a list of arbitrary gene symbols, and I'd like to get the
+>>> probes/probesets associated with those".
+>>>
+>>> The current (as of today) implementation for subset("Bimap", ...) is:
+>>>
+>>> setMethod("subset", "Bimap",
+>>>    function(x, Lkeys=NULL, Rkeys=NULL)
+>>>    {
+>>>        Lkeys(x) <- Lkeys
+>>>        Rkeys(x) <- Rkeys
+>>>        x
+>>>    }
+>>> )
+>>>
+>>> while it could be like:
+>>>
+>>> setMethod("subset", "Bimap",
+>>>    function(x, Lkeys=NULL, Rkeys=NULL, quiet=FALSE)
+>>>    {
+>>>        if (quiet) {
+>>>            Lkeys(x) <- Lkeys[Lkeys %in% Lkeys(x)]
+>>>            Rkeys(x) <- Rkeys[Rkeys %in% Rkeys(x)]
+>>>        } else {
+>>>            Lkeys(x) <- Lkeys
+>>>            Rkeys(x) <- Rkeys
+>>>        }
+>>>        x
+>>>    }
+>>> )
+>>>
+>>>
+>>> Just a thought,
+>>>
+>>>
+>>>
+>>> L.
+>>>
+>>>
+>>>
+>>>
+>>> Herv? Pag?s wrote:
+>>>> Hi Laurent,
+>>>>
+>>>> All this is consistent. One important part of the contract for
+>>>> subset(), Lkeys<-, Rkeys<-, [ is that they behave like endomorphisms
+>>>> i.e. they return an instance of the same class as the original
+>>>> object.
+>>>> mouse4302SYMBOL is an AnnDbBimap object so any of the functions above
+>>>> must return a (valid) AnnDbBimap object.
+>>>> The keys of a valid AnnDbBimap object cannot be anything. For example
+>>>> if 'x' is a mapping from probeset ids to entrez ids, the left keys
+>>>> must be valid probeset ids (for this chip) and the right keys must be
+>>>> valid entrez ids.
+>>>> What kind of AnnDbBimap object would be returned by
+>>>> subset(mouse4302SYMBOL, Rkeys="foo") ? Or equivalently, what
+>>>> kind of AnnDbBimap object would become 'x' after
+>>>>  x <- mouse4302SYMBOL; Rkeys(x) <- "foo".
+>>>> It would be an AnnDbBimap object with junk keys but valid
+>>>> AnnDbBimap objects don't support this.
+>>>>
+>>>> I added these functions when I worked on faking the environment
+>>>> interface for SQLite-based annotations. Note that they are not
+>>>> part of the environment-like API. They are low-level
+>>>> functions that I first wrote and used internally so it would
+>>>> be easier for me to build the environment-like API (mget, get,
+>>>> ls, etc...). My first intention was not to export them but then
+>>>> I realized they had their own added-value so I exported and
+>>>> documented them. Since they are not part of the environment-like
+>>>> API, I had no constraint of backward compatibility which was nice
+>>>> because then I could decide to make them do what I considered the
+>>>> right thing. OTOH I had to make the environment-like API ackward
+>>>> compatible and that's why you can use junk keys in mget (granted
+>>>> that you specify ifnotfound=NA):
+>>>>
+>>>>  > mget("foo", mouse4302SYMBOL, ifnotfound=NA)
+>>>>  $foo
+>>>>  [1] NA
+>>>>
+>>>> mget() returns a list, not an AnnDbBimap instance (it's not an
+>>>> endomorphism) so it can return a list with anything in it without
+>>>> breaking any rule.
+>>>>
+>>>> We could add the hasLkey() and hasRkey() but since this would be
+>>>> equivalent to "foo" %in% Rkeys(x), I'm not sure they would have
+>>>> a lot of added value though. The performance of "foo" %in% Rkeys(x)
+>>>> should be good enough, especially the 2nd time you do this on 'x'
+>>>> because Rkeys() (like Lkeys() and other low-level functions in
+>>>> AnnotationDbi) cache their result (in a hidden environment).
+>>>>
+>>>> H.
+>>>>
+>>>>
+>>>> Laurent Gautier wrote:
+>>>>> Dear list,
+>>>>>
+>>>>> The function subset("AnnDbBimap", ...) is returning an error  
+>>>>> whenever the resulting subset should be the empty set.
+>>>>>
+>>>>> Example:
+>>>>>
+>>>>> library(mouse4302.db)
+>>>>> subset(mouse4302SYMBOL,
+>>>>>       Rkeys="foo")
+>>>>>
+>>>>>
+>>>>> returns:
+>>>>> Error in .checkKeys(value, Rkeys(x), x at ifnotfound) :
+>>>>>  value for "foo" not found
+>>>>>
+>>>>> This is true for either Lkeys or Rkeys.
+>>>>>
+>>>>>
+>>>>> The man page does say "
+>>>>> Lkeys
+>>>>> The new Lkeys (must be a subset of the current Lkeys).
+>>>>>
+>>>>> Rkeys
+>>>>> The new Rkeys (must be a subset of the current Rkeys).
+>>>>> "
+>>>>>
+>>>>> but this is limiting the use for the function and encourages the  
+>>>>> use of the environment-like API, although marked as provided "for 
+>>>>>  backward compatibility".
+>>>>>
+>>>>> Wouldn't it be good to either have:
+>>>>>
+>>>>> - have subset return without an error
+>>>>>
+>>>>> - have at least functions such as hasLkey and hasRkey ?
+>>>>>
+>>>>>
+>>>>>
+>>>>> L.
+>>>>>
+>>>>> _______________________________________________
+>>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>>
+>>>
+>>>
+>>
+>> -- 
+>> Herv? Pag?s
+>>
+>> Program in Computational Biology
+>> Division of Public Health Sciences
+>> Fred Hutchinson Cancer Research Center
+>> 1100 Fairview Ave. N, M2-B876
+>> P.O. Box 19024
+>> Seattle, WA 98109-1024
+>>
+>> E-mail: hpages at fhcrc.org
+>> Phone:  (206) 667-5791
+>> Fax:    (206) 667-1319
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> 
+>
+
+
+From sneumann at ipb-halle.de  Tue Feb 17 00:38:16 2009
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Tue, 17 Feb 2009 00:38:16 +0100
+Subject: [Bioc-devel] Boost as build dependency ?
+Message-ID: <1234827496.11279.125.camel@samson>
+
+Hi,
+
+to add more input file formats to xcms I'd like 
+to include pwiz into xcms.so
+
+pwiz has several boost (version >1.36.x) libraries as dependency.
+Shipping and Building the whole boost in the xcms package
+is probably out of question. 
+
+Are they available on the build machines ?
+
+I could also try to check for them in the configure,
+and make them linking optional.
+
+Yours,
+Steffen
+
+
+From paboyoun at fhcrc.org  Tue Feb 17 18:38:23 2009
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Tue, 17 Feb 2009 09:38:23 -0800
+Subject: [Bioc-devel] Boost as build dependency ?
+In-Reply-To: <1234827496.11279.125.camel@samson>
+References: <1234827496.11279.125.camel@samson>
+Message-ID: <499AF60F.4080000@fhcrc.org>
+
+Steffen,
+The BioC build machines does not rely upon an external BOOST library 
+installation to build packages. For example, the RBGL BioC package is an 
+interface to The Boost Graph Library (BGL) and includes the source code 
+for BGL.
+
+I would like to reframe this discussion from one about the build system 
+to one about the end users and in particular consumers of the Windows 
+and Mac binary packages. Do you want typical Windows and Mac users to 
+have the BOOST libraries installed on their system to use the xcms 
+package? Even if the build system can build binary packages for xcms 
+that rely on external libraries, a typical user may have a hard time 
+reconstructing the required components on their machine to use the 
+binary packages on bioconductor.org. I was recently reminded of this 
+when I was helping Mac users with the Rgraphviz package since it 
+dynamically links to the graphviz library. The graphviz installation on 
+the build machines is old and hard for others to reproduce so there was 
+very little utility to Rgraphviz Mac binary packages out-of-the-box. I 
+upgraded graphviz on the Mac build machines, but this is only a partial 
+fix since end users still need to match the graphviz installation that 
+created the Rgraphviz binary package.
+
+
+Patrick
+
+
+Steffen Neumann wrote:
+> Hi,
+>
+> to add more input file formats to xcms I'd like 
+> to include pwiz into xcms.so
+>
+> pwiz has several boost (version >1.36.x) libraries as dependency.
+> Shipping and Building the whole boost in the xcms package
+> is probably out of question. 
+>
+> Are they available on the build machines ?
+>
+> I could also try to check for them in the configure,
+> and make them linking optional.
+>
+> Yours,
+> Steffen
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From hpages at fhcrc.org  Wed Feb 18 02:33:16 2009
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Tue, 17 Feb 2009 17:33:16 -0800
+Subject: [Bioc-devel] Boost as build dependency ?
+In-Reply-To: <499AF60F.4080000@fhcrc.org>
+References: <1234827496.11279.125.camel@samson> <499AF60F.4080000@fhcrc.org>
+Message-ID: <499B655C.6030901@fhcrc.org>
+
+Hi Steffen, Patrick,
+
+Note that Boost is a very peculiar library in the sense that most
+modules are header-only i.e. they are entirely made of .hpp files.
+The 3 packages in Bioconductor that include Boost (RBGL, bgx and BGmix)
+only "use" a few modules. The way they "use" these modules is by
+including a few .hpp files from these modules into their own C++
+code.
+Steffen, if you are about to do the same in xcms, that's fine but
+then we would have 4 BioC packages that ship their own
+boostIncl.tar.gz (or parts of it). Maybe a better approach would
+be to put boostIncl.tar.gz in a BioC package of its own and have
+the client packages use the "LinkingTo:" feature?
+Note that this infrastructure package would be easy to make and
+to maintain as it would be made of .hpp files only, all of them in
+the inst/include folder, so there would be nothing to compile,
+no R code, no NAMESPACE and no man page.
+
+H.
+
+
+Patrick Aboyoun wrote:
+> Steffen,
+> The BioC build machines does not rely upon an external BOOST library 
+> installation to build packages. For example, the RBGL BioC package is an 
+> interface to The Boost Graph Library (BGL) and includes the source code 
+> for BGL.
+> 
+> I would like to reframe this discussion from one about the build system 
+> to one about the end users and in particular consumers of the Windows 
+> and Mac binary packages. Do you want typical Windows and Mac users to 
+> have the BOOST libraries installed on their system to use the xcms 
+> package? Even if the build system can build binary packages for xcms 
+> that rely on external libraries, a typical user may have a hard time 
+> reconstructing the required components on their machine to use the 
+> binary packages on bioconductor.org. I was recently reminded of this 
+> when I was helping Mac users with the Rgraphviz package since it 
+> dynamically links to the graphviz library. The graphviz installation on 
+> the build machines is old and hard for others to reproduce so there was 
+> very little utility to Rgraphviz Mac binary packages out-of-the-box. I 
+> upgraded graphviz on the Mac build machines, but this is only a partial 
+> fix since end users still need to match the graphviz installation that 
+> created the Rgraphviz binary package.
+> 
+> 
+> Patrick
+> 
+> 
+> Steffen Neumann wrote:
+>> Hi,
+>>
+>> to add more input file formats to xcms I'd like to include pwiz into 
+>> xcms.so
+>>
+>> pwiz has several boost (version >1.36.x) libraries as dependency.
+>> Shipping and Building the whole boost in the xcms package
+>> is probably out of question.
+>> Are they available on the build machines ?
+>>
+>> I could also try to check for them in the configure,
+>> and make them linking optional.
+>>
+>> Yours,
+>> Steffen
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From paboyoun at fhcrc.org  Wed Feb 18 02:51:23 2009
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Tue, 17 Feb 2009 17:51:23 -0800
+Subject: [Bioc-devel] Boost as build dependency ?
+In-Reply-To: <499B655C.6030901@fhcrc.org>
+References: <1234827496.11279.125.camel@samson> <499AF60F.4080000@fhcrc.org>
+	<499B655C.6030901@fhcrc.org>
+Message-ID: <499B699B.6050401@fhcrc.org>
+
+I hadn't done a survey of BOOST usage in BioC packages. It does look 
+like we have hit critical mass for BOOST usage. Perhaps the developers 
+of RBGL, bgx, BGmix and Steffen could get together to make a lightweight 
+"RBOOST" package that they could all link to.
+
+
+Patrick
+
+
+Herv? Pag?s wrote:
+> Hi Steffen, Patrick,
+>
+> Note that Boost is a very peculiar library in the sense that most
+> modules are header-only i.e. they are entirely made of .hpp files.
+> The 3 packages in Bioconductor that include Boost (RBGL, bgx and BGmix)
+> only "use" a few modules. The way they "use" these modules is by
+> including a few .hpp files from these modules into their own C++
+> code.
+> Steffen, if you are about to do the same in xcms, that's fine but
+> then we would have 4 BioC packages that ship their own
+> boostIncl.tar.gz (or parts of it). Maybe a better approach would
+> be to put boostIncl.tar.gz in a BioC package of its own and have
+> the client packages use the "LinkingTo:" feature?
+> Note that this infrastructure package would be easy to make and
+> to maintain as it would be made of .hpp files only, all of them in
+> the inst/include folder, so there would be nothing to compile,
+> no R code, no NAMESPACE and no man page.
+>
+> H.
+>
+>
+> Patrick Aboyoun wrote:
+>> Steffen,
+>> The BioC build machines does not rely upon an external BOOST library 
+>> installation to build packages. For example, the RBGL BioC package is 
+>> an interface to The Boost Graph Library (BGL) and includes the source 
+>> code for BGL.
+>>
+>> I would like to reframe this discussion from one about the build 
+>> system to one about the end users and in particular consumers of the 
+>> Windows and Mac binary packages. Do you want typical Windows and Mac 
+>> users to have the BOOST libraries installed on their system to use 
+>> the xcms package? Even if the build system can build binary packages 
+>> for xcms that rely on external libraries, a typical user may have a 
+>> hard time reconstructing the required components on their machine to 
+>> use the binary packages on bioconductor.org. I was recently reminded 
+>> of this when I was helping Mac users with the Rgraphviz package since 
+>> it dynamically links to the graphviz library. The graphviz 
+>> installation on the build machines is old and hard for others to 
+>> reproduce so there was very little utility to Rgraphviz Mac binary 
+>> packages out-of-the-box. I upgraded graphviz on the Mac build 
+>> machines, but this is only a partial fix since end users still need 
+>> to match the graphviz installation that created the Rgraphviz binary 
+>> package.
+>>
+>>
+>> Patrick
+>>
+>>
+>> Steffen Neumann wrote:
+>>> Hi,
+>>>
+>>> to add more input file formats to xcms I'd like to include pwiz into 
+>>> xcms.so
+>>>
+>>> pwiz has several boost (version >1.36.x) libraries as dependency.
+>>> Shipping and Building the whole boost in the xcms package
+>>> is probably out of question.
+>>> Are they available on the build machines ?
+>>>
+>>> I could also try to check for them in the configure,
+>>> and make them linking optional.
+>>>
+>>> Yours,
+>>> Steffen
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From rgentlem at fhcrc.org  Wed Feb 18 02:54:36 2009
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Tue, 17 Feb 2009 17:54:36 -0800
+Subject: [Bioc-devel] Boost as build dependency ?
+In-Reply-To: <499B655C.6030901@fhcrc.org>
+References: <1234827496.11279.125.camel@samson> <499AF60F.4080000@fhcrc.org>
+	<499B655C.6030901@fhcrc.org>
+Message-ID: <b796582f0902171754s79ae4350h1fcecc9228726715@mail.gmail.com>
+
+Hi,
+
+On Tue, Feb 17, 2009 at 5:33 PM, Herv? Pag?s <hpages at fhcrc.org> wrote:
+> Hi Steffen, Patrick,
+>
+> Note that Boost is a very peculiar library in the sense that most
+> modules are header-only i.e. they are entirely made of .hpp files.
+> The 3 packages in Bioconductor that include Boost (RBGL, bgx and BGmix)
+> only "use" a few modules. The way they "use" these modules is by
+> including a few .hpp files from these modules into their own C++
+> code.
+> Steffen, if you are about to do the same in xcms, that's fine but
+> then we would have 4 BioC packages that ship their own
+> boostIncl.tar.gz (or parts of it). Maybe a better approach would
+> be to put boostIncl.tar.gz in a BioC package of its own and have
+> the client packages use the "LinkingTo:" feature?
+> Note that this infrastructure package would be easy to make and
+> to maintain as it would be made of .hpp files only, all of them in
+> the inst/include folder, so there would be nothing to compile,
+> no R code, no NAMESPACE and no man page.
+
+ that seems like a good idea,
+
+>
+> H.
+>
+>
+> Patrick Aboyoun wrote:
+>>
+>> Steffen,
+>> The BioC build machines does not rely upon an external BOOST library
+>> installation to build packages. For example, the RBGL BioC package is an
+>> interface to The Boost Graph Library (BGL) and includes the source code for
+>> BGL.
+>>
+>> I would like to reframe this discussion from one about the build system to
+>> one about the end users and in particular consumers of the Windows and Mac
+>> binary packages. Do you want typical Windows and Mac users to have the BOOST
+>> libraries installed on their system to use the xcms package? Even if the
+>> build system can build binary packages for xcms that rely on external
+>> libraries, a typical user may have a hard time reconstructing the required
+>> components on their machine to use the binary packages on bioconductor.org.
+>> I was recently reminded of this when I was helping Mac users with the
+>> Rgraphviz package since it dynamically links to the graphviz library. The
+>> graphviz installation on the build machines is old and hard for others to
+>> reproduce so there was very little utility to Rgraphviz Mac binary packages
+>> out-of-the-box. I upgraded graphviz on the Mac build machines, but this is
+>> only a partial fix since end users still need to match the graphviz
+>> installation that created the Rgraphviz binary package.
+>>
+>>
+>> Patrick
+>>
+>>
+>> Steffen Neumann wrote:
+>>>
+>>> Hi,
+>>>
+>>> to add more input file formats to xcms I'd like to include pwiz into
+>>> xcms.so
+>>>
+>>> pwiz has several boost (version >1.36.x) libraries as dependency.
+>>> Shipping and Building the whole boost in the xcms package
+>>> is probably out of question.
+>>> Are they available on the build machines ?
+>>>
+>>> I could also try to check for them in the configure,
+>>> and make them linking optional.
+>>>
+>>> Yours,
+>>> Steffen
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> --
+> Herv? Pag?s
+>
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M2-B876
+> P.O. Box 19024
+> Seattle, WA 98109-1024
+>
+> E-mail: hpages at fhcrc.org
+> Phone:  (206) 667-5791
+> Fax:    (206) 667-1319
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From l.gatto at dnavision.be  Wed Feb 18 12:41:55 2009
+From: l.gatto at dnavision.be (Laurent Gatto)
+Date: Wed, 18 Feb 2009 12:41:55 +0100
+Subject: [Bioc-devel] Biobase/IRanges annotation maksing
+Message-ID: <200902181241.56004.l.gatto@dnavision.be>
+
+Dear Bioc developeRs,
+
+I noted recently that Biobase's 'annotation' and 'annotation<-' objects are 
+masked by IRanges. Now calling annotation(AffyBatch), of 
+annotation(ExpressionSet) throws an 'unable to find an inherited method for 
+function "annotation", for signature "AffyBatch"' error.
+Some of my functions fail because they rely on functions that call 
+annotation(AffyBatch). 
+
+My questions are (1) is this the expected behaviour and if yes (2) how am I 
+and/or upstream maintainers supposed to elegantly deal with it?
+
+Illustrative code and sessionInfo are given below.
+
+I hope that I am not missing anything obvious here.
+
+Thank you in advance.
+
+Laurent
+
+
+-- R code ---------------------------------------
+> source("http://bioconductor.org/biocLite.R")
+> update.packages(rep=biocinstallRepos(), ask=FALSE)
+> library(affydata)
+Loading required package: affy
+Loading required package: Biobase
+
+Welcome to Bioconductor
+
+  Vignettes contain introductory material. To view, type
+  'openVignette()'. To cite Bioconductor, see
+  'citation("Biobase")' and for packages 'citation(pkgname)'.
+
+> data(Dilution)
+> annotation(Dilution)
+[1] "hgu95av2"
+> library(IRanges)
+
+Attaching package: 'IRanges'
+
+
+	The following object(s) are masked from package:Biobase :
+
+	 annotation,
+	 annotation<- 
+
+
+	The following object(s) are masked from package:base :
+
+	 cbind,
+	 order,
+	 pmax,
+	 pmax.int,
+	 pmin,
+	 pmin.int,
+	 rbind,
+	 rep.int,
+	 table 
+
+> annotation(Dilution)
+Error in function (classes, fdef, mtable)  : 
+  unable to find an inherited method for function "annotation", for signature 
+"AffyBatch"
+> Biobase:::annotation(Dilution)
+[1] "hgu95av2"
+> sessionInfo()
+R version 2.9.0 Under development (unstable) (2009-02-12 r47911) 
+i686-pc-linux-gnu 
+
+locale:
+LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8;LC_COLLATE=en_US.UTF-8;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] IRanges_1.1.38  affydata_1.11.3 affy_1.21.7     Biobase_2.3.10 
+
+loaded via a namespace (and not attached):
+[1] affyio_1.11.3        preprocessCore_1.5.3 tools_2.9.0
+
+
+From mtmorgan at fhcrc.org  Wed Feb 18 15:54:48 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 18 Feb 2009 06:54:48 -0800
+Subject: [Bioc-devel] Biobase/IRanges annotation maksing
+In-Reply-To: <200902181241.56004.l.gatto@dnavision.be> (Laurent Gatto's
+	message of "Wed, 18 Feb 2009 12:41:55 +0100")
+References: <200902181241.56004.l.gatto@dnavision.be>
+Message-ID: <6phk57nztfr.fsf@gopher4.fhcrc.org>
+
+Laurent Gatto <l.gatto at dnavision.be> writes:
+
+> Dear Bioc developeRs,
+>
+> I noted recently that Biobase's 'annotation' and 'annotation<-' objects are 
+> masked by IRanges. Now calling annotation(AffyBatch), of 
+> annotation(ExpressionSet) throws an 'unable to find an inherited method for 
+> function "annotation", for signature "AffyBatch"' error.
+> Some of my functions fail because they rely on functions that call 
+> annotation(AffyBatch). 
+>
+> My questions are (1) is this the expected behaviour and if yes (2) how am I 
+> and/or upstream maintainers supposed to elegantly deal with it?
+
+Hi Laurent -- I just came across this issue myself -- package A failed
+because it called a function in package B which had a dependency on
+package C which, due to changes in package D, now attached IRanges to
+the search path. Package B then found IRange::annotation on the search
+path, instead of Biobase::annotation.
+
+The solution was easy, in the end -- add
+
+  importMethodsFrom(Biobase, annotation)
+
+to the NAMESPACE of package B, and move Biobase from 'Depends:' to
+'Imports:' in package B, which is definitely the Right Thing To Do. It
+doesn't matter now that IRanges is on the user search path, package B
+always gets the function it wants.
+
+The solution is less elegant for a function that is not in a name
+space, e.g., because the user is writing it in the global environment,
+as in your example below. Then the solution is to use
+
+  Biobase::annotation(eset)
+
+in place of annotation(eset).
+
+There might be additional technical solutions that Biobase / IRanges /
+Biostrings package authors can explore for this particular case...
+
+Martin
+
+> Illustrative code and sessionInfo are given below.
+>
+> I hope that I am not missing anything obvious here.
+>
+> Thank you in advance.
+>
+> Laurent
+>
+>
+> -- R code ---------------------------------------
+>> source("http://bioconductor.org/biocLite.R")
+>> update.packages(rep=biocinstallRepos(), ask=FALSE)
+>> library(affydata)
+> Loading required package: affy
+> Loading required package: Biobase
+>
+> Welcome to Bioconductor
+>
+>   Vignettes contain introductory material. To view, type
+>   'openVignette()'. To cite Bioconductor, see
+>   'citation("Biobase")' and for packages 'citation(pkgname)'.
+>
+>> data(Dilution)
+>> annotation(Dilution)
+> [1] "hgu95av2"
+>> library(IRanges)
+>
+> Attaching package: 'IRanges'
+>
+>
+> 	The following object(s) are masked from package:Biobase :
+>
+> 	 annotation,
+> 	 annotation<- 
+>
+>
+> 	The following object(s) are masked from package:base :
+>
+> 	 cbind,
+> 	 order,
+> 	 pmax,
+> 	 pmax.int,
+> 	 pmin,
+> 	 pmin.int,
+> 	 rbind,
+> 	 rep.int,
+> 	 table 
+>
+>> annotation(Dilution)
+> Error in function (classes, fdef, mtable)  : 
+>   unable to find an inherited method for function "annotation", for signature 
+> "AffyBatch"
+>> Biobase:::annotation(Dilution)
+> [1] "hgu95av2"
+>> sessionInfo()
+> R version 2.9.0 Under development (unstable) (2009-02-12 r47911) 
+> i686-pc-linux-gnu 
+>
+> locale:
+> LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8;LC_COLLATE=en_US.UTF-8;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base     
+>
+> other attached packages:
+> [1] IRanges_1.1.38  affydata_1.11.3 affy_1.21.7     Biobase_2.3.10 
+>
+> loaded via a namespace (and not attached):
+> [1] affyio_1.11.3        preprocessCore_1.5.3 tools_2.9.0
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M2 B169
+Phone: (206) 667-2793
+
+
+From ashrafi_h at yahoo.com  Wed Feb 18 19:47:21 2009
+From: ashrafi_h at yahoo.com (Hamid Ashrafi)
+Date: Wed, 18 Feb 2009 10:47:21 -0800 (PST)
+Subject: [Bioc-devel] Normzlization and Batch Effect
+Message-ID: <600353.19746.qm@web65505.mail.ac4.yahoo.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090218/7598bf8e/attachment.pl>
+
+From seandavi at gmail.com  Wed Feb 18 20:00:16 2009
+From: seandavi at gmail.com (Sean Davis)
+Date: Wed, 18 Feb 2009 14:00:16 -0500
+Subject: [Bioc-devel] Normzlization and Batch Effect
+In-Reply-To: <600353.19746.qm@web65505.mail.ac4.yahoo.com>
+References: <600353.19746.qm@web65505.mail.ac4.yahoo.com>
+Message-ID: <264855a00902181100o5b26921dya22fd9e9b870f3f4@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090218/94aa9fea/attachment.pl>
+
+From sneumann at ipb-halle.de  Wed Feb 18 22:08:04 2009
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Wed, 18 Feb 2009 22:08:04 +0100
+Subject: [Bioc-devel] commit email for hedgehog-svn ?
+In-Reply-To: <1231188743.30713.56.camel@samson>
+References: <1230294424.16224.16.camel@samson>
+	<1231188743.30713.56.camel@samson>
+Message-ID: <1234991284.14925.1.camel@samson>
+
+Hi,
+
+Can I interpret the silence as a "No" ?
+In that case, does anybody know an "RSS-to-eMail" 
+service to send send the commit messages 
+to a mailing list ?
+
+Yours,
+Steffen
+
+On Mon, 2009-01-05 at 21:52 +0100, Steffen Neumann wrote:
+> Hi,
+> 
+> just in case this escaped attention over in the holidays,
+> has anyone experience with this in BioC ?
+> 
+> Yours,
+> Steffen
+>  
+> On Fri, 2008-12-26 at 13:27 +0100, Steffen Neumann wrote:
+> ...
+> > Is there a commit message hook somewhere in the BioC svn ?
+> > I'd like to send commit messages from our package(s) 
+> > to a dedicated mailing list.
+> > 
+> > Something similar exists for sourceforge.net:
+> > http://alexandria.wiki.sourceforge.net/Subversion+-+Version+Control+for+Source+Code#tocSubversion%20-%20Version%20Control%20for%20Source%20Code16
+> > 
+> > and some blog on configuration of your sf.net project
+> > http://jetcetera.wordpress.com/2007/12/12/configuring-sourceforge-to-automatically-generate-svn-commit-notifications/
+> > 
+> > Thanks in advance, 
+> > yours,
+> > Steffen
+> > 
+> > P.S.: I am aware of the bloxsom ChangeLog, 
+> > but I am still looking for the mail solution.
+> > 
+> > _______________________________________________
+> > Bioc-devel at stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From huber at ebi.ac.uk  Thu Feb 19 11:03:58 2009
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Thu, 19 Feb 2009 11:03:58 +0100
+Subject: [Bioc-devel] Biobase/IRanges annotation maksing
+In-Reply-To: <6phk57nztfr.fsf@gopher4.fhcrc.org>
+References: <200902181241.56004.l.gatto@dnavision.be>
+	<6phk57nztfr.fsf@gopher4.fhcrc.org>
+Message-ID: <499D2E8E.8080301@ebi.ac.uk>
+
+Hi
+
+of course there is no fundamental reason why the same name should not be 
+used for different things in different packages, and in many instances 
+this is the most reasonable solution. However, I think the 
+user-friendliness of the set of Bioconductor packages would be improved 
+if authors tried to keep such instances to a minimum.
+
+Since there is considerable overlap and collaboration between the 
+authors of Biobase and IRange I am optimistic that a (perhaps less 
+modular but) more integrated solution could be found.
+
+Currently, the generic function Biobase::annotation has exactly one 
+method, for signature "eSet", and the generic function 
+IRanges::annotation has exactly one method, for signature 
+"AnnotatedList". I.e. although they are generic functions in the 
+S4-technical sense, neither is generic in the common sense of the word. 
+I think it could be a goal for us that the concepts "S4" and "common 
+sense" be not opposed to each other.
+
+Best wishes
+      Wolfgang
+
+----------------------------------------------------
+Wolfgang Huber, EMBL-EBI, http://www.ebi.ac.uk/huber
+
+Martin Morgan wrote:
+> Laurent Gatto <l.gatto at dnavision.be> writes:
+> 
+>> Dear Bioc developeRs,
+>>
+>> I noted recently that Biobase's 'annotation' and 'annotation<-' objects are 
+>> masked by IRanges. Now calling annotation(AffyBatch), of 
+>> annotation(ExpressionSet) throws an 'unable to find an inherited method for 
+>> function "annotation", for signature "AffyBatch"' error.
+>> Some of my functions fail because they rely on functions that call 
+>> annotation(AffyBatch). 
+>>
+>> My questions are (1) is this the expected behaviour and if yes (2) how am I 
+>> and/or upstream maintainers supposed to elegantly deal with it?
+> 
+> Hi Laurent -- I just came across this issue myself -- package A failed
+> because it called a function in package B which had a dependency on
+> package C which, due to changes in package D, now attached IRanges to
+> the search path. Package B then found IRange::annotation on the search
+> path, instead of Biobase::annotation.
+> 
+> The solution was easy, in the end -- add
+> 
+>   importMethodsFrom(Biobase, annotation)
+> 
+> to the NAMESPACE of package B, and move Biobase from 'Depends:' to
+> 'Imports:' in package B, which is definitely the Right Thing To Do. It
+> doesn't matter now that IRanges is on the user search path, package B
+> always gets the function it wants.
+> 
+> The solution is less elegant for a function that is not in a name
+> space, e.g., because the user is writing it in the global environment,
+> as in your example below. Then the solution is to use
+> 
+>   Biobase::annotation(eset)
+> 
+> in place of annotation(eset).
+> 
+> There might be additional technical solutions that Biobase / IRanges /
+> Biostrings package authors can explore for this particular case...
+> 
+> Martin
+> 
+>> Illustrative code and sessionInfo are given below.
+>>
+>> I hope that I am not missing anything obvious here.
+>>
+>> Thank you in advance.
+>>
+>> Laurent
+>>
+>>
+>> -- R code ---------------------------------------
+>>> source("http://bioconductor.org/biocLite.R")
+>>> update.packages(rep=biocinstallRepos(), ask=FALSE)
+>>> library(affydata)
+>> Loading required package: affy
+>> Loading required package: Biobase
+>>
+>> Welcome to Bioconductor
+>>
+>>   Vignettes contain introductory material. To view, type
+>>   'openVignette()'. To cite Bioconductor, see
+>>   'citation("Biobase")' and for packages 'citation(pkgname)'.
+>>
+>>> data(Dilution)
+>>> annotation(Dilution)
+>> [1] "hgu95av2"
+>>> library(IRanges)
+>> Attaching package: 'IRanges'
+>>
+>>
+>> 	The following object(s) are masked from package:Biobase :
+>>
+>> 	 annotation,
+>> 	 annotation<- 
+>>
+>>
+>> 	The following object(s) are masked from package:base :
+>>
+>> 	 cbind,
+>> 	 order,
+>> 	 pmax,
+>> 	 pmax.int,
+>> 	 pmin,
+>> 	 pmin.int,
+>> 	 rbind,
+>> 	 rep.int,
+>> 	 table 
+>>
+>>> annotation(Dilution)
+>> Error in function (classes, fdef, mtable)  : 
+>>   unable to find an inherited method for function "annotation", for signature 
+>> "AffyBatch"
+>>> Biobase:::annotation(Dilution)
+>> [1] "hgu95av2"
+>>> sessionInfo()
+>> R version 2.9.0 Under development (unstable) (2009-02-12 r47911) 
+>> i686-pc-linux-gnu 
+>>
+>> locale:
+>> LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8;LC_COLLATE=en_US.UTF-8;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C
+>>
+>> attached base packages:
+>> [1] stats     graphics  grDevices utils     datasets  methods   base     
+>>
+>> other attached packages:
+>> [1] IRanges_1.1.38  affydata_1.11.3 affy_1.21.7     Biobase_2.3.10 
+>>
+>> loaded via a namespace (and not attached):
+>> [1] affyio_1.11.3        preprocessCore_1.5.3 tools_2.9.0
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From huber at ebi.ac.uk  Thu Feb 19 11:06:46 2009
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Thu, 19 Feb 2009 11:06:46 +0100
+Subject: [Bioc-devel] Biobase/IRanges annotation maksing
+In-Reply-To: <6phk57nztfr.fsf@gopher4.fhcrc.org>
+References: <200902181241.56004.l.gatto@dnavision.be>
+	<6phk57nztfr.fsf@gopher4.fhcrc.org>
+Message-ID: <499D2F36.4070809@ebi.ac.uk>
+
+Hi,
+
+I seem to observe to observe an odd side effect of the ":::" operator. 
+Can anyone reproduce this?
+	Best wishes	
+	Wolfgang
+
+
+library("IRanges")
+annotation
+showMethods("annotation")
+Biobase:::annotation
+showMethods("annotation")
+
+
+
+
+ > library("IRanges")
+
+Attaching package: 'IRanges'
+
+
+	The following object(s) are masked from package:base :
+
+	 cbind,
+	 order,
+	 pmax,
+	 pmax.int,
+	 pmin,
+	 pmin.int,
+	 rbind,
+	 rep.int,
+	 table
+
+ > annotation
+standardGeneric for "annotation" defined from package "IRanges"
+
+function (x, ...)
+standardGeneric("annotation")
+<environment: 0x26b8da0>
+Methods may be defined for arguments: x
+Use  showMethods("annotation")  for currently available ones.
+
+ > showMethods("annotation")
+Function: annotation (package IRanges)
+x="AnnotatedList"
+
+ > Biobase:::annotation
+standardGeneric for "annotation" defined from package "Biobase"
+
+function (object)
+standardGeneric("annotation")
+<environment: 0x2920538>
+Methods may be defined for arguments: object
+Use  showMethods("annotation")  for currently available ones.
+
+ > showMethods("annotation")
+
+Function "annotation":
+  <not a generic function>
+
+ > sessionInfo()
+R version 2.9.0 Under development (unstable) (2009-02-18 r47956)
+x86_64-unknown-linux-gnu
+
+locale:
+LC_CTYPE=C;LC_NUMERIC=C;LC_TIME=C;LC_COLLATE=C;LC_MONETARY=C;LC_MESSAGES=en_GB.UTF-8;LC_PAPER=C;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=C;LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices datasets  utils     methods   base
+
+other attached packages:
+[1] IRanges_1.1.38 fortunes_1.3-6
+
+loaded via a namespace (and not attached):
+[1] Biobase_2.3.10
+
+
+Martin Morgan wrote:
+> Laurent Gatto <l.gatto at dnavision.be> writes:
+> 
+>> Dear Bioc developeRs,
+>>
+>> I noted recently that Biobase's 'annotation' and 'annotation<-' objects are 
+>> masked by IRanges. Now calling annotation(AffyBatch), of 
+>> annotation(ExpressionSet) throws an 'unable to find an inherited method for 
+>> function "annotation", for signature "AffyBatch"' error.
+>> Some of my functions fail because they rely on functions that call 
+>> annotation(AffyBatch). 
+>>
+>> My questions are (1) is this the expected behaviour and if yes (2) how am I 
+>> and/or upstream maintainers supposed to elegantly deal with it?
+> 
+> Hi Laurent -- I just came across this issue myself -- package A failed
+> because it called a function in package B which had a dependency on
+> package C which, due to changes in package D, now attached IRanges to
+> the search path. Package B then found IRange::annotation on the search
+> path, instead of Biobase::annotation.
+> 
+> The solution was easy, in the end -- add
+> 
+>   importMethodsFrom(Biobase, annotation)
+> 
+> to the NAMESPACE of package B, and move Biobase from 'Depends:' to
+> 'Imports:' in package B, which is definitely the Right Thing To Do. It
+> doesn't matter now that IRanges is on the user search path, package B
+> always gets the function it wants.
+> 
+> The solution is less elegant for a function that is not in a name
+> space, e.g., because the user is writing it in the global environment,
+> as in your example below. Then the solution is to use
+> 
+>   Biobase::annotation(eset)
+> 
+> in place of annotation(eset).
+> 
+> There might be additional technical solutions that Biobase / IRanges /
+> Biostrings package authors can explore for this particular case...
+> 
+> Martin
+> 
+>> Illustrative code and sessionInfo are given below.
+>>
+>> I hope that I am not missing anything obvious here.
+>>
+>> Thank you in advance.
+>>
+>> Laurent
+>>
+>>
+>> -- R code ---------------------------------------
+>>> source("http://bioconductor.org/biocLite.R")
+>>> update.packages(rep=biocinstallRepos(), ask=FALSE)
+>>> library(affydata)
+>> Loading required package: affy
+>> Loading required package: Biobase
+>>
+>> Welcome to Bioconductor
+>>
+>>   Vignettes contain introductory material. To view, type
+>>   'openVignette()'. To cite Bioconductor, see
+>>   'citation("Biobase")' and for packages 'citation(pkgname)'.
+>>
+>>> data(Dilution)
+>>> annotation(Dilution)
+>> [1] "hgu95av2"
+>>> library(IRanges)
+>> Attaching package: 'IRanges'
+>>
+>>
+>> 	The following object(s) are masked from package:Biobase :
+>>
+>> 	 annotation,
+>> 	 annotation<- 
+>>
+>>
+>> 	The following object(s) are masked from package:base :
+>>
+>> 	 cbind,
+>> 	 order,
+>> 	 pmax,
+>> 	 pmax.int,
+>> 	 pmin,
+>> 	 pmin.int,
+>> 	 rbind,
+>> 	 rep.int,
+>> 	 table 
+>>
+>>> annotation(Dilution)
+>> Error in function (classes, fdef, mtable)  : 
+>>   unable to find an inherited method for function "annotation", for signature 
+>> "AffyBatch"
+>>> Biobase:::annotation(Dilution)
+>> [1] "hgu95av2"
+>>> sessionInfo()
+>> R version 2.9.0 Under development (unstable) (2009-02-12 r47911) 
+>> i686-pc-linux-gnu 
+>>
+>> locale:
+>> LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8;LC_COLLATE=en_US.UTF-8;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C
+>>
+>> attached base packages:
+>> [1] stats     graphics  grDevices utils     datasets  methods   base     
+>>
+>> other attached packages:
+>> [1] IRanges_1.1.38  affydata_1.11.3 affy_1.21.7     Biobase_2.3.10 
+>>
+>> loaded via a namespace (and not attached):
+>> [1] affyio_1.11.3        preprocessCore_1.5.3 tools_2.9.0
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+
+-- 
+
+Best wishes
+      Wolfgang
+
+----------------------------------------------------
+Wolfgang Huber, EMBL-EBI, http://www.ebi.ac.uk/huber
+
+
+From l.gatto at dnavision.be  Thu Feb 19 12:25:42 2009
+From: l.gatto at dnavision.be (Laurent Gatto)
+Date: Thu, 19 Feb 2009 12:25:42 +0100
+Subject: [Bioc-devel] Biobase/IRanges annotation maksing
+In-Reply-To: <499D2F36.4070809@ebi.ac.uk>
+References: <200902181241.56004.l.gatto@dnavision.be>
+	<6phk57nztfr.fsf@gopher4.fhcrc.org> <499D2F36.4070809@ebi.ac.uk>
+Message-ID: <200902191225.43041.l.gatto@dnavision.be>
+
+Hello,
+
+I can reproduce the behaviour on my side. 
+Below is the output for today's R-devel version (2009-02-18 r47956). The same 
+was observed with R-devel (2009-02-12 r47911).
+
+Laurent
+
+
+> library("IRanges")
+
+Attaching package: 'IRanges'
+
+
+	The following object(s) are masked from package:base :
+
+	 cbind,
+	 order,
+	 pmax,
+	 pmax.int,
+	 pmin,
+	 pmin.int,
+	 rbind,
+	 rep.int,
+	 table 
+
+> annotation
+standardGeneric for "annotation" defined from package "IRanges"
+
+function (x, ...) 
+standardGeneric("annotation")
+<environment: 0x8d17d7c>
+Methods may be defined for arguments: x
+Use  showMethods("annotation")  for currently available ones.
+> showMethods("annotation")
+Function: annotation (package IRanges)
+x="AnnotatedList"
+
+> Biobase:::annotation
+standardGeneric for "annotation" defined from package "Biobase"
+
+function (object) 
+standardGeneric("annotation")
+<environment: 0x8a8eba0>
+Methods may be defined for arguments: object
+Use  showMethods("annotation")  for currently available ones.
+> showMethods("annotation")
+
+Function "annotation":
+ <not a generic function>
+> sessionInfo()
+R version 2.9.0 Under development (unstable) (2009-02-18 r47956) 
+i686-pc-linux-gnu 
+
+locale:
+LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8;LC_COLLATE=en_US.UTF-8;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] IRanges_1.1.38
+
+loaded via a namespace (and not attached):
+[1] Biobase_2.3.10
+
+
+From sneumann at ipb-halle.de  Thu Feb 19 12:37:41 2009
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Thu, 19 Feb 2009 12:37:41 +0100
+Subject: [Bioc-devel] Boost as build dependency ?
+In-Reply-To: <499B699B.6050401@fhcrc.org>
+References: <1234827496.11279.125.camel@samson> <499AF60F.4080000@fhcrc.org>
+	<499B655C.6030901@fhcrc.org>  <499B699B.6050401@fhcrc.org>
+Message-ID: <1235043461.7998.181.camel@lathan.ipb-sub.ipb-halle.de>
+
+On Tue, 2009-02-17 at 17:51 -0800, Patrick Aboyoun wrote:
+> I hadn't done a survey of BOOST usage in BioC packages. It does look 
+> like we have hit critical mass for BOOST usage. Perhaps the developers 
+> of RBGL, bgx, BGmix and Steffen could get together to make a lightweight 
+> "RBOOST" package that they could all link to.
+
+In addition to the headers we'd need some of the libboost*.so as well.
+Since the make replacement bjam creates some very peculiar libboost*.so 
+names itself (which encode the compiler and options etc. ) we might 
+need to create some R function in RBOOST that returns 
+the actual BOOST_LDFLAGS and BOOST_LIBS variables.
+
+Those would be called during the configure of the dependent packages.
+(Or not, if they need the headers only)
+
+Yours,
+Steffen
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From mtmorgan at fhcrc.org  Thu Feb 19 16:29:27 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 19 Feb 2009 07:29:27 -0800
+Subject: [Bioc-devel] Biobase/IRanges annotation maksing
+In-Reply-To: <499D2E8E.8080301@ebi.ac.uk> (Wolfgang Huber's message of "Thu,
+	19 Feb 2009 11:03:58 +0100")
+References: <200902181241.56004.l.gatto@dnavision.be>
+	<6phk57nztfr.fsf@gopher4.fhcrc.org> <499D2E8E.8080301@ebi.ac.uk>
+Message-ID: <6phhc2q78dk.fsf@gopher4.fhcrc.org>
+
+Wolfgang Huber <huber at ebi.ac.uk> writes:
+
+> Hi
+>
+> of course there is no fundamental reason why the same name should not
+> be used for different things in different packages, and in many
+> instances this is the most reasonable solution. However, I think the
+> user-friendliness of the set of Bioconductor packages would be
+> improved if authors tried to keep such instances to a minimum.
+>
+> Since there is considerable overlap and collaboration between the
+> authors of Biobase and IRange I am optimistic that a (perhaps less
+> modular but) more integrated solution could be found.
+>
+> Currently, the generic function Biobase::annotation has exactly one
+> method, for signature "eSet", and the generic function
+> IRanges::annotation has exactly one method, for signature
+> "AnnotatedList". I.e. although they are generic functions in the
+> S4-technical sense, neither is generic in the common sense of the
+> word. I think it could be a goal for us that the concepts "S4" and
+
+Hi Wolfgang --
+
+Not exactly sure what you're getting at here (which doesn't bode well
+for common sense on my part, I guess); I read this as saying these
+functions might be 'regular', and not generic at all. But as you know
+
+* Methods are not restricted to definition in the package of the
+generic. So there are two methods on Biobase::annotation after
+library(GSEABase), three after library(affyPLM), etc.
+
+* Generics provide type checking that is useful even when there is a
+single method (e.g., Biobase::annotation does not operate on, say, a
+data.frame).
+
+* Generics help to define an API (e.g., Biobase::annotation's single
+method operates on 4 different classes defined in Biobase). The API
+can be discovered programmatically, modulo the quirks of showMethod
+(the 'where' argument can be useful under the current regime).
+
+* Two identically named regular functions would conflict in the same
+way, except perhaps without notifying the user.
+
+Also worth reiterating that the example I mentioned pointed to a bug
+(relying on user search path for function discovery) that has been
+resolved through use of a name space and 'imports'. 
+
+End users still have to contend with the competing functions (using
+Biobase::annotation to disambiguate). This is unfortunate and perhaps
+amenable to common sense, but independent of S4 / generics.
+
+Martin
+
+> "common sense" be not opposed to each other.
+>
+> Best wishes
+>       Wolfgang
+>
+> ----------------------------------------------------
+> Wolfgang Huber, EMBL-EBI, http://www.ebi.ac.uk/huber
+>
+> Martin Morgan wrote:
+>> Laurent Gatto <l.gatto at dnavision.be> writes:
+>> 
+>>> Dear Bioc developeRs,
+>>>
+>>> I noted recently that Biobase's 'annotation' and 'annotation<-'
+>>> objects are masked by IRanges. Now calling annotation(AffyBatch),
+>>> of annotation(ExpressionSet) throws an 'unable to find an inherited
+>>> method for function "annotation", for signature "AffyBatch"' error.
+>>> Some of my functions fail because they rely on functions that call
+>>> annotation(AffyBatch). 
+>>>
+>>> My questions are (1) is this the expected behaviour and if yes (2)
+>>> how am I and/or upstream maintainers supposed to elegantly deal
+>>> with it?
+>> Hi Laurent -- I just came across this issue myself -- package A
+>> failed
+>> because it called a function in package B which had a dependency on
+>> package C which, due to changes in package D, now attached IRanges to
+>> the search path. Package B then found IRange::annotation on the search
+>> path, instead of Biobase::annotation.
+>> The solution was easy, in the end -- add
+>>   importMethodsFrom(Biobase, annotation)
+>> to the NAMESPACE of package B, and move Biobase from 'Depends:' to
+>> 'Imports:' in package B, which is definitely the Right Thing To Do. It
+>> doesn't matter now that IRanges is on the user search path, package B
+>> always gets the function it wants.
+>> The solution is less elegant for a function that is not in a name
+>> space, e.g., because the user is writing it in the global environment,
+>> as in your example below. Then the solution is to use
+>>   Biobase::annotation(eset)
+>> in place of annotation(eset).
+>> There might be additional technical solutions that Biobase / IRanges
+>> /
+>> Biostrings package authors can explore for this particular case...
+>> Martin
+>> 
+>>> Illustrative code and sessionInfo are given below.
+>>>
+>>> I hope that I am not missing anything obvious here.
+>>>
+>>> Thank you in advance.
+>>>
+>>> Laurent
+>>>
+>>>
+>>> -- R code ---------------------------------------
+>>>> source("http://bioconductor.org/biocLite.R")
+>>>> update.packages(rep=biocinstallRepos(), ask=FALSE)
+>>>> library(affydata)
+>>> Loading required package: affy
+>>> Loading required package: Biobase
+>>>
+>>> Welcome to Bioconductor
+>>>
+>>>   Vignettes contain introductory material. To view, type
+>>>   'openVignette()'. To cite Bioconductor, see
+>>>   'citation("Biobase")' and for packages 'citation(pkgname)'.
+>>>
+>>>> data(Dilution)
+>>>> annotation(Dilution)
+>>> [1] "hgu95av2"
+>>>> library(IRanges)
+>>> Attaching package: 'IRanges'
+>>>
+>>>
+>>> 	The following object(s) are masked from package:Biobase :
+>>>
+>>> 	 annotation,
+>>> 	 annotation<- 
+>>>
+>>>
+>>> 	The following object(s) are masked from package:base :
+>>>
+>>> 	 cbind,
+>>> 	 order,
+>>> 	 pmax,
+>>> 	 pmax.int,
+>>> 	 pmin,
+>>> 	 pmin.int,
+>>> 	 rbind,
+>>> 	 rep.int,
+>>> 	 table 
+>>>
+>>>> annotation(Dilution)
+>>> Error in function (classes, fdef, mtable)  :   unable to find an
+>>> inherited method for function "annotation", for signature
+>>> "AffyBatch"
+>>>> Biobase:::annotation(Dilution)
+>>> [1] "hgu95av2"
+>>>> sessionInfo()
+>>> R version 2.9.0 Under development (unstable) (2009-02-12 r47911)
+>>> i686-pc-linux-gnu 
+>>>
+>>> locale:
+>>> LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8;LC_COLLATE=en_US.UTF-8;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C
+>>>
+>>> attached base packages:
+>>> [1] stats     graphics  grDevices utils     datasets  methods
+>>> base     
+>>>
+>>> other attached packages:
+>>> [1] IRanges_1.1.38  affydata_1.11.3 affy_1.21.7     Biobase_2.3.10 
+>>>
+>>> loaded via a namespace (and not attached):
+>>> [1] affyio_1.11.3        preprocessCore_1.5.3 tools_2.9.0
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>> 
+>
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M2 B169
+Phone: (206) 667-2793
+
+
+From huber at ebi.ac.uk  Thu Feb 19 17:56:03 2009
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Thu, 19 Feb 2009 17:56:03 +0100
+Subject: [Bioc-devel] Biobase/IRanges annotation maksing
+In-Reply-To: <6phhc2q78dk.fsf@gopher4.fhcrc.org>
+References: <200902181241.56004.l.gatto@dnavision.be>	<6phk57nztfr.fsf@gopher4.fhcrc.org>
+	<499D2E8E.8080301@ebi.ac.uk> <6phhc2q78dk.fsf@gopher4.fhcrc.org>
+Message-ID: <499D8F23.3030900@ebi.ac.uk>
+
+Hi Martin
+
+the re-use of the Biobase::annotation generic by GSEABase and affyPLM is 
+great, because it makes it easier for users to discover and use these 
+functionalities provided from the different packages (compared to them 
+being separate regular functions).
+
+You are right that the name masking issue is technically independent of 
+whether you are dealing with an S4 generic or a regular function. 
+However, anecdotal evidence I've seen seems to indicate that package 
+developers more readily tend to use generic (in the ordinary sense of 
+the word) names for S4-generic functions, which increases the frequency 
+of masking events. As you say, those can easily be addressed on the 
+package development level by using namespace tools, but are quite a pain 
+for the end-user whose is writing scripts.
+
+The two questions that I had in mind (sorry that they were not expressed 
+that clearly) regarding what we should consider "best practice" in this 
+community:
+
+- Should you export common names like, say, "annotation", "normalize", 
+"coef" for your package's functions even though you're aware of them 
+being exported, with different bindings, from other packages that users 
+may concurrently attach?
+
+- What is the threshold at which it makes sense to switch from defining 
+a regular function to making it a generic + 1 method? (From your 
+arguments below one might conclude that one should always do the second?)
+
+Best wishes
+      Wolfgang
+
+
+
+----------------------------------------------------
+Wolfgang Huber, EMBL-EBI, http://www.ebi.ac.uk/huber
+
+Martin Morgan wrote:
+> Wolfgang Huber <huber at ebi.ac.uk> writes:
+> 
+>> Hi
+>>
+>> of course there is no fundamental reason why the same name should not
+>> be used for different things in different packages, and in many
+>> instances this is the most reasonable solution. However, I think the
+>> user-friendliness of the set of Bioconductor packages would be
+>> improved if authors tried to keep such instances to a minimum.
+>>
+>> Since there is considerable overlap and collaboration between the
+>> authors of Biobase and IRange I am optimistic that a (perhaps less
+>> modular but) more integrated solution could be found.
+>>
+>> Currently, the generic function Biobase::annotation has exactly one
+>> method, for signature "eSet", and the generic function
+>> IRanges::annotation has exactly one method, for signature
+>> "AnnotatedList". I.e. although they are generic functions in the
+>> S4-technical sense, neither is generic in the common sense of the
+>> word. I think it could be a goal for us that the concepts "S4" and
+> 
+> Hi Wolfgang --
+> 
+> Not exactly sure what you're getting at here (which doesn't bode well
+> for common sense on my part, I guess); I read this as saying these
+> functions might be 'regular', and not generic at all. But as you know
+> 
+> * Methods are not restricted to definition in the package of the
+> generic. So there are two methods on Biobase::annotation after
+> library(GSEABase), three after library(affyPLM), etc.
+> 
+> * Generics provide type checking that is useful even when there is a
+> single method (e.g., Biobase::annotation does not operate on, say, a
+> data.frame).
+> 
+> * Generics help to define an API (e.g., Biobase::annotation's single
+> method operates on 4 different classes defined in Biobase). The API
+> can be discovered programmatically, modulo the quirks of showMethod
+> (the 'where' argument can be useful under the current regime).
+> 
+> * Two identically named regular functions would conflict in the same
+> way, except perhaps without notifying the user.
+> 
+> Also worth reiterating that the example I mentioned pointed to a bug
+> (relying on user search path for function discovery) that has been
+> resolved through use of a name space and 'imports'. 
+> 
+> End users still have to contend with the competing functions (using
+> Biobase::annotation to disambiguate). This is unfortunate and perhaps
+> amenable to common sense, but independent of S4 / generics.
+> 
+> Martin
+> 
+>> "common sense" be not opposed to each other.
+>>
+>> Best wishes
+>>       Wolfgang
+>>
+>> ----------------------------------------------------
+>> Wolfgang Huber, EMBL-EBI, http://www.ebi.ac.uk/huber
+>>
+>> Martin Morgan wrote:
+>>> Laurent Gatto <l.gatto at dnavision.be> writes:
+>>>
+>>>> Dear Bioc developeRs,
+>>>>
+>>>> I noted recently that Biobase's 'annotation' and 'annotation<-'
+>>>> objects are masked by IRanges. Now calling annotation(AffyBatch),
+>>>> of annotation(ExpressionSet) throws an 'unable to find an inherited
+>>>> method for function "annotation", for signature "AffyBatch"' error.
+>>>> Some of my functions fail because they rely on functions that call
+>>>> annotation(AffyBatch). 
+>>>>
+>>>> My questions are (1) is this the expected behaviour and if yes (2)
+>>>> how am I and/or upstream maintainers supposed to elegantly deal
+>>>> with it?
+>>> Hi Laurent -- I just came across this issue myself -- package A
+>>> failed
+>>> because it called a function in package B which had a dependency on
+>>> package C which, due to changes in package D, now attached IRanges to
+>>> the search path. Package B then found IRange::annotation on the search
+>>> path, instead of Biobase::annotation.
+>>> The solution was easy, in the end -- add
+>>>   importMethodsFrom(Biobase, annotation)
+>>> to the NAMESPACE of package B, and move Biobase from 'Depends:' to
+>>> 'Imports:' in package B, which is definitely the Right Thing To Do. It
+>>> doesn't matter now that IRanges is on the user search path, package B
+>>> always gets the function it wants.
+>>> The solution is less elegant for a function that is not in a name
+>>> space, e.g., because the user is writing it in the global environment,
+>>> as in your example below. Then the solution is to use
+>>>   Biobase::annotation(eset)
+>>> in place of annotation(eset).
+>>> There might be additional technical solutions that Biobase / IRanges
+>>> /
+>>> Biostrings package authors can explore for this particular case...
+>>> Martin
+>>>
+>>>> Illustrative code and sessionInfo are given below.
+>>>>
+>>>> I hope that I am not missing anything obvious here.
+>>>>
+>>>> Thank you in advance.
+>>>>
+>>>> Laurent
+>>>>
+>>>>
+>>>> -- R code ---------------------------------------
+>>>>> source("http://bioconductor.org/biocLite.R")
+>>>>> update.packages(rep=biocinstallRepos(), ask=FALSE)
+>>>>> library(affydata)
+>>>> Loading required package: affy
+>>>> Loading required package: Biobase
+>>>>
+>>>> Welcome to Bioconductor
+>>>>
+>>>>   Vignettes contain introductory material. To view, type
+>>>>   'openVignette()'. To cite Bioconductor, see
+>>>>   'citation("Biobase")' and for packages 'citation(pkgname)'.
+>>>>
+>>>>> data(Dilution)
+>>>>> annotation(Dilution)
+>>>> [1] "hgu95av2"
+>>>>> library(IRanges)
+>>>> Attaching package: 'IRanges'
+>>>>
+>>>>
+>>>> 	The following object(s) are masked from package:Biobase :
+>>>>
+>>>> 	 annotation,
+>>>> 	 annotation<- 
+>>>>
+>>>>
+>>>> 	The following object(s) are masked from package:base :
+>>>>
+>>>> 	 cbind,
+>>>> 	 order,
+>>>> 	 pmax,
+>>>> 	 pmax.int,
+>>>> 	 pmin,
+>>>> 	 pmin.int,
+>>>> 	 rbind,
+>>>> 	 rep.int,
+>>>> 	 table 
+>>>>
+>>>>> annotation(Dilution)
+>>>> Error in function (classes, fdef, mtable)  :   unable to find an
+>>>> inherited method for function "annotation", for signature
+>>>> "AffyBatch"
+>>>>> Biobase:::annotation(Dilution)
+>>>> [1] "hgu95av2"
+>>>>> sessionInfo()
+>>>> R version 2.9.0 Under development (unstable) (2009-02-12 r47911)
+>>>> i686-pc-linux-gnu 
+>>>>
+>>>> locale:
+>>>> LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8;LC_COLLATE=en_US.UTF-8;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C
+>>>>
+>>>> attached base packages:
+>>>> [1] stats     graphics  grDevices utils     datasets  methods
+>>>> base     
+>>>>
+>>>> other attached packages:
+>>>> [1] IRanges_1.1.38  affydata_1.11.3 affy_1.21.7     Biobase_2.3.10 
+>>>>
+>>>> loaded via a namespace (and not attached):
+>>>> [1] affyio_1.11.3        preprocessCore_1.5.3 tools_2.9.0
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From mflawren at fhcrc.org  Fri Feb 20 01:03:10 2009
+From: mflawren at fhcrc.org (Michael Lawrence)
+Date: Thu, 19 Feb 2009 16:03:10 -0800
+Subject: [Bioc-devel] Biobase/IRanges annotation maksing
+In-Reply-To: <499D8F23.3030900@ebi.ac.uk>
+References: <200902181241.56004.l.gatto@dnavision.be>
+	<6phk57nztfr.fsf@gopher4.fhcrc.org> <499D2E8E.8080301@ebi.ac.uk>
+	<6phhc2q78dk.fsf@gopher4.fhcrc.org> <499D8F23.3030900@ebi.ac.uk>
+Message-ID: <509e0620902191603s1cbd69b5g5b7caa8a276b89df@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090219/e1a2ff54/attachment.pl>
+
+From sneumann at ipb-halle.de  Wed Feb 25 23:56:05 2009
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Wed, 25 Feb 2009 23:56:05 +0100
+Subject: [Bioc-devel] Boost as build dependency ?
+In-Reply-To: <1235043461.7998.181.camel@lathan.ipb-sub.ipb-halle.de>
+References: <1234827496.11279.125.camel@samson> <499AF60F.4080000@fhcrc.org>
+	<499B655C.6030901@fhcrc.org>  <499B699B.6050401@fhcrc.org>
+	<1235043461.7998.181.camel@lathan.ipb-sub.ipb-halle.de>
+Message-ID: <1235602565.8251.80.camel@samson>
+
+[In Response to https://stat.ethz.ch/pipermail/bioc-devel/2009-February/001806.html]
+
+On Thu, 2009-02-19 at 12:37 +0100, Steffen Neumann wrote:
+> On Tue, 2009-02-17 at 17:51 -0800, Patrick Aboyoun wrote:
+> > I hadn't done a survey of BOOST usage in BioC packages. It does look 
+> > like we have hit critical mass for BOOST usage. Perhaps the developers 
+> > of RBGL, bgx, BGmix and Steffen could get together to make a lightweight 
+> > "RBOOST" package that they could all link to.
+
+I have started an RBOOST package. It's currently living at 
+http://msbi.ipb-halle.de/~sneumann/RBOOST.tgz
+and contains an untarred boot-1.38.0
+
+R CMD INSTALL RBOOST will build and install the headers 
+and a subset of boost libraries into the RBOOST package:
+
+	BOOST_DIRS="--includedir=${R_PACKAGE_DIR}/include --libdir=${R_PACKAGE_DIR}/libs"
+	BOOST_LIBS="--with-filesystem --with-iostreams --with-regex --with-system"
+	BOOST_CONF="--user-config=user-config.jam --layout=system link=shared"
+	$BJAM ${BOOST_CONF} ${BOOST_DIRS} ${BOOST_LIBS} install
+
+The depending packages should have in their DESCRIPTION:
+
+	...
+	LinkingTo: RBOOST 
+	...
+
+to be able to pick up the headers. Linking is a bit more difficult, 
+and I am not sure I got the best way described in:
+http://cran.r-project.org/doc/manuals/R-exts.html#Linking-to-other-packages
+
+Currently my src/Makevars contains the following hack, 
+although I feel that if I want to make the boost stuff 
+optional and more generic, a configure.in would be the way to go:
+
+	RBOOST_DIR=`echo 'library(RBOOST); cat(system.file("libs", package="RBOOST"))' | ${R_HOME}/bin/R --vanilla --no-save --slave`
+	RBOOST_LIBS=-L"$(RBOOST_LIB)" \
+	            -lboost_filesystem-mt -lboost_iostreams-mt \
+	            -lboost_regex-mt -lboost_system-mt
+
+Comments ?
+
+Yours,
+Steffen
+
+
+From stvjc at channing.harvard.edu  Thu Feb 26 04:30:24 2009
+From: stvjc at channing.harvard.edu (Vincent Carey)
+Date: Wed, 25 Feb 2009 22:30:24 -0500
+Subject: [Bioc-devel] Boost as build dependency ?
+In-Reply-To: <1235602565.8251.80.camel@samson>
+References: <1234827496.11279.125.camel@samson> <499AF60F.4080000@fhcrc.org>
+	<499B655C.6030901@fhcrc.org> <499B699B.6050401@fhcrc.org>
+	<1235043461.7998.181.camel@lathan.ipb-sub.ipb-halle.de>
+	<1235602565.8251.80.camel@samson>
+Message-ID: <2c3c9e80902251930y30a9d39are43b63f0cd69e4e8@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090225/fcd99009/attachment.pl>
+
+From stvjc at channing.harvard.edu  Thu Feb 26 04:32:25 2009
+From: stvjc at channing.harvard.edu (Vincent Carey)
+Date: Wed, 25 Feb 2009 22:32:25 -0500
+Subject: [Bioc-devel] Boost as build dependency ?
+In-Reply-To: <2c3c9e80902251930y30a9d39are43b63f0cd69e4e8@mail.gmail.com>
+References: <1234827496.11279.125.camel@samson> <499AF60F.4080000@fhcrc.org>
+	<499B655C.6030901@fhcrc.org> <499B699B.6050401@fhcrc.org>
+	<1235043461.7998.181.camel@lathan.ipb-sub.ipb-halle.de>
+	<1235602565.8251.80.camel@samson>
+	<2c3c9e80902251930y30a9d39are43b63f0cd69e4e8@mail.gmail.com>
+Message-ID: <2c3c9e80902251932n4723237ax1ca3cf6ac170661c@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090225/745ea156/attachment.pl>
+
+From sneumann at ipb-halle.de  Thu Feb 26 10:23:30 2009
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Thu, 26 Feb 2009 10:23:30 +0100
+Subject: [Bioc-devel] Boost as build dependency ?
+In-Reply-To: <2c3c9e80902251930y30a9d39are43b63f0cd69e4e8@mail.gmail.com>
+References: <1234827496.11279.125.camel@samson> <499AF60F.4080000@fhcrc.org>
+	<499B655C.6030901@fhcrc.org> <499B699B.6050401@fhcrc.org>
+	<1235043461.7998.181.camel@lathan.ipb-sub.ipb-halle.de>
+	<1235602565.8251.80.camel@samson>
+	<2c3c9e80902251930y30a9d39are43b63f0cd69e4e8@mail.gmail.com>
+Message-ID: <1235640210.8453.15.camel@lathan.ipb-sub.ipb-halle.de>
+
+Hi,
+
+On Wed, 2009-02-25 at 22:30 -0500, Vincent Carey wrote:
+> this is 37MB compressed.  RBGL compressed for distribution is 1.2 MB.
+> i am a little concerned about added complexity/size of this approach.
+Yes indeed. The size increase results from also the sources
+being distributed, not just the includes.
+
+Since I only build a subset of the libraries, 
+we could remove the unused bits which should result 
+in (drastically ?) reduced file sizes. I didn't bother yet,
+because I expect disecting boost to be a non-trivial task. 
+I could be wrong here.
+
+Or are there already source tarballs for the individual boost libs ?
+
+Also you're correct, 
+> why don't you distribute an installable R package built by R CMD
+> build?
+In the end BioC would distribute the installable package 
+at least for Mac/Windows, with a file size of 1.2MB for headers
+plus ~1.1MB for the libs that I build. Linux will still have 
+the RBOOST source package, though.
+
+Also not covered in my initial proposal: 
+what about versions ? Should RBOOST carry 
+the boost version number in its name ? 
+RBOOST138 ? Which special characters are allowed in R packages?
+That way one could have multiple BOOST versions 
+installed in parallel, if one depending package 
+insists on an older version.
+
+Yours,
+Steffen
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From sneumann at ipb-halle.de  Sat Feb 28 00:09:16 2009
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Sat, 28 Feb 2009 00:09:16 +0100
+Subject: [Bioc-devel] Boost as build dependency ?
+In-Reply-To: <b796582f0902171754s79ae4350h1fcecc9228726715@mail.gmail.com>
+References: <1234827496.11279.125.camel@samson> <499AF60F.4080000@fhcrc.org>
+	<499B655C.6030901@fhcrc.org>
+	<b796582f0902171754s79ae4350h1fcecc9228726715@mail.gmail.com>
+Message-ID: <1235776156.23892.36.camel@samson>
+
+On Thu, 2009-02-26 at 10:23 +0100, Steffen Neumann wrote:
+> On Wed, 2009-02-25 at 22:30 -0500, Vincent Carey wrote:
+> > this is 37MB compressed.  RBGL compressed for distribution is 1.2 MB.
+> > i am a little concerned about added complexity/size of this approach.
+> ...
+> Since I only build a subset of the libraries, 
+> we could remove the unused bits which should result
+
+Just tried that, it's down to 15MB, living at 
+
+	http://msbi.ipb-halle.de/~sneumann/RBOOST.tgz
+
+and still includes all boost headers, which are ~5MB compressed. 
+
+The source tarball would still be well above the BioC file size limit.
+And if other (new) packages depend on RBOOST, they might need
+more libraries built, reducing the effectivity of the pruning efforts.
+
+If 37MB are inacceptable, are 15MB acceptable ? 
+
+If not, I could remove the dependency on RBOOST from XCMS,
+and try some dyn.load() magic and move the burden 
+of installing the proper BOOST stuff to the user / his OS distribution.
+Would that be better in terms of usability ?!
+
+Comments ?
+
+Yours,
+Steffen
+
+

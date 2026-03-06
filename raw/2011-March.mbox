@@ -1,0 +1,4650 @@
+From S.Berri at leeds.ac.uk  Fri Mar  4 11:21:23 2011
+From: S.Berri at leeds.ac.uk (Stefano Berri)
+Date: Fri, 4 Mar 2011 10:21:23 +0000
+Subject: [Bioc-devel] resolving warnings...
+Message-ID: <C9966DA3.1CE7%s.berri@leeds.ac.uk>
+
+Hi.
+I am working to make a package for Bioconductor.
+I can run 
+
+R CMD build
+
+with no error nor warnings
+
+but when I run 
+
+R CMD INSTALL
+
+I have the following warnings:
+
+++++++++++++++++++++++++++++++++++++
+** preparing package for lazy loading
+Warning in matchSignature(signature, fdef, where) :
+  in the method signature for function "initialize" no definition for class:
+?CNAnorm?
+Warning in matchSignature(signature, fdef, where) :
+  in the method signature for function "initialize" no definition for class:
+?InData?
+Creating a new generic function for "summary" in "CNAnorm"
+Creating a new generic function for "as.data.frame" in "CNAnorm"
+++++++++++++++++++++++++++++++++++++
+
+When running R CMD CHECK
+
++++++++++++++++++++++++++++++++++++
+* checking for unstated dependencies in R code ... WARNING
+Warning in methods::findMethods(g, env) :
+  non-generic function 'initialize' given to findMethods()
+Warning in methods::findMethods(g, env) :
+  non-generic function 'show' given to findMethods()
+...
+* checking foreign function calls ... WARNING
+Warning in methods::findMethods(g, env) :
+  non-generic function 'initialize' given to findMethods()
+Warning in methods::findMethods(g, env) :
+  non-generic function 'show' given to findMethods()
++++++++++++++++++++++++++++++++++++
+
+
+
+What does it mean? I have four Classes, only Class "InData" has a 'validity'
+statement. InData is one slot of Class CNAnorm
+
+Also I am a bit puzzled by the "Creating generic function..."
+
+I have summary for all my classes, but only CNAnorm give me that message...
+
+Thanks for your help
+
+Stefano
+
+
+From mtmorgan at fhcrc.org  Fri Mar  4 14:56:37 2011
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Fri, 4 Mar 2011 05:56:37 -0800
+Subject: [Bioc-devel] resolving warnings...
+In-Reply-To: <C9966DA3.1CE7%s.berri@leeds.ac.uk>
+References: <C9966DA3.1CE7%s.berri@leeds.ac.uk>
+Message-ID: <4D70EF95.5020503@fhcrc.org>
+
+Hi Stefano --
+
+On 03/04/2011 02:21 AM, Stefano Berri wrote:
+> Hi.
+> I am working to make a package for Bioconductor.
+> I can run 
+> 
+> R CMD build
+> 
+> with no error nor warnings
+> 
+> but when I run 
+> 
+> R CMD INSTALL
+> 
+> I have the following warnings:
+> 
+> ++++++++++++++++++++++++++++++++++++
+> ** preparing package for lazy loading
+> Warning in matchSignature(signature, fdef, where) :
+>   in the method signature for function "initialize" no definition for class:
+> ?CNAnorm?
+> Warning in matchSignature(signature, fdef, where) :
+>   in the method signature for function "initialize" no definition for class:
+> ?InData?
+
+These sound like a problem with the DESCRIPTIONN file, Collate: field,
+where you need to arrange for your source files to be read in to R in
+such a way that the class definitions occur before the corresponding
+method definitions.
+
+> Creating a new generic function for "summary" in "CNAnorm"
+> Creating a new generic function for "as.data.frame" in "CNAnorm"
+
+These messages occur once per package, probably your package is called
+CNAnorm. It means that you have written a method, e.g.,
+setMethod("summary", ...) without first promoting the plain function
+'summary' to a generic, either with setGeneric("summary" <...>) or by
+importing an appropriate generic or methods from a package that your
+class depends on, e.g., by adding the package to DESCRIPTION Imports:
+and NAMESPACE importFrom.
+
+> ++++++++++++++++++++++++++++++++++++
+> 
+> When running R CMD CHECK
+> 
+> +++++++++++++++++++++++++++++++++++
+> * checking for unstated dependencies in R code ... WARNING
+> Warning in methods::findMethods(g, env) :
+>   non-generic function 'initialize' given to findMethods()
+
+Here I think you need to add to DESCRIPTION
+
+  Imports: methods
+
+and to NAMESPACE
+
+  import(methods)
+
+Hope that helps,
+
+Martin
+
+> Warning in methods::findMethods(g, env) :
+>   non-generic function 'show' given to findMethods()
+> ...
+> * checking foreign function calls ... WARNING
+> Warning in methods::findMethods(g, env) :
+>   non-generic function 'initialize' given to findMethods()
+> Warning in methods::findMethods(g, env) :
+>   non-generic function 'show' given to findMethods()
+> +++++++++++++++++++++++++++++++++++
+> 
+> 
+> 
+> What does it mean? I have four Classes, only Class "InData" has a 'validity'
+> statement. InData is one slot of Class CNAnorm
+> 
+> Also I am a bit puzzled by the "Creating generic function..."
+> 
+> I have summary for all my classes, but only CNAnorm give me that message...
+> 
+> Thanks for your help
+> 
+> Stefano
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From S.Berri at leeds.ac.uk  Fri Mar  4 15:23:18 2011
+From: S.Berri at leeds.ac.uk (Stefano Berri)
+Date: Fri, 4 Mar 2011 14:23:18 +0000
+Subject: [Bioc-devel] resolving warnings...
+In-Reply-To: <4D70EF95.5020503@fhcrc.org>
+Message-ID: <C996A656.1CF5%s.berri@leeds.ac.uk>
+
+> Hope that helps,
+> 
+> Martin
+
+A looot!!!!
+
+Thank you!
+
+Still one thing not clear:
+
+>> Creating a new generic function for "summary" in "CNAnorm"
+>> Creating a new generic function for "as.data.frame" in "CNAnorm"
+> 
+> These messages occur once per package, probably your package is called
+> CNAnorm. It means that you have written a method, e.g.,
+> setMethod("summary", ...) without first promoting the plain function
+> 'summary' to a generic, either with setGeneric("summary" <...>) or by
+> importing an appropriate generic or methods from a package that your
+> class depends on, e.g., by adding the package to DESCRIPTION Imports:
+> and NAMESPACE importFrom.
+
+So I added setGeneric("summary" ...) but now get this message
+
+++++++++++++++++++++++++++
+Creating a generic for "summary" in package "CNAnorm"
+    (the supplied definition differs from and overrides the implicit generic
+    in package "base": Classes: "nonstandardGenericFunction",
+"standardGeneric")
+++++++++++++++++++++++++++
+
+The reason why I didn't set a Generic in the first place, is because there
+is a "summary" definition in package "base" and, as far as I know, base is
+imported automatically. Similarly, I do not have a generic for "length" but
+have a length method and it does not give me problems...
+
+Shall I import package base explicitly? or the function "summary"?
+
+Thanks a lot.
+
+Stefano
+
+
+From mtmorgan at fhcrc.org  Fri Mar  4 15:31:03 2011
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Fri, 4 Mar 2011 06:31:03 -0800
+Subject: [Bioc-devel] resolving warnings...
+In-Reply-To: <C996A656.1CF5%s.berri@leeds.ac.uk>
+References: <C996A656.1CF5%s.berri@leeds.ac.uk>
+Message-ID: <4D70F7A7.10902@fhcrc.org>
+
+On 03/04/2011 06:23 AM, Stefano Berri wrote:
+>> Hope that helps,
+>>
+>> Martin
+> 
+> A looot!!!!
+> 
+> Thank you!
+> 
+> Still one thing not clear:
+> 
+>>> Creating a new generic function for "summary" in "CNAnorm"
+>>> Creating a new generic function for "as.data.frame" in "CNAnorm"
+>>
+>> These messages occur once per package, probably your package is called
+>> CNAnorm. It means that you have written a method, e.g.,
+>> setMethod("summary", ...) without first promoting the plain function
+>> 'summary' to a generic, either with setGeneric("summary" <...>) or by
+>> importing an appropriate generic or methods from a package that your
+>> class depends on, e.g., by adding the package to DESCRIPTION Imports:
+>> and NAMESPACE importFrom.
+> 
+> So I added setGeneric("summary" ...) but now get this message
+> 
+> ++++++++++++++++++++++++++
+> Creating a generic for "summary" in package "CNAnorm"
+>     (the supplied definition differs from and overrides the implicit generic
+>     in package "base": Classes: "nonstandardGenericFunction",
+> "standardGeneric")
+> ++++++++++++++++++++++++++
+> 
+> The reason why I didn't set a Generic in the first place, is because there
+> is a "summary" definition in package "base" and, as far as I know, base is
+> imported automatically. Similarly, I do not have a generic for "length" but
+> have a length method and it does not give me problems...
+> 
+> Shall I import package base explicitly? or the function "summary"?
+
+'base' functions are standard functions, not S4 generics, and as you say
+they are already available within the package name space. If you
+
+> args(summary)
+function (object, ...)
+
+you'll see what the current signature is for summary. Make your generic
+have the same signature
+
+setGeneric("summary", function(object, ...) standardGeneric("summary"))
+
+or rely the default behavior of setGeneric with
+
+setGeneric("summary")
+
+but I'm not sure that this explains the error message. If not, start a
+new R session and load the packages listed in your package Imports:
+field. Then try typing
+
+summary
+
+at the command line. Perhaps there is already a generic defined in
+package Foo, and you'd like to reuse that using importFrom(Foo, summary).
+
+Martin
+
+
+> 
+> Thanks a lot.
+> 
+> Stefano
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From pshannon at systemsbiology.org  Sat Mar  5 02:06:48 2011
+From: pshannon at systemsbiology.org (Paul Shannon)
+Date: Fri, 4 Mar 2011 17:06:48 -0800
+Subject: [Bioc-devel] how to build a single .Rd file
+Message-ID: <04796DCB-5FB6-4A16-8466-74185CED507D@systemsbiology.org>
+
+I am adding a dozen or so man pages ('.Rd' files -- there must be a better name) to 120 already written.
+
+I check the accuracy of these files by running 'R CMD check' on the entire package.  Sometimes this takes a while to run, a while before I learn of the typo I made in the man page I last edited.
+
+Is there some way to ask R to check only a single .Rd file?  Something like:
+
+  cd RCytoscape/man
+  R CMD check setNodeColorRule.Rd
+
+Thanks,
+
+ - Paul
+
+From mtmorgan at fhcrc.org  Sat Mar  5 02:31:49 2011
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Fri, 4 Mar 2011 17:31:49 -0800
+Subject: [Bioc-devel] how to build a single .Rd file
+In-Reply-To: <04796DCB-5FB6-4A16-8466-74185CED507D@systemsbiology.org>
+References: <04796DCB-5FB6-4A16-8466-74185CED507D@systemsbiology.org>
+Message-ID: <4D719285.6010702@fhcrc.org>
+
+On 03/04/2011 05:06 PM, Paul Shannon wrote:
+> I am adding a dozen or so man pages ('.Rd' files -- there must be a better name) to 120 already written.
+> 
+> I check the accuracy of these files by running 'R CMD check' on the entire package.  Sometimes this takes a while to run, a while before I learn of the typo I made in the man page I last edited.
+> 
+> Is there some way to ask R to check only a single .Rd file?  Something like:
+> 
+>   cd RCytoscape/man
+>   R CMD check setNodeColorRule.Rd
+
+Hi Paul --
+
+R CMD check --help
+
+shows a number of options to enhance this process, for instance
+--no-vignettes --no-examples (similar options to R CMD INSTALL can
+greatly speed up the install cycle during package development).
+
+Within R, tools::checkRd and other functions are useful, e.g.,
+
+  library(tools)
+  checkRd("RCytoscape/man/CytoscapeConnection.Rd")
+
+Martin
+
+> 
+> Thanks,
+> 
+>  - Paul
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From stvjc at channing.harvard.edu  Mon Mar  7 15:01:14 2011
+From: stvjc at channing.harvard.edu (Vincent Carey)
+Date: Mon, 7 Mar 2011 09:01:14 -0500
+Subject: [Bioc-devel] [BioC] lookUp for other terminologies
+In-Reply-To: <AANLkTim1R-h7i4GsdXmqi+Oc03iAZfQHed_Pm4tUBcwG@mail.gmail.com>
+References: <AANLkTimnNK8_xf1x3KVm_DvEdghciYg1iXFatpju3sMp@mail.gmail.com>
+	<4D743940.8090608@fhcrc.org>
+	<AANLkTim4Q+SGkdLn75uahSNLDfoQcZFLqx8x4cvpiKhc@mail.gmail.com>
+	<AANLkTim1R-h7i4GsdXmqi+Oc03iAZfQHed_Pm4tUBcwG@mail.gmail.com>
+Message-ID: <AANLkTi=8LPbbktGLRdHckj2BoYWuiA-fx7zBhB6fKOzO@mail.gmail.com>
+
+On Mon, Mar 7, 2011 at 8:05 AM, Vincent Carey
+<stvjc at channing.harvard.edu> wrote:
+> I am going to move this thread to bioc-devel and comment further there.
+>
+> On Mon, Mar 7, 2011 at 3:55 AM, Matthew Pocock
+> <turingatemyhamster at gmail.com> wrote:
+>> Thanks Martin. I do have DO.db installed, and from the R shell I can type:
+>>
+>>> getAnnMap("CHILDREN", "DO")
+>> CHILDREN map for DO (object of class "AnnDbBimap")
+>>
+>> However, it was complaining about an environment.
+
+A reference was made to lookUp() which is legacy code defined in the
+annotate package; this package has been superseded in various respects
+by AnnotationDbi.  I would imagine that new code should avoid using
+lookUp.
+
+The sort of substitution that is sought is to have something like
+hu6800DO that would function just like the existing hu6800GO.  As
+noted by Martin, the actual functionality of hu6800GO is dependent
+both on its class structure and the fact that it is defined in the
+hu6800.db package.  The documentation of getAnnMap also makes clear
+the relationship to the package repertory.
+
+The most natural way for hu6800DO to be produced would be to extend
+SQLforge tasks so
+that it is produced as a part of hu6800.db next time around -- this
+would depend on the existence of a DO->Entrez mapping; anyone with
+such a mapping could follow the SQLforge instructions to build this
+for a given chip/organism.
+
+I can understand the desire to take software that uses a *GO map, and
+"drop in" a *DO map.  It does not seem possible to construct a *DO map
+(that one could drop in) outside the SQLforge packaging discipline and
+it may be worth your while to just bite the bullet and do this.
+Alternatively it might be cost-effective to tweak the legacy code to
+accept a list (perhaps formalized with S4) that defines the mapping.
+
+It seems relatively easy to build a FlatBimap on the fly, but no get
+or mget method seems to be defined.  I don't know if this is
+intentional, but if we want to allow more lightweight (less
+package-dependent) use of Bimaps, perhaps this is a way to go.
+
+>>
+>>> showMethods("mget")
+>> Function: mget (package base)
+>> x="ANY", envir="AnnDbBimap"
+>> x="ANY", envir="ANY"
+>> x="character", envir="DOTermsAnnDbBimap"
+>> ? ?(inherited from: x="ANY", envir="AnnDbBimap")
+>> x="character", envir="GOTermsAnnDbBimap"
+>> ? ?(inherited from: x="ANY", envir="AnnDbBimap")
+>> x="character", envir="ProbeAnnDbBimap"
+>> ? ?(inherited from: x="ANY", envir="AnnDbBimap")
+>> x="character", envir="ProbeGo3AnnDbBimap"
+>> ? ?(inherited from: x="ANY", envir="AnnDbBimap")
+>>
+>> So, there's a version of mget that uses the environment "DOTermsAnnDbBimap".
+>> I am guessing that this is the environment that it can't find.
+>>
+>> Thanks for the hint - I'll track down and read that vignette. In the mean
+>> time, I'm writing code to do the lookup I need as a special case.
+>>
+>> Matthew
+>>
+>> On 7 March 2011 01:47, Martin Morgan <mtmorgan at fhcrc.org> wrote:
+>>
+>>> On 03/06/2011 09:34 AM, Matthew Pocock wrote:
+>>>
+>>> > Error in mget(x, envir = getAnnMap(what, chip = data, load = load),
+>>> > ifnotfound = NA) :
+>>> > ? error in evaluating the argument 'envir' in selecting a method for
+>>> > function 'mget'
+>>> >> traceback()
+>>> > 3: mget(x, envir = getAnnMap(what, chip = data, load = load), ifnotfound
+>>> =
+>>> > NA)
+>>> > 2: lookUp(id, annotation, extension) at gtDO.R#144
+>>> >
+>>> > So it looks like getAnnMap is not happy. I've looked at the source for
+>>> > getAnnMap and have to own up to being mystified by it.
+>>>
+>>> Hi Matthew -- if I
+>>>
+>>> ?getAnnMap("CHILDREN", "DO")
+>>>
+>>> then getAnnMap is going to look in search() for an entry that might look
+>>> like "package:DO.db" and then use that to find a map DOCHILDEN. If it
+>>> can't find the package in search(), it'll try to load it.
+>>>
+>>> What this means, I think, is that you'd want to create not just a bimap
+>>> but a package that contains the bimap. I think this is covered in the
+>>> AnnotationDbi package vignette "SQLForge: ...easy...". Not sure this is
+>>> the most straight-forward path to your objective...
+>>>
+>>> Martin
+>>>
+>>>
+>>> >
+>>> > I think the closest 'drop-in' replacement I can find in DO for lookUp is
+>>> the
+>>> > Term() function, but I may be confused about what these two different
+>>> > functions do.
+>>> >
+>>> > Thanks,
+>>> >
+>>> > Matthew
+>>> >
+>>>
+>>>
+>>> --
+>>> Computational Biology
+>>> Fred Hutchinson Cancer Research Center
+>>> 1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+>>>
+>>> Location: M1-B861
+>>> Telephone: 206 667-2793
+>>>
+>>
+>>
+>>
+>> --
+>> Matthew Pocock
+>> mailto: turingatemyhamster at gmail.com
+>> gchat: turingatemyhamster at gmail.com
+>> msn: matthew_pocock at yahoo.co.uk
+>> irc.freenode.net: drdozer
+>> (0191) 2566550
+>>
+>> ? ? ? ?[[alternative HTML version deleted]]
+>>
+>> _______________________________________________
+>> Bioconductor mailing list
+>> Bioconductor at r-project.org
+>> https://stat.ethz.ch/mailman/listinfo/bioconductor
+>> Search the archives: http://news.gmane.org/gmane.science.biology.informatics.conductor
+>>
+>
+
+
+From zhujack at mail.nih.gov  Mon Mar  7 16:12:47 2011
+From: zhujack at mail.nih.gov (Jack Zhu)
+Date: Mon, 7 Mar 2011 10:12:47 -0500
+Subject: [Bioc-devel] [Bioc-sig-seq] SRAdb and getFastq
+In-Reply-To: <AANLkTikyJNLH7Q6tyegwEzPkkXXRvv-wJUQNer3Qn9N2@mail.gmail.com>
+References: <AANLkTi=4hZ87mtezJWLQY-__WCZ_A7+65ES9PFwJe=93@mail.gmail.com>
+	<AANLkTi=nSrCh=HefSP=1xfd0qF3NwEv6qoPQYpOvBeY_@mail.gmail.com>
+	<4D713C38.3070509@fhcrc.org>
+	<AANLkTinNw553PEjLhm+NWE+N_CZaxJ-wU6O22vxrSnbP@mail.gmail.com>
+	<AANLkTikABPtO83ccypHFbAVoMU_itZ+TCz0J0=AkzJnO@mail.gmail.com>
+	<AANLkTikyJNLH7Q6tyegwEzPkkXXRvv-wJUQNer3Qn9N2@mail.gmail.com>
+Message-ID: <AANLkTi=foXHiLxNuXQ0_BYMrXtAHhzov1yO9Te4a7hWq@mail.gmail.com>
+
+Hi Kirti,
+
+
+As Martin said, in the newer version of BioC (both 2.7 release and 2.8
+dev version), there were changes to reflect the NCBI removal of fastq
+files:
+
+   1. Removed functions of listFastq, getFastqInfo and getFaastq
+   2. Added functions of listSRAfile, getSRAinfo and getSRAfile
+   3. Modified the corresponding files to reflect the change.
+
+Now you could just list or get lite.sra files or sra files instead of
+fastq files.  Details please see:
+
+    https://stat.ethz.ch/pipermail/bioc-devel/2011-January/002439.html
+
+Or the package vignette:
+http://www.bioconductor.org/help/bioc-views/release/bioc/html/SRAdb.html
+
+Regarding converting  lite.sra files into fastq files, after the sra
+toolkit was installed properly, we just simple run:
+
+ $   fastq-dump xxxx.lite.sra
+
+FYI.
+
+Thanks.
+
+Jack
+
+
+
+
+On 4 March 2011 15:16, kirti prakash <kirtiprakash3.14 at gmail.com> wrote:
+> Hi Steve,
+> I did try sra toolkit. In my case the difference between files is around
+> 100mb.
+> I got fastq files by instructions mentioned at the following website ...
+> http://seqanswers.com/forums/archive/index.php/t-8220.html
+> Some issues I had with sra toolkit(I know this not the right place to
+> discuss this still ...):
+>
+> FIrst I tried fastq-dump (a blank output file) and then illumina-dump which
+> gave me a set of
+> 1. *.qcal.txt( which contains sequences like "hhhhhhhhhhhehhhhhThhLhhL")and
+> 2. *.seq.txt (which contains info like "1 ? ? ? 1 ? ? ? 875 ? ? 885
+> TACATGGGGAAAATATGCAAAATA")
+> I have yet to figure out how to convert this into fastq.
+> Kirti
+> On Fri, Mar 4, 2011 at 9:47 PM, Steve Lianoglou
+> <mailinglist.honeypot at gmail.com> wrote:
+>>
+>> Hi,
+>>
+>> On Fri, Mar 4, 2011 at 2:34 PM, kirti prakash
+>> <kirtiprakash3.14 at gmail.com> wrote:
+>> > Hi Sean and Martin,
+>> >
+>> > Thanks a lot for the clarification.
+>> >
+>> > Do you some other function now that converts SRA to fastq format ?
+>>
+>> You can do it via the sra toolkit. Some info and download link here:
+>>
+>> http://www.ncbi.nlm.nih.gov/books/NBK47540/
+>>
+>> > I wonder how much space NCBI saves by deleting fastq files and what is
+>> > extra
+>> > advantage of having of SRA files.
+>>
+>> Run the (I believe) fastq-dump tool to convert to FASTQ and see for
+>> yourself ;-)
+>>
+>> It's weird -- I have a set of *.fastq.gz files for a set of *.sra
+>> files, and the corresponding *.fastq.gz files seem to actually be
+>> smaller!
+>>
+>> Maybe it's just me, though ...
+>>
+>> -steve
+>>
+>> --
+>> Steve Lianoglou
+>> Graduate Student: Computational Systems Biology
+>> ?| Memorial Sloan-Kettering Cancer Center
+>> ?| Weill Medical College of Cornell University
+>> Contact Info: http://cbio.mskcc.org/~lianos/contact
+>
+>
+
+
+From turingatemyhamster at gmail.com  Mon Mar  7 16:50:54 2011
+From: turingatemyhamster at gmail.com (Matthew Pocock)
+Date: Mon, 7 Mar 2011 15:50:54 +0000
+Subject: [Bioc-devel] [BioC] lookUp for other terminologies
+In-Reply-To: <AANLkTi=8LPbbktGLRdHckj2BoYWuiA-fx7zBhB6fKOzO@mail.gmail.com>
+References: <AANLkTimnNK8_xf1x3KVm_DvEdghciYg1iXFatpju3sMp@mail.gmail.com>
+	<4D743940.8090608@fhcrc.org>
+	<AANLkTim4Q+SGkdLn75uahSNLDfoQcZFLqx8x4cvpiKhc@mail.gmail.com>
+	<AANLkTim1R-h7i4GsdXmqi+Oc03iAZfQHed_Pm4tUBcwG@mail.gmail.com>
+	<AANLkTi=8LPbbktGLRdHckj2BoYWuiA-fx7zBhB6fKOzO@mail.gmail.com>
+Message-ID: <AANLkTikiBK3ZkDi42ju6igdr7oj3P-2OGL-V1k4T-LPA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110307/3a2b4136/attachment.pl>
+
+From mtmorgan at fhcrc.org  Mon Mar  7 17:57:13 2011
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 7 Mar 2011 08:57:13 -0800
+Subject: [Bioc-devel] [BioC] lookUp for other terminologies
+In-Reply-To: <AANLkTikiBK3ZkDi42ju6igdr7oj3P-2OGL-V1k4T-LPA@mail.gmail.com>
+References: <AANLkTimnNK8_xf1x3KVm_DvEdghciYg1iXFatpju3sMp@mail.gmail.com>	<4D743940.8090608@fhcrc.org>	<AANLkTim4Q+SGkdLn75uahSNLDfoQcZFLqx8x4cvpiKhc@mail.gmail.com>	<AANLkTim1R-h7i4GsdXmqi+Oc03iAZfQHed_Pm4tUBcwG@mail.gmail.com>	<AANLkTi=8LPbbktGLRdHckj2BoYWuiA-fx7zBhB6fKOzO@mail.gmail.com>
+	<AANLkTikiBK3ZkDi42ju6igdr7oj3P-2OGL-V1k4T-LPA@mail.gmail.com>
+Message-ID: <4D750E69.2080802@fhcrc.org>
+
+On 03/07/2011 07:50 AM, Matthew Pocock wrote:
+> I guess the ideal situation for me would be if I have a mapping
+> entrez_id <-> do_id that I can publish this somewhere well-known and
+> then every annotation that has entrez IDs would get annotations to the
+> DO ids grandfathered in. I don't know how well that would fit into the
+> general way bioconductor does things though. More generally, if there is
+> a mapping from probe_id <-> foo_id provided as a foo.do package, and I
+> have a mapping foo_id <-> bar_id, it would be nice if there was a method
+> where I could register my mapping, and from then on, probe_id <-> bar_id
+> would be available. Perhaps this is asking too much.
+
+I wonder if you could be a bit more specific about the tasks you're
+trying to accomplish? It sounds like you have an AnnDb object of some
+kind, and can use the AnnDb API to manipulate it, e.g., mget("sym",
+mymap). The problem seems to be in use of functions, like lookUp in this
+particular case but probably in many other places, that try to construct
+the map from character strings "DO" and "CHILDREN".
+
+One could modify getAnnMap to also look, as a last resort, on the
+search() path for the named symbol of appropriate type. Maybe this is
+too much addressing the symptom rather than problem.
+
+Also, fwiw, the 'envir' referenced below is just a variable name; the
+mget method defined in AnnotationDbi dispatches on that variable to
+handle AnnDb objects.
+
+Martin
+
+> 
+> Matthew
+> 
+> On 7 March 2011 14:01, Vincent Carey <stvjc at channing.harvard.edu
+> <mailto:stvjc at channing.harvard.edu>> wrote:
+> 
+>     On Mon, Mar 7, 2011 at 8:05 AM, Vincent Carey
+>     <stvjc at channing.harvard.edu <mailto:stvjc at channing.harvard.edu>> wrote:
+>     > I am going to move this thread to bioc-devel and comment further
+>     there.
+>     >
+>     > On Mon, Mar 7, 2011 at 3:55 AM, Matthew Pocock
+>     > <turingatemyhamster at gmail.com
+>     <mailto:turingatemyhamster at gmail.com>> wrote:
+>     >> Thanks Martin. I do have DO.db installed, and from the R shell I
+>     can type:
+>     >>
+>     >>> getAnnMap("CHILDREN", "DO")
+>     >> CHILDREN map for DO (object of class "AnnDbBimap")
+>     >>
+>     >> However, it was complaining about an environment.
+> 
+>     A reference was made to lookUp() which is legacy code defined in the
+>     annotate package; this package has been superseded in various respects
+>     by AnnotationDbi.  I would imagine that new code should avoid using
+>     lookUp.
+> 
+>     The sort of substitution that is sought is to have something like
+>     hu6800DO that would function just like the existing hu6800GO.  As
+>     noted by Martin, the actual functionality of hu6800GO is dependent
+>     both on its class structure and the fact that it is defined in the
+>     hu6800.db package.  The documentation of getAnnMap also makes clear
+>     the relationship to the package repertory.
+> 
+>     The most natural way for hu6800DO to be produced would be to extend
+>     SQLforge tasks so
+>     that it is produced as a part of hu6800.db next time around -- this
+>     would depend on the existence of a DO->Entrez mapping; anyone with
+>     such a mapping could follow the SQLforge instructions to build this
+>     for a given chip/organism.
+> 
+>     I can understand the desire to take software that uses a *GO map, and
+>     "drop in" a *DO map.  It does not seem possible to construct a *DO map
+>     (that one could drop in) outside the SQLforge packaging discipline and
+>     it may be worth your while to just bite the bullet and do this.
+>     Alternatively it might be cost-effective to tweak the legacy code to
+>     accept a list (perhaps formalized with S4) that defines the mapping.
+> 
+>     It seems relatively easy to build a FlatBimap on the fly, but no get
+>     or mget method seems to be defined.  I don't know if this is
+>     intentional, but if we want to allow more lightweight (less
+>     package-dependent) use of Bimaps, perhaps this is a way to go.
+> 
+>     >>
+>     >>> showMethods("mget")
+>     >> Function: mget (package base)
+>     >> x="ANY", envir="AnnDbBimap"
+>     >> x="ANY", envir="ANY"
+>     >> x="character", envir="DOTermsAnnDbBimap"
+>     >>    (inherited from: x="ANY", envir="AnnDbBimap")
+>     >> x="character", envir="GOTermsAnnDbBimap"
+>     >>    (inherited from: x="ANY", envir="AnnDbBimap")
+>     >> x="character", envir="ProbeAnnDbBimap"
+>     >>    (inherited from: x="ANY", envir="AnnDbBimap")
+>     >> x="character", envir="ProbeGo3AnnDbBimap"
+>     >>    (inherited from: x="ANY", envir="AnnDbBimap")
+>     >>
+>     >> So, there's a version of mget that uses the environment
+>     "DOTermsAnnDbBimap".
+>     >> I am guessing that this is the environment that it can't find.
+>     >>
+>     >> Thanks for the hint - I'll track down and read that vignette. In
+>     the mean
+>     >> time, I'm writing code to do the lookup I need as a special case.
+>     >>
+>     >> Matthew
+>     >>
+>     >> On 7 March 2011 01:47, Martin Morgan <mtmorgan at fhcrc.org
+>     <mailto:mtmorgan at fhcrc.org>> wrote:
+>     >>
+>     >>> On 03/06/2011 09:34 AM, Matthew Pocock wrote:
+>     >>>
+>     >>> > Error in mget(x, envir = getAnnMap(what, chip = data, load =
+>     load),
+>     >>> > ifnotfound = NA) :
+>     >>> >   error in evaluating the argument 'envir' in selecting a
+>     method for
+>     >>> > function 'mget'
+>     >>> >> traceback()
+>     >>> > 3: mget(x, envir = getAnnMap(what, chip = data, load = load),
+>     ifnotfound
+>     >>> =
+>     >>> > NA)
+>     >>> > 2: lookUp(id, annotation, extension) at gtDO.R#144
+>     >>> >
+>     >>> > So it looks like getAnnMap is not happy. I've looked at the
+>     source for
+>     >>> > getAnnMap and have to own up to being mystified by it.
+>     >>>
+>     >>> Hi Matthew -- if I
+>     >>>
+>     >>>  getAnnMap("CHILDREN", "DO")
+>     >>>
+>     >>> then getAnnMap is going to look in search() for an entry that
+>     might look
+>     >>> like "package:DO.db" and then use that to find a map DOCHILDEN.
+>     If it
+>     >>> can't find the package in search(), it'll try to load it.
+>     >>>
+>     >>> What this means, I think, is that you'd want to create not just
+>     a bimap
+>     >>> but a package that contains the bimap. I think this is covered
+>     in the
+>     >>> AnnotationDbi package vignette "SQLForge: ...easy...". Not sure
+>     this is
+>     >>> the most straight-forward path to your objective...
+>     >>>
+>     >>> Martin
+>     >>>
+>     >>>
+>     >>> >
+>     >>> > I think the closest 'drop-in' replacement I can find in DO for
+>     lookUp is
+>     >>> the
+>     >>> > Term() function, but I may be confused about what these two
+>     different
+>     >>> > functions do.
+>     >>> >
+>     >>> > Thanks,
+>     >>> >
+>     >>> > Matthew
+>     >>> >
+>     >>>
+>     >>>
+>     >>> --
+>     >>> Computational Biology
+>     >>> Fred Hutchinson Cancer Research Center
+>     >>> 1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+>     >>>
+>     >>> Location: M1-B861
+>     >>> Telephone: 206 667-2793
+>     >>>
+>     >>
+>     >>
+>     >>
+>     >> --
+>     >> Matthew Pocock
+>     >> mailto: turingatemyhamster at gmail.com
+>     <mailto:turingatemyhamster at gmail.com>
+>     >> gchat: turingatemyhamster at gmail.com
+>     <mailto:turingatemyhamster at gmail.com>
+>     >> msn: matthew_pocock at yahoo.co.uk <mailto:matthew_pocock at yahoo.co.uk>
+>     >> irc.freenode.net <http://irc.freenode.net>: drdozer
+>     >> (0191) 2566550
+>     >>
+>     >>        [[alternative HTML version deleted]]
+>     >>
+>     >> _______________________________________________
+>     >> Bioconductor mailing list
+>     >> Bioconductor at r-project.org <mailto:Bioconductor at r-project.org>
+>     >> https://stat.ethz.ch/mailman/listinfo/bioconductor
+>     >> Search the archives:
+>     http://news.gmane.org/gmane.science.biology.informatics.conductor
+>     >>
+>     >
+> 
+> 
+> 
+> 
+> -- 
+> Matthew Pocock
+> mailto: turingatemyhamster at gmail.com <mailto:turingatemyhamster at gmail.com>
+> gchat: turingatemyhamster at gmail.com <mailto:turingatemyhamster at gmail.com>
+> msn: matthew_pocock at yahoo.co.uk <mailto:matthew_pocock at yahoo.co.uk>
+> irc.freenode.net <http://irc.freenode.net>: drdozer
+> (0191) 2566550
+> 
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From turingatemyhamster at gmail.com  Mon Mar  7 19:10:12 2011
+From: turingatemyhamster at gmail.com (Matthew Pocock)
+Date: Mon, 7 Mar 2011 18:10:12 +0000
+Subject: [Bioc-devel] [BioC] lookUp for other terminologies
+In-Reply-To: <4D750E69.2080802@fhcrc.org>
+References: <AANLkTimnNK8_xf1x3KVm_DvEdghciYg1iXFatpju3sMp@mail.gmail.com>
+	<4D743940.8090608@fhcrc.org>
+	<AANLkTim4Q+SGkdLn75uahSNLDfoQcZFLqx8x4cvpiKhc@mail.gmail.com>
+	<AANLkTim1R-h7i4GsdXmqi+Oc03iAZfQHed_Pm4tUBcwG@mail.gmail.com>
+	<AANLkTi=8LPbbktGLRdHckj2BoYWuiA-fx7zBhB6fKOzO@mail.gmail.com>
+	<AANLkTikiBK3ZkDi42ju6igdr7oj3P-2OGL-V1k4T-LPA@mail.gmail.com>
+	<4D750E69.2080802@fhcrc.org>
+Message-ID: <AANLkTik6t_jz=rCWOjKkWcy_Qw1u_PtwM+YM=ae72aeE@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110307/a144f94c/attachment.pl>
+
+From mcarlson at fhcrc.org  Mon Mar  7 19:56:31 2011
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Mon, 07 Mar 2011 10:56:31 -0800
+Subject: [Bioc-devel] [BioC] lookUp for other terminologies
+In-Reply-To: <AANLkTik6t_jz=rCWOjKkWcy_Qw1u_PtwM+YM=ae72aeE@mail.gmail.com>
+References: <AANLkTimnNK8_xf1x3KVm_DvEdghciYg1iXFatpju3sMp@mail.gmail.com>	<4D743940.8090608@fhcrc.org>	<AANLkTim4Q+SGkdLn75uahSNLDfoQcZFLqx8x4cvpiKhc@mail.gmail.com>	<AANLkTim1R-h7i4GsdXmqi+Oc03iAZfQHed_Pm4tUBcwG@mail.gmail.com>	<AANLkTi=8LPbbktGLRdHckj2BoYWuiA-fx7zBhB6fKOzO@mail.gmail.com>	<AANLkTikiBK3ZkDi42ju6igdr7oj3P-2OGL-V1k4T-LPA@mail.gmail.com>	<4D750E69.2080802@fhcrc.org>
+	<AANLkTik6t_jz=rCWOjKkWcy_Qw1u_PtwM+YM=ae72aeE@mail.gmail.com>
+Message-ID: <4D752A5F.1020001@fhcrc.org>
+
+Hi Matthew,
+
+I think that you could probably do something like what you are
+describing by following the instructions in the Vignette titled
+"Hypergeometric tests for less common model organisms" which can be seen
+in the GOstats package: 
+http://www.bioconductor.org/help/bioc-views/release/bioc/html/GOstats.html. 
+It was developed for a similarly generic circumstance as this.  An
+extension of the methods developed for this case would be one way to
+tackle this.
+
+In terms of DO to gene mappings.  Where did you get them?  I have not
+found these from any of the expected places.  If we can just get the
+appropriate mappings from a reliable source then it might make sense to
+include them in our packages.  However, if this is not practical, then
+an approach like what was defined for unsupported organisms is probably
+a good idea.
+
+
+  Marc
+
+
+
+
+
+On 03/07/2011 10:10 AM, Matthew Pocock wrote:
+> On 7 March 2011 16:57, Martin Morgan <mtmorgan at fhcrc.org> wrote:
+>
+>   
+>> I wonder if you could be a bit more specific about the tasks you're
+>> trying to accomplish?
+>>     
+>
+> There are lots of packages in bioconductor that provide methods that run
+> with GO - GOstats, globaltest, GlobalAncova, ... and all of these that I've
+> looked at so far essentially only need an annotation Bimap, some way to get
+> terms, and something with the CHILDREN/OFFSPRING/... methods. I'd like to be
+> able to run them for DO, but I'm sure there are other interesting
+> terminologies out there that other people may want to use.
+>
+> I've been given an entrez<->do mapping file - I can't attest to its
+> provenance or accuracy. From this, I've got functions that produce
+> ${annotation}DO bimaps if there is an ${annotation}ENTREZID bimap present.
+> As for the algorithms themselves, so far I've been copying out bits of these
+> packages and hacking them about to use DO rather than GO* hierarchies.
+> However, it's error-prone and not pretty, and I'd prefer to be able to do
+> this with less hackery - or at least, by relying upon bioconductor-blessed
+> and encapsulated hackery.
+>
+> Matthew
+>
+>
+
+
+From turingatemyhamster at gmail.com  Tue Mar  8 13:18:37 2011
+From: turingatemyhamster at gmail.com (Matthew Pocock)
+Date: Tue, 8 Mar 2011 12:18:37 +0000
+Subject: [Bioc-devel] [BioC] lookUp for other terminologies
+In-Reply-To: <4D752A5F.1020001@fhcrc.org>
+References: <AANLkTimnNK8_xf1x3KVm_DvEdghciYg1iXFatpju3sMp@mail.gmail.com>
+	<4D743940.8090608@fhcrc.org>
+	<AANLkTim4Q+SGkdLn75uahSNLDfoQcZFLqx8x4cvpiKhc@mail.gmail.com>
+	<AANLkTim1R-h7i4GsdXmqi+Oc03iAZfQHed_Pm4tUBcwG@mail.gmail.com>
+	<AANLkTi=8LPbbktGLRdHckj2BoYWuiA-fx7zBhB6fKOzO@mail.gmail.com>
+	<AANLkTikiBK3ZkDi42ju6igdr7oj3P-2OGL-V1k4T-LPA@mail.gmail.com>
+	<4D750E69.2080802@fhcrc.org>
+	<AANLkTik6t_jz=rCWOjKkWcy_Qw1u_PtwM+YM=ae72aeE@mail.gmail.com>
+	<4D752A5F.1020001@fhcrc.org>
+Message-ID: <AANLkTikJBwD9HU=LyeTsYgtPez3UFwo3Zw4m9CbgDHh=@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110308/71b3b62f/attachment.pl>
+
+From S.Berri at leeds.ac.uk  Wed Mar  9 13:26:02 2011
+From: S.Berri at leeds.ac.uk (Stefano Berri)
+Date: Wed, 9 Mar 2011 12:26:02 +0000
+Subject: [Bioc-devel] documentation help
+Message-ID: <C99D225A.1D4B%s.berri@leeds.ac.uk>
+
+Hi.
+
+I want a method that requires an object (obviously) and allows *optional*
+arguments
+
+so I set it up like this
+
+setGeneric("gcNorm", function(object, ...){standardGeneric("gcNorm")})
+
+then I started the documentation and wanted to document the optional
+arguments
+
+\usage{
+gcNorm(object, ...)
+}
+
+\arguments{
+gcNorm(object, excludeFromGCNorm = character(0), maxNumPoints = 10000, ...)
+\item{object}{An object of Class \code{"CNAnorm"}}
+\item ...
+\item ...
+}
+
+but, while running R CMD CHECK I get this warnings
+
++++++++++++++++++++++++++++++
+
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'gcNorm'
+  ...
+Documented arguments not in \usage in documentation object 'gcNorm':
+  excludeFromGCNorm maxNumPoints
+
+Functions with \usage entries need to have the appropriate \alias entries,
+and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
++++++++++++++++++++++++++++++
+
+An option could be to add the optional arguments in the definition
+
+setGeneric("gcNorm", function(object, excludeFromGCNorm, maxNumPoints) ... )
+
+but then I guess it looks like I always have to pass them and are not
+optional anymore...
+
+what am I not getting right? What is the way to go?
+
+Thanks for your help
+
+Stefano
+
+
+From gfinak at fhcrc.org  Wed Mar  9 16:02:49 2011
+From: gfinak at fhcrc.org (Finak, Greg)
+Date: Wed, 9 Mar 2011 07:02:49 -0800
+Subject: [Bioc-devel] documentation help
+In-Reply-To: <C99D225A.1D4B%s.berri@leeds.ac.uk>
+References: <C99D225A.1D4B%s.berri@leeds.ac.uk>
+Message-ID: <04E824C8-0DA4-4C6B-8166-60EDE9734F3B@fhcrc.org>
+
+Hi, Stefano
+
+The way I handle this is to write the generic as you did..
+> setGeneric("gcNorm", function(object, ...){standardGeneric("gcNorm")})
+Then have an S4 method defined as that takes the various optional arguments but dispatches on the generic signature..
+
+setMethod("gcNorm",signature=c("objtype"), function(obj,optarg1,optarg2=,...){
+#function definition
+})
+
+The method above is called when you pass an object of type "objtype" to gcNorm, and takes additional arguments optarg1, and optarg2
+
+
+To document this, you'd have the following
+
+\name{gcNorm}
+\alias{gcNorm}
+\alias{gcNorm-methods}
+\alias{gcNorm,objtype-method}
+
+\usage{
+\S4method{gcNorm}{objtype}(obj,optarg1,optarg2,...)
+}
+
+\arguments{
+\item{obj}{
+}
+\item{optarg1}{
+}
+\item{optarg2}{
+}
+\item{...}{
+}
+}
+The main thing is that inside the usage tag you enclose the usage with \S4method which allows you to include the optional arguments. If they have default values, you would include them here, since the usage must match the function definition.
+
+You could write other S4 methods that take different types of obj and other optional arguments and document them in the same file.
+
+The aliases tell R's documentation system that this Rd file documents the gcNorm function as well as gcNorm methods and which gcNorm methods specifically (there's probably a more technical interpretation of this.. but it's how I think of it).
+
+Cheers
+
+Greg Finak
+
+Sent from my iPhone
+
+On 2011-03-09, at 4:27 AM, "Stefano Berri" <S.Berri at leeds.ac.uk> wrote:
+
+> Hi.
+> 
+> I want a method that requires an object (obviously) and allows *optional*
+> arguments
+> 
+> so I set it up like this
+> 
+> setGeneric("gcNorm", function(object, ...){standardGeneric("gcNorm")})
+> 
+> then I started the documentation and wanted to document the optional
+> arguments
+> 
+> \usage{
+> gcNorm(object, ...)
+> }
+> 
+> \arguments{
+> gcNorm(object, excludeFromGCNorm = character(0), maxNumPoints = 10000, ...)
+> \item{object}{An object of Class \code{"CNAnorm"}}
+> \item ...
+> \item ...
+> }
+> 
+> but, while running R CMD CHECK I get this warnings
+> 
+> +++++++++++++++++++++++++++++
+> 
+> * checking Rd \usage sections ... WARNING
+> Undocumented arguments in documentation object 'gcNorm'
+>  ...
+> Documented arguments not in \usage in documentation object 'gcNorm':
+>  excludeFromGCNorm maxNumPoints
+> 
+> Functions with \usage entries need to have the appropriate \alias entries,
+> and all their arguments documented.
+> The \usage entries must correspond to syntactically valid R code.
+> +++++++++++++++++++++++++++++
+> 
+> An option could be to add the optional arguments in the definition
+> 
+> setGeneric("gcNorm", function(object, excludeFromGCNorm, maxNumPoints) ... )
+> 
+> but then I guess it looks like I always have to pass them and are not
+> optional anymore...
+> 
+> what am I not getting right? What is the way to go?
+> 
+> Thanks for your help
+> 
+> Stefano
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From S.Berri at leeds.ac.uk  Wed Mar  9 17:21:49 2011
+From: S.Berri at leeds.ac.uk (Stefano Berri)
+Date: Wed, 9 Mar 2011 16:21:49 +0000
+Subject: [Bioc-devel] documentation help
+In-Reply-To: <04E824C8-0DA4-4C6B-8166-60EDE9734F3B@fhcrc.org>
+Message-ID: <C99D599D.1D59%s.berri@leeds.ac.uk>
+
+Hi Greg
+
+Thanks a lot for your help.
+I think I am almost there, still have a warnings I cannot solve
+
+Documentation file
++++++++++++++++++++++
+\name{gcNorm}
+\docType{methods}
+\alias{gcNorm}
+\alias{CNAnorm}
+\alias{gcNorm-methods}
+\alias{gcNorm, CNAnorm-method}
+
+....
+
+\usage{
+\S4method{gcNorm}{CNAnorm}(object, excludeFromGCNorm = character(0),
+     maxNumPoints = 10000)
+} 
+
+...
+
+++++++++++++++++++++++
+
+code
+
+++++++++++++++++++++++
+
+setGeneric("gcNorm", function(object, ...){standardGeneric("gcNorm")})
+
+setMethod(f = "gcNorm", signature = "CNAnorm", definition = .gcNorm)
+
+.gcNorm <- function(object, excludeFromGCNorm = character(0), maxNumPoints =
+10000){
+# all the code
+}
+
+++++++++++++++++++++++
+
+running R CMD CHECK
+
+* checking Rd \usage sections ... WARNING
+Objects in \usage without \alias in documentation object 'gcNorm':
+  \S4method{gcNorm}{CNAnorm}
+
+Functions with \usage entries need to have the appropriate \alias entries,
+and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+
+
+Any help is really appreciated
+
+thanks
+
+Stefano
+
+
+From mtmorgan at fhcrc.org  Wed Mar  9 18:22:34 2011
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 9 Mar 2011 09:22:34 -0800
+Subject: [Bioc-devel] documentation help
+In-Reply-To: <C99D599D.1D59%s.berri@leeds.ac.uk>
+References: <C99D599D.1D59%s.berri@leeds.ac.uk>
+Message-ID: <4D77B75A.7000901@fhcrc.org>
+
+On 03/09/2011 08:21 AM, Stefano Berri wrote:
+> Hi Greg
+> 
+> Thanks a lot for your help.
+> I think I am almost there, still have a warnings I cannot solve
+> 
+> Documentation file
+> +++++++++++++++++++++
+> \name{gcNorm}
+> \docType{methods}
+> \alias{gcNorm}
+> \alias{CNAnorm}
+> \alias{gcNorm-methods}
+> \alias{gcNorm, CNAnorm-method}
+
+Hi Stefano --
+
+no ' ' between 'gcNorm,' and 'CNAnorm'.
+
+Martin
+
+> 
+> ....
+> 
+> \usage{
+> \S4method{gcNorm}{CNAnorm}(object, excludeFromGCNorm = character(0),
+>      maxNumPoints = 10000)
+> } 
+> 
+> ...
+> 
+> ++++++++++++++++++++++
+> 
+> code
+> 
+> ++++++++++++++++++++++
+> 
+> setGeneric("gcNorm", function(object, ...){standardGeneric("gcNorm")})
+> 
+> setMethod(f = "gcNorm", signature = "CNAnorm", definition = .gcNorm)
+> 
+> .gcNorm <- function(object, excludeFromGCNorm = character(0), maxNumPoints =
+> 10000){
+> # all the code
+> }
+> 
+> ++++++++++++++++++++++
+> 
+> running R CMD CHECK
+> 
+> * checking Rd \usage sections ... WARNING
+> Objects in \usage without \alias in documentation object 'gcNorm':
+>   \S4method{gcNorm}{CNAnorm}
+> 
+> Functions with \usage entries need to have the appropriate \alias entries,
+> and all their arguments documented.
+> The \usage entries must correspond to syntactically valid R code.
+> 
+> 
+> Any help is really appreciated
+> 
+> thanks
+> 
+> Stefano
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From cwon2 at fhcrc.org  Fri Mar 11 23:34:43 2011
+From: cwon2 at fhcrc.org (Wong, Chao-Jen)
+Date: Fri, 11 Mar 2011 14:34:43 -0800 (PST)
+Subject: [Bioc-devel]  BioC 2.8 New Package Submission Deadline - 3/23/11
+Message-ID: <673375729.6152.1299882883445.JavaMail.root@zimbra4.fhcrc.org>
+
+Dear all,
+
+This announcement is for package authors who are in the process of 
+developing packages for inclusion in the upcoming 2.8 release of Bioconductor
+in April.
+
+The deadline to make a submission for this release is going to be 3/23/11.
+Packages submitted after the deadline will probably not provide us with 
+sufficient time for inclusion in this release. Earlier submissions are encouraged 
+as it provides more time to correct issues raised during the review process and 
+probably has an improved chance of making it into the release.
+
+If you do not have your package ready in time for this deadline, you need not 
+worry as your package will be included in our development branch of Bioconductor 
+and will be scheduled for inclusion in the subsequent release version of Bioconductor.
+
+Yours truly,
+
+The Biocore Team
+
+
+From Julie.Zhu at umassmed.edu  Tue Mar 15 17:35:16 2011
+From: Julie.Zhu at umassmed.edu (Zhu, Lihua (Julie))
+Date: Tue, 15 Mar 2011 12:35:16 -0400
+Subject: [Bioc-devel] R CMD check: LaTeX errors
+Message-ID: <C9A50D84.3C98%julie.zhu@umassmed.edu>
+
+Dear Developers,
+
+I encountered the following error. The error seems indicating that pdflatex
+is not available despite the fact that I have been running R CMD check many
+times without any problem. Any advice/suggestion would be very much
+appreciated.
+
+Best regards,
+
+Julie 
+
+Running 'texi2dvi' on 'ChIPpeakAnno.tex' failed.
+* checking PDF version of manual ... WARNING
+LaTeX errors when creating PDF version.
+* checking PDF version of manual without index ... ERROR
+Re-running with no redirection of stdout/stderr.
+Hmm ... looks like a package
+sh: pdflatex: command not found
+Error in texi2dvi("Rd2.tex", pdf = (out_ext == "pdf"), quiet = FALSE,  :
+  unable to run 'pdflatex' on 'Rd2.tex'
+Error in running tools::texi2dvi
+
+> sessionInfo()
+R version 2.12.0 (2010-10-15)
+Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+
+
+From okko at clevert.de  Wed Mar 16 11:27:02 2011
+From: okko at clevert.de (=?iso-8859-1?Q?Djork-Arn=E9_Clevert?=)
+Date: Wed, 16 Mar 2011 11:27:02 +0100
+Subject: [Bioc-devel] missing download stats since Jul/2010
+Message-ID: <86D71313-207A-4671-88D3-C9E7643DD00C@clevert.de>
+
+Dear all,
+
+while looking at the download stats for my package farms I noticed missing downloads since Jul/2010. 
+This seems to affect also other packages. I was wondering if anyone knew what happened?
+
+Cheers,
+Djork
+ 
+-- 
+
+dipl.-inf. djork clevert | gleimstr. 13a | d-10437 berlin
+e: okko at clevert.de
+p: +49.30.4432 4702
+f: +49.30.6883 5307
+
+
+From dtenenba at fhcrc.org  Wed Mar 16 16:59:17 2011
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Wed, 16 Mar 2011 08:59:17 -0700
+Subject: [Bioc-devel] missing download stats since Jul/2010
+In-Reply-To: <11350_1300271300_4D8090C3_11350_17425_1_86D71313-207A-4671-88D3-C9E7643DD00C@clevert.de>
+References: <11350_1300271300_4D8090C3_11350_17425_1_86D71313-207A-4671-88D3-C9E7643DD00C@clevert.de>
+Message-ID: <AANLkTikbkjHyW_HsJuJE5gbT_FdCYD8T43dADkZpi1g_@mail.gmail.com>
+
+On Wed, Mar 16, 2011 at 3:27 AM, Djork-Arn? Clevert <okko at clevert.de> wrote:
+> Dear all,
+>
+> while looking at the download stats for my package farms I noticed missing downloads since Jul/2010.
+> This seems to affect also other packages. I was wondering if anyone knew what happened?
+>
+
+
+We will have the corrected stats up soon.
+
+Thanks
+
+Dan
+
+> Cheers,
+> Djork
+>
+> --
+>
+> dipl.-inf. djork clevert | gleimstr. 13a | d-10437 berlin
+> e: okko at clevert.de
+> p: +49.30.4432 4702
+> f: +49.30.6883 5307
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From chungdon at stat.wisc.edu  Wed Mar 16 22:48:40 2011
+From: chungdon at stat.wisc.edu (Dongjun Chung)
+Date: Wed, 16 Mar 2011 16:48:40 -0500
+Subject: [Bioc-devel] error during multiple platform build/check
+Message-ID: <4D813038.4040409@stat.wisc.edu>
+
+Dear developers,
+
+I faced some errors during multiple platform build/check
+("http://bioconductor.org/checkResults/2.8/bioc-LATEST/")
+that I have never had before.
+
+-------------------------------------------------------
+
+* creating vignettes ... ERROR
+Info: reading and preprocessing bin-level data...
+Warning in file(file, "rt") :
+   file("") only supports open = "w+" and open = "w+b": using the former
+
+Error: processing vignette 'mosaics-example.Rnw' failed with diagnostics:
+  chunk 4 (label=ts-readbin)
+Error in read.table(chipFileName, header = FALSE, sep = "\t") :
+   no lines available in input
+Execution halted
+
+-------------------------------------------------------
+
+Briefly, I developed a software package & its experimental data package.
+Vignette in the software package read the data (text files in 
+inst/extdata/)
+from experimental data package and fit models and so on.
+This error message seems to say that vignette is not able to read the files
+from the experimental data package.
+
+Did anyone have similar experiences like this?
+And can somebody help me to solve this problem?
+
+Best,
+Dongjun
+
+
+From cwon2 at fhcrc.org  Wed Mar 16 23:35:06 2011
+From: cwon2 at fhcrc.org (Wong, Chao-Jen)
+Date: Wed, 16 Mar 2011 15:35:06 -0700 (PDT)
+Subject: [Bioc-devel] error during multiple platform build/check
+In-Reply-To: <4D813038.4040409@stat.wisc.edu>
+Message-ID: <1497658665.7745.1300314906634.JavaMail.root@zimbra4.fhcrc.org>
+
+Hi, Dongjun
+
+The problem might be on our end.  When I commit experiment data packages to the repository, I separate the infrastructure files and data files and put them in different locations (https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/pkgs and https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/data_store, respectively). The infrastructure package should not contain the data and inst/extdata subdirectories, however, I forgot to delete them.  I just delete these subdirectories from https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/mosaiscExample and hopefully the package will build correctly tomorrow. I will keep my eyes on it.
+
+Regards,
+
+Chao-Jen
+
+----- Original Message -----
+From: "Dongjun Chung" <chungdon at stat.wisc.edu>
+To: bioc-devel at r-project.org
+Sent: Wednesday, March 16, 2011 2:48:40 PM
+Subject: [Bioc-devel] error during multiple platform build/check
+
+Dear developers,
+
+I faced some errors during multiple platform build/check
+("http://bioconductor.org/checkResults/2.8/bioc-LATEST/")
+that I have never had before.
+
+-------------------------------------------------------
+
+* creating vignettes ... ERROR
+Info: reading and preprocessing bin-level data...
+Warning in file(file, "rt") :
+   file("") only supports open = "w+" and open = "w+b": using the former
+
+Error: processing vignette 'mosaics-example.Rnw' failed with diagnostics:
+  chunk 4 (label=ts-readbin)
+Error in read.table(chipFileName, header = FALSE, sep = "\t") :
+   no lines available in input
+Execution halted
+
+-------------------------------------------------------
+
+Briefly, I developed a software package & its experimental data package.
+Vignette in the software package read the data (text files in 
+inst/extdata/)
+from experimental data package and fit models and so on.
+This error message seems to say that vignette is not able to read the files
+from the experimental data package.
+
+Did anyone have similar experiences like this?
+And can somebody help me to solve this problem?
+
+Best,
+Dongjun
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Chao-Jen Wong 
+Program in Computational Biology 
+Division of Public Health Sciences 
+Fred Hutchinson Cancer Research Center 
+1100 Fairview Avenue N., M1-B514 
+PO Box 19024 
+Seattle, WA 98109 
+206.667.4485 
+cwon2 at fhcrc.org
+
+
+From chungdon at stat.wisc.edu  Wed Mar 16 23:54:15 2011
+From: chungdon at stat.wisc.edu (Dongjun Chung)
+Date: Wed, 16 Mar 2011 17:54:15 -0500
+Subject: [Bioc-devel] error during multiple platform build/check
+In-Reply-To: <1497658665.7745.1300314906634.JavaMail.root@zimbra4.fhcrc.org>
+References: <1497658665.7745.1300314906634.JavaMail.root@zimbra4.fhcrc.org>
+Message-ID: <4D813F97.5040006@stat.wisc.edu>
+
+Hi Chao-Jen,
+
+Thank you very much for taking care of this issue!
+
+Best,
+Dongjun
+
+On 3/16/2011 5:35 PM, Wong, Chao-Jen wrote:
+> Hi, Dongjun
+>
+> The problem might be on our end.  When I commit experiment data packages to the repository, I separate the infrastructure files and data files and put them in different locations (https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/pkgs and https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/data_store, respectively). The infrastructure package should not contain the data and inst/extdata subdirectories, however, I forgot to delete them.  I just delete these subdirectories from https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/mosaiscExample and hopefully the package will build correctly tomorrow. I will keep my eyes on it.
+>
+> Regards,
+>
+> Chao-Jen
+>
+> ----- Original Message -----
+> From: "Dongjun Chung"<chungdon at stat.wisc.edu>
+> To: bioc-devel at r-project.org
+> Sent: Wednesday, March 16, 2011 2:48:40 PM
+> Subject: [Bioc-devel] error during multiple platform build/check
+>
+> Dear developers,
+>
+> I faced some errors during multiple platform build/check
+> ("http://bioconductor.org/checkResults/2.8/bioc-LATEST/")
+> that I have never had before.
+>
+> -------------------------------------------------------
+>
+> * creating vignettes ... ERROR
+> Info: reading and preprocessing bin-level data...
+> Warning in file(file, "rt") :
+>     file("") only supports open = "w+" and open = "w+b": using the former
+>
+> Error: processing vignette 'mosaics-example.Rnw' failed with diagnostics:
+>    chunk 4 (label=ts-readbin)
+> Error in read.table(chipFileName, header = FALSE, sep = "\t") :
+>     no lines available in input
+> Execution halted
+>
+> -------------------------------------------------------
+>
+> Briefly, I developed a software package&  its experimental data package.
+> Vignette in the software package read the data (text files in
+> inst/extdata/)
+> from experimental data package and fit models and so on.
+> This error message seems to say that vignette is not able to read the files
+> from the experimental data package.
+>
+> Did anyone have similar experiences like this?
+> And can somebody help me to solve this problem?
+>
+> Best,
+> Dongjun
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From hpages at fhcrc.org  Fri Mar 18 17:35:28 2011
+From: hpages at fhcrc.org (Pages, Herve)
+Date: Fri, 18 Mar 2011 09:35:28 -0700 (PDT)
+Subject: [Bioc-devel] BioC 2.8 to be released on April 14
+In-Reply-To: <788940024.8499.1300464004153.JavaMail.root@zimbra4.fhcrc.org>
+Message-ID: <2033915832.8513.1300466128468.JavaMail.root@zimbra4.fhcrc.org>
+
+Hi developers,
+
+R 2.13 turned alpha 2 days ago and is planned to be released
+on April 13. We have a tentative release schedule for BioC 2.8
+on our website:
+
+  http://bioconductor.org/developers/release-schedule/
+
+Our plan is to release BioC 2.8 on April 14.
+
+Please take the time to check the status of the packages you
+maintain by having a look at the daily build/check report:
+
+  http://bioconductor.org/checkResults/2.8/bioc-LATEST/
+
+Note that the deadline for packages passing 'R CMD build'
+and 'R CMD check'' without errors is March 30.
+
+Thanks for your contribution to the project.
+
+H.
+
+
+From hpages at fhcrc.org  Fri Mar 18 23:53:18 2011
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Fri, 18 Mar 2011 15:53:18 -0700
+Subject: [Bioc-devel] Assignments in \usage sections are now causing a
+	WARNING
+Message-ID: <4D83E25E.9060206@fhcrc.org>
+
+Hi again,
+
+With the latest R 2.13, there is this new 'R CMD check' warning that is
+very easy to fix and affects a few BioC packages:
+
+   * checking Rd \usage sections ... WARNING
+   Assignments in \usage in documentation object 'ilm':
+     result <- ilm(celfiles, threshold = 350, satLim = 10000)
+
+   Functions with \usage entries need to have the appropriate \alias
+   entries, and all their arguments documented.
+   The \usage entries must correspond to syntactically valid R code.
+   See the chapter 'Writing R documentation files' in manual 'Writing R
+   Extensions'.
+
+All you need to do to get rid of this warning is to *not* use
+assignments in the \usage sections of your man pages. For example, the
+warning above will go away by just putting
+
+   ilm(celfiles, threshold = 350, satLim = 10000)
+
+in the \usage section.
+
+The packages affected by this warning are:
+
+   affyILM
+   CGEN
+   flowCore
+   gaggle
+   GeneSpring
+   GeneTraffic
+   PGSEA
+   PICS
+   rGADEM
+   rMAT
+   SAGx
+   tigre
+   tkWidgets
+
+Please let us know if you have any question, thanks!
+
+H.
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From p.lijnzaad at umcutrecht.nl  Mon Mar 21 11:23:19 2011
+From: p.lijnzaad at umcutrecht.nl (Philip Lijnzaad)
+Date: Mon, 21 Mar 2011 11:23:19 +0100
+Subject: [Bioc-devel] cyclic dependency bug in Rdbi
+Message-ID: <201103211123.19539.p.lijnzaad@umcutrecht.nl>
+
+Dear all, 
+
+We use Rdbi often, and I keep coming across the rather inconvenient ''cyclic 
+name space dependencies are not supported'' error. I decided to get to the 
+bottom of this, and basiscally the problem is that Rdbi's .onLoad() function 
+always tries to call dbReconnect(obj), even if the .onLoad() is being called
+recursively. The latter happens if an R data file (e.g. .RData) contains an
+object that has a class which is not yet loaded. Once the object is loaded, 
+and then inspected, R loads the class definitions of that object. If the 
+object's class depends on Rdbi, then it will of course load Rdbi. But in 
+doing so, Rdbi's .onLoad() function will try to dbReconnect(obj). But obj 
+cannot be accessed without loading all its class definitions, which leads to 
+a recursive call to loadNamespace("Rdbi"), triggering the circular 
+dependency. 
+
+I see four solutions:
+
+? (1) Never put 'Depends: Rdbi' in a class's DESCRIPTION. (not a solution, 
+? ? ? IMHO)
+
+? (2) Force people to call library(Rdbi) before load()ing anything (no
+? ? ? solution either; people forget that, then bother the local R guru's           
+      again)
+
+? (3) Don't call dbReconnect() in Rdbi's .onLoad() (see below)
+
+? (4) Make Rdbi's ?.onLoad() function a bit cleverer (this will take work)
+
+I would really appreciate if this error would go away; many different people
+seem to be bitten by it time and again (also many GRASS users seem to suffer
+it). ?I much prefer solution 3; I frankly think that blindly reconnecting a 
+database connection from a saved object is plain wrong. After all, people 
+often save an object to disk exactly because they don't want to have to 
+connect to a database. In addition, I think it's hard to make this work 
+robustly, as evidenced by the cyclic dependency error. (If needed I have a 
+simple worked example reproducing the bug).
+
+I may of course have overlooked something; please let me know if that is the 
+case. 
+
+I contacted the maintainer, but he hasn't responded yet, but the issue maybe 
+requires wider consideration anyway. 
+
+Regards,
+                                                                       Philip
+-- 
+Philip Lijnzaad, PhD
+Molecular Cancer Research
+University Medical Center (UMC), Utrecht
+Stratenum room 2.211 (on Tuesdays and Thursdays not in after 15.00)
+MSN chat (*NOT* email): philip_lijnzaad at hotmail.com
+P.O. Box 85060, 3508 AB Utrecht
+(Universiteitsweg 100, 3584 CG Utrecht)
+The Netherlands
+tel: +31 (0)8875 68464
+fax: +31 (0)8875 68479
+
+------------------------------------------------------------------------------
+
+De informatie opgenomen in dit bericht kan vertrouwelijk zijn en is
+uitsluitend bestemd voor de geadresseerde. Indien u dit bericht onterecht
+ontvangt, wordt u verzocht de inhoud niet te gebruiken en de afzender direct
+te informeren door het bericht te retourneren. Het Universitair Medisch
+Centrum Utrecht is een publiekrechtelijke rechtspersoon in de zin van de W.H.W.
+(Wet Hoger Onderwijs en Wetenschappelijk Onderzoek) en staat geregistreerd bij
+de Kamer van Koophandel voor Midden-Nederland onder nr. 30244197.
+
+Denk s.v.p aan het milieu voor u deze e-mail afdrukt.
+
+------------------------------------------------------------------------------
+
+This message may contain confidential information and is...{{dropped:12}}
+
+
+From hpages at fhcrc.org  Mon Mar 21 19:26:36 2011
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Mon, 21 Mar 2011 11:26:36 -0700
+Subject: [Bioc-devel] cyclic dependency bug in Rdbi
+In-Reply-To: <201103211123.19539.p.lijnzaad@umcutrecht.nl>
+References: <201103211123.19539.p.lijnzaad@umcutrecht.nl>
+Message-ID: <4D87985C.2040409@fhcrc.org>
+
+Hi Philip,
+
+How many people are still using Rdbi? It has long been superseded by
+DBI. One long standing reason for not moving to DBI was that there
+was no support for PostgreSQL in the DBI world for a long time. But
+this has changed recently with RPostgreSQL now available on CRAN.
+Now the question is how good is RPostgreSQL these days? Is it mature
+enough to be worth migrating apps from Rdbi/RdbiPgSQL to
+DBI/RPostgreSQL? Is it something you've considered/tried?
+
+Maybe it's time for us to deprecate Rdbi/RdbiPgSQL? Feedback from
+other "PostgreSQL within R" users would be appreciated.
+
+Thanks!
+H.
+
+
+On 03/21/2011 03:23 AM, Philip Lijnzaad wrote:
+> Dear all,
+>
+> We use Rdbi often, and I keep coming across the rather inconvenient ''cyclic
+> name space dependencies are not supported'' error. I decided to get to the
+> bottom of this, and basiscally the problem is that Rdbi's .onLoad() function
+> always tries to call dbReconnect(obj), even if the .onLoad() is being called
+> recursively. The latter happens if an R data file (e.g. .RData) contains an
+> object that has a class which is not yet loaded. Once the object is loaded,
+> and then inspected, R loads the class definitions of that object. If the
+> object's class depends on Rdbi, then it will of course load Rdbi. But in
+> doing so, Rdbi's .onLoad() function will try to dbReconnect(obj). But obj
+> cannot be accessed without loading all its class definitions, which leads to
+> a recursive call to loadNamespace("Rdbi"), triggering the circular
+> dependency.
+>
+> I see four solutions:
+>
+>    (1) Never put 'Depends: Rdbi' in a class's DESCRIPTION. (not a solution,
+>        IMHO)
+>
+>    (2) Force people to call library(Rdbi) before load()ing anything (no
+>        solution either; people forget that, then bother the local R guru's
+>        again)
+>
+>    (3) Don't call dbReconnect() in Rdbi's .onLoad() (see below)
+>
+>    (4) Make Rdbi's  .onLoad() function a bit cleverer (this will take work)
+>
+> I would really appreciate if this error would go away; many different people
+> seem to be bitten by it time and again (also many GRASS users seem to suffer
+> it).  I much prefer solution 3; I frankly think that blindly reconnecting a
+> database connection from a saved object is plain wrong. After all, people
+> often save an object to disk exactly because they don't want to have to
+> connect to a database. In addition, I think it's hard to make this work
+> robustly, as evidenced by the cyclic dependency error. (If needed I have a
+> simple worked example reproducing the bug).
+>
+> I may of course have overlooked something; please let me know if that is the
+> case.
+>
+> I contacted the maintainer, but he hasn't responded yet, but the issue maybe
+> requires wider consideration anyway.
+>
+> Regards,
+>                                                                         Philip
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From p.lijnzaad at umcutrecht.nl  Tue Mar 22 10:32:59 2011
+From: p.lijnzaad at umcutrecht.nl (Philip Lijnzaad)
+Date: Tue, 22 Mar 2011 10:32:59 +0100
+Subject: [Bioc-devel] cyclic dependency bug in Rdbi
+In-Reply-To: <4D87985C.2040409@fhcrc.org>
+References: <201103211123.19539.p.lijnzaad@umcutrecht.nl>
+	<4D87985C.2040409@fhcrc.org>
+Message-ID: <201103221032.59780.p.lijnzaad@umcutrecht.nl>
+
+Hi Herv?,
+
+> How many people are still using Rdbi? 
+
+mmm ... no idea. The stats do show a downward sloping trend, that much is 
+clear.
+
+> It has long been superseded by 
+> DBI. One long standing reason for not moving to DBI was that there
+> was no support for PostgreSQL in the DBI world for a long time. But
+> this has changed recently with RPostgreSQL now available on CRAN.
+> Now the question is how good is RPostgreSQL these days? Is it mature
+> enough to be worth migrating apps from Rdbi/RdbiPgSQL to
+> DBI/RPostgreSQL? Is it something you've considered/tried?
+
+No, I wasn't aware of this, I will look into it. 
+
+> Maybe it's time for us to deprecate Rdbi/RdbiPgSQL?
+
+I think that is probably the case, but at the same time I would argue that
+simply changing the .onLoad() function to an empty one (or deleting it, dunno 
+what's best) solves a design error that would at least help the current 
+users.
+
+> Feedback from 
+> other "PostgreSQL within R" users would be appreciated.
+
+Certainly. Thanks,
+
+
+
+                                                                       Philip
+
+-- 
+Philip Lijnzaad, PhD
+Molecular Cancer Research
+University Medical Center (UMC), Utrecht
+Stratenum room 2.211 (on Tuesdays and Thursdays not in after 15.00)
+MSN chat (*NOT* email): philip_lijnzaad at hotmail.com
+P.O. Box 85060, 3508 AB Utrecht
+(Universiteitsweg 100, 3584 CG Utrecht)
+The Netherlands
+tel: +31 (0)8875 68464
+fax: +31 (0)8875 68479
+
+------------------------------------------------------------------------------
+
+De informatie opgenomen in dit bericht kan vertrouwelijk zijn en is
+uitsluitend bestemd voor de geadresseerde. Indien u dit bericht onterecht
+ontvangt, wordt u verzocht de inhoud niet te gebruiken en de afzender direct
+te informeren door het bericht te retourneren. Het Universitair Medisch
+Centrum Utrecht is een publiekrechtelijke rechtspersoon in de zin van de W.H.W.
+(Wet Hoger Onderwijs en Wetenschappelijk Onderzoek) en staat geregistreerd bij
+de Kamer van Koophandel voor Midden-Nederland onder nr. 30244197.
+
+Denk s.v.p aan het milieu voor u deze e-mail afdrukt.
+
+------------------------------------------------------------------------------
+
+This message may contain confidential information and is...{{dropped:12}}
+
+
+From hpages at fhcrc.org  Wed Mar 23 19:24:31 2011
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Wed, 23 Mar 2011 11:24:31 -0700
+Subject: [Bioc-devel] cyclic dependency bug in Rdbi
+In-Reply-To: <201103221032.59780.p.lijnzaad@umcutrecht.nl>
+References: <201103211123.19539.p.lijnzaad@umcutrecht.nl>
+	<4D87985C.2040409@fhcrc.org>
+	<201103221032.59780.p.lijnzaad@umcutrecht.nl>
+Message-ID: <4D8A3ADF.3040505@fhcrc.org>
+
+Hi Philip,
+
+Thanks again for your feedback. I've removed the "automatic reconnection 
+to a
+database from a saved object" feature from Rdbi. I totally agree with 
+you that this
+feature is not good design.
+
+We've also decided to move forward and to deprecate Rdbi/RdbiPgSQL in favor
+of DBI/RPostgreSQL. Note that Rdbi/RdbiPgSQL will still be available in 
+the upcoming
+release (BioC 2.8) but they will issue a warning at load time and point 
+the user to
+DBI/PostgreSQL. Then later, during the BioC 2.9 devel cycle, we will 
+remove those
+2 packages.
+
+I hope this is OK.
+
+Cheers,
+H.
+
+
+On 03/22/2011 02:32 AM, Philip Lijnzaad wrote:
+> Hi Herv?,
+>
+>> How many people are still using Rdbi?
+> mmm ... no idea. The stats do show a downward sloping trend, that much is
+> clear.
+>
+>> It has long been superseded by
+>> DBI. One long standing reason for not moving to DBI was that there
+>> was no support for PostgreSQL in the DBI world for a long time. But
+>> this has changed recently with RPostgreSQL now available on CRAN.
+>> Now the question is how good is RPostgreSQL these days? Is it mature
+>> enough to be worth migrating apps from Rdbi/RdbiPgSQL to
+>> DBI/RPostgreSQL? Is it something you've considered/tried?
+> No, I wasn't aware of this, I will look into it.
+>
+>> Maybe it's time for us to deprecate Rdbi/RdbiPgSQL?
+> I think that is probably the case, but at the same time I would argue that
+> simply changing the .onLoad() function to an empty one (or deleting it, dunno
+> what's best) solves a design error that would at least help the current
+> users.
+>
+>> Feedback from
+>> other "PostgreSQL within R" users would be appreciated.
+> Certainly. Thanks,
+>
+>
+>
+>                                                                         Philip
+>
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From sdavis2 at mail.nih.gov  Wed Mar 23 19:30:06 2011
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Wed, 23 Mar 2011 14:30:06 -0400
+Subject: [Bioc-devel] cyclic dependency bug in Rdbi
+In-Reply-To: <4D8A3ADF.3040505@fhcrc.org>
+References: <201103211123.19539.p.lijnzaad@umcutrecht.nl>
+	<4D87985C.2040409@fhcrc.org>
+	<201103221032.59780.p.lijnzaad@umcutrecht.nl>
+	<4D8A3ADF.3040505@fhcrc.org>
+Message-ID: <AANLkTi=yxKo2qnod6OA+PkJY_6AFYnAT1A8QB2eOV5b7@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110323/f16cb541/attachment.pl>
+
+From atarca at med.wayne.edu  Wed Mar 23 21:28:07 2011
+From: atarca at med.wayne.edu (Tarca, Adi)
+Date: Wed, 23 Mar 2011 16:28:07 -0400
+Subject: [Bioc-devel] R CMD check
+Message-ID: <0E8F0B4E0B01D349BEF68D80B4A365BC05FFA2B7FF@MED-CORE05.med.wayne.edu>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110323/050b14d6/attachment.pl>
+
+From hpages at fhcrc.org  Wed Mar 23 22:28:06 2011
+From: hpages at fhcrc.org (=?UTF-8?B?SGVydsOpIFBhZ8Oocw==?=)
+Date: Wed, 23 Mar 2011 14:28:06 -0700
+Subject: [Bioc-devel] cyclic dependency bug in Rdbi
+In-Reply-To: <AANLkTi=yxKo2qnod6OA+PkJY_6AFYnAT1A8QB2eOV5b7@mail.gmail.com>
+References: <201103211123.19539.p.lijnzaad@umcutrecht.nl>	<4D87985C.2040409@fhcrc.org>	<201103221032.59780.p.lijnzaad@umcutrecht.nl>	<4D8A3ADF.3040505@fhcrc.org>
+	<AANLkTi=yxKo2qnod6OA+PkJY_6AFYnAT1A8QB2eOV5b7@mail.gmail.com>
+Message-ID: <4D8A65E6.4010906@fhcrc.org>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110323/e3823507/attachment.pl>
+
+From dtenenba at fhcrc.org  Wed Mar 23 23:12:49 2011
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Wed, 23 Mar 2011 15:12:49 -0700
+Subject: [Bioc-devel] R CMD check
+In-Reply-To: <29216_1300912132_4D8A5804_29216_1027_1_0E8F0B4E0B01D349BEF68D80B4A365BC05FFA2B7FF@MED-CORE05.med.wayne.edu>
+References: <29216_1300912132_4D8A5804_29216_1027_1_0E8F0B4E0B01D349BEF68D80B4A365BC05FFA2B7FF@MED-CORE05.med.wayne.edu>
+Message-ID: <AANLkTina9D8=4oa4rCrMHqA9ROtLk74z2q14W5icE9T1@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110323/881ef2e8/attachment.pl>
+
+From mtmorgan at fhcrc.org  Thu Mar 24 00:22:40 2011
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 23 Mar 2011 16:22:40 -0700
+Subject: [Bioc-devel] R CMD check
+In-Reply-To: <AANLkTina9D8=4oa4rCrMHqA9ROtLk74z2q14W5icE9T1@mail.gmail.com>
+References: <29216_1300912132_4D8A5804_29216_1027_1_0E8F0B4E0B01D349BEF68D80B4A365BC05FFA2B7FF@MED-CORE05.med.wayne.edu>
+	<AANLkTina9D8=4oa4rCrMHqA9ROtLk74z2q14W5icE9T1@mail.gmail.com>
+Message-ID: <4D8A80C0.8040008@fhcrc.org>
+
+On 03/23/2011 03:12 PM, Dan Tenenbaum wrote:
+> On Wed, Mar 23, 2011 at 1:28 PM, Tarca, Adi<atarca at med.wayne.edu>  wrote:
+>
+>> Hi all,
+>>
+>> I have noticed that the R CMD check in R.12.0 and R.13.0 alpha does not
+>> give warnings or errors whenever a function defined internally in the
+>> package (and therefore not exported) is never called by the other internal
+>> functions or by the functions exported by the package.
+>>
+>> Shouldn't there be a mechanism to ensure that unused functions do not get
+>> into a package?
+>>
+>>
+> This sounds like a question for the R-devel mailing list.
+>
+> https://stat.ethz.ch/mailman/listinfo/r-devel
+
+could be fun to use the codetools package to figure this out! Any 
+takers? Martin
+
+>
+> Dan
+>
+>
+>
+>> Adi
+>>
+>>
+>> Adi Laurentiu TARCA, Ph.D.
+>> Assistant Professor (Research),
+>> Department of Computer Science&  Center for Molecular Medicine and
+>> Genetics, Wayne State University,
+>> Director, Bioinformatics and Computational Biology Unit,  Perinatology
+>> Research Branch (NICHD),
+>> 3990 John R., Office 4809,
+>> Detroit, Michigan 48201
+>> Tel: 1-313-5775305
+>>
+>>
+>>         [[alternative HTML version deleted]]
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From hb at biostat.ucsf.edu  Mon Mar 28 02:02:09 2011
+From: hb at biostat.ucsf.edu (Henrik Bengtsson)
+Date: Sun, 27 Mar 2011 17:02:09 -0700
+Subject: [Bioc-devel] File parsers/readers for Illumina's Product Files
+	(*.bpm, *.egt, *.xml)?
+Message-ID: <BANLkTinN5CK-uLUnf3eFGxW17pE66Gda2w@mail.gmail.com>
+
+Hi.
+
+Illumina provides a set of so called Product Files for each chip type.
+ For SNP arrays, they provide "Manifest (.bpm), Cluster File (.egt),
+and Product Descriptor File (.xml)", where the first two are clearly
+in a binary file format and the latter in an XML (text) file format.
+For instance, the file HumanOmniExpress-12Multi_ProductFiles.zip from
+http://icom.illumina.com/ (req's login) contains:
+
+HumanOmniExp-12v1MultiUse_15014143_A.xml [3,654 bytes]
+HumanOmniExpress-12v1-Multi_C.bpm [121,566,176 bytes]
+HumanOmniExpress-12v1-Multi_C.egt [122,712,751 bytes]
+
+Right now, I'm mainly interested in being able to access the cluster
+information data in the *.egt files.  Does anyone know of file parsers
+for this (preferably in/via R), or a description of these file
+formats?  The hope is to be able to read this data without having
+access to Illumina's software, cf. what the affxparser package
+provides for Affymetrix files.
+
+Thanks
+
+/Henrik
+
+
+From whuber at embl.de  Mon Mar 28 16:30:43 2011
+From: whuber at embl.de (Wolfgang Huber)
+Date: Mon, 28 Mar 2011 16:30:43 +0200
+Subject: [Bioc-devel] BioC 2.8: Multiple platform build/check report
+Message-ID: <4D909B93.3020105@embl.de>
+
+Hi,
+
+since the release is coming, and there is lots of activity in svn, I am 
+wondering what is the intended of frequency of builds on the test page:
+   http://bioconductor.org/checkResults/devel/bioc-LATEST/
+or whether it can / should be increased?
+
+(Currently, 16.30h CEST on Monday 28th I get the report of four days 
+ago, Thursday 24th).
+
+Best wishes
+	Wolfgang
+
+Wolfgang Huber
+EMBL
+http://www.embl.de/research/units/genome_biology/huber
+
+
+From dtenenba at fhcrc.org  Mon Mar 28 16:44:39 2011
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Mon, 28 Mar 2011 07:44:39 -0700
+Subject: [Bioc-devel] BioC 2.8: Multiple platform build/check report
+In-Reply-To: <6622_1301322707_4D909BD2_6622_15530_1_4D909B93.3020105@embl.de>
+References: <6622_1301322707_4D909BD2_6622_15530_1_4D909B93.3020105@embl.de>
+Message-ID: <AANLkTin-vkZixD+O-Lw9B79P5WfxmozjWuY9=v7447ho@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110328/99ff79ce/attachment.pl>
+
+From jianfeng.mao at gmail.com  Tue Mar 29 15:29:20 2011
+From: jianfeng.mao at gmail.com (Mao Jianfeng)
+Date: Tue, 29 Mar 2011 15:29:20 +0200
+Subject: [Bioc-devel] failed to build BSgenome data package in R-2.13 alpha
+	(2011-03027 r55091)
+Message-ID: <AANLkTikBAx06i3A78GQFtm9JOmC_SFdK2gqcJPa62Fkz@mail.gmail.com>
+
+Dear Bioc-devel listers,
+
+I would like to get your helps on building BSgenome data package in
+R-2.13 alpha. I tried it for many times, but I always failed to do
+that. While, it can be done in R-2.11.1 and R-2.12.1 with their
+specific updated version of BSgenome library.
+
+Thanks in advance.
+
+Best,
+Jian-Feng,
+
+Here I show some INFO:
+
+########################################
+(1) command I used:
+library(BSgenome)
+forgeBSgenomeDataPkg("Araly1_seed")
+
+########################################
+(2) seed file I used:
+Package: BSgenome.Alyrata.JGI.v1
+Title: Arabidopsis lyrata full genome (JGI version V1.0)
+Description: Arabidopsis lyrata 8x Release [project ID 4002920] as
+provided by JGI ( snapshot from March 24, 2011) and stored in
+Biostrings objects.
+Version: 1.0
+#Author at R: c(person("Jian-Feng","Mao", email = "jianfeng.mao at gmail.com"),
+#           person("Ya-Long","Guo", email = "ya-long.guo at tuebingen.mpg.de"),
+#            person("Detlef","Weigel", email = "weigel at tue.mpg.de"))
+Author: Jian-Feng Mao, with contributions from Ya-Long Guo and Detlef Weigel
+Maintainer: Jian-Feng Mao <jianfeng.mao at gmail.com>
+#Depends: BSgenome
+License: Artistic-2.0
+organism: Arabidopsis lyrata
+species: Arabidopsis lyrata
+provider: JGI (http://www.jgi.doe.gov/) in collaboration with Lab of
+Detlef Weigel (http://www.weigelworld.org/)
+provider_version: Assembly V1.0
+release_date: April 7, 2008
+release_name: The Arabidopsis lyrata genome sequence assembly v1.0
+source_url: http://gp-edge3.jgi-psf.org:1080/Araly1/Araly1.home.html
+organism_biocview: Alyrata
+BSgenomeObjname: Alyrata
+seqnames: paste("chr",c(1:8, "M", "C_scaffold_373", "C_scaffold_546",
+"C_scaffold_732", "C_scaffold_757", "C_scaffold_764",
+"C_scaffold_885"), sep = "")
+mseqnames: paste("scaffold_",
+c(9:11,13:29,31:39,41,43,47,48,51:54,57:61,63:66,68,70:74,76:77,80,83:92,
+	96:100,103,106,108:110,112:115,117:118,120:123,125:126,128:130,132:133,
+	135:139,141:144,146,149,151:152,158:161,163:167,169:170,172:173,176:181,
+	184:185,188:191,193,195:197,199,201,203,205:216,219:223,225:226,228:231,233:236,239:244,
+	246:253,255,258:259,261:262,264:271,275,277:279,281,283:290,292:295,
+	298:305,307,310:311,315,319:320,322:323,325,327,330,332,334:335,337,
+	339:352,354:355,357:358,361,363:366,368,371,372,374:376,378:381,
+	383:388,390,396:398,400:403,408:409,412:413,415:417,419,426:429,431,
+	433,435:436,439,441,443,446,447,449,450,451,453,455,457,460:464,
+	467:472,474,475,477,480:482,484:489,491:493,496,500,501,504,505,507,
+	509:510,512,516,519,520,525,527,531,532,535,540,548,549,551,552,554,557,
+	558,562,564,565,566,569,573,575,576,579,580,582,584,585,587:589,591,
+	592,594,595,597,602:604,607,608,610,612,614,615:617,624:631,635,636:639,
+	642,645,646,649,651,653,655,658,659,661:672,674:675,677:686,688,693:695,
+	697,699:702,704:707,710,711,713,715,716,717,719,721,723,726,727,728,729,731,
+	733,734,735,736,738,739,740,741,744,746,747,748,752,753,755,756,759,
+	761:763,766,769,770:773,776,777,779:784,786:788,790,792,793,795:798,801,802,
+	804,805,807,810:815,817,819,823,825,828:832,834,835,837,838,840,843,
+	845,848,849,851:853,855,858,861:862,864:867,868,871,872,875,877:884,887,
+	890,891,893:896,900:904,905,908,911,912,915,918:920,924,928,936:941,945,
+	946,947,950,954,955,958,960:965,968,970,971,975:979,981:984,986,
+	987,989:994,996,998:1001,1003,1005:1008,1010,1012,1014,1015,1017,
+	1019:1022,1025,1029,1031:1034,1040,1041,1043,1044,1046,1048,1052:1054,
+	1056:1058,1061,1064,1069,1070,1072,1074,1076,1078,1080,1082,1084:1087,
+	1089:1091,1094:1097,1099,1102,1105,1106,1109,1111:1113,1116:1118), sep = "")
+nmask_per_seq: 0
+SrcDataFiles1: all the chr*.fa file from
+http://genome.jgi-psf.org/Araly1/Araly1.download.ftp.html
+        WARNING: This is where things are today (March 24, 2011) but is probably
+        NOT aimed to be the permanent URL for the V1.0 snapshot of the genome.
+        JGI might update the content of this folder in the future with a new
+        snapshot and move the V1.0 snapshot to the OLD/ subfolder.
+PkgExamples: Alyrata
+        seqlengths(Alyrata)
+        Alyrata$chr1  # same as Alyrata[["chr1"]]
+seqs_srcdir: /Volumes/PENDRIVE/Alyr_wholegenome/Araly1_assembly_scaffolds
+# masks_srcdir: /home/steve/Data/Masks_src
+# AGAPSfiles_name: cflo_v3.3.fa.masked
+########################################
+(3) R-2.13 version and sessionInfo()
+> version
+              _
+platform       x86_64-unknown-linux-gnu
+arch           x86_64
+os             linux-gnu
+system         x86_64, linux-gnu
+status         alpha
+major          2
+minor          13.0
+year           2011
+month          03
+day            27
+svn rev        55091
+language       R
+version.string R version 2.13.0 alpha (2011-03-27 r55091)
+
+> sessionInfo()
+R version 2.13.0 alpha (2011-03-27 r55091)
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+ [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] tools     splines   stats     graphics  grDevices utils     datasets
+[8] methods   base
+
+other attached packages:
+ [1] GenomicFeatures_1.3.15 GGtools_3.9.69         ff_2.2-1
+ [4] bit_1.1-6              org.Hs.eg.db_2.5.0     rtracklayer_1.11.12
+ [7] RCurl_1.5-0            bitops_1.0-4.1         annotate_1.29.3
+[10] AnnotationDbi_1.13.18  GGBase_3.11.10         RSQLite_0.9-4
+[13] DBI_0.2-5              snpStats_1.1.13        Matrix_0.999375-48
+[16] lattice_0.19-17        survival_2.36-5        Biobase_2.11.10
+[19] BSgenome_1.19.5        GenomicRanges_1.3.29   Biostrings_2.19.17
+[22] IRanges_1.9.28
+
+loaded via a namespace (and not attached):
+[1] biomaRt_2.7.1 grid_2.13.0   XML_3.2-0     xtable_1.5-6
+
+###################################
+(4) error I got from R 2.13.0
+> forgeBSgenomeDataPkg("Araly1_seed") # here the path of the seed file
+Creating package in ./BSgenome.Alyrata.JGI.v1
+Saving 'seqlengths' object to compressed data file
+'./BSgenome.Alyrata.JGI.v1/inst/extdata/seqlengths.rda'... Error in
+gzfile(file, "wb") : cannot open the connection
+In addition: Warning message:
+In gzfile(file, "wb") :
+ cannot open compressed file
+'./BSgenome.Alyrata.JGI.v1/inst/extdata/seqlengths.rda', probable
+reason 'No such file or directory'
+
+##################################
+(5) R-2.12.1 version and sessionInfo()
+
+> version
+               _
+platform       x86_64-apple-darwin9.8.0
+arch           x86_64
+os             darwin9.8.0
+system         x86_64, darwin9.8.0
+status
+major          2
+minor          12.1
+year           2010
+month          12
+day            16
+svn rev        53855
+language       R
+version.string R version 2.12.1 (2010-12-16)
+
+> sessionInfo()
+R version 2.12.1 (2010-12-16)
+Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+
+locale:
+[1] C/UTF-8/C/C/C/C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] BSgenome_1.18.3     Biostrings_2.18.4   GenomicRanges_1.2.3
+[4] IRanges_1.8.9
+
+loaded via a namespace (and not attached):
+[1] Biobase_2.10.0
+
+ ######################################
+(6) R-2.11.1 version and sessionInfo()
+
+> version
+              _
+platform       x86_64-unknown-linux-gnu
+arch           x86_64
+os             linux-gnu
+system         x86_64, linux-gnu
+status
+major          2
+minor          11.1
+year           2010
+month          05
+day            31
+svn rev        52157
+language       R
+version.string R version 2.11.1 (2010-05-31)
+
+
+> sessionInfo()
+R version 2.11.1 (2010-05-31)
+x86_64-unknown-linux-gnu
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+ [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] Biobase_2.8.0       BSgenome_1.16.5     Biostrings_2.16.9
+[4] GenomicRanges_1.0.9 IRanges_1.6.17
+
+loaded via a namespace (and not attached):
+[1] tools_2.11.1
+
+
+From leo.lahti at iki.fi  Tue Mar 29 17:55:23 2011
+From: leo.lahti at iki.fi (Leo Lahti)
+Date: Tue, 29 Mar 2011 18:55:23 +0300
+Subject: [Bioc-devel] adding developers to SVN?
+Message-ID: <AANLkTin1ram1H0e2Tnndzx3_mh29zMtCKWB-CGZzZ0PF@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110329/a41a243a/attachment.pl>
+
+From cwon2 at fhcrc.org  Tue Mar 29 19:52:19 2011
+From: cwon2 at fhcrc.org (Wong, Chao-Jen)
+Date: Tue, 29 Mar 2011 10:52:19 -0700 (PDT)
+Subject: [Bioc-devel] adding developers to SVN?
+In-Reply-To: <AANLkTin1ram1H0e2Tnndzx3_mh29zMtCKWB-CGZzZ0PF@mail.gmail.com>
+Message-ID: <1587861058.2565.1301421139110.JavaMail.root@zimbra4.fhcrc.org>
+
+Hi, Leo,
+
+Maintainers of Bioc packages are not authorized to give r/w permission to bioc repository for a new developer. The BioC core team, however, can do it for you. Please let me know the name and email of the new developer of your package, and I will request an svn account on bioc repository and email the information to him/her.
+
+Regards,
+Chao-Jen
+
+----- Original Message -----
+From: "Leo Lahti" <leo.lahti at iki.fi>
+To: bioc-devel at r-project.org
+Sent: Tuesday, March 29, 2011 8:55:23 AM
+Subject: [Bioc-devel] adding developers to SVN?
+
+Dear all,
+
+I am maintaining a BioC package, and would now like to give permissions to
+the project's SVN repository for a new co-developer, preferably with a
+different username and password.
+
+I could not find instructions on how to add new developers in SVN, so kindly
+let me know if this is possible, and where the instructions could be found.
+
+with kind regards,
+Leo Lahti
+
+	[[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Chao-Jen Wong 
+Program in Computational Biology 
+Division of Public Health Sciences 
+Fred Hutchinson Cancer Research Center 
+1100 Fairview Avenue N., M1-B514 
+PO Box 19024 
+Seattle, WA 98109 
+206.667.4485 
+cwon2 at fhcrc.org
+
+
+From hpages at fhcrc.org  Wed Mar 30 09:25:31 2011
+From: hpages at fhcrc.org (Pages, Herve)
+Date: Wed, 30 Mar 2011 00:25:31 -0700 (PDT)
+Subject: [Bioc-devel] failed to build BSgenome data package in R-2.13
+ alpha	(2011-03027 r55091)
+In-Reply-To: <AANLkTikBAx06i3A78GQFtm9JOmC_SFdK2gqcJPa62Fkz@mail.gmail.com>
+Message-ID: <1798053300.2850.1301469931477.JavaMail.root@zimbra4.fhcrc.org>
+
+Hi Jian-Feng,
+
+Because of a recent change in R 2.13, the BSgenome source tarball and
+binaries that are in the BioC 2.8 repositories are broken.
+We are working on a solution. An immediate workaround is that you install
+BSgenome directly from our Subversion repository:
+
+  svn co https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/BSgenome
+
+  user name: readonly
+  password: readonly
+
+Then just install with R CMD INSTALL BSgenome/
+Please do NOT try to build the source tarball first (with R CMD build
+BSgenome) as this would produce a broken source tarball.
+
+Sorry for the inconvenience.
+
+Cheers,
+H.
+
+
+----- Original Message -----
+From: "Mao Jianfeng" <jianfeng.mao at gmail.com>
+To: bioc-devel at r-project.org
+Sent: Tuesday, March 29, 2011 6:29:20 AM
+Subject: [Bioc-devel] failed to build BSgenome data package in R-2.13 alpha	(2011-03027 r55091)
+
+Dear Bioc-devel listers,
+
+I would like to get your helps on building BSgenome data package in
+R-2.13 alpha. I tried it for many times, but I always failed to do
+that. While, it can be done in R-2.11.1 and R-2.12.1 with their
+specific updated version of BSgenome library.
+
+Thanks in advance.
+
+Best,
+Jian-Feng,
+
+Here I show some INFO:
+
+########################################
+(1) command I used:
+library(BSgenome)
+forgeBSgenomeDataPkg("Araly1_seed")
+
+########################################
+(2) seed file I used:
+Package: BSgenome.Alyrata.JGI.v1
+Title: Arabidopsis lyrata full genome (JGI version V1.0)
+Description: Arabidopsis lyrata 8x Release [project ID 4002920] as
+provided by JGI ( snapshot from March 24, 2011) and stored in
+Biostrings objects.
+Version: 1.0
+#Author at R: c(person("Jian-Feng","Mao", email = "jianfeng.mao at gmail.com"),
+#           person("Ya-Long","Guo", email = "ya-long.guo at tuebingen.mpg.de"),
+#            person("Detlef","Weigel", email = "weigel at tue.mpg.de"))
+Author: Jian-Feng Mao, with contributions from Ya-Long Guo and Detlef Weigel
+Maintainer: Jian-Feng Mao <jianfeng.mao at gmail.com>
+#Depends: BSgenome
+License: Artistic-2.0
+organism: Arabidopsis lyrata
+species: Arabidopsis lyrata
+provider: JGI (http://www.jgi.doe.gov/) in collaboration with Lab of
+Detlef Weigel (http://www.weigelworld.org/)
+provider_version: Assembly V1.0
+release_date: April 7, 2008
+release_name: The Arabidopsis lyrata genome sequence assembly v1.0
+source_url: http://gp-edge3.jgi-psf.org:1080/Araly1/Araly1.home.html
+organism_biocview: Alyrata
+BSgenomeObjname: Alyrata
+seqnames: paste("chr",c(1:8, "M", "C_scaffold_373", "C_scaffold_546",
+"C_scaffold_732", "C_scaffold_757", "C_scaffold_764",
+"C_scaffold_885"), sep = "")
+mseqnames: paste("scaffold_",
+c(9:11,13:29,31:39,41,43,47,48,51:54,57:61,63:66,68,70:74,76:77,80,83:92,
+	96:100,103,106,108:110,112:115,117:118,120:123,125:126,128:130,132:133,
+	135:139,141:144,146,149,151:152,158:161,163:167,169:170,172:173,176:181,
+	184:185,188:191,193,195:197,199,201,203,205:216,219:223,225:226,228:231,233:236,239:244,
+	246:253,255,258:259,261:262,264:271,275,277:279,281,283:290,292:295,
+	298:305,307,310:311,315,319:320,322:323,325,327,330,332,334:335,337,
+	339:352,354:355,357:358,361,363:366,368,371,372,374:376,378:381,
+	383:388,390,396:398,400:403,408:409,412:413,415:417,419,426:429,431,
+	433,435:436,439,441,443,446,447,449,450,451,453,455,457,460:464,
+	467:472,474,475,477,480:482,484:489,491:493,496,500,501,504,505,507,
+	509:510,512,516,519,520,525,527,531,532,535,540,548,549,551,552,554,557,
+	558,562,564,565,566,569,573,575,576,579,580,582,584,585,587:589,591,
+	592,594,595,597,602:604,607,608,610,612,614,615:617,624:631,635,636:639,
+	642,645,646,649,651,653,655,658,659,661:672,674:675,677:686,688,693:695,
+	697,699:702,704:707,710,711,713,715,716,717,719,721,723,726,727,728,729,731,
+	733,734,735,736,738,739,740,741,744,746,747,748,752,753,755,756,759,
+	761:763,766,769,770:773,776,777,779:784,786:788,790,792,793,795:798,801,802,
+	804,805,807,810:815,817,819,823,825,828:832,834,835,837,838,840,843,
+	845,848,849,851:853,855,858,861:862,864:867,868,871,872,875,877:884,887,
+	890,891,893:896,900:904,905,908,911,912,915,918:920,924,928,936:941,945,
+	946,947,950,954,955,958,960:965,968,970,971,975:979,981:984,986,
+	987,989:994,996,998:1001,1003,1005:1008,1010,1012,1014,1015,1017,
+	1019:1022,1025,1029,1031:1034,1040,1041,1043,1044,1046,1048,1052:1054,
+	1056:1058,1061,1064,1069,1070,1072,1074,1076,1078,1080,1082,1084:1087,
+	1089:1091,1094:1097,1099,1102,1105,1106,1109,1111:1113,1116:1118), sep = "")
+nmask_per_seq: 0
+SrcDataFiles1: all the chr*.fa file from
+http://genome.jgi-psf.org/Araly1/Araly1.download.ftp.html
+        WARNING: This is where things are today (March 24, 2011) but is probably
+        NOT aimed to be the permanent URL for the V1.0 snapshot of the genome.
+        JGI might update the content of this folder in the future with a new
+        snapshot and move the V1.0 snapshot to the OLD/ subfolder.
+PkgExamples: Alyrata
+        seqlengths(Alyrata)
+        Alyrata$chr1  # same as Alyrata[["chr1"]]
+seqs_srcdir: /Volumes/PENDRIVE/Alyr_wholegenome/Araly1_assembly_scaffolds
+# masks_srcdir: /home/steve/Data/Masks_src
+# AGAPSfiles_name: cflo_v3.3.fa.masked
+########################################
+(3) R-2.13 version and sessionInfo()
+> version
+              _
+platform       x86_64-unknown-linux-gnu
+arch           x86_64
+os             linux-gnu
+system         x86_64, linux-gnu
+status         alpha
+major          2
+minor          13.0
+year           2011
+month          03
+day            27
+svn rev        55091
+language       R
+version.string R version 2.13.0 alpha (2011-03-27 r55091)
+
+> sessionInfo()
+R version 2.13.0 alpha (2011-03-27 r55091)
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+ [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] tools     splines   stats     graphics  grDevices utils     datasets
+[8] methods   base
+
+other attached packages:
+ [1] GenomicFeatures_1.3.15 GGtools_3.9.69         ff_2.2-1
+ [4] bit_1.1-6              org.Hs.eg.db_2.5.0     rtracklayer_1.11.12
+ [7] RCurl_1.5-0            bitops_1.0-4.1         annotate_1.29.3
+[10] AnnotationDbi_1.13.18  GGBase_3.11.10         RSQLite_0.9-4
+[13] DBI_0.2-5              snpStats_1.1.13        Matrix_0.999375-48
+[16] lattice_0.19-17        survival_2.36-5        Biobase_2.11.10
+[19] BSgenome_1.19.5        GenomicRanges_1.3.29   Biostrings_2.19.17
+[22] IRanges_1.9.28
+
+loaded via a namespace (and not attached):
+[1] biomaRt_2.7.1 grid_2.13.0   XML_3.2-0     xtable_1.5-6
+
+###################################
+(4) error I got from R 2.13.0
+> forgeBSgenomeDataPkg("Araly1_seed") # here the path of the seed file
+Creating package in ./BSgenome.Alyrata.JGI.v1
+Saving 'seqlengths' object to compressed data file
+'./BSgenome.Alyrata.JGI.v1/inst/extdata/seqlengths.rda'... Error in
+gzfile(file, "wb") : cannot open the connection
+In addition: Warning message:
+In gzfile(file, "wb") :
+ cannot open compressed file
+'./BSgenome.Alyrata.JGI.v1/inst/extdata/seqlengths.rda', probable
+reason 'No such file or directory'
+
+##################################
+(5) R-2.12.1 version and sessionInfo()
+
+> version
+               _
+platform       x86_64-apple-darwin9.8.0
+arch           x86_64
+os             darwin9.8.0
+system         x86_64, darwin9.8.0
+status
+major          2
+minor          12.1
+year           2010
+month          12
+day            16
+svn rev        53855
+language       R
+version.string R version 2.12.1 (2010-12-16)
+
+> sessionInfo()
+R version 2.12.1 (2010-12-16)
+Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+
+locale:
+[1] C/UTF-8/C/C/C/C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] BSgenome_1.18.3     Biostrings_2.18.4   GenomicRanges_1.2.3
+[4] IRanges_1.8.9
+
+loaded via a namespace (and not attached):
+[1] Biobase_2.10.0
+
+ ######################################
+(6) R-2.11.1 version and sessionInfo()
+
+> version
+              _
+platform       x86_64-unknown-linux-gnu
+arch           x86_64
+os             linux-gnu
+system         x86_64, linux-gnu
+status
+major          2
+minor          11.1
+year           2010
+month          05
+day            31
+svn rev        52157
+language       R
+version.string R version 2.11.1 (2010-05-31)
+
+
+> sessionInfo()
+R version 2.11.1 (2010-05-31)
+x86_64-unknown-linux-gnu
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+ [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] Biobase_2.8.0       BSgenome_1.16.5     Biostrings_2.16.9
+[4] GenomicRanges_1.0.9 IRanges_1.6.17
+
+loaded via a namespace (and not attached):
+[1] tools_2.11.1
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From davide.rambaldi at ifom-ieo-campus.it  Wed Mar 30 11:03:19 2011
+From: davide.rambaldi at ifom-ieo-campus.it (Davide Rambaldi)
+Date: Wed, 30 Mar 2011 11:03:19 +0200
+Subject: [Bioc-devel] Building a package that depends on flowCore
+Message-ID: <7059E911-CA02-49EA-A062-236370934F8A@ifom-ieo-campus.it>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110330/54d464ba/attachment.pl>
+
+From jianfeng.mao at gmail.com  Wed Mar 30 11:17:11 2011
+From: jianfeng.mao at gmail.com (Mao Jianfeng)
+Date: Wed, 30 Mar 2011 11:17:11 +0200
+Subject: [Bioc-devel] failed to build BSgenome data package in R-2.13
+ alpha (2011-03027 r55091)
+In-Reply-To: <1798053300.2850.1301469931477.JavaMail.root@zimbra4.fhcrc.org>
+References: <AANLkTikBAx06i3A78GQFtm9JOmC_SFdK2gqcJPa62Fkz@mail.gmail.com>
+	<1798053300.2850.1301469931477.JavaMail.root@zimbra4.fhcrc.org>
+Message-ID: <AANLkTikN2nxpX3E7MMJ5r4MC7BBaiBNHx+ibnfgTqSF_@mail.gmail.com>
+
+Dear Pages,
+
+Thanks for your helps and directions.
+
+I did what you have showed me. But, it did not work for me.
+
+I show you the INFO of my failing. I am feeling sorry for my troubles
+to you. If the compatibility of BSgenome with R-2.13.0 can be worked
+out soon by you. I just want to wait for that.
+
+Thanks a lot.
+
+Jian-Feng,
+
+#########################################
+(1) command and the return
+
+$ R CMD INSTALL BSgenome/ --library=/ebio/abt6/jmao/bin/R-2.13/Rpacks
+* installing *source* package ?BSgenome? ...
+** R
+** inst
+** preparing package for lazy loading
+Warning: package 'IRanges' was built under R version 2.13.0
+Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+  Undefined subclass, "activeBindingFunction", of class
+"expressionORfunction"; definition not updated
+Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+  Undefined subclass, "refMethodDef", of class "expressionORfunction";
+definition not updated
+Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+  Undefined subclass, "defaultBindingFunction", of class
+"expressionORfunction"; definition not updated
+Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+  Undefined subclass, "activeBindingFunction", of class
+"functionORNULL"; definition not updated
+Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+  Undefined subclass, "refMethodDef", of class "functionORNULL";
+definition not updated
+Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+  Undefined subclass, "defaultBindingFunction", of class
+"functionORNULL"; definition not updated
+Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+  Undefined subclass, "namedList", of class "vectorORfactor";
+definition not updated
+Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+  Undefined subclass, "listOfMethods", of class "vectorORfactor";
+definition not updated
+
+Attaching package: 'IRanges'
+
+
+	The following object(s) are masked from package:base :
+
+	 Map,
+	 cbind,
+	 eval,
+	 intersect,
+	 mapply,
+	 order,
+	 paste,
+	 pmax,
+	 pmax.int,
+	 pmin,
+	 pmin.int,
+	 rbind,
+	 rep.int,
+	 setdiff,
+	 table,
+	 union
+
+Warning: package 'GenomicRanges' was built under R version 2.13.0
+Error in sub("([^-]+)_.*", "\\1", info$pkgname) :
+  7 arguments passed to .Internal(sub) which requires 8
+Error : unable to load R code in package 'GenomicRanges'
+Error : package 'GenomicRanges' could not be loaded
+ERROR: lazy loading failed for package ?BSgenome?
+* removing ?/ebio/abt6/jmao/bin/R-2.13/Rpacks/BSgenome?
+* restoring previous ?/ebio/abt6/jmao/bin/R-2.13/Rpacks/BSgenome?
+
+#########################################
+(2) my R version and GenomicRanges library
+> version
+               _
+platform       x86_64-unknown-linux-gnu
+arch           x86_64
+os             linux-gnu
+system         x86_64, linux-gnu
+status         alpha
+major          2
+minor          13.0
+year           2011
+month          03
+day            27
+svn rev        55091
+language       R
+version.string R version 2.13.0 alpha (2011-03-27 r55091)
+> sessionInfo()
+R version 2.13.0 alpha (2011-03-27 r55091)
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+ [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] GenomicRanges_1.3.29 IRanges_1.9.28
+
+loaded via a namespace (and not attached):
+[1] tools_2.13.0
+
+
+From gfinak at fhcrc.org  Wed Mar 30 18:19:52 2011
+From: gfinak at fhcrc.org (Finak, Greg)
+Date: Wed, 30 Mar 2011 09:19:52 -0700
+Subject: [Bioc-devel] Building a package that depends on flowCore
+In-Reply-To: <7059E911-CA02-49EA-A062-236370934F8A@ifom-ieo-campus.it>
+References: <7059E911-CA02-49EA-A062-236370934F8A@ifom-ieo-campus.it>
+Message-ID: <F8F5D23B-3F50-4C57-96C5-E37E2A27EC54@fhcrc.org>
+
+Hi, Davide 
+I'm not as familiar with the R package build system as others on the list, so it's difficult for me to diagnose your problem from the information given, but I can offer a few suggestions. In the Namespace file, try explicitly importing just the classes, methods and functions from flowCore that your package actually uses. I think you woukd want flowCore in the Depends field of your Description file. Finally, have a look at other packages that extend flowCore, like the flowMerge package for example, and see how they handle it. In my experience, masked methods don't usually lead to installation failure. Perhaps you could provide more output from R CMD check, and the content of your Namespace and Description files.
+Cheers
+Greg
+
+Sent from my iPhone
+
+On 2011-03-30, at 2:10 AM, "Davide Rambaldi" <davide.rambaldi at ifom-ieo-campus.it> wrote:
+
+> Hi all, I am trying to pack my code in a package for submission to bioconductor.
+> 
+> The package depends on flowCore, so for example I have an S4 class with a "slot" that is a flowFrame object.
+> 
+> representation=representation(
+>       flowframe = "flowFrame", 
+>       [...]
+> )
+> 
+> Now I am trying to build the package:
+> 
+> without depends in DESCRIPTION or NAMESPACE:
+> 
+> If I omit the dependecy from flowCore in the DESCRIPTION file I get this warning during R CMD check:
+> 
+> Warning: undefined slot classes in definition of "GenData": flowframe(class "flowFrame")
+> 
+> 
+> Then I tried to define the dependency from flowCore:
+> 
+> If I put the 
+> 
+> Depends: flowCore 
+> 
+> in DESCRIPTION
+> 
+> I get:
+> 
+> checking whether package ?flowFit? can be installed ... ERROR
+> Installation failed.
+> 
+> The log file say:
+> 
+> Attaching package: 'flowCore'
+> 
+> The following object(s) are masked from 'package:stats':
+> 
+>   alias, filter
+> 
+> Execution halted
+> 
+> 
+> I tried to add in NAMESPACE: 
+> 
+> import(flowCore)
+> 
+> I tried also to move flowCore from Depends to Imports in DESCRIPTION but seems that it always halt at that point.
+> 
+> What I should try now?
+> 
+> Thanks and Best Regards
+> 
+> 
+> 
+> 
+> Davide Rambaldi, Bioinformatics PostDoc.
+> -----------------------------------------------------
+> IFOM-IEO Campus
+> Via Adamello 16, Milano
+> I-20139 Italy
+> [t] +39 02574303870
+> [e] davide.rambaldi at ifom-ieo-campus.it
+> 
+> 
+>   [[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From hpages at fhcrc.org  Wed Mar 30 19:43:04 2011
+From: hpages at fhcrc.org (=?windows-1252?Q?Herv=E9_Pag=E8s?=)
+Date: Wed, 30 Mar 2011 10:43:04 -0700
+Subject: [Bioc-devel] failed to build BSgenome data package in R-2.13
+ alpha (2011-03027 r55091)
+In-Reply-To: <AANLkTikN2nxpX3E7MMJ5r4MC7BBaiBNHx+ibnfgTqSF_@mail.gmail.com>
+References: <AANLkTikBAx06i3A78GQFtm9JOmC_SFdK2gqcJPa62Fkz@mail.gmail.com>	<1798053300.2850.1301469931477.JavaMail.root@zimbra4.fhcrc.org>
+	<AANLkTikN2nxpX3E7MMJ5r4MC7BBaiBNHx+ibnfgTqSF_@mail.gmail.com>
+Message-ID: <4D936BA8.7090405@fhcrc.org>
+
+Hi Jian-Feng,
+
+Seems like you have some version mismatch issues. Make sure that the R
+you use when doing R CMD INSTALL is the one that was used for installing
+all the stuff you have under /ebio/abt6/jmao/bin/R-2.13/Rpacks. In
+particular, it should be R 2.13.
+
+You can check this with 'which R', or just start 'R' and check the
+version. If that's not the R you want, then use something like:
+
+   /full/path/to/my/R CMD INSTALL BSgenome/ 
+--library=/ebio/abt6/jmao/bin/R-2.13/Rpacks
+
+Let me know if that's still not working.
+
+H.
+
+
+On 03/30/2011 02:17 AM, Mao Jianfeng wrote:
+> Dear Pages,
+>
+> Thanks for your helps and directions.
+>
+> I did what you have showed me. But, it did not work for me.
+>
+> I show you the INFO of my failing. I am feeling sorry for my troubles
+> to you. If the compatibility of BSgenome with R-2.13.0 can be worked
+> out soon by you. I just want to wait for that.
+>
+> Thanks a lot.
+>
+> Jian-Feng,
+>
+> #########################################
+> (1) command and the return
+>
+> $ R CMD INSTALL BSgenome/ --library=/ebio/abt6/jmao/bin/R-2.13/Rpacks
+> * installing *source* package ?BSgenome? ...
+> ** R
+> ** inst
+> ** preparing package for lazy loading
+> Warning: package 'IRanges' was built under R version 2.13.0
+> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>    Undefined subclass, "activeBindingFunction", of class
+> "expressionORfunction"; definition not updated
+> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>    Undefined subclass, "refMethodDef", of class "expressionORfunction";
+> definition not updated
+> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>    Undefined subclass, "defaultBindingFunction", of class
+> "expressionORfunction"; definition not updated
+> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>    Undefined subclass, "activeBindingFunction", of class
+> "functionORNULL"; definition not updated
+> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>    Undefined subclass, "refMethodDef", of class "functionORNULL";
+> definition not updated
+> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>    Undefined subclass, "defaultBindingFunction", of class
+> "functionORNULL"; definition not updated
+> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>    Undefined subclass, "namedList", of class "vectorORfactor";
+> definition not updated
+> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>    Undefined subclass, "listOfMethods", of class "vectorORfactor";
+> definition not updated
+>
+> Attaching package: 'IRanges'
+>
+>
+> 	The following object(s) are masked from package:base :
+>
+> 	 Map,
+> 	 cbind,
+> 	 eval,
+> 	 intersect,
+> 	 mapply,
+> 	 order,
+> 	 paste,
+> 	 pmax,
+> 	 pmax.int,
+> 	 pmin,
+> 	 pmin.int,
+> 	 rbind,
+> 	 rep.int,
+> 	 setdiff,
+> 	 table,
+> 	 union
+>
+> Warning: package 'GenomicRanges' was built under R version 2.13.0
+> Error in sub("([^-]+)_.*", "\\1", info$pkgname) :
+>    7 arguments passed to .Internal(sub) which requires 8
+> Error : unable to load R code in package 'GenomicRanges'
+> Error : package 'GenomicRanges' could not be loaded
+> ERROR: lazy loading failed for package ?BSgenome?
+> * removing ?/ebio/abt6/jmao/bin/R-2.13/Rpacks/BSgenome?
+> * restoring previous ?/ebio/abt6/jmao/bin/R-2.13/Rpacks/BSgenome?
+>
+> #########################################
+> (2) my R version and GenomicRanges library
+>> version
+>                 _
+> platform       x86_64-unknown-linux-gnu
+> arch           x86_64
+> os             linux-gnu
+> system         x86_64, linux-gnu
+> status         alpha
+> major          2
+> minor          13.0
+> year           2011
+> month          03
+> day            27
+> svn rev        55091
+> language       R
+> version.string R version 2.13.0 alpha (2011-03-27 r55091)
+>> sessionInfo()
+> R version 2.13.0 alpha (2011-03-27 r55091)
+> Platform: x86_64-unknown-linux-gnu (64-bit)
+>
+> locale:
+>   [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+>   [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+>   [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+>   [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+>   [9] LC_ADDRESS=C               LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> other attached packages:
+> [1] GenomicRanges_1.3.29 IRanges_1.9.28
+>
+> loaded via a namespace (and not attached):
+> [1] tools_2.13.0
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From dmccarthy at wehi.EDU.AU  Thu Mar 31 01:15:03 2011
+From: dmccarthy at wehi.EDU.AU (Davis McCarthy)
+Date: Thu, 31 Mar 2011 10:15:03 +1100
+Subject: [Bioc-devel] Rd metadata R CMD check warning
+Message-ID: <F48C463E-11CC-4E2D-A951-165BB0781C0D@wehi.edu.au>
+
+Hi all
+
+Apologies if this message appears twice.
+
+We have been encountering a strange warning from R CMD check when running it on the latest version of edgeR (2.1.13, release candidate now on Bioconductor devel):
+
+* checking Rd metadata ... WARNING
+Error in is.function(FUN) : 'FUN' is missing
+Calls: print ... format.check_Rd_metadata -> unlist -> lapply -> match.fun
+Execution halted
+
+Full output from R CMD check below. Some googling hasn't shed any light on what's going on here. It occurs on both Windows and Mac machines running R 2. 13 alpha, and has only been present in the last round of changes we made. Unfortunately I can't see any way to determine exactly which *.R or *.Rd file is causing this warning.
+
+Does anyone know what's causing this warning and how to resolve it?
+
+Cheers
+Davis
+
+++++++++++++++++++++++++++++++++++++++++++
+
+mac1888:svn.BioCdevel dmccarthy$ R CMD check edgeR
+* using log directory ?/Users/dmccarthy/Documents/svn.BioCdevel/edgeR.Rcheck?
+* using R version 2.13.0 alpha (2011-03-19 r54880)
+* using platform: i386-apple-darwin9.8.0 (32-bit)
+* using session charset: UTF-8
+* checking for file ?edgeR/DESCRIPTION? ... OK
+* this is package ?edgeR? version ?2.1.13?
+* checking package name space information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking for executable files ... OK
+* checking whether package ?edgeR? can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the name space can be loaded with stated dependencies ... OK
+* checking whether the name space can be unloaded cleanly ... OK
+* checking for unstated dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... OK
+* checking Rd files ... OK
+* checking Rd metadata ... WARNING
+Error in is.function(FUN) : 'FUN' is missing
+Calls: print ... format.check_Rd_metadata -> unlist -> lapply -> match.fun
+Execution halted
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking contents of 'data' directory ... OK
+* checking data for non-ASCII characters ... OK
+* checking data for ASCII and uncompressed saves ... OK
+* checking sizes of PDF files under inst/doc ... OK
+* checking examples ... OK
+* checking for unstated dependencies in tests ... OK
+* checking tests ...
+ Running ?edgeR-Tests.R?
+ Comparing ?edgeR-Tests.Rout? to ?edgeR-Tests.Rout.save? ... OK
+ Running ?mseq-Tests.R?
+OK
+* checking for unstated dependencies in vignettes ... OK
+* checking package vignettes in ?inst/doc? ... OK
+* checking running R code from vignettes ... OK
+* checking re-building of vignettes ... OK
+* checking PDF version of manual ... OK
+
+WARNING: There was 1 warning, see
+ ?/Users/dmccarthy/Documents/svn.BioCdevel/edgeR.Rcheck/00check.log?
+for details
+
+
+
+------------------------------------------------------------------------
+Davis J McCarthy
+Research Technician
+Bioinformatics Division
+Walter and Eliza Hall Institute of Medical Research
+1G Royal Parade, Parkville, Vic 3052, Australia
+dmccarthy at wehi.edu.au
+http://www.wehi.edu.au
+
+
+
+______________________________________________________________________
+The information in this email is confidential and intend...{{dropped:6}}
+
+
+From dmccarthy at wehi.EDU.AU  Thu Mar 31 05:56:57 2011
+From: dmccarthy at wehi.EDU.AU (Davis McCarthy)
+Date: Thu, 31 Mar 2011 14:56:57 +1100
+Subject: [Bioc-devel] Rd metadata R CMD check warning
+In-Reply-To: <F48C463E-11CC-4E2D-A951-165BB0781C0D@wehi.edu.au>
+References: <F48C463E-11CC-4E2D-A951-165BB0781C0D@wehi.edu.au>
+Message-ID: <FA424383-A8DA-49A2-967C-F79A53B9160C@wehi.edu.au>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110331/4ed04d98/attachment.pl>
+
+From jianfeng.mao at gmail.com  Thu Mar 31 09:35:21 2011
+From: jianfeng.mao at gmail.com (Mao Jianfeng)
+Date: Thu, 31 Mar 2011 09:35:21 +0200
+Subject: [Bioc-devel] Latex errors in R CMD check a new built BSgenome data
+	package in R-2.13.0
+Message-ID: <AANLkTinKysyyUcxPOUSTf2989id0mrDpWH-kobESLur9@mail.gmail.com>
+
+Dear listers,
+
+Under helps from this mailing list, I have gotten my BSgenome data
+package built in R-2.13.0. Though it can be installed and loaded, the
+"R CMD check" returned me LaTex errors. I do not know how to deal with
+these errors.
+
+I hope to get more helps/directions from you. Thanks in advance.
+
+Best,
+
+Jian-Feng, Mao
+
+
+Here I show you the Info:
+
+(1) checking the package
+#################################################################
+jmao at deimos:~/Aly_test$ /ebio/abt6/jmao/bin/R-2.13/R-alpha/bin/R CMD
+check BSgenome.Alyrata.JGI.v1_1.0.tar.gz
+* using log directory ?/ebio/abt6/jmao/Aly_test/BSgenome.Alyrata.JGI.v1.Rcheck?
+* using R version 2.13.0 alpha (2011-03-27 r55091)
+* using platform: x86_64-unknown-linux-gnu (64-bit)
+* using session charset: UTF-8
+* checking for file ?BSgenome.Alyrata.JGI.v1/DESCRIPTION? ... OK
+* this is package ?BSgenome.Alyrata.JGI.v1? version ?1.0?
+* checking package name space information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking for executable files ... OK
+* checking whether package ?BSgenome.Alyrata.JGI.v1? can be installed ... OK
+* checking installed package size ... NOTE
+ installed size is 53.7Mb
+ sub-directories of 1Mb or more:
+   extdata  53.6Mb
+* checking package directory ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the name space can be loaded with stated dependencies ... OK
+* checking whether the name space can be unloaded cleanly ... OK
+* checking for unstated dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... OK
+* checking Rd files ... NOTE
+prepare_Rd: package.Rd:15-17: Dropping empty section \details
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking examples ... OK
+* checking PDF version of manual ... WARNING
+LaTeX errors when creating PDF version.
+This typically indicates Rd problems.
+LaTeX errors found:
+! Font T1/ptm/m/n/10=ptmr8t at 10.0pt not loadable: Metric (TFM) file not found
+.
+<to be read again>
+                  relax
+l.7 \begin{document}
+! Font T1/ptm/m/n/24.88=ptmr8t at 24.88pt not loadable: Metric (TFM) file not f
+ound.
+<to be read again>
+                  relax
+l.8 \chapter*{}
+! Font T1/ptm/bx/n/24.88=ptmb8t at 24.88pt not loadable: Metric (TFM) file not
+found.
+<to be read again>
+                  relax
+l.8 \chapter*{}
+! Font \T1/ptm/b/n/24.88=nullfont not loadable: Metric (TFM) file not found.
+<to be read again>
+                  \relax
+l.8 \chapter*{}
+
+! Font T1/ptm/bx/n/10=ptmb8t at 10.0pt not loadable: Metric (TFM) file not foun
+d.
+<to be read again>
+                  relax
+l.10 ...f{\huge Package `BSgenome.Alyrata.JGI.v1'}
+! Font \T1/ptm/b/n/10=nullfont not loadable: Metric (TFM) file not found.
+<to be read again>
+                  \relax
+l.10 ...f{\huge Package `BSgenome.Alyrata.JGI.v1'}
+                                                 }
+! Font T1/ptm/bx/n/20.74=ptmb8t at 20.74pt not loadable: Metric (TFM) file not
+found.
+<to be read again>
+                  relax
+l.10 ...f{\huge Package `BSgenome.Alyrata.JGI.v1'}
+! Font \T1/ptm/b/n/20.74=nullfont not loadable: Metric (TFM) file not found.
+<to be read again>
+                  \relax
+l.10 ...f{\huge Package `BSgenome.Alyrata.JGI.v1'}
+                                                 }
+! Font T1/ptm/m/n/12=ptmr8t at 12.0pt not loadable: Metric (TFM) file not found
+.
+<to be read again>
+                  relax
+l.11 \par\bigskip{\large
+! Font T1/pcr/m/n/10=pcrr8t at 10.0pt not loadable: Metric (TFM) file not found
+.
+<to be read again>
+                  relax
+l.22 ...n-Feng Mao }\email{jianfeng.mao at gmail.com}
+! Font T1/ptm/m/n/14.4=ptmr8t at 14.4pt not loadable: Metric (TFM) file not fou
+nd.
+<to be read again>
+                  relax
+l.38 ...a full genome (JGI version V1.0)}{Alyrata}
+! Font T1/ptm/bx/n/14.4=ptmb8t at 14.4pt not loadable: Metric (TFM) file not fo
+und.
+<to be read again>
+                  relax
+l.38 ...a full genome (JGI version V1.0)}{Alyrata}
+! Font \T1/ptm/b/n/14.4=nullfont not loadable: Metric (TFM) file not found.
+<to be read again>
+                  \relax
+l.38 ...a full genome (JGI version V1.0)}{Alyrata}
+
+! Font T1/phv/m/n/14.4=phvr8t at 14.4pt not loadable: Metric (TFM) file not fou
+nd.
+<to be read again>
+                  relax
+l.38 ...a full genome (JGI version V1.0)}{Alyrata}
+! Font T1/ptm/m/it/10=ptmri8t at 10.0pt not loadable: Metric (TFM) file not fou
+nd.
+<to be read again>
+                  relax
+l.38 ...a full genome (JGI version V1.0)}{Alyrata}
+! Font T1/ptm/m/n/9=ptmr8t at 9.0pt not loadable: Metric (TFM) file not found.
+<to be read again>
+                  relax
+l.76 \begin{ExampleCode}
+
+! Font T1/pcr/m/n/9=pcrr8t at 9.0pt not loadable: Metric (TFM) file not found.
+<to be read again>
+                  relax
+l.76 \begin{ExampleCode}
+
+! Font T1/ptm/m/sl/10=ptmro8t at 10.0pt not loadable: Metric (TFM) file not fou
+nd.
+<to be read again>
+                  relax
+l.108 if (interactive())
+! Font T1/phv/m/n/10=phvr8t at 10.0pt not loadable: Metric (TFM) file not found
+.
+<to be read again>
+                  relax
+l.108 if (interactive())
+* checking PDF version of manual without hyperrefs or index ... ERROR
+
+
+(2) install the package
+#################################################################
+
+jmao at deimos:~/Aly_test$ /ebio/abt6/jmao/bin/R-2.13/R-alpha/bin/R CMD
+INSTALL BSgenome.Alyrata.JGI.v1_1.0.tar.gz
+* installing to library ?/ebio/abt6/jmao/bin/R-2.13/Rpacks?
+* installing *source* package ?BSgenome.Alyrata.JGI.v1? ...
+** R
+** inst
+** preparing package for lazy loading
+Loading required package: IRanges
+
+Attaching package: 'IRanges'
+
+The following object(s) are masked from 'package:base':
+
+   Map, cbind, eval, intersect, mapply, order, paste, pmax, pmax.int,
+   pmin, pmin.int, rbind, rep.int, setdiff, table, union
+
+Loading required package: GenomicRanges
+Loading required package: Biostrings
+** help
+*** installing help indices
+** building package indices ...
+** testing if installed package can be loaded
+
+* DONE (BSgenome.Alyrata.JGI.v1)
+
+(3) loading the package
+#################################################################
+> library(BSgenome.Alyrata.JGI.v1)
+Loading required package: BSgenome
+Loading required package: IRanges
+
+Attaching package: 'IRanges'
+
+The following object(s) are masked from 'package:base':
+
+   cbind, eval, intersect, Map, mapply, order, paste, pmax, pmax.int,
+   pmin, pmin.int, rbind, rep.int, setdiff, table, union
+
+Loading required package: GenomicRanges
+Loading required package: Biostrings
+
+> seqlengths(Alyrata)
+            chr1              chr2              chr3              chr4
+        33132539          19320864          24464547          23328337
+            chr5              chr6              chr7              chr8
+        21221946          25113588          24649197          22951293
+            chrM chrC_scaffold_373 chrC_scaffold_546 chrC_scaffold_732
+          214459              8873              6162              4750
+chrC_scaffold_757 chrC_scaffold_764 chrC_scaffold_885
+            4636              4615              4166
+
+
+From jianfeng.mao at gmail.com  Thu Mar 31 09:37:54 2011
+From: jianfeng.mao at gmail.com (Mao Jianfeng)
+Date: Thu, 31 Mar 2011 09:37:54 +0200
+Subject: [Bioc-devel] failed to build BSgenome data package in R-2.13
+ alpha (2011-03027 r55091)
+In-Reply-To: <4D936BA8.7090405@fhcrc.org>
+References: <AANLkTikBAx06i3A78GQFtm9JOmC_SFdK2gqcJPa62Fkz@mail.gmail.com>
+	<1798053300.2850.1301469931477.JavaMail.root@zimbra4.fhcrc.org>
+	<AANLkTikN2nxpX3E7MMJ5r4MC7BBaiBNHx+ibnfgTqSF_@mail.gmail.com>
+	<4D936BA8.7090405@fhcrc.org>
+Message-ID: <AANLkTincB7x-a9quBAKfHb8PGyXJ3yeDF4Yo_w1-eV3P@mail.gmail.com>
+
+2011/3/30 Herv? Pag?s <hpages at fhcrc.org>:
+> Hi Jian-Feng,
+>
+> Seems like you have some version mismatch issues. Make sure that the R
+> you use when doing R CMD INSTALL is the one that was used for installing
+> all the stuff you have under /ebio/abt6/jmao/bin/R-2.13/Rpacks. In
+> particular, it should be R 2.13.
+>
+> You can check this with 'which R', or just start 'R' and check the
+> version. If that's not the R you want, then use something like:
+>
+> ?/full/path/to/my/R CMD INSTALL BSgenome/
+> --library=/ebio/abt6/jmao/bin/R-2.13/Rpacks
+
+It works for me, Thanks a lot.
+
+
+>
+> Let me know if that's still not working.
+>
+> H.
+>
+>
+> On 03/30/2011 02:17 AM, Mao Jianfeng wrote:
+>>
+>> Dear Pages,
+>>
+>> Thanks for your helps and directions.
+>>
+>> I did what you have showed me. But, it did not work for me.
+>>
+>> I show you the INFO of my failing. I am feeling sorry for my troubles
+>> to you. If the compatibility of BSgenome with R-2.13.0 can be worked
+>> out soon by you. I just want to wait for that.
+>>
+>> Thanks a lot.
+>>
+>> Jian-Feng,
+>>
+>> #########################################
+>> (1) command and the return
+>>
+>> $ R CMD INSTALL BSgenome/ --library=/ebio/abt6/jmao/bin/R-2.13/Rpacks
+>> * installing *source* package ?BSgenome? ...
+>> ** R
+>> ** inst
+>> ** preparing package for lazy loading
+>> Warning: package 'IRanges' was built under R version 2.13.0
+>> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>> ? Undefined subclass, "activeBindingFunction", of class
+>> "expressionORfunction"; definition not updated
+>> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>> ? Undefined subclass, "refMethodDef", of class "expressionORfunction";
+>> definition not updated
+>> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>> ? Undefined subclass, "defaultBindingFunction", of class
+>> "expressionORfunction"; definition not updated
+>> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>> ? Undefined subclass, "activeBindingFunction", of class
+>> "functionORNULL"; definition not updated
+>> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>> ? Undefined subclass, "refMethodDef", of class "functionORNULL";
+>> definition not updated
+>> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>> ? Undefined subclass, "defaultBindingFunction", of class
+>> "functionORNULL"; definition not updated
+>> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>> ? Undefined subclass, "namedList", of class "vectorORfactor";
+>> definition not updated
+>> Warning in .recacheSubclasses(def at className, def, doSubclasses, env) :
+>> ? Undefined subclass, "listOfMethods", of class "vectorORfactor";
+>> definition not updated
+>>
+>> Attaching package: 'IRanges'
+>>
+>>
+>> ? ? ? ?The following object(s) are masked from package:base :
+>>
+>> ? ? ? ? Map,
+>> ? ? ? ? cbind,
+>> ? ? ? ? eval,
+>> ? ? ? ? intersect,
+>> ? ? ? ? mapply,
+>> ? ? ? ? order,
+>> ? ? ? ? paste,
+>> ? ? ? ? pmax,
+>> ? ? ? ? pmax.int,
+>> ? ? ? ? pmin,
+>> ? ? ? ? pmin.int,
+>> ? ? ? ? rbind,
+>> ? ? ? ? rep.int,
+>> ? ? ? ? setdiff,
+>> ? ? ? ? table,
+>> ? ? ? ? union
+>>
+>> Warning: package 'GenomicRanges' was built under R version 2.13.0
+>> Error in sub("([^-]+)_.*", "\\1", info$pkgname) :
+>> ? 7 arguments passed to .Internal(sub) which requires 8
+>> Error : unable to load R code in package 'GenomicRanges'
+>> Error : package 'GenomicRanges' could not be loaded
+>> ERROR: lazy loading failed for package ?BSgenome?
+>> * removing ?/ebio/abt6/jmao/bin/R-2.13/Rpacks/BSgenome?
+>> * restoring previous ?/ebio/abt6/jmao/bin/R-2.13/Rpacks/BSgenome?
+>>
+>> #########################################
+>> (2) my R version and GenomicRanges library
+>>>
+>>> version
+>>
+>> ? ? ? ? ? ? ? ?_
+>> platform ? ? ? x86_64-unknown-linux-gnu
+>> arch ? ? ? ? ? x86_64
+>> os ? ? ? ? ? ? linux-gnu
+>> system ? ? ? ? x86_64, linux-gnu
+>> status ? ? ? ? alpha
+>> major ? ? ? ? ?2
+>> minor ? ? ? ? ?13.0
+>> year ? ? ? ? ? 2011
+>> month ? ? ? ? ?03
+>> day ? ? ? ? ? ?27
+>> svn rev ? ? ? ?55091
+>> language ? ? ? R
+>> version.string R version 2.13.0 alpha (2011-03-27 r55091)
+>>>
+>>> sessionInfo()
+>>
+>> R version 2.13.0 alpha (2011-03-27 r55091)
+>> Platform: x86_64-unknown-linux-gnu (64-bit)
+>>
+>> locale:
+>> ?[1] LC_CTYPE=en_US.UTF-8 ? ? ? LC_NUMERIC=C
+>> ?[3] LC_TIME=en_US.UTF-8 ? ? ? ?LC_COLLATE=en_US.UTF-8
+>> ?[5] LC_MONETARY=C ? ? ? ? ? ? ?LC_MESSAGES=en_US.UTF-8
+>> ?[7] LC_PAPER=en_US.UTF-8 ? ? ? LC_NAME=C
+>> ?[9] LC_ADDRESS=C ? ? ? ? ? ? ? LC_TELEPHONE=C
+>> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+>>
+>> attached base packages:
+>> [1] stats ? ? graphics ?grDevices utils ? ? datasets ?methods ? base
+>>
+>> other attached packages:
+>> [1] GenomicRanges_1.3.29 IRanges_1.9.28
+>>
+>> loaded via a namespace (and not attached):
+>> [1] tools_2.13.0
+>
+>
+> --
+> Herv? Pag?s
+>
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M2-B876
+> P.O. Box 19024
+> Seattle, WA 98109-1024
+>
+> E-mail: hpages at fhcrc.org
+> Phone: ?(206) 667-5791
+> Fax: ? ?(206) 667-1319
+>
+
+
+
+-- 
+Jian-Feng, Mao
+
+the Institute of Botany,
+Chinese Academy of Botany,
+
+
+From pshannon at systemsbiology.org  Thu Mar 31 19:42:02 2011
+From: pshannon at systemsbiology.org (Paul Shannon)
+Date: Thu, 31 Mar 2011 10:42:02 -0700
+Subject: [Bioc-devel] adding a validity method to  a class
+Message-ID: <52C90480-1F3B-4594-8B4A-540079151189@systemsbiology.org>
+
+I have defined a rather lengthy validity function for CytoscapeWindowClass.
+
+In my testing, I create incomplete or broken instances of the class.
+
+I get the results I want when I call the validity function like this, for example:
+
+  > RCytoscape:::validCytoscapeWindow (cw.broken)
+   You must provide an 'edgeType' edge attribute, which will be mapped to Cytoscape's 'interaction' edge attribute.
+   [1] FALSE
+
+But when, following the example in the graphNEL source code, I try to assign this function to the 'validity' slot of the class, the function is not found.
+
+The class definition:
+
+  setClass ("CytoscapeWindowClass",
+            representation = representation (title="character",
+                                             window.id='character',
+                                             graph="graph"),
+            contains='CytoscapeConnectionClass',
+            prototype = prototype (title="R graph",
+                                  graph=new ("graphNEL", edgemode='directed'),
+                                   uri="http://localhost:9000"),
+            validity=function(obj) validCytoscapeWindow (obj)
+            #validity=function(obj) RCytoscape:::validCytoscapeWindow (obj)   # I also tried this
+            )
+
+Calling 'validObject (cw)' should invoke 'validCytoscapeWindow' but does not.  
+
+Can anyone explain what I am doing wrong?
+
+Thanks!
+
+ - Paul
+
+
+From mailinglist.honeypot at gmail.com  Thu Mar 31 19:54:55 2011
+From: mailinglist.honeypot at gmail.com (Steve Lianoglou)
+Date: Thu, 31 Mar 2011 13:54:55 -0400
+Subject: [Bioc-devel] adding a validity method to a class
+In-Reply-To: <52C90480-1F3B-4594-8B4A-540079151189@systemsbiology.org>
+References: <52C90480-1F3B-4594-8B4A-540079151189@systemsbiology.org>
+Message-ID: <AANLkTimddX+TMFPdzL9Sidr0Gsu7ZxUgqTPgEyn+bs+K@mail.gmail.com>
+
+Hi,
+
+On Thu, Mar 31, 2011 at 1:42 PM, Paul Shannon
+<pshannon at systemsbiology.org> wrote:
+> I have defined a rather lengthy validity function for CytoscapeWindowClass.
+>
+> In my testing, I create incomplete or broken instances of the class.
+>
+> I get the results I want when I call the validity function like this, for example:
+>
+> ?> RCytoscape:::validCytoscapeWindow (cw.broken)
+> ? You must provide an 'edgeType' edge attribute, which will be mapped to Cytoscape's 'interaction' edge attribute.
+> ? [1] FALSE
+>
+> But when, following the example in the graphNEL source code, I try to assign this function to the 'validity' slot of the class, the function is not found.
+>
+> The class definition:
+>
+> ?setClass ("CytoscapeWindowClass",
+> ? ? ? ? ? ?representation = representation (title="character",
+> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? window.id='character',
+> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? graph="graph"),
+> ? ? ? ? ? ?contains='CytoscapeConnectionClass',
+> ? ? ? ? ? ?prototype = prototype (title="R graph",
+> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?graph=new ("graphNEL", edgemode='directed'),
+> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? uri="http://localhost:9000"),
+> ? ? ? ? ? ?validity=function(obj) validCytoscapeWindow (obj)
+> ? ? ? ? ? ?#validity=function(obj) RCytoscape:::validCytoscapeWindow (obj) ? # I also tried this
+> ? ? ? ? ? ?)
+>
+> Calling 'validObject (cw)' should invoke 'validCytoscapeWindow' but does not.
+>
+> Can anyone explain what I am doing wrong?
+
+What if you do:
+
+setClass(...
+   validity=validCytoscapeWindow
+)
+
+Or define your class first w/o the `validity` argument, then set it
+after like so:
+
+setValidity("CytoscapeWindowClass", validCytoscapeWindow)
+
+Maybe?
+
+-steve
+
+-- 
+Steve Lianoglou
+Graduate Student: Computational Systems Biology
+?| Memorial Sloan-Kettering Cancer Center
+?| Weill Medical College of Cornell University
+Contact Info: http://cbio.mskcc.org/~lianos/contact
+
+
+From pshannon at systemsbiology.org  Thu Mar 31 20:07:16 2011
+From: pshannon at systemsbiology.org (Paul Shannon)
+Date: Thu, 31 Mar 2011 11:07:16 -0700
+Subject: [Bioc-devel] adding a validity method to a class
+In-Reply-To: <AANLkTimddX+TMFPdzL9Sidr0Gsu7ZxUgqTPgEyn+bs+K@mail.gmail.com>
+References: <52C90480-1F3B-4594-8B4A-540079151189@systemsbiology.org>
+	<AANLkTimddX+TMFPdzL9Sidr0Gsu7ZxUgqTPgEyn+bs+K@mail.gmail.com>
+Message-ID: <1F330779-FFC9-4CA5-82CE-563B150FB526@systemsbiology.org>
+
+Hi Steve,
+
+  validity=validCytoscapeWindow
+
+rather than
+
+  validity=function(obj) validCytoscapeWindow (obj)
+
+does not work, because the function is not defined at the time the class definition is read.  By including it in a function body, the evaluation is deferred until all the source has been read.  I suspect...
+
+Your second suggestion:
+
+  setValidity("CytoscapeWindowClass", validCytoscapeWindow)
+
+*does* work.  But where should such an assignment be made?  At global scope at the bottom of the class file?   That seems a little ragged!
+
+ - Paul
+
+
+On Mar 31, 2011, at 10:54 AM, Steve Lianoglou wrote:
+
+> Hi,
+> 
+> On Thu, Mar 31, 2011 at 1:42 PM, Paul Shannon
+> <pshannon at systemsbiology.org> wrote:
+>> I have defined a rather lengthy validity function for CytoscapeWindowClass.
+>> 
+>> In my testing, I create incomplete or broken instances of the class.
+>> 
+>> I get the results I want when I call the validity function like this, for example:
+>> 
+>>  > RCytoscape:::validCytoscapeWindow (cw.broken)
+>>   You must provide an 'edgeType' edge attribute, which will be mapped to Cytoscape's 'interaction' edge attribute.
+>>   [1] FALSE
+>> 
+>> But when, following the example in the graphNEL source code, I try to assign this function to the 'validity' slot of the class, the function is not found.
+>> 
+>> The class definition:
+>> 
+>>  setClass ("CytoscapeWindowClass",
+>>            representation = representation (title="character",
+>>                                             window.id='character',
+>>                                             graph="graph"),
+>>            contains='CytoscapeConnectionClass',
+>>            prototype = prototype (title="R graph",
+>>                                  graph=new ("graphNEL", edgemode='directed'),
+>>                                   uri="http://localhost:9000"),
+>>            validity=function(obj) validCytoscapeWindow (obj)
+>>            #validity=function(obj) RCytoscape:::validCytoscapeWindow (obj)   # I also tried this
+>>            )
+>> 
+>> Calling 'validObject (cw)' should invoke 'validCytoscapeWindow' but does not.
+>> 
+>> Can anyone explain what I am doing wrong?
+> 
+> What if you do:
+> 
+> setClass(...
+>   validity=validCytoscapeWindow
+> )
+> 
+> Or define your class first w/o the `validity` argument, then set it
+> after like so:
+> 
+> setValidity("CytoscapeWindowClass", validCytoscapeWindow)
+> 
+> Maybe?
+> 
+> -steve
+> 
+> -- 
+> Steve Lianoglou
+> Graduate Student: Computational Systems Biology
+>  | Memorial Sloan-Kettering Cancer Center
+>  | Weill Medical College of Cornell University
+> Contact Info: http://cbio.mskcc.org/~lianos/contact
+
+
+From mailinglist.honeypot at gmail.com  Thu Mar 31 20:20:50 2011
+From: mailinglist.honeypot at gmail.com (Steve Lianoglou)
+Date: Thu, 31 Mar 2011 14:20:50 -0400
+Subject: [Bioc-devel] adding a validity method to a class
+In-Reply-To: <1F330779-FFC9-4CA5-82CE-563B150FB526@systemsbiology.org>
+References: <52C90480-1F3B-4594-8B4A-540079151189@systemsbiology.org>
+	<AANLkTimddX+TMFPdzL9Sidr0Gsu7ZxUgqTPgEyn+bs+K@mail.gmail.com>
+	<1F330779-FFC9-4CA5-82CE-563B150FB526@systemsbiology.org>
+Message-ID: <AANLkTimVErLkFDcsYN20CKfi3VXGLpk+utZ5M-+Y7Lpm@mail.gmail.com>
+
+Hi,
+
+On Thu, Mar 31, 2011 at 2:07 PM, Paul Shannon
+<pshannon at systemsbiology.org> wrote:
+> Hi Steve,
+>
+> ?validity=validCytoscapeWindow
+>
+> rather than
+>
+> ?validity=function(obj) validCytoscapeWindow (obj)
+>
+> does not work, because the function is not defined at the time the class definition is read. ?By including it in a function body, the evaluation is deferred until all the source has been read. ?I suspect...
+>
+> Your second suggestion:
+>
+> ?setValidity("CytoscapeWindowClass", validCytoscapeWindow)
+>
+> *does* work. ?But where should such an assignment be made? ?At global scope at the bottom of the class file?
+
+Maybe right after the validCytoscapeWindow function definition
+
+> That seems a little ragged!
+
+You know that old chestnut about one person's ragged be another
+person's ... "smooth"?
+
+-- 
+Steve Lianoglou
+Graduate Student: Computational Systems Biology
+?| Memorial Sloan-Kettering Cancer Center
+?| Weill Medical College of Cornell University
+Contact Info: http://cbio.mskcc.org/~lianos/contact
+
+
+From mailinglist.honeypot at gmail.com  Thu Mar 31 20:35:09 2011
+From: mailinglist.honeypot at gmail.com (Steve Lianoglou)
+Date: Thu, 31 Mar 2011 14:35:09 -0400
+Subject: [Bioc-devel] adding a validity method to a class
+In-Reply-To: <AANLkTimVErLkFDcsYN20CKfi3VXGLpk+utZ5M-+Y7Lpm@mail.gmail.com>
+References: <52C90480-1F3B-4594-8B4A-540079151189@systemsbiology.org>
+	<AANLkTimddX+TMFPdzL9Sidr0Gsu7ZxUgqTPgEyn+bs+K@mail.gmail.com>
+	<1F330779-FFC9-4CA5-82CE-563B150FB526@systemsbiology.org>
+	<AANLkTimVErLkFDcsYN20CKfi3VXGLpk+utZ5M-+Y7Lpm@mail.gmail.com>
+Message-ID: <AANLkTiknBTpUuU6b-bLfLJiLZELSqSnwKaPPqryYbJOs@mail.gmail.com>
+
+>> Your second suggestion:
+>>
+>> ?setValidity("CytoscapeWindowClass", validCytoscapeWindow)
+>>
+>> *does* work. ?But where should such an assignment be made? ?At global scope at the bottom of the class file?
+>
+> Maybe right after the validCytoscapeWindow function definition
+>
+>> That seems a little ragged!
+
+Or, maybe this is a bit tidier?
+
+setClass("CytoscapeWindowClass", ...)
+setValidity("CytoscapeWindowClass", function(obj) {
+  ## ... lots of code here
+})
+
+
+-- 
+Steve Lianoglou
+Graduate Student: Computational Systems Biology
+?| Memorial Sloan-Kettering Cancer Center
+?| Weill Medical College of Cornell University
+Contact Info: http://cbio.mskcc.org/~lianos/contact
+
+
+From hpages at fhcrc.org  Thu Mar 31 20:54:01 2011
+From: hpages at fhcrc.org (=?windows-1252?Q?Herv=E9_Pag=E8s?=)
+Date: Thu, 31 Mar 2011 11:54:01 -0700
+Subject: [Bioc-devel] Rd metadata R CMD check warning
+In-Reply-To: <FA424383-A8DA-49A2-967C-F79A53B9160C@wehi.edu.au>
+References: <F48C463E-11CC-4E2D-A951-165BB0781C0D@wehi.edu.au>
+	<FA424383-A8DA-49A2-967C-F79A53B9160C@wehi.edu.au>
+Message-ID: <4D94CDC9.50902@fhcrc.org>
+
+Hi Davis,
+
+On 03/30/2011 08:56 PM, Davis McCarthy wrote:
+> Hi all
+>
+> The problem was caused by duplicate \alias entries in a couple of .Rd files, and in fact Herve had already mentioned this. Apologies for missing that. All resolved now.
+
+Yes there was a bug in recent R 2.13 that was preventing 'R CMD check'
+to display the correct warning message. The bug should be fixed in
+R 2.13 beta.
+
+Cheers,
+H.
+
+>
+> Thanks
+> Davis
+>
+>
+>
+> On Mar 31, 2011, at 10:15 AM, Davis McCarthy wrote:
+>
+>> Hi all
+>>
+>> Apologies if this message appears twice.
+>>
+>> We have been encountering a strange warning from R CMD check when running it on the latest version of edgeR (2.1.13, release candidate now on Bioconductor devel):
+>>
+>> * checking Rd metadata ... WARNING
+>> Error in is.function(FUN) : 'FUN' is missing
+>> Calls: print ... format.check_Rd_metadata ->  unlist ->  lapply ->  match.fun
+>> Execution halted
+>>
+>> Full output from R CMD check below. Some googling hasn't shed any light on what's going on here. It occurs on both Windows and Mac machines running R 2. 13 alpha, and has only been present in the last round of changes we made. Unfortunately I can't see any way to determine exactly which *.R or *.Rd file is causing this warning.
+>>
+>> Does anyone know what's causing this warning and how to resolve it?
+>>
+>> Cheers
+>> Davis
+>>
+>> ++++++++++++++++++++++++++++++++++++++++++
+>>
+>> mac1888:svn.BioCdevel dmccarthy$ R CMD check edgeR
+>> * using log directory ?/Users/dmccarthy/Documents/svn.BioCdevel/edgeR.Rcheck?
+>> * using R version 2.13.0 alpha (2011-03-19 r54880)
+>> * using platform: i386-apple-darwin9.8.0 (32-bit)
+>> * using session charset: UTF-8
+>> * checking for file ?edgeR/DESCRIPTION? ... OK
+>> * this is package ?edgeR? version ?2.1.13?
+>> * checking package name space information ... OK
+>> * checking package dependencies ... OK
+>> * checking if this is a source package ... OK
+>> * checking for executable files ... OK
+>> * checking whether package ?edgeR? can be installed ... OK
+>> * checking installed package size ... OK
+>> * checking package directory ... OK
+>> * checking for portable file names ... OK
+>> * checking for sufficient/correct file permissions ... OK
+>> * checking DESCRIPTION meta-information ... OK
+>> * checking top-level files ... OK
+>> * checking index information ... OK
+>> * checking package subdirectories ... OK
+>> * checking R files for non-ASCII characters ... OK
+>> * checking R files for syntax errors ... OK
+>> * checking whether the package can be loaded ... OK
+>> * checking whether the package can be loaded with stated dependencies ... OK
+>> * checking whether the package can be unloaded cleanly ... OK
+>> * checking whether the name space can be loaded with stated dependencies ... OK
+>> * checking whether the name space can be unloaded cleanly ... OK
+>> * checking for unstated dependencies in R code ... OK
+>> * checking S3 generic/method consistency ... OK
+>> * checking replacement functions ... OK
+>> * checking foreign function calls ... OK
+>> * checking R code for possible problems ... OK
+>> * checking Rd files ... OK
+>> * checking Rd metadata ... WARNING
+>> Error in is.function(FUN) : 'FUN' is missing
+>> Calls: print ... format.check_Rd_metadata ->  unlist ->  lapply ->  match.fun
+>> Execution halted
+>> * checking Rd cross-references ... OK
+>> * checking for missing documentation entries ... OK
+>> * checking for code/documentation mismatches ... OK
+>> * checking Rd \usage sections ... OK
+>> * checking Rd contents ... OK
+>> * checking for unstated dependencies in examples ... OK
+>> * checking contents of 'data' directory ... OK
+>> * checking data for non-ASCII characters ... OK
+>> * checking data for ASCII and uncompressed saves ... OK
+>> * checking sizes of PDF files under inst/doc ... OK
+>> * checking examples ... OK
+>> * checking for unstated dependencies in tests ... OK
+>> * checking tests ...
+>> Running ?edgeR-Tests.R?
+>> Comparing ?edgeR-Tests.Rout? to ?edgeR-Tests.Rout.save? ... OK
+>> Running ?mseq-Tests.R?
+>> OK
+>> * checking for unstated dependencies in vignettes ... OK
+>> * checking package vignettes in ?inst/doc? ... OK
+>> * checking running R code from vignettes ... OK
+>> * checking re-building of vignettes ... OK
+>> * checking PDF version of manual ... OK
+>>
+>> WARNING: There was 1 warning, see
+>> ?/Users/dmccarthy/Documents/svn.BioCdevel/edgeR.Rcheck/00check.log?
+>> for details
+>>
+>>
+>>
+>> ------------------------------------------------------------------------
+>> Davis J McCarthy
+>> Research Technician
+>> Bioinformatics Division
+>> Walter and Eliza Hall Institute of Medical Research
+>> 1G Royal Parade, Parkville, Vic 3052, Australia
+>> dmccarthy at wehi.edu.au
+>> http://www.wehi.edu.au
+>>
+>>
+>>
+>> ______________________________________________________________________
+>> The information in this email is confidential and inte...{{dropped:27}}
+>
+>
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From hpages at fhcrc.org  Thu Mar 31 21:08:02 2011
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Thu, 31 Mar 2011 12:08:02 -0700
+Subject: [Bioc-devel] adding a validity method to  a class
+In-Reply-To: <52C90480-1F3B-4594-8B4A-540079151189@systemsbiology.org>
+References: <52C90480-1F3B-4594-8B4A-540079151189@systemsbiology.org>
+Message-ID: <4D94D112.20800@fhcrc.org>
+
+Hi Paul,
+
+On 03/31/2011 10:42 AM, Paul Shannon wrote:
+> I have defined a rather lengthy validity function for CytoscapeWindowClass.
+>
+> In my testing, I create incomplete or broken instances of the class.
+>
+> I get the results I want when I call the validity function like this, for example:
+>
+>    >  RCytoscape:::validCytoscapeWindow (cw.broken)
+>     You must provide an 'edgeType' edge attribute, which will be mapped to Cytoscape's 'interaction' edge attribute.
+>     [1] FALSE
+>
+> But when, following the example in the graphNEL source code, I try to assign this function to the 'validity' slot of the class, the function is not found.
+>
+> The class definition:
+>
+>    setClass ("CytoscapeWindowClass",
+>              representation = representation (title="character",
+>                                               window.id='character',
+>                                               graph="graph"),
+>              contains='CytoscapeConnectionClass',
+>              prototype = prototype (title="R graph",
+>                                    graph=new ("graphNEL", edgemode='directed'),
+>                                     uri="http://localhost:9000"),
+>              validity=function(obj) validCytoscapeWindow (obj)
+>              #validity=function(obj) RCytoscape:::validCytoscapeWindow (obj)   # I also tried this
+>              )
+>
+> Calling 'validObject (cw)' should invoke 'validCytoscapeWindow' but does not.
+
+                         ^^
+Are you calling validObject() on 'cw' or on 'cw.broken'?
+
+It should work:
+
+   setClass("A", representation(blob="raw"),
+                 validity=function(object) cat("Hi!\n"))
+
+Then:
+
+   > a <- new("A")
+   > validObject(a)
+   Hi!
+   [1] TRUE
+
+Cheers,
+H.
+
+>
+> Can anyone explain what I am doing wrong?
+>
+> Thanks!
+>
+>   - Paul
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From dtenenba at fhcrc.org  Thu Mar 31 22:06:51 2011
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Thu, 31 Mar 2011 13:06:51 -0700
+Subject: [Bioc-devel] Bioconductor 2.7 builds will stop on April 6th
+Message-ID: <AANLkTimieY6aHRofa41FsRj-u0v0h3wTN1k9yM85Bwns@mail.gmail.com>
+
+Hello all,
+
+We will stop building Bioconductor 2.7 on Wednesday, April 6th. The
+final build will happen at midnight Seattle time on that day.
+
+Any changes made to Bioconductor packages in the 2.7 branch after
+11:15 PM Seattle time on April 6th, will not be propagated to our web
+site.
+
+Thanks,
+Dan
+
+
+From hpages at fhcrc.org  Thu Mar 31 22:44:51 2011
+From: hpages at fhcrc.org (=?windows-1252?Q?Herv=E9_Pag=E8s?=)
+Date: Thu, 31 Mar 2011 13:44:51 -0700
+Subject: [Bioc-devel] Latex errors in R CMD check a new built BSgenome
+ data	package in R-2.13.0
+In-Reply-To: <AANLkTinKysyyUcxPOUSTf2989id0mrDpWH-kobESLur9@mail.gmail.com>
+References: <AANLkTinKysyyUcxPOUSTf2989id0mrDpWH-kobESLur9@mail.gmail.com>
+Message-ID: <4D94E7C3.70309@fhcrc.org>
+
+Hi Jian-Feng,
+
+I'm not sure what's going on. I just re-forged
+BSgenome.Athaliana.TAIR.TAIR9 with R 2.13 alpha, made the
+source tarball with 'R CMD build', and then run 'R CMD check'
+on this source tarball, and was not able to reproduce this.
+
+I opened the manual (BSgenome.Athaliana.TAIR.TAIR9-manual.pdf,
+located in BSgenome.Athaliana.TAIR.TAIR9.Rcheck) with acroread
+and it looked OK.
+
+I'm on an openSUSE 11.1 machine and have a standard texlive
+installation. I'm not sure this is helpful to you but just in
+case here is the list of texlive RPMs currently installed on
+that machine:
+
+hpages at merlot2:~> rpm -qa | grep -i texlive
+texlive-bin-devel-2007-219.4
+texlive-bin-musictex-2007-219.4
+texlive-xmltex-2007-219.7.1
+texlive-bin-metapost-2007-219.4
+texlive-latex-2007-219.7.1
+texlive-bin-jadetex-2007-219.4
+texlive-jadetex-2007-219.7.1
+texlive-bin-xmltex-2007-219.4
+texlive-musictex-2007-219.7.1
+texlive-bin-2007-219.7.1
+texlive-bin-latex-2007-219.4
+texlive-2007-219.7.1
+texlive-metapost-2007-219.7.1
+texlive-tools-2007-219.7.1
+texlive-bin-tools-2007-219.4
+
+A rather old texlive version as you can see. I'm going to try this
+again on a server with openSUSE 11.3 where texlive is more recent
+(2009).
+
+You could try to produce the manual directly with:
+
+   R CMD Rd2pdf --batch --no-preview --no-clean BSgenome.Alyrata.JGI.v1/
+
+I think this is how 'R CMD check' produces it so the above command
+should fail with the same errors. Note that those errors are LaTeX
+errors, so you could replace 'R CMD Rd2pdf' with 'R CMD Rd2dvi' in
+the above command (keep all the options) and should still get the
+same LaTeX errors.
+
+The above command creates a folder named something like .Rd2dvi28311/
+where intermediate files are dumped. Note that this is a hidden folder
+so you need to use 'ls -a' to see it. One of the intermediate files
+should be named Rd2.tex, and, in your case, is apparently not a valid
+LaTeX file. If you run latex directly on it, again you should see the
+same errors as previously.
+
+It might help to look at this Rd2.tex file (you could show it to us,
+just copy/paste it in your email).
+
+Thanks,
+H.
+
+
+On 03/31/2011 12:35 AM, Mao Jianfeng wrote:
+> Dear listers,
+>
+> Under helps from this mailing list, I have gotten my BSgenome data
+> package built in R-2.13.0. Though it can be installed and loaded, the
+> "R CMD check" returned me LaTex errors. I do not know how to deal with
+> these errors.
+>
+> I hope to get more helps/directions from you. Thanks in advance.
+>
+> Best,
+>
+> Jian-Feng, Mao
+>
+>
+> Here I show you the Info:
+>
+> (1) checking the package
+> #################################################################
+> jmao at deimos:~/Aly_test$ /ebio/abt6/jmao/bin/R-2.13/R-alpha/bin/R CMD
+> check BSgenome.Alyrata.JGI.v1_1.0.tar.gz
+> * using log directory ?/ebio/abt6/jmao/Aly_test/BSgenome.Alyrata.JGI.v1.Rcheck?
+> * using R version 2.13.0 alpha (2011-03-27 r55091)
+> * using platform: x86_64-unknown-linux-gnu (64-bit)
+> * using session charset: UTF-8
+> * checking for file ?BSgenome.Alyrata.JGI.v1/DESCRIPTION? ... OK
+> * this is package ?BSgenome.Alyrata.JGI.v1? version ?1.0?
+> * checking package name space information ... OK
+> * checking package dependencies ... OK
+> * checking if this is a source package ... OK
+> * checking for executable files ... OK
+> * checking whether package ?BSgenome.Alyrata.JGI.v1? can be installed ... OK
+> * checking installed package size ... NOTE
+>   installed size is 53.7Mb
+>   sub-directories of 1Mb or more:
+>     extdata  53.6Mb
+> * checking package directory ... OK
+> * checking for portable file names ... OK
+> * checking for sufficient/correct file permissions ... OK
+> * checking DESCRIPTION meta-information ... OK
+> * checking top-level files ... OK
+> * checking index information ... OK
+> * checking package subdirectories ... OK
+> * checking R files for non-ASCII characters ... OK
+> * checking R files for syntax errors ... OK
+> * checking whether the package can be loaded ... OK
+> * checking whether the package can be loaded with stated dependencies ... OK
+> * checking whether the package can be unloaded cleanly ... OK
+> * checking whether the name space can be loaded with stated dependencies ... OK
+> * checking whether the name space can be unloaded cleanly ... OK
+> * checking for unstated dependencies in R code ... OK
+> * checking S3 generic/method consistency ... OK
+> * checking replacement functions ... OK
+> * checking foreign function calls ... OK
+> * checking R code for possible problems ... OK
+> * checking Rd files ... NOTE
+> prepare_Rd: package.Rd:15-17: Dropping empty section \details
+> * checking Rd metadata ... OK
+> * checking Rd cross-references ... OK
+> * checking for missing documentation entries ... OK
+> * checking for code/documentation mismatches ... OK
+> * checking Rd \usage sections ... OK
+> * checking Rd contents ... OK
+> * checking for unstated dependencies in examples ... OK
+> * checking examples ... OK
+> * checking PDF version of manual ... WARNING
+> LaTeX errors when creating PDF version.
+> This typically indicates Rd problems.
+> LaTeX errors found:
+> ! Font T1/ptm/m/n/10=ptmr8t at 10.0pt not loadable: Metric (TFM) file not found
+> .
+> <to be read again>
+>                    relax
+> l.7 \begin{document}
+> ! Font T1/ptm/m/n/24.88=ptmr8t at 24.88pt not loadable: Metric (TFM) file not f
+> ound.
+> <to be read again>
+>                    relax
+> l.8 \chapter*{}
+> ! Font T1/ptm/bx/n/24.88=ptmb8t at 24.88pt not loadable: Metric (TFM) file not
+> found.
+> <to be read again>
+>                    relax
+> l.8 \chapter*{}
+> ! Font \T1/ptm/b/n/24.88=nullfont not loadable: Metric (TFM) file not found.
+> <to be read again>
+>                    \relax
+> l.8 \chapter*{}
+>
+> ! Font T1/ptm/bx/n/10=ptmb8t at 10.0pt not loadable: Metric (TFM) file not foun
+> d.
+> <to be read again>
+>                    relax
+> l.10 ...f{\huge Package `BSgenome.Alyrata.JGI.v1'}
+> ! Font \T1/ptm/b/n/10=nullfont not loadable: Metric (TFM) file not found.
+> <to be read again>
+>                    \relax
+> l.10 ...f{\huge Package `BSgenome.Alyrata.JGI.v1'}
+>                                                   }
+> ! Font T1/ptm/bx/n/20.74=ptmb8t at 20.74pt not loadable: Metric (TFM) file not
+> found.
+> <to be read again>
+>                    relax
+> l.10 ...f{\huge Package `BSgenome.Alyrata.JGI.v1'}
+> ! Font \T1/ptm/b/n/20.74=nullfont not loadable: Metric (TFM) file not found.
+> <to be read again>
+>                    \relax
+> l.10 ...f{\huge Package `BSgenome.Alyrata.JGI.v1'}
+>                                                   }
+> ! Font T1/ptm/m/n/12=ptmr8t at 12.0pt not loadable: Metric (TFM) file not found
+> .
+> <to be read again>
+>                    relax
+> l.11 \par\bigskip{\large
+> ! Font T1/pcr/m/n/10=pcrr8t at 10.0pt not loadable: Metric (TFM) file not found
+> .
+> <to be read again>
+>                    relax
+> l.22 ...n-Feng Mao }\email{jianfeng.mao at gmail.com}
+> ! Font T1/ptm/m/n/14.4=ptmr8t at 14.4pt not loadable: Metric (TFM) file not fou
+> nd.
+> <to be read again>
+>                    relax
+> l.38 ...a full genome (JGI version V1.0)}{Alyrata}
+> ! Font T1/ptm/bx/n/14.4=ptmb8t at 14.4pt not loadable: Metric (TFM) file not fo
+> und.
+> <to be read again>
+>                    relax
+> l.38 ...a full genome (JGI version V1.0)}{Alyrata}
+> ! Font \T1/ptm/b/n/14.4=nullfont not loadable: Metric (TFM) file not found.
+> <to be read again>
+>                    \relax
+> l.38 ...a full genome (JGI version V1.0)}{Alyrata}
+>
+> ! Font T1/phv/m/n/14.4=phvr8t at 14.4pt not loadable: Metric (TFM) file not fou
+> nd.
+> <to be read again>
+>                    relax
+> l.38 ...a full genome (JGI version V1.0)}{Alyrata}
+> ! Font T1/ptm/m/it/10=ptmri8t at 10.0pt not loadable: Metric (TFM) file not fou
+> nd.
+> <to be read again>
+>                    relax
+> l.38 ...a full genome (JGI version V1.0)}{Alyrata}
+> ! Font T1/ptm/m/n/9=ptmr8t at 9.0pt not loadable: Metric (TFM) file not found.
+> <to be read again>
+>                    relax
+> l.76 \begin{ExampleCode}
+>
+> ! Font T1/pcr/m/n/9=pcrr8t at 9.0pt not loadable: Metric (TFM) file not found.
+> <to be read again>
+>                    relax
+> l.76 \begin{ExampleCode}
+>
+> ! Font T1/ptm/m/sl/10=ptmro8t at 10.0pt not loadable: Metric (TFM) file not fou
+> nd.
+> <to be read again>
+>                    relax
+> l.108 if (interactive())
+> ! Font T1/phv/m/n/10=phvr8t at 10.0pt not loadable: Metric (TFM) file not found
+> .
+> <to be read again>
+>                    relax
+> l.108 if (interactive())
+> * checking PDF version of manual without hyperrefs or index ... ERROR
+>
+>
+> (2) install the package
+> #################################################################
+>
+> jmao at deimos:~/Aly_test$ /ebio/abt6/jmao/bin/R-2.13/R-alpha/bin/R CMD
+> INSTALL BSgenome.Alyrata.JGI.v1_1.0.tar.gz
+> * installing to library ?/ebio/abt6/jmao/bin/R-2.13/Rpacks?
+> * installing *source* package ?BSgenome.Alyrata.JGI.v1? ...
+> ** R
+> ** inst
+> ** preparing package for lazy loading
+> Loading required package: IRanges
+>
+> Attaching package: 'IRanges'
+>
+> The following object(s) are masked from 'package:base':
+>
+>     Map, cbind, eval, intersect, mapply, order, paste, pmax, pmax.int,
+>     pmin, pmin.int, rbind, rep.int, setdiff, table, union
+>
+> Loading required package: GenomicRanges
+> Loading required package: Biostrings
+> ** help
+> *** installing help indices
+> ** building package indices ...
+> ** testing if installed package can be loaded
+>
+> * DONE (BSgenome.Alyrata.JGI.v1)
+>
+> (3) loading the package
+> #################################################################
+>> library(BSgenome.Alyrata.JGI.v1)
+> Loading required package: BSgenome
+> Loading required package: IRanges
+>
+> Attaching package: 'IRanges'
+>
+> The following object(s) are masked from 'package:base':
+>
+>     cbind, eval, intersect, Map, mapply, order, paste, pmax, pmax.int,
+>     pmin, pmin.int, rbind, rep.int, setdiff, table, union
+>
+> Loading required package: GenomicRanges
+> Loading required package: Biostrings
+>
+>> seqlengths(Alyrata)
+>              chr1              chr2              chr3              chr4
+>          33132539          19320864          24464547          23328337
+>              chr5              chr6              chr7              chr8
+>          21221946          25113588          24649197          22951293
+>              chrM chrC_scaffold_373 chrC_scaffold_546 chrC_scaffold_732
+>            214459              8873              6162              4750
+> chrC_scaffold_757 chrC_scaffold_764 chrC_scaffold_885
+>              4636              4615              4166
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From ngopalak at fhcrc.org  Thu Mar 31 23:14:54 2011
+From: ngopalak at fhcrc.org (Nishant Gopalakrishnan)
+Date: Thu, 31 Mar 2011 14:14:54 -0700
+Subject: [Bioc-devel] Building a package that depends on flowCore
+In-Reply-To: <F8F5D23B-3F50-4C57-96C5-E37E2A27EC54@fhcrc.org>
+References: <7059E911-CA02-49EA-A062-236370934F8A@ifom-ieo-campus.it>
+	<F8F5D23B-3F50-4C57-96C5-E37E2A27EC54@fhcrc.org>
+Message-ID: <4D94EECE.2040003@fhcrc.org>
+
+Hi Davide,
+
+Its hard to guess exactly what the problem is considering that you have 
+not even provided the error message.  It would have been easier for 
+others to help you out if you provided a  snippet of code using which 
+people can reproduce the error you get.
+
+Before you put your class into a package, I would recommend sourcing 
+your code for the class into an R session with the flowCore package 
+loaded and making sure things work without errors.
+
+representation=representation(
+       flowframe = "flowFrame",
+       [...]
+)
+
+ From your example above, it appears that you are  trying to create a 
+new class with a flowFrame as one of its slots. After going through the 
+code for the flowCore package,  I have noticed a bug in the initialize 
+method for flowFrame class which would have prevented you from creating 
+a flowFrame object using just new("flowFrame"). My guess is that you 
+would have done the same for the prototype function for your class. You 
+had to pass in a valid value for the exprs and parameters and 
+description slots to instantiate an object.
+
+I have checked in a fix for this in Version flowCore 1.17.5 and now you 
+should be able to do new("flowFrame") to instantiate an object for 
+filling the slot flowFrame in the prototype for your new class.
+
+Nishant
+
+On 03/30/2011 09:19 AM, Finak, Greg wrote:
+> Hi, Davide
+> I'm not as familiar with the R package build system as others on the list, so it's difficult for me to diagnose your problem from the information given, but I can offer a few suggestions. In the Namespace file, try explicitly importing just the classes, methods and functions from flowCore that your package actually uses. I think you woukd want flowCore in the Depends field of your Description file. Finally, have a look at other packages that extend flowCore, like the flowMerge package for example, and see how they handle it. In my experience, masked methods don't usually lead to installation failure. Perhaps you could provide more output from R CMD check, and the content of your Namespace and Description files.
+> Cheers
+> Greg
+>
+> Sent from my iPhone
+>
+> On 2011-03-30, at 2:10 AM, "Davide Rambaldi"<davide.rambaldi at ifom-ieo-campus.it>  wrote:
+>
+>> Hi all, I am trying to pack my code in a package for submission to bioconductor.
+>>
+>> The package depends on flowCore, so for example I have an S4 class with a "slot" that is a flowFrame object.
+>>
+>> representation=representation(
+>>        flowframe = "flowFrame",
+>>        [...]
+>> )
+>>
+>> Now I am trying to build the package:
+>>
+>> without depends in DESCRIPTION or NAMESPACE:
+>>
+>> If I omit the dependecy from flowCore in the DESCRIPTION file I get this warning during R CMD check:
+>>
+>> Warning: undefined slot classes in definition of "GenData": flowframe(class "flowFrame")
+>>
+>>
+>> Then I tried to define the dependency from flowCore:
+>>
+>> If I put the
+>>
+>> Depends: flowCore
+>>
+>> in DESCRIPTION
+>>
+>> I get:
+>>
+>> checking whether package ?flowFit? can be installed ... ERROR
+>> Installation failed.
+>>
+>> The log file say:
+>>
+>> Attaching package: 'flowCore'
+>>
+>> The following object(s) are masked from 'package:stats':
+>>
+>>    alias, filter
+>>
+>> Execution halted
+>>
+>>
+>> I tried to add in NAMESPACE:
+>>
+>> import(flowCore)
+>>
+>> I tried also to move flowCore from Depends to Imports in DESCRIPTION but seems that it always halt at that point.
+>>
+>> What I should try now?
+>>
+>> Thanks and Best Regards
+>>
+>>
+>>
+>>
+>> Davide Rambaldi, Bioinformatics PostDoc.
+>> -----------------------------------------------------
+>> IFOM-IEO Campus
+>> Via Adamello 16, Milano
+>> I-20139 Italy
+>> [t] +39 02574303870
+>> [e] davide.rambaldi at ifom-ieo-campus.it
+>>
+>>
+>>    [[alternative HTML version deleted]]
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+aa
+
+

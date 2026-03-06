@@ -1,0 +1,281 @@
+{
+  "list": "bioc-devel",
+  "description": "",
+  "month": "2009-05",
+  "messages": [
+    {
+      "id": "msg-1438d0c7892a",
+      "message_id": "<1241619933.6298.9.camel@ubuntu-desktop>",
+      "from_name": "Kaiyu Shen",
+      "from_email_hash": "996a445bdc533dc257e87d58204cf700e99ca34891abebd9a93cc1ce69dccecd",
+      "date": "2009-05-06T10:25:33-04:00",
+      "subject": "[Bioc-devel] ath1121501 hyperGTest",
+      "subject_clean": "[Bioc-devel] ath1121501 hyperGTest",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi, folks:\nI am now dealing with the ath1121501.db package and the hyperGTest in\nGOStats. \nI have pulled out a list of genes, with their probe ID.\nthese genes are selected with their GO term available, and no\nduplicates.\nI tried:\nparams=new(\"GOHyperGParams\",geneIds=gene.list,annotation=\"ath1121501\",ontology=\"BP\",\npvalueCutoff=0.05, conditional=FALSE,testDirection=\"over\")\nresult=hyperGTest(params)\n\nHowever,they give me an error message :\n\nError in get(mapName, Envir=pkgEnv,inherits=FALSE):\nvariable \"ath1121501ENTREZID\" was not found\nError in mget(probes,ID2EntrezID(datPkg)):\nerror in evaluating the argument 'envir' in selecting a method for\nfunction 'mget'\n\nI searched online, and found that someone said in ath1121501.db, the\nENTREZID equals to the ACCNUM,so I tried to directly assign the value\nas:\nath1121501ENTREZID<-ath1121501ACCNUM\n\nhowever, error message still pops out. \nDoes anybody have a clue of how this could be solved??\n\nThanks again. \nKyle.",
+      "body_snippet": "Hi, folks:\nI am now dealing with the ath1121501.db package and the hyperGTest in\nGOStats. \nI have pulled out a list of genes, with their probe ID.\nthese genes are selected with their GO term available",
+      "thread_id": "thread-1438d0c7892a",
+      "thread_depth": 0,
+      "month": "2009-05"
+    },
+    {
+      "id": "msg-28a374532c24",
+      "message_id": "<4A0211EF.7010707@fhcrc.org>",
+      "from_name": "Marc Carlson",
+      "from_email_hash": "63182bae9b15df223407341203cb8ed095d4cf2c8e9f0f84a8b7320bd591907d",
+      "date": "2009-05-06T15:40:47-07:00",
+      "subject": "[Bioc-devel] ath1121501 hyperGTest",
+      "subject_clean": "[Bioc-devel] ath1121501 hyperGTest",
+      "in_reply_to": "<1241619933.6298.9.camel@ubuntu-desktop>",
+      "references": [
+        "<1241619933.6298.9.camel@ubuntu-desktop>"
+      ],
+      "body_plain": "Hi Kaiyu,\n\nYou want to share your sessionInfo() with us when you post.  That will\nmake it much easier for us to know how to reproduce any troubles you\nmight have.  Assuming that you are using the latest stuff (and you\nshould be since you are using an annotation package), then you are\ncorrect about needing to use the identifiers in the ACCNUM mapping. \nThese IDs are gene IDs from TAIR, and they are the central gene ID used\nby our arabidopsis gene databases. \n\nI am not sure why you are trying to copy the ath1121501ACCNUM mapping\nonto the ath1121501ENTREZID mapping but I am pretty sure this won't\nhelp.  What you should probably be doing instead is defining a gene\nuniverse and a list of interesting genes that are represented \"as\" TAIR\nIDs.  You can use the ath1121501ACCNUM mapping to help you do this.  If\nthe geneIds and universeGeneIds parameters are not vectors of TAIR IDs,\nthen this process is just not going to work so be sure to makes sure\nthat these things are set up correctly.  To see a more complete set of\ninstructions for using GOstats to do hypergeometric testing you might\nwant to look at the package vignette on this topic:\n\nhttp://www.bioconductor.org/packages/release/bioc/html/GOstats.html\n\nAnd here is a toy example for arabidopsis for you to look at:\n\n\nlibrary(GOstats)\nlibrary(ath1121501.db)\n\n##fake some IDs to just fill out the parameters\nuniverse = mappedRkeys(ath1121501ACCNUM);\n##\"interesting\" here is defined to be the 1st 400 in the \"universe\"\nIDs = universe[1:400]\n\nparams <- new(\"GOHyperGParams\", geneIds = IDs,\nuniverseGeneIds = universe, annotation = \"ath1121501\",\nontology=\"BP\", pvalueCutoff=0.05, conditional=FALSE,              \ntestDirection = \"over\")\n\nOver <- hyperGTest(params)\nOver\nsummary(Over)\n\n\n\n  Marc\n\n\n\n\n\nKaiyu Shen wrote:\n> Hi, folks:\n> I am now dealing with the ath1121501.db package and the hyperGTest in\n> GOStats. \n> I have pulled out a list of genes, with their probe ID.\n> these genes are selected with their GO term available, and no\n> duplicates.\n> I tried:\n> params=new(\"GOHyperGParams\",geneIds=gene.list,annotation=\"ath1121501\",ontology=\"BP\",\n> pvalueCutoff=0.05, conditional=FALSE,testDirection=\"over\")\n> result=hyperGTest(params)\n>\n> However,they give me an error message :\n>\n> Error in get(mapName, Envir=pkgEnv,inherits=FALSE):\n> variable \"ath1121501ENTREZID\" was not found\n> Error in mget(probes,ID2EntrezID(datPkg)):\n> error in evaluating the argument 'envir' in selecting a method for\n> function 'mget'\n>\n> I searched online, and found that someone said in ath1121501.db, the\n> ENTREZID equals to the ACCNUM,so I tried to directly assign the value\n> as:\n> ath1121501ENTREZID<-ath1121501ACCNUM\n>\n> however, error message still pops out. \n> Does anybody have a clue of how this could be solved??\n>\n> Thanks again. \n> Kyle.\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n>",
+      "body_snippet": "Hi Kaiyu,\n\nYou want to share your sessionInfo() with us when you post.  That will\nmake it much easier for us to know how to reproduce any troubles you\nmight have.  Assuming that you are using the late",
+      "thread_id": "thread-1438d0c7892a",
+      "thread_depth": 1,
+      "month": "2009-05"
+    },
+    {
+      "id": "msg-394639a011bd",
+      "message_id": "<1241707283.4a02f3132dbfa@webmail.ohio.edu>",
+      "from_name": "ks280007 at ohio.edu",
+      "from_email_hash": "996a445bdc533dc257e87d58204cf700e99ca34891abebd9a93cc1ce69dccecd",
+      "date": "2009-05-07T10:41:23-04:00",
+      "subject": "[Bioc-devel] Bioc-devel Digest, Vol 62, Issue 1",
+      "subject_clean": "[Bioc-devel] Bioc-devel Digest, Vol 62, Issue 1",
+      "in_reply_to": "<mailman.24.1241690406.21268.bioc-devel@stat.math.ethz.ch>",
+      "references": [
+        "<mailman.24.1241690406.21268.bioc-devel@stat.math.ethz.ch>"
+      ],
+      "body_plain": "Thanks Marc.\nI tried your code but still have the same problems. here are my sessionInfo()\n\nR version 2.9.0 (2009-04-17) \ni386-pc-mingw32 \n\nlocale:\nLC_COLLATE=English_United States.1252;LC_CTYPE=English_United\nStates.1252;LC_MONETARY=English_United\nStates.1252;LC_NUMERIC=C;LC_TIME=English_United States.1252\n\nattached base packages:\n[1] splines   tools     stats     graphics  grDevices utils     datasets \n[8] methods   base     \n\nother attached packages:\n [1] GO.db_2.2.5          ath1121501.db_2.2.11 GOstats_2.10.0      \n [4] RSQLite_0.7-0        DBI_0.2-4            Category_2.6.0      \n [7] genefilter_1.20.0    survival_2.35-4      annotate_1.18.0     \n[10] xtable_1.5-5         AnnotationDbi_1.6.0  graph_1.20.0        \n[13] Biobase_2.0.1       \n\nloaded via a namespace (and not attached):\n[1] cluster_1.11.13 RBGL_1.18.0    \n\n\nPlease point out where the problems could be.\nThanks\n\n\nQuoting bioc-devel-request at stat.math.ethz.ch:\n\n> Send Bioc-devel mailing list submissions to\n> \tbioc-devel at stat.math.ethz.ch\n> \n> To subscribe or unsubscribe via the World Wide Web, visit\n> \thttps://stat.ethz.ch/mailman/listinfo/bioc-devel\n> or, via email, send a message with subject or body 'help' to\n> \tbioc-devel-request at stat.math.ethz.ch\n> \n> You can reach the person managing the list at\n> \tbioc-devel-owner at stat.math.ethz.ch\n> \n> When replying, please edit your Subject line so it is more specific\n> than \"Re: Contents of Bioc-devel digest...\"\n>",
+      "body_snippet": "Thanks Marc.\nI tried your code but still have the same problems. here are my sessionInfo()\n\nR version 2.9.0 (2009-04-17) \ni386-pc-mingw32 \n\nlocale:\nLC_COLLATE=English_United States.1252;LC_CTYPE=Engli",
+      "thread_id": "thread-394639a011bd",
+      "thread_depth": 0,
+      "month": "2009-05"
+    },
+    {
+      "id": "msg-e2b2602b7561",
+      "message_id": "<4A031858.5080500@fhcrc.org>",
+      "from_name": "Marc Carlson",
+      "from_email_hash": "63182bae9b15df223407341203cb8ed095d4cf2c8e9f0f84a8b7320bd591907d",
+      "date": "2009-05-07T10:20:24-07:00",
+      "subject": "[Bioc-devel] Bioc-devel Digest, Vol 62, Issue 1",
+      "subject_clean": "[Bioc-devel] Bioc-devel Digest, Vol 62, Issue 1",
+      "in_reply_to": "<1241707283.4a02f3132dbfa@webmail.ohio.edu>",
+      "references": [
+        "<mailman.24.1241690406.21268.bioc-devel@stat.math.ethz.ch>",
+        "<1241707283.4a02f3132dbfa@webmail.ohio.edu>"
+      ],
+      "body_plain": "Hi Kaiyu,\n\nSince you have been somewhat coy about what exactly you did it is pretty\ndifficult to reproduce your problems.  For example, you never showed me\nwhat the input for your function calls look like so I don't have any way\nto know if you fed the right inputs to this code or not.  But now that\nyou have posted your sessionInfo() I can see that one problem is that\nthat many of your packages are very out of date.  The Category package\n(to name just one example) should be version 2.10.0.  You do not want to\nhave bioconductor packages from several different releases installed\ntogether like this.  To fix this, you should run update.packages() as\ndemonstrated on the bioconductor website.\n\nhttp://www.bioconductor.org/docs/install/\n\n\n  Marc\n\n\n\nks280007 at ohio.edu wrote:\n> Thanks Marc.\n> I tried your code but still have the same problems. here are my sessionInfo()\n>\n> R version 2.9.0 (2009-04-17) \n> i386-pc-mingw32 \n>\n> locale:\n> LC_COLLATE=English_United States.1252;LC_CTYPE=English_United\n> States.1252;LC_MONETARY=English_United\n> States.1252;LC_NUMERIC=C;LC_TIME=English_United States.1252\n>\n> attached base packages:\n> [1] splines   tools     stats     graphics  grDevices utils     datasets \n> [8] methods   base     \n>\n> other attached packages:\n>  [1] GO.db_2.2.5          ath1121501.db_2.2.11 GOstats_2.10.0      \n>  [4] RSQLite_0.7-0        DBI_0.2-4            Category_2.6.0      \n>  [7] genefilter_1.20.0    survival_2.35-4      annotate_1.18.0     \n> [10] xtable_1.5-5         AnnotationDbi_1.6.0  graph_1.20.0        \n> [13] Biobase_2.0.1       \n>\n> loaded via a namespace (and not attached):\n> [1] cluster_1.11.13 RBGL_1.18.0    \n>\n>\n> Please point out where the problems could be.\n> Thanks\n>\n>\n> Quoting bioc-devel-request at stat.math.ethz.ch:\n>\n>   \n>> Send Bioc-devel mailing list submissions to\n>> \tbioc-devel at stat.math.ethz.ch\n>>\n>> To subscribe or unsubscribe via the World Wide Web, visit\n>> \thttps://stat.ethz.ch/mailman/listinfo/bioc-devel\n>> or, via email, send a message with subject or body 'help' to\n>> \tbioc-devel-request at stat.math.ethz.ch\n>>\n>> You can reach the person managing the list at\n>> \tbioc-devel-owner at stat.math.ethz.ch\n>>\n>> When replying, please edit your Subject line so it is more specific\n>> than \"Re: Contents of Bioc-devel digest...\"\n>>\n>>     \n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n>",
+      "body_snippet": "Hi Kaiyu,\n\nSince you have been somewhat coy about what exactly you did it is pretty\ndifficult to reproduce your problems.  For example, you never showed me\nwhat the input for your function calls look ",
+      "thread_id": "thread-394639a011bd",
+      "thread_depth": 1,
+      "month": "2009-05"
+    },
+    {
+      "id": "msg-bc248250396f",
+      "message_id": "<4A087C24.6010701@columbia.edu>",
+      "from_name": "Venkatraman E Seshan",
+      "from_email_hash": "4e6cf0da3f625f19f4fbb6530976c5a243fbcc6b18a4a3037aa3626607bc14d1",
+      "date": "2009-05-11T15:27:32-04:00",
+      "subject": "[Bioc-devel] Dynamic memory in Fortran",
+      "subject_clean": "[Bioc-devel] Dynamic memory in Fortran",
+      "in_reply_to": "<49ECF81D.1040709@fhcrc.org>",
+      "references": [
+        "<49ECF81D.1040709@fhcrc.org>"
+      ],
+      "body_plain": "I would like to use dynamic memory allocation in a Fortran subroutine I \nam writing using allocatable declaration and allocate/disallocate calls. \n  I tested it in my current system and it works fine:\n\n    R version 2.9.0 (2009-04-17)\n    x86_64-pc-linux-gnu\n    GNU Fortran (Ubuntu 4.3.3-5ubuntu4) 4.3.3\n    gcc (Ubuntu 4.3.3-5ubuntu4) 4.3.3\n\nBefore I proceed any further I would like to know if has a potential to \nbreak my Bioconductor package in any system.\n\nThanks,\nVenkat\n\n-- \nVenkatraman E. Seshan, Ph.D.\nColumbia University",
+      "body_snippet": "I would like to use dynamic memory allocation in a Fortran subroutine I \nam writing using allocatable declaration and allocate/disallocate calls. \n  I tested it in my current system and it works fine:",
+      "thread_id": "thread-bc248250396f",
+      "thread_depth": 0,
+      "month": "2009-05"
+    },
+    {
+      "id": "msg-c67d9a50efda",
+      "message_id": "<4A1354AE.8030602@fhcrc.org>",
+      "from_name": "Hervé Pagès",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2009-05-19T17:54:06-07:00",
+      "subject": "[Bioc-devel] Dynamic memory in Fortran",
+      "subject_clean": "[Bioc-devel] Dynamic memory in Fortran",
+      "in_reply_to": "<4A087C24.6010701@columbia.edu>",
+      "references": [
+        "<49ECF81D.1040709@fhcrc.org>",
+        "<4A087C24.6010701@columbia.edu>"
+      ],
+      "body_plain": "Hi Venkat,\n\nVenkatraman E Seshan wrote:\n> I would like to use dynamic memory allocation in a Fortran subroutine I \n> am writing using allocatable declaration and allocate/disallocate calls. \n>  I tested it in my current system and it works fine:\n> \n>    R version 2.9.0 (2009-04-17)\n>    x86_64-pc-linux-gnu\n>    GNU Fortran (Ubuntu 4.3.3-5ubuntu4) 4.3.3\n>    gcc (Ubuntu 4.3.3-5ubuntu4) 4.3.3\n> \n> Before I proceed any further I would like to know if has a potential to \n> break my Bioconductor package in any system.\n\nIf this is a standard Fortran 95 feature, then you should be OK because all\nour build machines have gfortran installed (gfortran == the Fortran 95/2003\ncompiler for GCC). That will make your package compile on all of them. It's\nalso reasonable to assume that people installing from source have a compiler\nsupporting Fortran 95 (gfortran is included in almost every Linux distro\nthose days).\n\nBut if you don't stick to the Fortran 95 standard, all bets are off.\n\nTo see what compilers exactly are installed on our build machines, check\nour build/check report here\n\n   http://bioconductor.org/checkResults/2.5/bioc-LATEST/index.html\n\nand click on the name of a build machine in the Hostname column of the\n1st table starting from the top.\n\nCheers,\nH.\n\n\n> \n> Thanks,\n> Venkat\n> \n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M2-B876\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_snippet": "Hi Venkat,\n\nVenkatraman E Seshan wrote:\n> I would like to use dynamic memory allocation in a Fortran subroutine I \n> am writing using allocatable declaration and allocate/disallocate calls. \n>  I test",
+      "thread_id": "thread-bc248250396f",
+      "thread_depth": 1,
+      "month": "2009-05"
+    },
+    {
+      "id": "msg-6cdbc85a3fde",
+      "message_id": "<1243507786.13387.274.camel@lathan.ipb-sub.ipb-halle.de>",
+      "from_name": "Steffen Neumann",
+      "from_email_hash": "c7f736cda77247542b42535cfff3f1e7c8954a83a0a2400d953c4111745bbaea",
+      "date": "2009-05-28T12:49:46+02:00",
+      "subject": "[Bioc-devel] XCMS build farm failures: fillOddEven() and missing rgl",
+      "subject_clean": "[Bioc-devel] XCMS build farm failures: fillOddEven() and missing rgl",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\n\nfor some time now we have two errors for XCMS.\n\nThe first is easy, pitt does not have rgl:\n\tPackages required but not available:\n\t  rgl\n\nThe second is somewhat stranger, and also affects \nquite a few other packages on Windows (and not other platforms):\n\n\tError in png(file.path(specdir, \"%003d.png\"), width = w, height = h) : \n\t  invalid value of 'fillOddEven'\n\nIs that a known Problem of the R develpment version, \nor do we need to change something in our package ?\n\nYours,\nSteffen\n\n-- \nIPB Halle                    AG Massenspektrometrie & Bioinformatik\nDr. Steffen Neumann          http://www.IPB-Halle.DE\nWeinberg 3                   http://msbi.bic-gh.de\n06120 Halle                  Tel. +49 (0) 345 5582 - 1470\n                                  +49 (0) 345 5582 - 0\nsneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409",
+      "body_snippet": "Hi,\n\nfor some time now we have two errors for XCMS.\n\nThe first is easy, pitt does not have rgl:\n\tPackages required but not available:\n\t  rgl\n\nThe second is somewhat stranger, and also affects \nquite a",
+      "thread_id": "thread-6cdbc85a3fde",
+      "thread_depth": 0,
+      "month": "2009-05"
+    },
+    {
+      "id": "msg-06badc9743c2",
+      "message_id": "<C6445106.505B%julie.zhu@umassmed.edu>",
+      "from_name": "Julie Zhu",
+      "from_email_hash": "d6f73336059c5c55d4db91c0294f8674a52ef21e95684df99d72c17c2c50bedc",
+      "date": "2009-05-28T14:32:38-04:00",
+      "subject": "[Bioc-devel] Need help on biomaRt",
+      "subject_clean": "[Bioc-devel] Need help on biomaRt",
+      "in_reply_to": "<C64316C9.502C%julie.zhu@umassmed.edu>",
+      "references": [],
+      "body_plain": "Hi,\n\nWith the help from Herve, we found out that the devel version of biomaRt is\nbroken with the new Rcurl version 095-1. This is confirmed by the build\nsystem:\n  \nhttp://bioconductor.org/checkResults/2.5/bioc-LATEST/biomaRt/wilson2-buildsr\nc.html\n\nAs you can see, it's broken on Linux and Mac OS. It looks OK\non the Window build machine because this machine is using an\nolder version of RCurl (0.94-1).\n\nI am in the process of submitting a contributed package that relies on\nbiomaRt and my package won't be passed to the reviewers until biomaRt is\nfixed. Could someone please fix the devel version of biomaRt? Thanks a lot\nfor your kind help!\n\nBest regards,\n\nJulie\n\n\n*******************************************\nJulie Zhu, Ph.D\nResearch Assistant Professor\nProgram Gene Function and Expression\nUniversity of Massachusetts Medical School\n364 Plantation Street, Room 613\nWorcester, MA 01605\nhttp://www.umassmed.edu/pgfe/faculty/zhu.cfm",
+      "body_snippet": "Hi,\n\nWith the help from Herve, we found out that the devel version of biomaRt is\nbroken with the new Rcurl version 095-1. This is confirmed by the build\nsystem:\n  \nhttp://bioconductor.org/checkResults",
+      "thread_id": "thread-06badc9743c2",
+      "thread_depth": 0,
+      "month": "2009-05"
+    },
+    {
+      "id": "msg-4d8a901a33d2",
+      "message_id": "<52f663c40905281326x25c7470aka27de5bd98bde10b@mail.gmail.com>",
+      "from_name": "Tony Chiang",
+      "from_email_hash": "9ebd881620c095055c1af52b74c4847ccfe07f5853999ccdedf800c66fa6d7bd",
+      "date": "2009-05-28T13:26:08-07:00",
+      "subject": "[Bioc-devel] Need help on biomaRt",
+      "subject_clean": "[Bioc-devel] Need help on biomaRt",
+      "in_reply_to": "<C6445106.505B%julie.zhu@umassmed.edu>",
+      "references": [
+        "<C64316C9.502C%julie.zhu@umassmed.edu>",
+        "<C6445106.505B%julie.zhu@umassmed.edu>"
+      ],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090528/19457459/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090528/19457459/attachment.pl>",
+      "thread_id": "thread-06badc9743c2",
+      "thread_depth": 1,
+      "month": "2009-05"
+    },
+    {
+      "id": "msg-45381116c17e",
+      "message_id": "<0BED06DC-2258-4F37-A32F-8E276654F669@fhcrc.org>",
+      "from_name": "Florian Hahne",
+      "from_email_hash": "5140c45883d427118d4c32515eb51b09e029dba90ff5a3e547fde14d021f06f2",
+      "date": "2009-05-29T08:33:11-07:00",
+      "subject": "[Bioc-devel] Need help on biomaRt",
+      "subject_clean": "[Bioc-devel] Need help on biomaRt",
+      "in_reply_to": "<C6445106.505B%julie.zhu@umassmed.edu>",
+      "references": [
+        "<C6445106.505B%julie.zhu@umassmed.edu>"
+      ],
+      "body_plain": "The problem was fixed by Duncan Temple Lang in the latest RCurl  \nversion 0.97-3 which is available from Omegahat (http://www.omegahat.org/RCurl/ \n)\nThe automatic updates on our build systems should pick this up any  \ntime now, so all you need is patience for one or two more days :)\nFlorian\n\n\nOn 28.05.2009, at 11:32, Julie Zhu wrote:\n\n> Hi,\n>\n> With the help from Herve, we found out that the devel version of  \n> biomaRt is\n> broken with the new Rcurl version 095-1. This is confirmed by the  \n> build\n> system:\n>\n> http://bioconductor.org/checkResults/2.5/bioc-LATEST/biomaRt/wilson2-buildsr\n> c.html\n>\n> As you can see, it's broken on Linux and Mac OS. It looks OK\n> on the Window build machine because this machine is using an\n> older version of RCurl (0.94-1).\n>\n> I am in the process of submitting a contributed package that relies on\n> biomaRt and my package won't be passed to the reviewers until  \n> biomaRt is\n> fixed. Could someone please fix the devel version of biomaRt? Thanks  \n> a lot\n> for your kind help!\n>\n> Best regards,\n>\n> Julie\n>\n>\n> *******************************************\n> Julie Zhu, Ph.D\n> Research Assistant Professor\n> Program Gene Function and Expression\n> University of Massachusetts Medical School\n> 364 Plantation Street, Room 613\n> Worcester, MA 01605\n> http://www.umassmed.edu/pgfe/faculty/zhu.cfm\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "The problem was fixed by Duncan Temple Lang in the latest RCurl  \nversion 0.97-3 which is available from Omegahat (http://www.omegahat.org/RCurl/ \n)\nThe automatic updates on our build systems should p",
+      "thread_id": "thread-06badc9743c2",
+      "thread_depth": 1,
+      "month": "2009-05"
+    },
+    {
+      "id": "msg-a9df9c2a3f69",
+      "message_id": "<C6457AB0.5082%julie.zhu@umassmed.edu>",
+      "from_name": "Julie Zhu",
+      "from_email_hash": "d6f73336059c5c55d4db91c0294f8674a52ef21e95684df99d72c17c2c50bedc",
+      "date": "2009-05-29T11:42:40-04:00",
+      "subject": "[Bioc-devel] Need help on biomaRt",
+      "subject_clean": "[Bioc-devel] Need help on biomaRt",
+      "in_reply_to": "<0BED06DC-2258-4F37-A32F-8E276654F669@fhcrc.org>",
+      "references": [],
+      "body_plain": "Florian,\n\nThank you very much for the great news!\n\nBest regards,\n\nJulie\n\nOn 5/29/09 11:33 AM, \"Florian Hahne\" <fhahne at fhcrc.org> wrote:\n\n> The problem was fixed by Duncan Temple Lang in the latest RCurl\n> version 0.97-3 which is available from Omegahat\n> (http://www.omegahat.org/RCurl/\n> )\n> The automatic updates on our build systems should pick this up any\n> time now, so all you need is patience for one or two more days :)\n> Florian\n> \n> \n> On 28.05.2009, at 11:32, Julie Zhu wrote:\n> \n>> Hi,\n>> \n>> With the help from Herve, we found out that the devel version of\n>> biomaRt is\n>> broken with the new Rcurl version 095-1. This is confirmed by the\n>> build\n>> system:\n>> \n>> http://bioconductor.org/checkResults/2.5/bioc-LATEST/biomaRt/wilson2-buildsr\n>> c.html\n>> \n>> As you can see, it's broken on Linux and Mac OS. It looks OK\n>> on the Window build machine because this machine is using an\n>> older version of RCurl (0.94-1).\n>> \n>> I am in the process of submitting a contributed package that relies on\n>> biomaRt and my package won't be passed to the reviewers until\n>> biomaRt is\n>> fixed. Could someone please fix the devel version of biomaRt? Thanks\n>> a lot\n>> for your kind help!\n>> \n>> Best regards,\n>> \n>> Julie\n>> \n>> \n>> *******************************************\n>> Julie Zhu, Ph.D\n>> Research Assistant Professor\n>> Program Gene Function and Expression\n>> University of Massachusetts Medical School\n>> 364 Plantation Street, Room 613\n>> Worcester, MA 01605\n>> http://www.umassmed.edu/pgfe/faculty/zhu.cfm\n>> \n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n>",
+      "body_snippet": "Florian,\n\nThank you very much for the great news!\n\nBest regards,\n\nJulie\n\nOn 5/29/09 11:33 AM, \"Florian Hahne\" <fhahne at fhcrc.org> wrote:\n\n> The problem was fixed by Duncan Temple Lang in the latest ",
+      "thread_id": "thread-06badc9743c2",
+      "thread_depth": 2,
+      "month": "2009-05"
+    },
+    {
+      "id": "msg-b461c73fc0ee",
+      "message_id": "<4A205CD1.8060902@fhcrc.org>",
+      "from_name": "Hervé Pagès",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2009-05-29T15:08:17-07:00",
+      "subject": "[Bioc-devel] XCMS build farm failures: fillOddEven() and missing rgl",
+      "subject_clean": "[Bioc-devel] XCMS build farm failures: fillOddEven() and missing rgl",
+      "in_reply_to": "<1243507786.13387.274.camel@lathan.ipb-sub.ipb-halle.de>",
+      "references": [
+        "<1243507786.13387.274.camel@lathan.ipb-sub.ipb-halle.de>"
+      ],
+      "body_plain": "Hi Steffen,\n\nSteffen Neumann wrote:\n[...]\n> The second is somewhat stranger, and also affects \n> quite a few other packages on Windows (and not other platforms):\n> \n> \tError in png(file.path(specdir, \"%003d.png\"), width = w, height = h) : \n> \t  invalid value of 'fillOddEven'\n> \n> Is that a known Problem of the R develpment version, \n> or do we need to change something in our package ?\n\nThe 'fillOddEven' parameter is indeed a recent addition to the R-2.10 series:\n\n   https://svn.r-project.org/R/trunk/NEWS\n\nSomething really odd is happening on our Windows build nodes: when calling\npng() here, we get something like:\n\n   Error in png(\"somefile.png\") :\n     invalid value of 'fillOddEven'\n\nBut when checking the man page for png() or looking at the code of the\nfunction, I don't see any 'fillOddEven' argument!\n\nI need to investigate more.\n\nCheers,\nH.\n\n> \n> Yours,\n> Steffen\n> \n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M2-B876\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_snippet": "Hi Steffen,\n\nSteffen Neumann wrote:\n[...]\n> The second is somewhat stranger, and also affects \n> quite a few other packages on Windows (and not other platforms):\n> \n> \tError in png(file.path(specdir, ",
+      "thread_id": "thread-6cdbc85a3fde",
+      "thread_depth": 1,
+      "month": "2009-05"
+    }
+  ],
+  "threads": [
+    {
+      "id": "thread-1438d0c7892a",
+      "subject": "[Bioc-devel] ath1121501 hyperGTest",
+      "message_count": 2,
+      "participants": [
+        "Kaiyu Shen",
+        "Marc Carlson"
+      ],
+      "started": "2009-05-06T10:25:33-04:00",
+      "last_reply": "2009-05-06T15:40:47-07:00",
+      "root_message_id": "msg-1438d0c7892a"
+    },
+    {
+      "id": "thread-394639a011bd",
+      "subject": "[Bioc-devel] Bioc-devel Digest, Vol 62, Issue 1",
+      "message_count": 2,
+      "participants": [
+        "Marc Carlson",
+        "ks280007 at ohio.edu"
+      ],
+      "started": "2009-05-07T10:41:23-04:00",
+      "last_reply": "2009-05-07T10:20:24-07:00",
+      "root_message_id": "msg-394639a011bd"
+    },
+    {
+      "id": "thread-bc248250396f",
+      "subject": "[Bioc-devel] Dynamic memory in Fortran",
+      "message_count": 2,
+      "participants": [
+        "Hervé Pagès",
+        "Venkatraman E Seshan"
+      ],
+      "started": "2009-05-11T15:27:32-04:00",
+      "last_reply": "2009-05-19T17:54:06-07:00",
+      "root_message_id": "msg-bc248250396f"
+    },
+    {
+      "id": "thread-6cdbc85a3fde",
+      "subject": "[Bioc-devel] XCMS build farm failures: fillOddEven() and missing rgl",
+      "message_count": 2,
+      "participants": [
+        "Hervé Pagès",
+        "Steffen Neumann"
+      ],
+      "started": "2009-05-28T12:49:46+02:00",
+      "last_reply": "2009-05-29T15:08:17-07:00",
+      "root_message_id": "msg-6cdbc85a3fde"
+    },
+    {
+      "id": "thread-06badc9743c2",
+      "subject": "[Bioc-devel] Need help on biomaRt",
+      "message_count": 4,
+      "participants": [
+        "Florian Hahne",
+        "Julie Zhu",
+        "Tony Chiang"
+      ],
+      "started": "2009-05-28T14:32:38-04:00",
+      "last_reply": "2009-05-29T11:42:40-04:00",
+      "root_message_id": "msg-06badc9743c2"
+    }
+  ]
+}

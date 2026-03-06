@@ -1,0 +1,3220 @@
+From edward.morrissey at cancer.org.uk  Thu Feb  2 15:56:30 2012
+From: edward.morrissey at cancer.org.uk (Edward Morrissey)
+Date: Thu, 02 Feb 2012 14:56:30 +0000
+Subject: [Bioc-devel] Package crashes with
+Message-ID: <4F2AA41E.6050901@cancer.org.uk>
+
+Hi,
+
+I am the maintainer of GRENITS package. It has recently started to give 
+build errors due to a function it uses from
+the package ggplot2. I've updated ggplot2 to the latest cran version 
+(0.8.9) and it's dependencies but cannot replicate the errors.
+
+However, I found a newer version of ggplot2 (0.9.0) on crantastic that 
+relies on the new package reshape2 (previously it used reshape).
+
+Could the problem be that ggplot2 was updated to the latest version 
+(0.9.0), but reshape2 was not installed? How can I check the versions
+of the packages used for the build process?
+
+Thanks,
+Edward
+
+
+From dtenenba at fhcrc.org  Thu Feb  2 18:24:56 2012
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Thu, 2 Feb 2012 09:24:56 -0800
+Subject: [Bioc-devel] Package crashes with
+In-Reply-To: <9483_1328194660_4F2AA464_9483_14339_1_4F2AA41E.6050901@cancer.org.uk>
+References: <9483_1328194660_4F2AA464_9483_14339_1_4F2AA41E.6050901@cancer.org.uk>
+Message-ID: <CAF42j23EjLHpOSnOBufOKz4dx5qt+9+JO7vSg5Crpwvnka9eLw@mail.gmail.com>
+
+Hi,
+
+On Thu, Feb 2, 2012 at 6:56 AM, Edward Morrissey
+<edward.morrissey at cancer.org.uk> wrote:
+> Hi,
+>
+> I am the maintainer of GRENITS package. It has recently started to give
+> build errors due to a function it uses from
+> the package ggplot2. I've updated ggplot2 to the latest cran version (0.8.9)
+> and it's dependencies but cannot replicate the errors.
+>
+> However, I found a newer version of ggplot2 (0.9.0) on crantastic that
+> relies on the new package reshape2 (previously it used reshape).
+>
+> Could the problem be that ggplot2 was updated to the latest version (0.9.0),
+> but reshape2 was not installed? How can I check the versions
+> of the packages used for the build process?
+
+
+On the build report page:
+http://bioconductor.org/checkResults/devel/bioc-LATEST/
+
+At the top, where the build machines are described, the rightmost
+column of the table is called "Installed pkgs". Click on the number
+below that and you can see what is installed on each machine.
+
+For example, on lamb2:
+http://bioconductor.org/checkResults/devel/bioc-LATEST/lamb2-R-instpkgs.html
+You can see that reshape and reshape2 are installed.
+
+Dan
+
+
+
+>
+> Thanks,
+> Edward
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From laurent.gatto at gmail.com  Thu Feb  2 19:25:04 2012
+From: laurent.gatto at gmail.com (Laurent Gatto)
+Date: Thu, 2 Feb 2012 18:25:04 +0000
+Subject: [Bioc-devel] Package crashes with
+In-Reply-To: <4F2AA41E.6050901@cancer.org.uk>
+References: <4F2AA41E.6050901@cancer.org.uk>
+Message-ID: <CA+uNOzgjm8pyMwM7Ny9bbDLyH4a4EqFmMi7s=btKLQGn-CXPSQ@mail.gmail.com>
+
+Dear Edward,
+
+I believe the error is the result of ggplot2 v 0.8.9 depending on
+reshape while ggplot2 v 0.9.0 now imports reshape2. You now need to
+load reshape/reshape2 explicitly in your vignette prior to calling
+melt. Note that this change will have to be committed to devel and
+RELEASE, as ggplot2 has been updated on both branches.
+
+Hope this helps,
+
+Laurent
+
+
+On 2 February 2012 14:56, Edward Morrissey
+<edward.morrissey at cancer.org.uk> wrote:
+> Hi,
+>
+> I am the maintainer of GRENITS package. It has recently started to give
+> build errors due to a function it uses from
+> the package ggplot2. I've updated ggplot2 to the latest cran version (0.8.9)
+> and it's dependencies but cannot replicate the errors.
+>
+> However, I found a newer version of ggplot2 (0.9.0) on crantastic that
+> relies on the new package reshape2 (previously it used reshape).
+>
+> Could the problem be that ggplot2 was updated to the latest version (0.9.0),
+> but reshape2 was not installed? How can I check the versions
+> of the packages used for the build process?
+>
+> Thanks,
+> Edward
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From beniltoncarvalho at gmail.com  Thu Feb  2 20:01:47 2012
+From: beniltoncarvalho at gmail.com (Benilton Carvalho)
+Date: Thu, 2 Feb 2012 19:01:47 +0000
+Subject: [Bioc-devel] Package crashes with
+In-Reply-To: <CA+uNOzgjm8pyMwM7Ny9bbDLyH4a4EqFmMi7s=btKLQGn-CXPSQ@mail.gmail.com>
+References: <4F2AA41E.6050901@cancer.org.uk>
+	<CA+uNOzgjm8pyMwM7Ny9bbDLyH4a4EqFmMi7s=btKLQGn-CXPSQ@mail.gmail.com>
+Message-ID: <CAO-arWO092_F-hHWr8w61WgqnOQGRp-6LbrAGCYto6G-f6eKGA@mail.gmail.com>
+
+Hey Laurent,
+
+The major issue, IMHO, is the fact that internally ggplot2 has
+distinct dependencies conditional on its version. ggplot2 0.8.9
+depends on reshape; ggplot2 0.9.0 depends on reshape2. And both
+reshape and reshape2 provide different implementations of the same
+method (see melt).
+
+If ggplot2 0.9.0 was available for every platform, the changes in
+GRENITS (and whatever other package that uses ggplot2) would be
+straightforward (but still require some extra work, given how the
+format of some outputs from reshape2 changed compared to reshape)...
+And it does not seem to me that these are changes that we expect to do
+in the middle of a cycle on the stable branch.
+
+One particular issue is the fact the Hadley mentioned that ggplot2
+0.9.0 would be resubmitted to CRAN only in March ( http://goo.gl/p5rbq
+)... which makes this slightly harder to handle.
+
+Maybe we'd need to have one exception and simply force to have ggplot2
+0.8.9 on the stable branch? Or just solve the issue that impedes
+ggplot2 0.9.0 to be built on every platform and deal with the fact
+that there would be major (internal) changes on the BioC release
+branch...
+
+b
+
+On 2 February 2012 18:25, Laurent Gatto <laurent.gatto at gmail.com> wrote:
+> Dear Edward,
+>
+> I believe the error is the result of ggplot2 v 0.8.9 depending on
+> reshape while ggplot2 v 0.9.0 now imports reshape2. You now need to
+> load reshape/reshape2 explicitly in your vignette prior to calling
+> melt. Note that this change will have to be committed to devel and
+> RELEASE, as ggplot2 has been updated on both branches.
+>
+> Hope this helps,
+>
+> Laurent
+>
+>
+> On 2 February 2012 14:56, Edward Morrissey
+> <edward.morrissey at cancer.org.uk> wrote:
+>> Hi,
+>>
+>> I am the maintainer of GRENITS package. It has recently started to give
+>> build errors due to a function it uses from
+>> the package ggplot2. I've updated ggplot2 to the latest cran version (0.8.9)
+>> and it's dependencies but cannot replicate the errors.
+>>
+>> However, I found a newer version of ggplot2 (0.9.0) on crantastic that
+>> relies on the new package reshape2 (previously it used reshape).
+>>
+>> Could the problem be that ggplot2 was updated to the latest version (0.9.0),
+>> but reshape2 was not installed? How can I check the versions
+>> of the packages used for the build process?
+>>
+>> Thanks,
+>> Edward
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From raffaele.calogero at unito.it  Fri Feb  3 10:36:06 2012
+From: raffaele.calogero at unito.it (rcaloger)
+Date: Fri, 03 Feb 2012 10:36:06 +0100
+Subject: [Bioc-devel] =?windows-1252?q?Check_warning=3A_Undocumented_code_?=
+ =?windows-1252?q?objects=3A=2C__=91summary=92?=
+Message-ID: <4F2BAA86.2030802@unito.it>
+
+Hi,
+I am the maintainer of oneChannelGUI, I am getting a strange warning 
+from the devel version of the package:
+Undocumented code objects:
+   ?summary?
+As far as I could understand it seems that a function called summary was 
+never described in as man page.
+However, I check for the presence of "summary" function in my package 
+and I have never defined it.
+I use summary methods from GOstats, siggenes DyDoc, and IRanges.
+
+I am expecting that this problem depend on the configuration of NAMESPACE
+
+Therefore I modified NAME adding explicitly all packages from which I am 
+importing summary:
+
+oneChannelGUI NAMESPACE is the following:
+
+importMethodsFrom(GOstats, summary)
+importMethodsFrom(siggenes, summary)
+importMethodsFrom(DynDoc, summary)
+importMethodsFrom(IRanges, sapply, as.data.frame, summary)
+
+#  All functions exported other than those starting with "."
+exportPattern("^[^\\.]")
+exportMethods(summary, sapply, as.data.frame)
+
+However, the warning remains.
+
+Could somebody help me in understanding this warning?
+Cheers
+Raffaele
+
+
+
+-- 
+
+----------------------------------------
+Prof. Raffaele A. Calogero
+Bioinformatics and Genomics Unit
+MBC Centro di Biotecnologie Molecolari
+Via Nizza 52, Torino 10126
+tel.   ++39 0116706457
+Fax    ++39 0112366457
+Mobile ++39 3333827080
+email: raffaele.calogero at unito.it
+        raffaele[dot]calogero[at]gmail[dot]com
+www:   http://www.bioinformatica.unito.it
+
+
+From beniltoncarvalho at gmail.com  Fri Feb  3 15:24:01 2012
+From: beniltoncarvalho at gmail.com (Benilton Carvalho)
+Date: Fri, 3 Feb 2012 14:24:01 +0000
+Subject: [Bioc-devel] gzeof
+Message-ID: <CAO-arWMPC0+_uTfJ7bEJUWgRzWohNDybA9on5qeNxSntxbGCsA@mail.gmail.com>
+
+I'm attempting to get oligo to work without the configure/Makevars pair.
+
+It currently builds and checks okay (I see the warning, which is not
+relevant for the current issue) on petty, but fails on the other
+machines as it can't find gzeof...
+
+Any thoughts?
+
+thank you,
+b
+
+
+From laurent.gatto at gmail.com  Fri Feb  3 15:30:50 2012
+From: laurent.gatto at gmail.com (Laurent Gatto)
+Date: Fri, 3 Feb 2012 14:30:50 +0000
+Subject: [Bioc-devel] Package crashes with
+In-Reply-To: <CAO-arWO092_F-hHWr8w61WgqnOQGRp-6LbrAGCYto6G-f6eKGA@mail.gmail.com>
+References: <4F2AA41E.6050901@cancer.org.uk>
+	<CA+uNOzgjm8pyMwM7Ny9bbDLyH4a4EqFmMi7s=btKLQGn-CXPSQ@mail.gmail.com>
+	<CAO-arWO092_F-hHWr8w61WgqnOQGRp-6LbrAGCYto6G-f6eKGA@mail.gmail.com>
+Message-ID: <CA+uNOzgZuLChdiFrUt7LVrvyVBNkaXZLpwNYfK_PX168qbFBAw@mail.gmail.com>
+
+Dear Benilton,
+
+On 2 February 2012 19:01, Benilton Carvalho <beniltoncarvalho at gmail.com> wrote:
+> Hey Laurent,
+>
+> The major issue, IMHO, is the fact that internally ggplot2 has
+> distinct dependencies conditional on its version. ggplot2 0.8.9
+> depends on reshape; ggplot2 0.9.0 depends on reshape2. And both
+> reshape and reshape2 provide different implementations of the same
+> method (see melt).
+
+Definitely, that does have broader implications. Thank you for pointing it out.
+
+> If ggplot2 0.9.0 was available for every platform, the changes in
+> GRENITS (and whatever other package that uses ggplot2) would be
+> straightforward (but still require some extra work, given how the
+> format of some outputs from reshape2 changed compared to reshape)...
+> And it does not seem to me that these are changes that we expect to do
+> in the middle of a cycle on the stable branch.
+>
+> One particular issue is the fact the Hadley mentioned that ggplot2
+> 0.9.0 would be resubmitted to CRAN only in March ( http://goo.gl/p5rbq
+> )... which makes this slightly harder to handle.
+>
+> Maybe we'd need to have one exception and simply force to have ggplot2
+> 0.8.9 on the stable branch? Or just solve the issue that impedes
+> ggplot2 0.9.0 to be built on every platform and deal with the fact
+> that there would be major (internal) changes on the BioC release
+> branch...
+
+I was surprised that 0.9.0 was installed on the stable branch, as it
+is not yet available on CRAN. Not sure what the best approach is,
+though, as maintainers have or are on their way to make the necessary
+changes in devel and release.
+More confusing, to me at least, is that devel and release packages are
+build/checked with ggplot2 0.9.0 but biocLite installs 0.8.9.
+
+Best wishes,
+
+Laurent
+
+
+> b
+>
+> On 2 February 2012 18:25, Laurent Gatto <laurent.gatto at gmail.com> wrote:
+>> Dear Edward,
+>>
+>> I believe the error is the result of ggplot2 v 0.8.9 depending on
+>> reshape while ggplot2 v 0.9.0 now imports reshape2. You now need to
+>> load reshape/reshape2 explicitly in your vignette prior to calling
+>> melt. Note that this change will have to be committed to devel and
+>> RELEASE, as ggplot2 has been updated on both branches.
+>>
+>> Hope this helps,
+>>
+>> Laurent
+>>
+>>
+>> On 2 February 2012 14:56, Edward Morrissey
+>> <edward.morrissey at cancer.org.uk> wrote:
+>>> Hi,
+>>>
+>>> I am the maintainer of GRENITS package. It has recently started to give
+>>> build errors due to a function it uses from
+>>> the package ggplot2. I've updated ggplot2 to the latest cran version (0.8.9)
+>>> and it's dependencies but cannot replicate the errors.
+>>>
+>>> However, I found a newer version of ggplot2 (0.9.0) on crantastic that
+>>> relies on the new package reshape2 (previously it used reshape).
+>>>
+>>> Could the problem be that ggplot2 was updated to the latest version (0.9.0),
+>>> but reshape2 was not installed? How can I check the versions
+>>> of the packages used for the build process?
+>>>
+>>> Thanks,
+>>> Edward
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+
+-- 
+[ Laurent Gatto | slashhome.be ]
+
+
+From beniltoncarvalho at gmail.com  Fri Feb  3 15:35:30 2012
+From: beniltoncarvalho at gmail.com (Benilton Carvalho)
+Date: Fri, 3 Feb 2012 14:35:30 +0000
+Subject: [Bioc-devel] Package crashes with
+In-Reply-To: <CA+uNOzgZuLChdiFrUt7LVrvyVBNkaXZLpwNYfK_PX168qbFBAw@mail.gmail.com>
+References: <4F2AA41E.6050901@cancer.org.uk>
+	<CA+uNOzgjm8pyMwM7Ny9bbDLyH4a4EqFmMi7s=btKLQGn-CXPSQ@mail.gmail.com>
+	<CAO-arWO092_F-hHWr8w61WgqnOQGRp-6LbrAGCYto6G-f6eKGA@mail.gmail.com>
+	<CA+uNOzgZuLChdiFrUt7LVrvyVBNkaXZLpwNYfK_PX168qbFBAw@mail.gmail.com>
+Message-ID: <CAO-arWOMervn=X6eYJgD3ws0AAHU2yxThCyOV72aFQyquE162A@mail.gmail.com>
+
+The issues you're observing are likely associated to the fact that CRAN provides
+0.8.9 for Linux and Windows... but 0.9.0 for Mac. b
+
+On 3 February 2012 14:30, Laurent Gatto <laurent.gatto at gmail.com> wrote:
+> Dear Benilton,
+>
+> On 2 February 2012 19:01, Benilton Carvalho <beniltoncarvalho at gmail.com> wrote:
+>> Hey Laurent,
+>>
+>> The major issue, IMHO, is the fact that internally ggplot2 has
+>> distinct dependencies conditional on its version. ggplot2 0.8.9
+>> depends on reshape; ggplot2 0.9.0 depends on reshape2. And both
+>> reshape and reshape2 provide different implementations of the same
+>> method (see melt).
+>
+> Definitely, that does have broader implications. Thank you for pointing it out.
+>
+>> If ggplot2 0.9.0 was available for every platform, the changes in
+>> GRENITS (and whatever other package that uses ggplot2) would be
+>> straightforward (but still require some extra work, given how the
+>> format of some outputs from reshape2 changed compared to reshape)...
+>> And it does not seem to me that these are changes that we expect to do
+>> in the middle of a cycle on the stable branch.
+>>
+>> One particular issue is the fact the Hadley mentioned that ggplot2
+>> 0.9.0 would be resubmitted to CRAN only in March ( http://goo.gl/p5rbq
+>> )... which makes this slightly harder to handle.
+>>
+>> Maybe we'd need to have one exception and simply force to have ggplot2
+>> 0.8.9 on the stable branch? Or just solve the issue that impedes
+>> ggplot2 0.9.0 to be built on every platform and deal with the fact
+>> that there would be major (internal) changes on the BioC release
+>> branch...
+>
+> I was surprised that 0.9.0 was installed on the stable branch, as it
+> is not yet available on CRAN. Not sure what the best approach is,
+> though, as maintainers have or are on their way to make the necessary
+> changes in devel and release.
+> More confusing, to me at least, is that devel and release packages are
+> build/checked with ggplot2 0.9.0 but biocLite installs 0.8.9.
+>
+> Best wishes,
+>
+> Laurent
+>
+>
+>> b
+>>
+>> On 2 February 2012 18:25, Laurent Gatto <laurent.gatto at gmail.com> wrote:
+>>> Dear Edward,
+>>>
+>>> I believe the error is the result of ggplot2 v 0.8.9 depending on
+>>> reshape while ggplot2 v 0.9.0 now imports reshape2. You now need to
+>>> load reshape/reshape2 explicitly in your vignette prior to calling
+>>> melt. Note that this change will have to be committed to devel and
+>>> RELEASE, as ggplot2 has been updated on both branches.
+>>>
+>>> Hope this helps,
+>>>
+>>> Laurent
+>>>
+>>>
+>>> On 2 February 2012 14:56, Edward Morrissey
+>>> <edward.morrissey at cancer.org.uk> wrote:
+>>>> Hi,
+>>>>
+>>>> I am the maintainer of GRENITS package. It has recently started to give
+>>>> build errors due to a function it uses from
+>>>> the package ggplot2. I've updated ggplot2 to the latest cran version (0.8.9)
+>>>> and it's dependencies but cannot replicate the errors.
+>>>>
+>>>> However, I found a newer version of ggplot2 (0.9.0) on crantastic that
+>>>> relies on the new package reshape2 (previously it used reshape).
+>>>>
+>>>> Could the problem be that ggplot2 was updated to the latest version (0.9.0),
+>>>> but reshape2 was not installed? How can I check the versions
+>>>> of the packages used for the build process?
+>>>>
+>>>> Thanks,
+>>>> Edward
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at r-project.org mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+>
+> --
+> [ Laurent Gatto | slashhome.be ]
+
+
+From dtenenba at fhcrc.org  Fri Feb  3 17:33:21 2012
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Fri, 3 Feb 2012 08:33:21 -0800
+Subject: [Bioc-devel] gzeof
+In-Reply-To: <18213_1328279171_4F2BEE83_18213_19489_1_CAO-arWMPC0+_uTfJ7bEJUWgRzWohNDybA9on5qeNxSntxbGCsA@mail.gmail.com>
+References: <18213_1328279171_4F2BEE83_18213_19489_1_CAO-arWMPC0+_uTfJ7bEJUWgRzWohNDybA9on5qeNxSntxbGCsA@mail.gmail.com>
+Message-ID: <CAF42j20dx2HsgmGp=k6ohaBv9jx+ZqGW=7xB1hpQHHaQRiLgqQ@mail.gmail.com>
+
+Hi Benilton,
+
+On Fri, Feb 3, 2012 at 6:24 AM, Benilton Carvalho
+<beniltoncarvalho at gmail.com> wrote:
+> I'm attempting to get oligo to work without the configure/Makevars pair.
+>
+> It currently builds and checks okay (I see the warning, which is not
+> relevant for the current issue) on petty, but fails on the other
+> machines as it can't find gzeof...
+>
+
+Last night I checked in a fix for this which uses Makevars (not configure).
+It should build OK in tonight's build.
+
+Dan
+
+
+> Any thoughts?
+>
+> thank you,
+> b
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From mtmorgan at fhcrc.org  Fri Feb  3 18:29:58 2012
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Fri, 03 Feb 2012 09:29:58 -0800
+Subject: [Bioc-devel]
+ =?windows-1252?q?Check_warning=3A_Undocumented_code_?=
+ =?windows-1252?q?objects=3A=2C__=91summary=92?=
+In-Reply-To: <4F2BAA86.2030802@unito.it>
+References: <4F2BAA86.2030802@unito.it>
+Message-ID: <4F2C1996.5020702@fhcrc.org>
+
+On 02/03/2012 01:36 AM, rcaloger wrote:
+> Hi,
+> I am the maintainer of oneChannelGUI, I am getting a strange warning
+> from the devel version of the package:
+> Undocumented code objects:
+> ?summary?
+> As far as I could understand it seems that a function called summary was
+> never described in as man page.
+> However, I check for the presence of "summary" function in my package
+> and I have never defined it.
+> I use summary methods from GOstats, siggenes DyDoc, and IRanges.
+>
+> I am expecting that this problem depend on the configuration of NAMESPACE
+>
+> Therefore I modified NAME adding explicitly all packages from which I am
+> importing summary:
+>
+> oneChannelGUI NAMESPACE is the following:
+>
+> importMethodsFrom(GOstats, summary)
+> importMethodsFrom(siggenes, summary)
+> importMethodsFrom(DynDoc, summary)
+> importMethodsFrom(IRanges, sapply, as.data.frame, summary)
+>
+> # All functions exported other than those starting with "."
+> exportPattern("^[^\\.]")
+> exportMethods(summary, sapply, as.data.frame)
+>
+> However, the warning remains.
+>
+> Could somebody help me in understanding this warning?
+
+In principle, if you don't define the generic you don't have to document 
+it, so the warning could be a bug in R. On the other hand in the version 
+of the NAMESPACE that is reported on the Bioc build page and in your 
+current svn you export(summary), but this shouldn't be necessary -- just 
+exportMethods(summary).
+
+Martin
+
+> Cheers
+> Raffaele
+>
+>
+>
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From beniltoncarvalho at gmail.com  Fri Feb  3 18:30:42 2012
+From: beniltoncarvalho at gmail.com (Benilton Carvalho)
+Date: Fri, 3 Feb 2012 17:30:42 +0000
+Subject: [Bioc-devel] gzeof
+In-Reply-To: <CAF42j20dx2HsgmGp=k6ohaBv9jx+ZqGW=7xB1hpQHHaQRiLgqQ@mail.gmail.com>
+References: <18213_1328279171_4F2BEE83_18213_19489_1_CAO-arWMPC0+_uTfJ7bEJUWgRzWohNDybA9on5qeNxSntxbGCsA@mail.gmail.com>
+	<CAF42j20dx2HsgmGp=k6ohaBv9jx+ZqGW=7xB1hpQHHaQRiLgqQ@mail.gmail.com>
+Message-ID: <CAO-arWPdUkMoGDqt6vE4eBH8zRRcXSwqq1eNT3cEsoDz__Maow@mail.gmail.com>
+
+Hi Dan,
+
+thank you very much!
+
+Now, as long as I ensure affyio is installed on both i386 and x86_64,
+oligo will install on both (from the source) automagically.
+
+b
+
+On 3 February 2012 16:33, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:
+> Hi Benilton,
+>
+> On Fri, Feb 3, 2012 at 6:24 AM, Benilton Carvalho
+> <beniltoncarvalho at gmail.com> wrote:
+>> I'm attempting to get oligo to work without the configure/Makevars pair.
+>>
+>> It currently builds and checks okay (I see the warning, which is not
+>> relevant for the current issue) on petty, but fails on the other
+>> machines as it can't find gzeof...
+>>
+>
+> Last night I checked in a fix for this which uses Makevars (not configure).
+> It should build OK in tonight's build.
+>
+> Dan
+>
+>
+>> Any thoughts?
+>>
+>> thank you,
+>> b
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From dtenenba at fhcrc.org  Fri Feb  3 18:42:55 2012
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Fri, 3 Feb 2012 09:42:55 -0800
+Subject: [Bioc-devel] Package crashes with
+In-Reply-To: <CA+uNOzgZuLChdiFrUt7LVrvyVBNkaXZLpwNYfK_PX168qbFBAw@mail.gmail.com>
+References: <4F2AA41E.6050901@cancer.org.uk>
+	<CA+uNOzgjm8pyMwM7Ny9bbDLyH4a4EqFmMi7s=btKLQGn-CXPSQ@mail.gmail.com>
+	<CAO-arWO092_F-hHWr8w61WgqnOQGRp-6LbrAGCYto6G-f6eKGA@mail.gmail.com>
+	<CA+uNOzgZuLChdiFrUt7LVrvyVBNkaXZLpwNYfK_PX168qbFBAw@mail.gmail.com>
+Message-ID: <CAF42j22vVq=Lw_LCqZf8YdVkbSVyUKboNmh0ZGeBiwRzwXqtag@mail.gmail.com>
+
+Hi all,
+
+On Fri, Feb 3, 2012 at 6:30 AM, Laurent Gatto <laurent.gatto at gmail.com> wrote:
+> Dear Benilton,
+>
+> On 2 February 2012 19:01, Benilton Carvalho <beniltoncarvalho at gmail.com> wrote:
+>> Hey Laurent,
+>>
+>> The major issue, IMHO, is the fact that internally ggplot2 has
+>> distinct dependencies conditional on its version. ggplot2 0.8.9
+>> depends on reshape; ggplot2 0.9.0 depends on reshape2. And both
+>> reshape and reshape2 provide different implementations of the same
+>> method (see melt).
+>
+> Definitely, that does have broader implications. Thank you for pointing it out.
+>
+>> If ggplot2 0.9.0 was available for every platform, the changes in
+>> GRENITS (and whatever other package that uses ggplot2) would be
+>> straightforward (but still require some extra work, given how the
+>> format of some outputs from reshape2 changed compared to reshape)...
+>> And it does not seem to me that these are changes that we expect to do
+>> in the middle of a cycle on the stable branch.
+>>
+>> One particular issue is the fact the Hadley mentioned that ggplot2
+>> 0.9.0 would be resubmitted to CRAN only in March ( http://goo.gl/p5rbq
+>> )... which makes this slightly harder to handle.
+>>
+>> Maybe we'd need to have one exception and simply force to have ggplot2
+>> 0.8.9 on the stable branch? Or just solve the issue that impedes
+>> ggplot2 0.9.0 to be built on every platform and deal with the fact
+>> that there would be major (internal) changes on the BioC release
+>> branch...
+>
+> I was surprised that 0.9.0 was installed on the stable branch, as it
+> is not yet available on CRAN. Not sure what the best approach is,
+> though, as maintainers have or are on their way to make the necessary
+> changes in devel and release.
+> More confusing, to me at least, is that devel and release packages are
+> build/checked with ggplot2 0.9.0 but biocLite installs 0.8.9.
+>
+
+It appears that ggplot2 0.9.0 was available through CRAN and then
+withdrawn to 0.8.9 (except on Mac, where 0.9.0 is still available).
+The Bioconductor build system installs from CRAN and tries to load the
+newest packages available. I removed ggplot 0.9.0 from the build
+machines which will trigger the installation of 0.8.9 in the next
+build cycle. I will ask Hadley about why 0.9.0 is available for Mac
+only.
+
+Thanks,
+Dan
+
+
+> Best wishes,
+>
+> Laurent
+>
+>
+>> b
+>>
+>> On 2 February 2012 18:25, Laurent Gatto <laurent.gatto at gmail.com> wrote:
+>>> Dear Edward,
+>>>
+>>> I believe the error is the result of ggplot2 v 0.8.9 depending on
+>>> reshape while ggplot2 v 0.9.0 now imports reshape2. You now need to
+>>> load reshape/reshape2 explicitly in your vignette prior to calling
+>>> melt. Note that this change will have to be committed to devel and
+>>> RELEASE, as ggplot2 has been updated on both branches.
+>>>
+>>> Hope this helps,
+>>>
+>>> Laurent
+>>>
+>>>
+>>> On 2 February 2012 14:56, Edward Morrissey
+>>> <edward.morrissey at cancer.org.uk> wrote:
+>>>> Hi,
+>>>>
+>>>> I am the maintainer of GRENITS package. It has recently started to give
+>>>> build errors due to a function it uses from
+>>>> the package ggplot2. I've updated ggplot2 to the latest cran version (0.8.9)
+>>>> and it's dependencies but cannot replicate the errors.
+>>>>
+>>>> However, I found a newer version of ggplot2 (0.9.0) on crantastic that
+>>>> relies on the new package reshape2 (previously it used reshape).
+>>>>
+>>>> Could the problem be that ggplot2 was updated to the latest version (0.9.0),
+>>>> but reshape2 was not installed? How can I check the versions
+>>>> of the packages used for the build process?
+>>>>
+>>>> Thanks,
+>>>> Edward
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at r-project.org mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+>
+> --
+> [ Laurent Gatto | slashhome.be ]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From raffaele.calogero at unito.it  Fri Feb  3 18:43:29 2012
+From: raffaele.calogero at unito.it (rcaloger)
+Date: Fri, 03 Feb 2012 18:43:29 +0100
+Subject: [Bioc-devel]
+ =?windows-1252?q?Check_warning=3A_Undocumented_code_?=
+ =?windows-1252?q?objects=3A=2C__=91summary=92?=
+In-Reply-To: <4F2C1996.5020702@fhcrc.org>
+References: <4F2BAA86.2030802@unito.it> <4F2C1996.5020702@fhcrc.org>
+Message-ID: <4F2C1CC1.6000109@unito.it>
+
+Many thanks!
+I modified the NAMESPACE
+changing
+export(summary)
+with
+exportMethods(summary)
+
+and the warning disappeared
+
+Cheers
+Raf
+
+
+
+On 2/3/12 6:29 PM, Martin Morgan wrote:
+> On 02/03/2012 01:36 AM, rcaloger wrote:
+>> Hi,
+>> I am the maintainer of oneChannelGUI, I am getting a strange warning
+>> from the devel version of the package:
+>> Undocumented code objects:
+>> ?summary?
+>> As far as I could understand it seems that a function called summary was
+>> never described in as man page.
+>> However, I check for the presence of "summary" function in my package
+>> and I have never defined it.
+>> I use summary methods from GOstats, siggenes DyDoc, and IRanges.
+>>
+>> I am expecting that this problem depend on the configuration of 
+>> NAMESPACE
+>>
+>> Therefore I modified NAME adding explicitly all packages from which I am
+>> importing summary:
+>>
+>> oneChannelGUI NAMESPACE is the following:
+>>
+>> importMethodsFrom(GOstats, summary)
+>> importMethodsFrom(siggenes, summary)
+>> importMethodsFrom(DynDoc, summary)
+>> importMethodsFrom(IRanges, sapply, as.data.frame, summary)
+>>
+>> # All functions exported other than those starting with "."
+>> exportPattern("^[^\\.]")
+>> exportMethods(summary, sapply, as.data.frame)
+>>
+>> However, the warning remains.
+>>
+>> Could somebody help me in understanding this warning?
+>
+> In principle, if you don't define the generic you don't have to 
+> document it, so the warning could be a bug in R. On the other hand in 
+> the version of the NAMESPACE that is reported on the Bioc build page 
+> and in your current svn you export(summary), but this shouldn't be 
+> necessary -- just exportMethods(summary).
+>
+> Martin
+>
+>> Cheers
+>> Raffaele
+>>
+>>
+>>
+>
+>
+
+
+-- 
+
+----------------------------------------
+Prof. Raffaele A. Calogero
+Bioinformatics and Genomics Unit
+MBC Centro di Biotecnologie Molecolari
+Via Nizza 52, Torino 10126
+tel.   ++39 0116706457
+Fax    ++39 0112366457
+Mobile ++39 3333827080
+email: raffaele.calogero at unito.it
+        raffaele[dot]calogero[at]gmail[dot]com
+www:   http://www.bioinformatica.unito.it
+
+
+From dtenenba at fhcrc.org  Fri Feb  3 19:34:52 2012
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Fri, 3 Feb 2012 10:34:52 -0800
+Subject: [Bioc-devel] Package crashes with
+In-Reply-To: <CAF42j22vVq=Lw_LCqZf8YdVkbSVyUKboNmh0ZGeBiwRzwXqtag@mail.gmail.com>
+References: <4F2AA41E.6050901@cancer.org.uk>
+	<CA+uNOzgjm8pyMwM7Ny9bbDLyH4a4EqFmMi7s=btKLQGn-CXPSQ@mail.gmail.com>
+	<CAO-arWO092_F-hHWr8w61WgqnOQGRp-6LbrAGCYto6G-f6eKGA@mail.gmail.com>
+	<CA+uNOzgZuLChdiFrUt7LVrvyVBNkaXZLpwNYfK_PX168qbFBAw@mail.gmail.com>
+	<CAF42j22vVq=Lw_LCqZf8YdVkbSVyUKboNmh0ZGeBiwRzwXqtag@mail.gmail.com>
+Message-ID: <CAF42j23yZw82prcEGq9TZJpkjobU52JCTN1B-YX4KtezqWvp0w@mail.gmail.com>
+
+On Fri, Feb 3, 2012 at 9:42 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:
+> Hi all,
+>
+> On Fri, Feb 3, 2012 at 6:30 AM, Laurent Gatto <laurent.gatto at gmail.com> wrote:
+>> Dear Benilton,
+>>
+>> On 2 February 2012 19:01, Benilton Carvalho <beniltoncarvalho at gmail.com> wrote:
+>>> Hey Laurent,
+>>>
+>>> The major issue, IMHO, is the fact that internally ggplot2 has
+>>> distinct dependencies conditional on its version. ggplot2 0.8.9
+>>> depends on reshape; ggplot2 0.9.0 depends on reshape2. And both
+>>> reshape and reshape2 provide different implementations of the same
+>>> method (see melt).
+>>
+>> Definitely, that does have broader implications. Thank you for pointing it out.
+>>
+>>> If ggplot2 0.9.0 was available for every platform, the changes in
+>>> GRENITS (and whatever other package that uses ggplot2) would be
+>>> straightforward (but still require some extra work, given how the
+>>> format of some outputs from reshape2 changed compared to reshape)...
+>>> And it does not seem to me that these are changes that we expect to do
+>>> in the middle of a cycle on the stable branch.
+>>>
+>>> One particular issue is the fact the Hadley mentioned that ggplot2
+>>> 0.9.0 would be resubmitted to CRAN only in March ( http://goo.gl/p5rbq
+>>> )... which makes this slightly harder to handle.
+>>>
+>>> Maybe we'd need to have one exception and simply force to have ggplot2
+>>> 0.8.9 on the stable branch? Or just solve the issue that impedes
+>>> ggplot2 0.9.0 to be built on every platform and deal with the fact
+>>> that there would be major (internal) changes on the BioC release
+>>> branch...
+>>
+>> I was surprised that 0.9.0 was installed on the stable branch, as it
+>> is not yet available on CRAN. Not sure what the best approach is,
+>> though, as maintainers have or are on their way to make the necessary
+>> changes in devel and release.
+>> More confusing, to me at least, is that devel and release packages are
+>> build/checked with ggplot2 0.9.0 but biocLite installs 0.8.9.
+>>
+>
+> It appears that ggplot2 0.9.0 was available through CRAN and then
+> withdrawn to 0.8.9 (except on Mac, where 0.9.0 is still available).
+> The Bioconductor build system installs from CRAN and tries to load the
+> newest packages available. I removed ggplot 0.9.0 from the build
+> machines which will trigger the installation of 0.8.9 in the next
+> build cycle. I will ask Hadley about why 0.9.0 is available for Mac
+> only.
+>
+
+Hadley has asked CRAN to pull ggplot2 0.9.0 for Mac and it looks like
+it indeed has reverted to 0.8.9 on the CRAN master. When this
+propagates to our CRAN mirror, I'll make sure we have 0.8.9 on our Mac
+build machine so all are consistent.
+
+Hadley also asked me for the email addresses of all BioC maintainers
+who depend on ggplot2. I imagine he will be in touch with you with
+information about how to make the transition when the time comes.
+
+Thanks,
+Dan
+
+
+> Thanks,
+> Dan
+>
+>
+>> Best wishes,
+>>
+>> Laurent
+>>
+>>
+>>> b
+>>>
+>>> On 2 February 2012 18:25, Laurent Gatto <laurent.gatto at gmail.com> wrote:
+>>>> Dear Edward,
+>>>>
+>>>> I believe the error is the result of ggplot2 v 0.8.9 depending on
+>>>> reshape while ggplot2 v 0.9.0 now imports reshape2. You now need to
+>>>> load reshape/reshape2 explicitly in your vignette prior to calling
+>>>> melt. Note that this change will have to be committed to devel and
+>>>> RELEASE, as ggplot2 has been updated on both branches.
+>>>>
+>>>> Hope this helps,
+>>>>
+>>>> Laurent
+>>>>
+>>>>
+>>>> On 2 February 2012 14:56, Edward Morrissey
+>>>> <edward.morrissey at cancer.org.uk> wrote:
+>>>>> Hi,
+>>>>>
+>>>>> I am the maintainer of GRENITS package. It has recently started to give
+>>>>> build errors due to a function it uses from
+>>>>> the package ggplot2. I've updated ggplot2 to the latest cran version (0.8.9)
+>>>>> and it's dependencies but cannot replicate the errors.
+>>>>>
+>>>>> However, I found a newer version of ggplot2 (0.9.0) on crantastic that
+>>>>> relies on the new package reshape2 (previously it used reshape).
+>>>>>
+>>>>> Could the problem be that ggplot2 was updated to the latest version (0.9.0),
+>>>>> but reshape2 was not installed? How can I check the versions
+>>>>> of the packages used for the build process?
+>>>>>
+>>>>> Thanks,
+>>>>> Edward
+>>>>>
+>>>>> _______________________________________________
+>>>>> Bioc-devel at r-project.org mailing list
+>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at r-project.org mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>
+>>
+>> --
+>> [ Laurent Gatto | slashhome.be ]
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From yintengfei at gmail.com  Tue Feb  7 00:49:38 2012
+From: yintengfei at gmail.com (Tengfei Yin)
+Date: Mon, 6 Feb 2012 17:49:38 -0600
+Subject: [Bioc-devel] import.bed for ENCODE specific format like BED6 + 3(or
+ 12 + 3) scores format in rtracklayer?
+Message-ID: <CAPJsq9=iph9TsGCotYq0ZDfqJy-Pu4E19HEs0dMyO+VkZ7NBmA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120206/fce233d4/attachment.pl>
+
+From lawrence.michael at gene.com  Wed Feb  8 05:35:59 2012
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Tue, 7 Feb 2012 20:35:59 -0800
+Subject: [Bioc-devel] import.bed for ENCODE specific format like BED6 +
+ 3(or 12 + 3) scores format in rtracklayer?
+In-Reply-To: <CAPJsq9=iph9TsGCotYq0ZDfqJy-Pu4E19HEs0dMyO+VkZ7NBmA@mail.gmail.com>
+References: <CAPJsq9=iph9TsGCotYq0ZDfqJy-Pu4E19HEs0dMyO+VkZ7NBmA@mail.gmail.com>
+Message-ID: <CAOQ5Nycr0C=yQt90jNxAhWxhRb1ckkaqdg6u57k+JP3O8qXsSw@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120207/4de2b979/attachment.pl>
+
+From yintengfei at gmail.com  Wed Feb  8 16:42:51 2012
+From: yintengfei at gmail.com (Tengfei Yin)
+Date: Wed, 8 Feb 2012 09:42:51 -0600
+Subject: [Bioc-devel] import.bed for ENCODE specific format like BED6 +
+ 3(or 12 + 3) scores format in rtracklayer?
+In-Reply-To: <CAOQ5Nycr0C=yQt90jNxAhWxhRb1ckkaqdg6u57k+JP3O8qXsSw@mail.gmail.com>
+References: <CAPJsq9=iph9TsGCotYq0ZDfqJy-Pu4E19HEs0dMyO+VkZ7NBmA@mail.gmail.com>
+	<CAOQ5Nycr0C=yQt90jNxAhWxhRb1ckkaqdg6u57k+JP3O8qXsSw@mail.gmail.com>
+Message-ID: <CAPJsq9kXhzd3rEihziy43ydGZevAeTGZ5U0E=p0HB11sOe+WTQ@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120208/2121f526/attachment.pl>
+
+From yintengfei at gmail.com  Wed Feb  8 18:09:34 2012
+From: yintengfei at gmail.com (Tengfei Yin)
+Date: Wed, 8 Feb 2012 11:09:34 -0600
+Subject: [Bioc-devel] import.bed for ENCODE specific format like BED6 +
+ 3(or 12 + 3) scores format in rtracklayer?
+In-Reply-To: <CAPJsq9kXhzd3rEihziy43ydGZevAeTGZ5U0E=p0HB11sOe+WTQ@mail.gmail.com>
+References: <CAPJsq9=iph9TsGCotYq0ZDfqJy-Pu4E19HEs0dMyO+VkZ7NBmA@mail.gmail.com>
+	<CAOQ5Nycr0C=yQt90jNxAhWxhRb1ckkaqdg6u57k+JP3O8qXsSw@mail.gmail.com>
+	<CAPJsq9kXhzd3rEihziy43ydGZevAeTGZ5U0E=p0HB11sOe+WTQ@mail.gmail.com>
+Message-ID: <CAPJsq9ndKR3+gjpOc6vcQ42GBsMRWsDzht8QedOBTdM7RJLxJw@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120208/45971397/attachment.pl>
+
+From lawrence.michael at gene.com  Thu Feb  9 06:16:54 2012
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Wed, 8 Feb 2012 21:16:54 -0800
+Subject: [Bioc-devel] import.bed for ENCODE specific format like BED6 +
+ 3(or 12 + 3) scores format in rtracklayer?
+In-Reply-To: <CAPJsq9ndKR3+gjpOc6vcQ42GBsMRWsDzht8QedOBTdM7RJLxJw@mail.gmail.com>
+References: <CAPJsq9=iph9TsGCotYq0ZDfqJy-Pu4E19HEs0dMyO+VkZ7NBmA@mail.gmail.com>
+	<CAOQ5Nycr0C=yQt90jNxAhWxhRb1ckkaqdg6u57k+JP3O8qXsSw@mail.gmail.com>
+	<CAPJsq9kXhzd3rEihziy43ydGZevAeTGZ5U0E=p0HB11sOe+WTQ@mail.gmail.com>
+	<CAPJsq9ndKR3+gjpOc6vcQ42GBsMRWsDzht8QedOBTdM7RJLxJw@mail.gmail.com>
+Message-ID: <CAOQ5NyeAzSN8vXU8SUGnQMGQ7EwWB7SPLUXZEPYRG4hAerC-ZA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120208/1b05f74a/attachment.pl>
+
+From henning.red at googlemail.com  Thu Feb  9 11:19:23 2012
+From: henning.red at googlemail.com (Henning Redestig)
+Date: Thu, 9 Feb 2012 11:19:23 +0100
+Subject: [Bioc-devel] bioconductor repository server software
+Message-ID: <CAO8D54w=sUJD2eD+Zhu+6oGdx0AwJpZzc76iLCek1075v5mU3Q@mail.gmail.com>
+
+Hi,
+
+At the company where I work, we have developed a number of R-packages
+for in-house use. As this collection is growing, we would like to
+setup our own repository where colleagues can monitor and fetch the
+latest updates.  Does anyone have experience with setting up a local
+repository for R-packages? Any pointers toward software to run the
+show? Relevant features would be
+
+- version control
+- automated package testing and reporting of results
+- content generation from description files
+
+The ideal repository would thus be something very much like
+bioconductor.org; is the server-side code for bioconductor.org
+possible to obtain somehow?
+
+best,
+-- 
+/Henning Redestig
+
+
+From lawrence.michael at gene.com  Thu Feb  9 13:23:09 2012
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Thu, 9 Feb 2012 04:23:09 -0800
+Subject: [Bioc-devel] bioconductor repository server software
+In-Reply-To: <CAO8D54w=sUJD2eD+Zhu+6oGdx0AwJpZzc76iLCek1075v5mU3Q@mail.gmail.com>
+References: <CAO8D54w=sUJD2eD+Zhu+6oGdx0AwJpZzc76iLCek1075v5mU3Q@mail.gmail.com>
+Message-ID: <CAOQ5Nye_qnX-EuqE+m_FP4N14VexjaYrQReKY-=N2e_M28AY8g@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120209/565cca99/attachment.pl>
+
+From hpages at fhcrc.org  Fri Feb 10 00:33:37 2012
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Thu, 09 Feb 2012 15:33:37 -0800
+Subject: [Bioc-devel] package download stats
+Message-ID: <4F3457D1.10201@fhcrc.org>
+
+... are now fixed:
+
+   http://bioconductor.org/packages/stats/
+
+Just in case some of you were wondering why the stats were showing
+0 downloads so far for Feb and only a quarter of the expected amount
+for Jan. Long story short: all the Apache log files produced after
+Jan 8 got lost. Today we found them. Pffff!!!
+
+Cheers,
+H.
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M1-B514
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From chawla at bio.ntnu.no  Fri Feb 10 16:26:52 2012
+From: chawla at bio.ntnu.no (konika chawla)
+Date: Fri, 10 Feb 2012 16:26:52 +0100
+Subject: [Bioc-devel] Reading all kind of timeseries microarray data
+Message-ID: <4F35373C.2070000@bio.ntnu.no>
+
+Hi all,
+I am trying to make script which can read microarray data and perform 
+simple RMA normalization on any kind on time series microarray data
+Just wondering if it is possible.
+Definitely, would need user input to define the number of time points, 
+data platform etc
+Could anyone provide any input on that.
+Will be great
+Thanks
+
+
+From sdavis2 at mail.nih.gov  Fri Feb 10 16:37:04 2012
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Fri, 10 Feb 2012 10:37:04 -0500
+Subject: [Bioc-devel] Reading all kind of timeseries microarray data
+In-Reply-To: <4F35373C.2070000@bio.ntnu.no>
+References: <4F35373C.2070000@bio.ntnu.no>
+Message-ID: <CANeAVBm-1JRCdSa4x8JKsR5cZqN74joVZWQUr6MicL-rU_vG_A@mail.gmail.com>
+
+On Fri, Feb 10, 2012 at 10:26 AM, konika chawla <chawla at bio.ntnu.no> wrote:
+> Hi all,
+> I am trying to make script which can read microarray data and perform simple
+> RMA normalization on any kind on time series microarray data
+> Just wondering if it is possible.
+> Definitely, would need user input to define the number of time points, data
+> platform etc
+> Could anyone provide any input on that.
+
+There isn't a need for a script.  justRMA() will read in a set of .CEL
+files and perform standard RMA processing.  I'm not sure how the time
+series comes into things, though, for normalization.  As an aside,
+these types of questions are probably best supported on the normal
+bioconductor list and not bioc-devel.
+
+Sean
+
+
+From laurent.gatto at gmail.com  Sat Feb 11 02:05:39 2012
+From: laurent.gatto at gmail.com (Laurent Gatto)
+Date: Sat, 11 Feb 2012 01:05:39 +0000
+Subject: [Bioc-devel] AAString validity
+Message-ID: <CA+uNOziAQnDYfzRCiAj6YSH=0LpWnAWxJ3_FtWD5Z_Y1BaUPCQ@mail.gmail.com>
+
+Dear all,
+
+AAString instances can contain invalid amino acids characters,
+although the corresponding documentation says it should not.
+
+> DNAString("AA123") ## positive control
+Error in .Call2("new_XString_from_CHARACTER", classname, x,
+start(solved_SEW), ?:
+? key 49 not in lookup table
+
+> AAString("AA123")
+? 5-letter "AAString" instance
+seq: AA123
+> alphabet(AAString("AA123"))
+ [1] "A" "R" "N" "D" "C" "Q" "E" "G" "H" "I" "L" "K" "M" "F" "P" "S" "T" "W" "Y"
+[20] "V" "*" "-" "+"
+
+I suspect that the table in xsbasetype.R explains why it does not work.
+
+Would it be possible to encode the AA_ALPHABET for AAStrings?
+
+Thank you very much in advance.
+
+Laurent
+
+> sessionInfo()
+R Under development (unstable) (2012-01-29 r58227)
+Platform: x86_64-unknown-linux-gnu (64-bit)
+locale:
+?[1] LC_CTYPE=en_GB.UTF-8 ? ? ? LC_NUMERIC=C
+?[3] LC_TIME=en_GB.UTF-8 ? ? ? ?LC_COLLATE=en_GB.UTF-8
+?[5] LC_MONETARY=en_GB.UTF-8 ? ?LC_MESSAGES=en_GB.UTF-8
+?[7] LC_PAPER=C ? ? ? ? ? ? ? ? LC_NAME=C
+?[9] LC_ADDRESS=C ? ? ? ? ? ? ? LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C
+attached base packages:
+[1] stats ? ? graphics ?grDevices utils ? ? datasets ?methods ? base
+other attached packages:
+[1] Biostrings_2.23.6 ?IRanges_1.13.22 ? ?BiocGenerics_0.1.4
+
+
+From mtmorgan at fhcrc.org  Thu Feb 16 19:56:32 2012
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 16 Feb 2012 10:56:32 -0800
+Subject: [Bioc-devel] svn briefly unavailable 17 Feb 2012
+Message-ID: <4F3D5160.3060309@fhcrc.org>
+
+Bioc developers -- the Bioconductor svn repository will be off-line 
+briefly tomorrow, 17 Feb 2012 at approximately 6:30am PST for system 
+maintenance. Sorry for the inconvenience, Martin
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From chungdon at stat.wisc.edu  Fri Feb 17 22:40:20 2012
+From: chungdon at stat.wisc.edu (Dongjun Chung)
+Date: Fri, 17 Feb 2012 15:40:20 -0600
+Subject: [Bioc-devel] new version with extensive updates: mosaics
+Message-ID: <4F3EC944.3030405@stat.wisc.edu>
+
+Hi all,
+
+We would like to announce a new version of our package, mosaics 
+(MOdel-based one and two Sample Analysis and Inference for ChIP-Seq), 
+with extensive updates.
+
+R package mosaics implements MOSAiCS, a statistical framework for the 
+analysis of ChIP-seq data, proposed in Kuan et al. (2011), JASA, 106: 
+891-903. MOSAiCS stands for "MOdel-based one and two Sample Analysis and 
+Inference for ChIP-Seq Data". It implements a flexible parametric 
+mixture modeling approach for detecting peaks, i.e., enriched regions, 
+in one-sample (ChIP sample) or two-sample (ChIP and control samples) 
+ChIP-seq data. It accounts for mappability and GC content biases that 
+arise in ChIP-seq data.
+
+This new version of the mosaics package (ver 1.2.5) provides many new 
+features and improvements, including:
+
+- New model for deeply sequenced ChIP-Seq data.
+- Supports for various aligned read file formats (eland_result, 
+eland_extended, eland_export, bowtie, SAM, BED, CSEM).
+- Preprocessing of aligned read files can be done within the R 
+environment using constructBins().
+- Easier model fitting for the two sample analysis using mosaicsRunAll().
+- Preprocessing and model fitting become much faster (Rcpp).
+- Parallel processing is now supported (multicore).
+
+Please check the vignette of the package and 'package?mosaics' for 
+further details. The package is available at 
+http://bioconductor.org/packages/2.9/bioc/html/mosaics.html.
+
+Please post any questions or comments at our mosaics google group 
+(http://groups.google.com/group/mosaics_user_group). Any comments or 
+suggestions would be very helpful.
+
+Best,
+Dongjun
+
+PhD Candidate
+Department of Statistics
+Univerisity of Wisconsin at Madison
+
+
+From jesper.gadin at gmail.com  Wed Feb 22 13:15:24 2012
+From: jesper.gadin at gmail.com (=?ISO-8859-1?Q?Jesper_G=E5din?=)
+Date: Wed, 22 Feb 2012 13:15:24 +0100
+Subject: [Bioc-devel] Subject: GRanges performance issue,
+	how to avoid looping?
+Message-ID: <CAPmAPXPHv7bOrgwETmppAQQgDTscqtjUqqYgjgZYOw_g62c+QA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120222/ba10c902/attachment.pl>
+
+From kasperdanielhansen at gmail.com  Wed Feb 22 13:59:49 2012
+From: kasperdanielhansen at gmail.com (Kasper Daniel Hansen)
+Date: Wed, 22 Feb 2012 07:59:49 -0500
+Subject: [Bioc-devel] Subject: GRanges performance issue,
+	how to avoid looping?
+In-Reply-To: <CAPmAPXPHv7bOrgwETmppAQQgDTscqtjUqqYgjgZYOw_g62c+QA@mail.gmail.com>
+References: <CAPmAPXPHv7bOrgwETmppAQQgDTscqtjUqqYgjgZYOw_g62c+QA@mail.gmail.com>
+Message-ID: <CAC2h7uu1mJAZAp+M0ZgT4UUDHHRUGZZyuFUnvVQ2ercyz+ujKA@mail.gmail.com>
+
+?findOverlaps
+
+Kasper
+
+On Wed, Feb 22, 2012 at 7:15 AM, Jesper G?din <jesper.gadin at gmail.com> wrote:
+> Hi everyone!
+> I want to find all reads that map to a specific position in a GRanges
+> object.
+> In my case this object is named "reads" and I have tried using the function
+> below.
+>
+>
+> #From a given position and chromosome, find the reads where this position
+> map
+> fun_find_reads_from_pos <- function(reads,chr,someposition, verbose=TRUE) {
+>
+> ? ?#get length over the sample list
+> ? ?nr_samples <-length(reads)
+>
+> ? ?for (j in (1:nr_samples)) {
+> ? ? ? ?onePerson <- reads[[j]]
+> ? ? ? ?chr_onePerson <- onePerson[seqnames(onePerson)==chr]
+> ? ? ? ?pre_seq<-
+> chr_onePerson[(ranges(chr_onePerson))%in%(IRanges(start=someposition,
+> width=1)),6]
+>
+> ? ? ? ?if(!length(pre_seq)==0) {
+> ? ? ? ? ? ?for (k in (1:length(pre_seq))) {
+> ? ? ? ? ? ? ? ?position <- (someposition-start(pre_seq[k])) +1
+> #57537220
+> ? ? ? ? ? ? ? ?print("found the given someposition on this position within
+> the read")
+> ? ? ? ? ? ? ? ?print(position)
+> ? ? ? ? ? ?}
+> ? ? ? ?}
+> ? ?}
+>
+> } #End of function
+>
+>
+> To use the function try:
+> fun_find_reads_from_pos(reads,"chr12",57537220)
+>
+> Now that should work.
+> And everything would be fine if it wasnt for the time issue.
+> The time-thief I guess is that I have to loop over every read
+> in every sample to get to the information I want. Is it
+> possible to use the data structure in another better way to
+> avoid unnecessary looping. Anyone have an idea?
+>
+> This function would be the core function of my future package.
+> So its important that it is effective.
+>
+> Sincerely,
+> Jesper
+>
+> Link to the reads object needed to run the function:
+> http://uppsalanf.se/sites/default/files/reads_object.RData
+> And the function itself (same as above):
+> http://uppsalanf.se/sites/default/files/example-bioc-dev.R
+>
+>
+>> sessionInfo()
+> R version 2.13.2 (2011-09-30)
+> Platform: x86_64-pc-linux-gnu (64-bit)
+>
+> locale:
+> ?[1] LC_CTYPE=en_US.UTF-8 ? ? ? LC_NUMERIC=C
+> ?[3] LC_TIME=en_US.UTF-8 ? ? ? ?LC_COLLATE=en_US.UTF-8
+> ?[5] LC_MONETARY=C ? ? ? ? ? ? ?LC_MESSAGES=en_US.UTF-8
+> ?[7] LC_PAPER=en_US.UTF-8 ? ? ? LC_NAME=C
+> ?[9] LC_ADDRESS=C ? ? ? ? ? ? ? LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+>
+> attached base packages:
+> [1] stats ? ? graphics ?grDevices utils ? ? datasets ?methods ? base
+>
+> other attached packages:
+> [1] Biostrings_2.20.4 ? GenomicRanges_1.4.8 IRanges_1.10.6
+>> ?GRanges
+>> sessionInfo()
+> R version 2.13.2 (2011-09-30)
+> Platform: x86_64-pc-linux-gnu (64-bit)
+>
+> locale:
+> ?[1] LC_CTYPE=en_US.UTF-8 ? ? ? LC_NUMERIC=C
+> ?[3] LC_TIME=en_US.UTF-8 ? ? ? ?LC_COLLATE=en_US.UTF-8
+> ?[5] LC_MONETARY=C ? ? ? ? ? ? ?LC_MESSAGES=en_US.UTF-8
+> ?[7] LC_PAPER=en_US.UTF-8 ? ? ? LC_NAME=C
+> ?[9] LC_ADDRESS=C ? ? ? ? ? ? ? LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+>
+> attached base packages:
+> [1] stats ? ? graphics ?grDevices utils ? ? datasets ?methods ? base
+>
+> other attached packages:
+> [1] Biostrings_2.20.4 ? GenomicRanges_1.4.8 IRanges_1.10.6
+>
+> loaded via a namespace (and not attached):
+> [1] tools_2.13.2
+>
+> ? ? ? ?[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From lawrence.michael at gene.com  Wed Feb 22 14:06:43 2012
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Wed, 22 Feb 2012 05:06:43 -0800
+Subject: [Bioc-devel] Subject: GRanges performance issue,
+	how to avoid looping?
+In-Reply-To: <CAPmAPXPHv7bOrgwETmppAQQgDTscqtjUqqYgjgZYOw_g62c+QA@mail.gmail.com>
+References: <CAPmAPXPHv7bOrgwETmppAQQgDTscqtjUqqYgjgZYOw_g62c+QA@mail.gmail.com>
+Message-ID: <CAOQ5NycHUoSGSkXXfFn_zXeySVCTzPDrUp7B4TyEE5dfBgf-RA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120222/70800e6f/attachment.pl>
+
+From hpages at fhcrc.org  Wed Feb 22 22:15:02 2012
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Wed, 22 Feb 2012 13:15:02 -0800
+Subject: [Bioc-devel] AAString validity
+In-Reply-To: <CA+uNOziAQnDYfzRCiAj6YSH=0LpWnAWxJ3_FtWD5Z_Y1BaUPCQ@mail.gmail.com>
+References: <CA+uNOziAQnDYfzRCiAj6YSH=0LpWnAWxJ3_FtWD5Z_Y1BaUPCQ@mail.gmail.com>
+Message-ID: <4F455AD6.6070806@fhcrc.org>
+
+Hi Laurent,
+
+Sorry for the late reply. You're right that the letters in an AAString
+objects are not encoded. And actually I don't think they need to be.
+I think all we need is enforcing that the letters in the objects belong
+to AA_ALPHABET, which is not the case right now. I'll add that.
+
+Thanks!
+H.
+
+
+On 02/10/2012 05:05 PM, Laurent Gatto wrote:
+> Dear all,
+>
+> AAString instances can contain invalid amino acids characters,
+> although the corresponding documentation says it should not.
+>
+>> DNAString("AA123") ## positive control
+> Error in .Call2("new_XString_from_CHARACTER", classname, x,
+> start(solved_SEW),  :
+>    key 49 not in lookup table
+>
+>> AAString("AA123")
+>    5-letter "AAString" instance
+> seq: AA123
+>> alphabet(AAString("AA123"))
+>   [1] "A" "R" "N" "D" "C" "Q" "E" "G" "H" "I" "L" "K" "M" "F" "P" "S" "T" "W" "Y"
+> [20] "V" "*" "-" "+"
+>
+> I suspect that the table in xsbasetype.R explains why it does not work.
+>
+> Would it be possible to encode the AA_ALPHABET for AAStrings?
+>
+> Thank you very much in advance.
+>
+> Laurent
+>
+>> sessionInfo()
+> R Under development (unstable) (2012-01-29 r58227)
+> Platform: x86_64-unknown-linux-gnu (64-bit)
+> locale:
+>   [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C
+>   [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8
+>   [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8
+>   [7] LC_PAPER=C                 LC_NAME=C
+>   [9] LC_ADDRESS=C               LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+> other attached packages:
+> [1] Biostrings_2.23.6  IRanges_1.13.22    BiocGenerics_0.1.4
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M1-B514
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From laurent.gatto at gmail.com  Wed Feb 22 22:19:20 2012
+From: laurent.gatto at gmail.com (Laurent Gatto)
+Date: Wed, 22 Feb 2012 21:19:20 +0000
+Subject: [Bioc-devel] AAString validity
+In-Reply-To: <4F455AD6.6070806@fhcrc.org>
+References: <CA+uNOziAQnDYfzRCiAj6YSH=0LpWnAWxJ3_FtWD5Z_Y1BaUPCQ@mail.gmail.com>
+	<4F455AD6.6070806@fhcrc.org>
+Message-ID: <CA+uNOzjCz32V8nbV83VKGe3m02cPa6E48DHNfL_p+MHMj==mXw@mail.gmail.com>
+
+Hi Herv?,
+
+2012/2/22 Herv? Pag?s <hpages at fhcrc.org>:
+> Hi Laurent,
+>
+> Sorry for the late reply. You're right that the letters in an AAString
+> objects are not encoded. And actually I don't think they need to be.
+> I think all we need is enforcing that the letters in the objects belong
+> to AA_ALPHABET, which is not the case right now. I'll add that.
+
+Yes, that was indeed my initial motivation.
+Thank you very much for taking care of this.
+
+Best wishes,
+
+Laurent
+> Thanks!
+> H.
+>
+>
+>
+> On 02/10/2012 05:05 PM, Laurent Gatto wrote:
+>>
+>> Dear all,
+>>
+>> AAString instances can contain invalid amino acids characters,
+>> although the corresponding documentation says it should not.
+>>
+>>> DNAString("AA123") ## positive control
+>>
+>> Error in .Call2("new_XString_from_CHARACTER", classname, x,
+>> start(solved_SEW), ?:
+>> ? key 49 not in lookup table
+>>
+>>> AAString("AA123")
+>>
+>> ? 5-letter "AAString" instance
+>> seq: AA123
+>>>
+>>> alphabet(AAString("AA123"))
+>>
+>> ?[1] "A" "R" "N" "D" "C" "Q" "E" "G" "H" "I" "L" "K" "M" "F" "P" "S" "T"
+>> "W" "Y"
+>> [20] "V" "*" "-" "+"
+>>
+>> I suspect that the table in xsbasetype.R explains why it does not work.
+>>
+>> Would it be possible to encode the AA_ALPHABET for AAStrings?
+>>
+>> Thank you very much in advance.
+>>
+>> Laurent
+>>
+>>> sessionInfo()
+>>
+>> R Under development (unstable) (2012-01-29 r58227)
+>> Platform: x86_64-unknown-linux-gnu (64-bit)
+>> locale:
+>> ?[1] LC_CTYPE=en_GB.UTF-8 ? ? ? LC_NUMERIC=C
+>> ?[3] LC_TIME=en_GB.UTF-8 ? ? ? ?LC_COLLATE=en_GB.UTF-8
+>> ?[5] LC_MONETARY=en_GB.UTF-8 ? ?LC_MESSAGES=en_GB.UTF-8
+>> ?[7] LC_PAPER=C ? ? ? ? ? ? ? ? LC_NAME=C
+>> ?[9] LC_ADDRESS=C ? ? ? ? ? ? ? LC_TELEPHONE=C
+>> [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C
+>> attached base packages:
+>> [1] stats ? ? graphics ?grDevices utils ? ? datasets ?methods ? base
+>> other attached packages:
+>> [1] Biostrings_2.23.6 ?IRanges_1.13.22 ? ?BiocGenerics_0.1.4
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+>
+> --
+> Herv? Pag?s
+>
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M1-B514
+> P.O. Box 19024
+> Seattle, WA 98109-1024
+>
+> E-mail: hpages at fhcrc.org
+> Phone: ?(206) 667-5791
+> Fax: ? ?(206) 667-1319
+
+
+From hpages at fhcrc.org  Thu Feb 23 00:50:18 2012
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Wed, 22 Feb 2012 15:50:18 -0800
+Subject: [Bioc-devel] Subject: GRanges performance issue,
+ how to avoid looping?
+In-Reply-To: <CAPmAPXPHv7bOrgwETmppAQQgDTscqtjUqqYgjgZYOw_g62c+QA@mail.gmail.com>
+References: <CAPmAPXPHv7bOrgwETmppAQQgDTscqtjUqqYgjgZYOw_g62c+QA@mail.gmail.com>
+Message-ID: <4F457F3A.6080904@fhcrc.org>
+
+Hi Jesper,
+
+On 02/22/2012 04:15 AM, Jesper G?din wrote:
+> Hi everyone!
+> I want to find all reads that map to a specific position in a GRanges
+> object.
+> In my case this object is named "reads" and I have tried using the function
+> below.
+>
+>
+> #From a given position and chromosome, find the reads where this position
+> map
+> fun_find_reads_from_pos<- function(reads,chr,someposition, verbose=TRUE) {
+>
+>      #get length over the sample list
+>      nr_samples<-length(reads)
+>
+>      for (j in (1:nr_samples)) {
+>          onePerson<- reads[[j]]
+>          chr_onePerson<- onePerson[seqnames(onePerson)==chr]
+>          pre_seq<-
+> chr_onePerson[(ranges(chr_onePerson))%in%(IRanges(start=someposition,
+> width=1)),6]
+>
+>          if(!length(pre_seq)==0) {
+>              for (k in (1:length(pre_seq))) {
+>                  position<- (someposition-start(pre_seq[k])) +1
+> #57537220
+>                  print("found the given someposition on this position within
+> the read")
+>                  print(position)
+>              }
+>          }
+>      }
+>
+> } #End of function
+>
+>
+> To use the function try:
+> fun_find_reads_from_pos(reads,"chr12",57537220)
+
+We can't run this function because we don't know what 'reads' is.
+It looks like a list-like object (because you are using [[ on it),
+where each element could be a GRanges or GappedAlignments object
+(because you are using seqnames() and ranges() on those elements).
+Given the subject of your email, I'll assume it's a GRangesList
+object or a list of GRanges objects.
+
+>
+> Now that should work.
+> And everything would be fine if it wasnt for the time issue.
+> The time-thief I guess is that I have to loop over every read
+> in every sample to get to the information I want.
+
+You are using 2 nested loops.
+The outer loop is on the samples and I would expect the nb of samples
+to be relatively small, so this loop is probably not an issue.
+The inner loop is on the genomic ranges that actually overlap with
+the specified position. It is probably expensive but you shouldn't
+do that loop. Instead you should take advantage of the fact that
+arithmetic is vectorized in R. So instead of:
+
+         if(!length(pre_seq)==0) {
+             for (k in (1:length(pre_seq))) {
+                 position <- (someposition-start(pre_seq[k])) +1
+                 print("found the given someposition on this position 
+within the read")
+                 print(position)
+             }
+         }
+
+do something like:
+
+         if (length(pre_seq) != 0L) {
+             position <- someposition - start(pre_seq) + 1L
+             cat("found the given someposition on those positions within 
+the read:\n")
+             print(position)
+         }
+
+Now it's not clear to me why you want to print this but that's another
+story.
+
+Cheers,
+H.
+
+> Is it
+> possible to use the data structure in another better way to
+> avoid unnecessary looping. Anyone have an idea?
+>
+> This function would be the core function of my future package.
+> So its important that it is effective.
+>
+> Sincerely,
+> Jesper
+>
+> Link to the reads object needed to run the function:
+> http://uppsalanf.se/sites/default/files/reads_object.RData
+> And the function itself (same as above):
+> http://uppsalanf.se/sites/default/files/example-bioc-dev.R
+>
+>
+>> sessionInfo()
+> R version 2.13.2 (2011-09-30)
+> Platform: x86_64-pc-linux-gnu (64-bit)
+>
+> locale:
+>   [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+>   [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+>   [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+>   [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+>   [9] LC_ADDRESS=C               LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> other attached packages:
+> [1] Biostrings_2.20.4   GenomicRanges_1.4.8 IRanges_1.10.6
+>> ?GRanges
+>> sessionInfo()
+> R version 2.13.2 (2011-09-30)
+> Platform: x86_64-pc-linux-gnu (64-bit)
+>
+> locale:
+>   [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+>   [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+>   [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+>   [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+>   [9] LC_ADDRESS=C               LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> other attached packages:
+> [1] Biostrings_2.20.4   GenomicRanges_1.4.8 IRanges_1.10.6
+>
+> loaded via a namespace (and not attached):
+> [1] tools_2.13.2
+>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M1-B514
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From dtenenba at fhcrc.org  Thu Feb 23 01:40:53 2012
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Wed, 22 Feb 2012 16:40:53 -0800
+Subject: [Bioc-devel] Bioconductor 2.10 Release Schedule
+Message-ID: <CAF42j22FjpCfYZ91oZsM2Zxofn0=bwWcZSsxFG2-md7T7q+mBA@mail.gmail.com>
+
+Hi developers,
+
+R 2.15 will turn alpha in less than 2 weeks and the final R 2.15.0
+is scheduled for Friday, March 30th, 2012.
+
+We plan to release Bioconductor 2.10 the Monday after R 2.15.0 is released,
+i.e. on Monday, April 2nd, 2012. Please have a look at the detailed
+schedule for BioC 2.10:
+
+ http://bioconductor.org/developers/release-schedule/
+
+Note that the deadline for submitting a package that goes into this
+release is Friday, March 9, 2012. If you submit a package after
+this date, it won't be included in BioC 2.10 but it will be a
+candidate for inclusion in BioC 2.11 (planned for Fall 2012).
+
+Please let us know if you have any questions or concerns.
+
+Thanks,
+Dan
+
+
+From MEC at stowers.org  Thu Feb 23 20:13:54 2012
+From: MEC at stowers.org (Cook, Malcolm)
+Date: Thu, 23 Feb 2012 13:13:54 -0600
+Subject: [Bioc-devel] coverage,GenomicRanges interpretation of 'weight'
+Message-ID: <2C40E43D1F7A56408C4463FD245DDDF997D77A84@EXCHMB-02.stowers-institute.org>
+
+It would be great I think if coverage,GenomicRanges  interpetation of 'weight' would be similar to that for RangedData
+
+	For 'RangedData' objects, this can also be a single string naming a column to be used as the weights.
+
+In the case for coverage,GenomicRanges  we would want to weigh by any attribute (i.e. score) in the values DataTable.
+
+is this reasonable?
+
+I like being able to refer symbolically as provided by RangedData.  It allows me to write, for instance, this utility function:
+
+coverageByStrand <-function(x,...){
+  ## PURPOSE: compute the coverage of x, split by 'strand'. 
+  ## RETURNS: a list of SimpleRLEList (by chromosome)
+  res<-lapply(split(x,strand(x)),coverage,...)
+}
+
+which I can then use as
+
+someStrandedCoverage<-coverageByStrand(someStrandedFeaturesAsGenomicRanges,weight='theDataTableAttributeHoldingSomeWeightFactor')
+
+Otherwise I would have to test for the presence of a weight attribute and split it by strand, and use mapply instead, etc....
+
+Regardless of the merits, having the interface to coverage be similar between RangedData and GenomicRanges is arguably desirable.
+
+My workaround is to convert to RangedData for the computation.  Definitely not urgent.
+
+Malcolm Cook
+
+
+From MEC at stowers.org  Thu Feb 23 20:22:37 2012
+From: MEC at stowers.org (Cook, Malcolm)
+Date: Thu, 23 Feb 2012 13:22:37 -0600
+Subject: [Bioc-devel] coverage,GenomicRanges interpretation of 'weight'
+In-Reply-To: <2C40E43D1F7A56408C4463FD245DDDF997D77A84@EXCHMB-02.stowers-institute.org>
+References: <2C40E43D1F7A56408C4463FD245DDDF997D77A84@EXCHMB-02.stowers-institute.org>
+Message-ID: <2C40E43D1F7A56408C4463FD245DDDF997D77A8B@EXCHMB-02.stowers-institute.org>
+
+Another way the interface to coverage could/should agree between GenomicRanges and RangedData is the expectation of how width is encoded.
+
+For GenomicRanges   "'width' must be NULL or a numeric vector"
+For RangedData, "  'width' must be a non-empty list"
+
+Of course not crucial.  But, the disagreement is easy to trip over.
+
+~Malcolm
+
+
+> -----Original Message-----
+> From: bioc-devel-bounces at r-project.org [mailto:bioc-devel-bounces at r-
+> project.org] On Behalf Of Cook, Malcolm
+> Sent: Thursday, February 23, 2012 1:14 PM
+> To: 'bioc-devel at r-project.org'
+> Subject: [Bioc-devel] coverage,GenomicRanges interpretation of 'weight'
+> 
+> It would be great I think if coverage,GenomicRanges  interpetation of
+> 'weight' would be similar to that for RangedData
+> 
+> 	For 'RangedData' objects, this can also be a single string naming a
+> column to be used as the weights.
+> 
+> In the case for coverage,GenomicRanges  we would want to weigh by any
+> attribute (i.e. score) in the values DataTable.
+> 
+> is this reasonable?
+> 
+> I like being able to refer symbolically as provided by RangedData.  It allows
+> me to write, for instance, this utility function:
+> 
+> coverageByStrand <-function(x,...){
+>   ## PURPOSE: compute the coverage of x, split by 'strand'.
+>   ## RETURNS: a list of SimpleRLEList (by chromosome)
+>   res<-lapply(split(x,strand(x)),coverage,...)
+> }
+> 
+> which I can then use as
+> 
+> someStrandedCoverage<-
+> coverageByStrand(someStrandedFeaturesAsGenomicRanges,weight='theDa
+> taTableAttributeHoldingSomeWeightFactor')
+> 
+> Otherwise I would have to test for the presence of a weight attribute and
+> split it by strand, and use mapply instead, etc....
+> 
+> Regardless of the merits, having the interface to coverage be similar
+> between RangedData and GenomicRanges is arguably desirable.
+> 
+> My workaround is to convert to RangedData for the computation.  Definitely
+> not urgent.
+> 
+> Malcolm Cook
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From hpages at fhcrc.org  Thu Feb 23 22:41:11 2012
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Thu, 23 Feb 2012 13:41:11 -0800
+Subject: [Bioc-devel] coverage,GenomicRanges interpretation of 'weight'
+In-Reply-To: <2C40E43D1F7A56408C4463FD245DDDF997D77A84@EXCHMB-02.stowers-institute.org>
+References: <2C40E43D1F7A56408C4463FD245DDDF997D77A84@EXCHMB-02.stowers-institute.org>
+Message-ID: <4F46B277.9000606@fhcrc.org>
+
+Hi Malcolm,
+
+On 02/23/2012 11:13 AM, Cook, Malcolm wrote:
+> It would be great I think if coverage,GenomicRanges  interpetation of 'weight' would be similar to that for RangedData
+>
+> 	For 'RangedData' objects, this can also be a single string naming a column to be used as the weights.
+>
+> In the case for coverage,GenomicRanges  we would want to weigh by any attribute (i.e. score) in the values DataTable.
+>
+> is this reasonable?
+>
+> I like being able to refer symbolically as provided by RangedData.  It allows me to write, for instance, this utility function:
+>
+> coverageByStrand<-function(x,...){
+>    ## PURPOSE: compute the coverage of x, split by 'strand'.
+>    ## RETURNS: a list of SimpleRLEList (by chromosome)
+>    res<-lapply(split(x,strand(x)),coverage,...)
+> }
+>
+> which I can then use as
+>
+> someStrandedCoverage<-coverageByStrand(someStrandedFeaturesAsGenomicRanges,weight='theDataTableAttributeHoldingSomeWeightFactor')
+>
+> Otherwise I would have to test for the presence of a weight attribute and split it by strand, and use mapply instead, etc....
+>
+> Regardless of the merits, having the interface to coverage be similar between RangedData and GenomicRanges is arguably desirable.
+
+Sounds good to me. Done in GenomicRanges 1.7.27.
+
+Cheers,
+H.
+
+>
+> My workaround is to convert to RangedData for the computation.  Definitely not urgent.
+>
+> Malcolm Cook
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M1-B514
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From hpages at fhcrc.org  Thu Feb 23 23:45:09 2012
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Thu, 23 Feb 2012 14:45:09 -0800
+Subject: [Bioc-devel] coverage,GenomicRanges interpretation of 'weight'
+In-Reply-To: <2C40E43D1F7A56408C4463FD245DDDF997D77A8B@EXCHMB-02.stowers-institute.org>
+References: <2C40E43D1F7A56408C4463FD245DDDF997D77A84@EXCHMB-02.stowers-institute.org>
+	<2C40E43D1F7A56408C4463FD245DDDF997D77A8B@EXCHMB-02.stowers-institute.org>
+Message-ID: <4F46C175.10108@fhcrc.org>
+
+On 02/23/2012 11:22 AM, Cook, Malcolm wrote:
+> Another way the interface to coverage could/should agree between GenomicRanges and RangedData is the expectation of how width is encoded.
+>
+> For GenomicRanges   "'width' must be NULL or a numeric vector"
+> For RangedData, "  'width' must be a non-empty list"
+>
+> Of course not crucial.  But, the disagreement is easy to trip over.
+
+In the early days, the "coverage" method for GenomicRanges also used
+to take a non-empty list but I changed this about one year ago for
+the "NULL or a numeric vector" interface, which I find more natural
+(putting the widths for each seqlevel in a numeric vector is
+more natural than putting them in a list where each element is a
+numeric vector of length 1, and it's consistent with 'seqlengths(x)').
+
+We should definitely make the same change to the other "coverage"
+methods that still use the old interface though (RangesList,
+RangedData, there might be more...). I've put this on our list.
+
+Thanks,
+H.
+
+>
+> ~Malcolm
+>
+>
+>> -----Original Message-----
+>> From: bioc-devel-bounces at r-project.org [mailto:bioc-devel-bounces at r-
+>> project.org] On Behalf Of Cook, Malcolm
+>> Sent: Thursday, February 23, 2012 1:14 PM
+>> To: 'bioc-devel at r-project.org'
+>> Subject: [Bioc-devel] coverage,GenomicRanges interpretation of 'weight'
+>>
+>> It would be great I think if coverage,GenomicRanges  interpetation of
+>> 'weight' would be similar to that for RangedData
+>>
+>> 	For 'RangedData' objects, this can also be a single string naming a
+>> column to be used as the weights.
+>>
+>> In the case for coverage,GenomicRanges  we would want to weigh by any
+>> attribute (i.e. score) in the values DataTable.
+>>
+>> is this reasonable?
+>>
+>> I like being able to refer symbolically as provided by RangedData.  It allows
+>> me to write, for instance, this utility function:
+>>
+>> coverageByStrand<-function(x,...){
+>>    ## PURPOSE: compute the coverage of x, split by 'strand'.
+>>    ## RETURNS: a list of SimpleRLEList (by chromosome)
+>>    res<-lapply(split(x,strand(x)),coverage,...)
+>> }
+>>
+>> which I can then use as
+>>
+>> someStrandedCoverage<-
+>> coverageByStrand(someStrandedFeaturesAsGenomicRanges,weight='theDa
+>> taTableAttributeHoldingSomeWeightFactor')
+>>
+>> Otherwise I would have to test for the presence of a weight attribute and
+>> split it by strand, and use mapply instead, etc....
+>>
+>> Regardless of the merits, having the interface to coverage be similar
+>> between RangedData and GenomicRanges is arguably desirable.
+>>
+>> My workaround is to convert to RangedData for the computation.  Definitely
+>> not urgent.
+>>
+>> Malcolm Cook
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M1-B514
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From mailinglist.honeypot at gmail.com  Fri Feb 24 05:07:14 2012
+From: mailinglist.honeypot at gmail.com (Steve Lianoglou)
+Date: Thu, 23 Feb 2012 23:07:14 -0500
+Subject: [Bioc-devel] "score" column disappeared when importing bigWigs w/
+ rtracklayer:::import.bw in R-devel?
+Message-ID: <CAHA9McPaj=aa3ugKxLgWWsNFZAqx+E6O=HYikZrc=itUt+Y45w@mail.gmail.com>
+
+Hi,
+
+I've been chasing my tail for a while on this -- I'm trying to import
+some data from a bigWig files using R-2.14 and R-devel.
+
+Seems like mostly-current R-devel + bioc packages isn't happy for some reason.
+
+Consider this snipped using R-2.14 on a BigWigFile object of interest:
+
+R> import.bw(bwf, BigWigSelection(GRanges("chrX_random",
+IRanges(104857,104931))))
+RangedData with 75 rows and 1 value column across 1 space
+          space           ranges   |     score
+       <factor>        <IRanges>   | <numeric>
+1   chrX_random [104857, 104857]   |    -0.424
+2   chrX_random [104858, 104858]   |     0.971
+3   chrX_random [104859, 104859]   |     1.381
+4   chrX_random [104860, 104860]   |     2.146
+5   chrX_random [104861, 104861]   |     4.665
+6   chrX_random [104862, 104862]   |     3.966
+7   chrX_random [104863, 104863]   |     1.012
+8   chrX_random [104864, 104864]   |     4.161
+9   chrX_random [104865, 104865]   |     2.412
+...         ...              ... ...       ...
+
+Same file, same selection using R-devel
+
+R> import.bw(bwf, BigWigSelection(GRanges("chrX_random",
+IRanges(104857,104931))))
+RangedData with 75 rows and 0 value columns across 1 space
+          space           ranges   |
+       <factor>        <IRanges>   |
+1   chrX_random [104857, 104857]   |
+2   chrX_random [104858, 104858]   |
+3   chrX_random [104859, 104859]   |
+4   chrX_random [104860, 104860]   |
+5   chrX_random [104861, 104861]   |
+6   chrX_random [104862, 104862]   |
+7   chrX_random [104863, 104863]   |
+8   chrX_random [104864, 104864]   |
+9   chrX_random [104865, 104865]   |
+...         ...              ... ...
+
+Strangely a call to `summary` works in R-devel and gives the same
+result as it does in R-2.14:
+
+R> summary(bwf, GRanges("chrX_random", IRanges(104857,104931)))
+SimpleRleList of length 1
+[[1]]
+'numeric' Rle of length 1 with 1 run
+  Lengths:                1
+  Values : 2.46041230119978
+
+
+This is my sesionInfo for R-devel:
+
+R Under development (unstable) (2011-11-04 r57571)
+Platform: x86_64-apple-darwin10.8.0/x86_64 (64-bit)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] rtracklayer_1.15.7   GenomicRanges_1.7.26 IRanges_1.13.24
+[4] BiocGenerics_0.1.4
+
+loaded via a namespace (and not attached):
+[1] Biostrings_2.23.6 bitops_1.0-4.1    BSgenome_1.23.2   RCurl_1.91-1
+[5] Rsamtools_1.7.35  tools_2.15.0      XML_3.6-2         zlibbioc_1.1.0
+
+
+-- 
+Steve Lianoglou
+Graduate Student: Computational Systems Biology
+?| Memorial Sloan-Kettering Cancer Center
+?| Weill Medical College of Cornell University
+Contact Info: http://cbio.mskcc.org/~lianos/contact
+
+
+From delhomme at embl.de  Fri Feb 24 09:30:11 2012
+From: delhomme at embl.de (Nicolas Delhomme)
+Date: Fri, 24 Feb 2012 09:30:11 +0100
+Subject: [Bioc-devel] coverage,GenomicRanges interpretation of 'weight'
+In-Reply-To: <4F46C175.10108@fhcrc.org>
+References: <2C40E43D1F7A56408C4463FD245DDDF997D77A84@EXCHMB-02.stowers-institute.org>
+	<2C40E43D1F7A56408C4463FD245DDDF997D77A8B@EXCHMB-02.stowers-institute.org>
+	<4F46C175.10108@fhcrc.org>
+Message-ID: <200E6399-587A-40C5-B33B-0992F653271F@embl.de>
+
+Hi Herv?,
+
+Although I agree that the change makes sense (and how!), quite some of my own functions use the RangedData "old" width interface and these pieces of code have been distributed around. Therefore, when you change it, could you do so in a backward compatible fashion? I.e. that it still accepts a list but convert it internally to a vector while emitting a "deprecation" warning for example? That'd be awesome :-)
+
+Cheers,
+
+Nico
+
+---------------------------------------------------------------
+Nicolas Delhomme
+
+Genome Biology Computational Support
+
+European Molecular Biology Laboratory
+
+Tel: +49 6221 387 8310
+Email: nicolas.delhomme at embl.de
+Meyerhofstrasse 1 - Postfach 10.2209
+69102 Heidelberg, Germany
+---------------------------------------------------------------
+
+
+
+
+
+On 23 Feb 2012, at 23:45, Herv? Pag?s wrote:
+
+> On 02/23/2012 11:22 AM, Cook, Malcolm wrote:
+>> Another way the interface to coverage could/should agree between GenomicRanges and RangedData is the expectation of how width is encoded.
+>> 
+>> For GenomicRanges   "'width' must be NULL or a numeric vector"
+>> For RangedData, "  'width' must be a non-empty list"
+>> 
+>> Of course not crucial.  But, the disagreement is easy to trip over.
+> 
+> In the early days, the "coverage" method for GenomicRanges also used
+> to take a non-empty list but I changed this about one year ago for
+> the "NULL or a numeric vector" interface, which I find more natural
+> (putting the widths for each seqlevel in a numeric vector is
+> more natural than putting them in a list where each element is a
+> numeric vector of length 1, and it's consistent with 'seqlengths(x)').
+> 
+> We should definitely make the same change to the other "coverage"
+> methods that still use the old interface though (RangesList,
+> RangedData, there might be more...). I've put this on our list.
+> 
+> Thanks,
+> H.
+> 
+>> 
+>> ~Malcolm
+>> 
+>> 
+>>> -----Original Message-----
+>>> From: bioc-devel-bounces at r-project.org [mailto:bioc-devel-bounces at r-
+>>> project.org] On Behalf Of Cook, Malcolm
+>>> Sent: Thursday, February 23, 2012 1:14 PM
+>>> To: 'bioc-devel at r-project.org'
+>>> Subject: [Bioc-devel] coverage,GenomicRanges interpretation of 'weight'
+>>> 
+>>> It would be great I think if coverage,GenomicRanges  interpetation of
+>>> 'weight' would be similar to that for RangedData
+>>> 
+>>> 	For 'RangedData' objects, this can also be a single string naming a
+>>> column to be used as the weights.
+>>> 
+>>> In the case for coverage,GenomicRanges  we would want to weigh by any
+>>> attribute (i.e. score) in the values DataTable.
+>>> 
+>>> is this reasonable?
+>>> 
+>>> I like being able to refer symbolically as provided by RangedData.  It allows
+>>> me to write, for instance, this utility function:
+>>> 
+>>> coverageByStrand<-function(x,...){
+>>>   ## PURPOSE: compute the coverage of x, split by 'strand'.
+>>>   ## RETURNS: a list of SimpleRLEList (by chromosome)
+>>>   res<-lapply(split(x,strand(x)),coverage,...)
+>>> }
+>>> 
+>>> which I can then use as
+>>> 
+>>> someStrandedCoverage<-
+>>> coverageByStrand(someStrandedFeaturesAsGenomicRanges,weight='theDa
+>>> taTableAttributeHoldingSomeWeightFactor')
+>>> 
+>>> Otherwise I would have to test for the presence of a weight attribute and
+>>> split it by strand, and use mapply instead, etc....
+>>> 
+>>> Regardless of the merits, having the interface to coverage be similar
+>>> between RangedData and GenomicRanges is arguably desirable.
+>>> 
+>>> My workaround is to convert to RangedData for the computation.  Definitely
+>>> not urgent.
+>>> 
+>>> Malcolm Cook
+>>> 
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>> 
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> 
+> -- 
+> Herv? Pag?s
+> 
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M1-B514
+> P.O. Box 19024
+> Seattle, WA 98109-1024
+> 
+> E-mail: hpages at fhcrc.org
+> Phone:  (206) 667-5791
+> Fax:    (206) 667-1319
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From zacher at lmb.uni-muenchen.de  Fri Feb 24 12:29:15 2012
+From: zacher at lmb.uni-muenchen.de (zacher at lmb.uni-muenchen.de)
+Date: Fri, 24 Feb 2012 12:29:15 +0100
+Subject: [Bioc-devel] data compression
+Message-ID: <20120224112915.C755A5118215@pluto.lmb.uni-muenchen.de>
+
+Dear developers,
+
+I want to submit a package to bioconductor. Using the latest R-devel version (02/23/12), I get a warning for uncompressed data (rda files) attached to the package, when I apply "R CMD check". If I use "xz" compression, as it is recommended, I get another warning: "Warning: package needs dependence on R (>= 2.10)".
+Is there any possibility to overcome this problem, since packages submitted to bioconductor are not allowed to have warning messages in the check report?
+Best wishes,
+
+Benedikt
+
+
+From delhomme at embl.de  Fri Feb 24 12:36:57 2012
+From: delhomme at embl.de (Nicolas Delhomme)
+Date: Fri, 24 Feb 2012 12:36:57 +0100
+Subject: [Bioc-devel] data compression
+In-Reply-To: <20120224112915.C755A5118215@pluto.lmb.uni-muenchen.de>
+References: <20120224112915.C755A5118215@pluto.lmb.uni-muenchen.de>
+Message-ID: <0E2512F1-A808-4207-88FA-AC5AC5171CB5@embl.de>
+
+I'm not a 100% sure, but I suppose that adding R(>= 2.10) in your package DESCRIPTION file, in the Depends field should resolve it.
+
+Cheers,
+
+Nico
+
+---------------------------------------------------------------
+Nicolas Delhomme
+
+Genome Biology Computational Support
+
+European Molecular Biology Laboratory
+
+Tel: +49 6221 387 8310
+Email: nicolas.delhomme at embl.de
+Meyerhofstrasse 1 - Postfach 10.2209
+69102 Heidelberg, Germany
+---------------------------------------------------------------
+
+
+
+
+
+On 24 Feb 2012, at 12:29, <zacher at lmb.uni-muenchen.de> <zacher at lmb.uni-muenchen.de> wrote:
+
+> Dear developers,
+> 
+> I want to submit a package to bioconductor. Using the latest R-devel version (02/23/12), I get a warning for uncompressed data (rda files) attached to the package, when I apply "R CMD check". If I use "xz" compression, as it is recommended, I get another warning: "Warning: package needs dependence on R (>= 2.10)".
+> Is there any possibility to overcome this problem, since packages submitted to bioconductor are not allowed to have warning messages in the check report?
+> Best wishes,
+> 
+> Benedikt
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From pmad at igr.poznan.pl  Fri Feb 24 12:39:43 2012
+From: pmad at igr.poznan.pl (Pedro Madrigal)
+Date: Fri, 24 Feb 2012 12:39:43 +0100
+Subject: [Bioc-devel] data compression
+In-Reply-To: <20120224112915.C755A5118215@pluto.lmb.uni-muenchen.de>
+References: <20120224112915.C755A5118215@pluto.lmb.uni-muenchen.de>
+Message-ID: <4F4776FF.9040603@igr.poznan.pl>
+
+Hi Benedikt,
+I think in the DESCRIPTION file of your package you should write 
+"Depends: R(>= 2.10.0)".
+(Page 12 of 'Writing R Extensions' manual)
+
+Best,Pedro
+
+On 02/24/2012 12:29 PM, zacher at lmb.uni-muenchen.de wrote:
+> Dear developers,
+>
+> I want to submit a package to bioconductor. Using the latest R-devel version (02/23/12), I get a warning for uncompressed data (rda files) attached to the package, when I apply "R CMD check". If I use "xz" compression, as it is recommended, I get another warning: "Warning: package needs dependence on R (>= 2.10)".
+> Is there any possibility to overcome this problem, since packages submitted to bioconductor are not allowed to have warning messages in the check report?
+> Best wishes,
+>
+> Benedikt
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+From zacher at lmb.uni-muenchen.de  Fri Feb 24 12:46:50 2012
+From: zacher at lmb.uni-muenchen.de (zacher at lmb.uni-muenchen.de)
+Date: Fri, 24 Feb 2012 12:46:50 +0100
+Subject: [Bioc-devel] data compression
+Message-ID: <20120224114650.AAF9E5118215@pluto.lmb.uni-muenchen.de>
+
+
+Hi Pedro,
+
+you are right. It solved the problem. Thank you very much for the fast reply!!
+
+Benedikt
+
+Pedro Madrigal <pmad at igr.poznan.pl> wrote :
+
+> Hi Benedikt,
+> I think in the DESCRIPTION file of your package you should write 
+> &quot;Depends: R(&gt;= 2.10.0)&quot;.
+> (Page 12 of 'Writing R Extensions' manual)
+> 
+> Best,Pedro
+> 
+> On 02/24/2012 12:29 PM, zacher at lmb.uni-muenchen.de
+> wrote:
+> &gt; Dear developers,
+> &gt;
+> &gt; I want to submit a package to bioconductor. Using the latest R-devel
+> version (02/23/12), I get a warning for uncompressed data (rda files) attached
+> to the package, when I apply &quot;R CMD check&quot;. If I use &quot;xz&quot;
+> compression, as it is recommended, I get another warning: &quot;Warning: package
+> needs dependence on R (&gt;= 2.10)&quot;.
+> &gt; Is there any possibility to overcome this problem, since packages
+> submitted to bioconductor are not allowed to have warning messages in the check
+> report?
+> &gt; Best wishes,
+> &gt;
+> &gt; Benedikt
+> &gt;
+> &gt; _______________________________________________
+> &gt; Bioc-devel at r-project.org
+> mailing list
+> &gt; https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> &gt;
+> &gt;
+
+
+From arne.mueller at novartis.com  Fri Feb 24 16:14:28 2012
+From: arne.mueller at novartis.com (Mueller, Arne)
+Date: Fri, 24 Feb 2012 15:14:28 +0000
+Subject: [Bioc-devel] package cannot be loaded
+Message-ID: <CB6D67E3.DAD0%arne.mueller@novartis.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120224/1da6803f/attachment.pl>
+
+From mtmorgan at fhcrc.org  Fri Feb 24 17:45:06 2012
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Fri, 24 Feb 2012 08:45:06 -0800
+Subject: [Bioc-devel] package cannot be loaded
+In-Reply-To: <CB6D67E3.DAD0%arne.mueller@novartis.com>
+References: <CB6D67E3.DAD0%arne.mueller@novartis.com>
+Message-ID: <4F47BE92.9090402@fhcrc.org>
+
+On 02/24/2012 07:14 AM, Mueller, Arne wrote:
+> Hello,
+>
+> I'm relatively new to bioconductor development, and I've a problem with an error R CMD check spits out:
+>
+> R CMD check Gviz
+>
+> BiocInstaller version 1.3.7, ?biocLite for help
+> * using log directory ?/Users/muellar2/workspace-indigo/Gviz.Rcheck?
+> * using R Under development (unstable) (2012-02-22 r58461)
+> * using platform: x86_64-apple-darwin10.8.0 (64-bit)
+> * using session charset: UTF-8
+> * checking for file ?Gviz/DESCRIPTION? ... OK
+> * this is package ?Gviz? version ?0.99.0?
+> * checking package namespace information ... OK
+> * checking package dependencies ... OK
+> * checking if this is a source package ... OK
+> * checking if there is a namespace ... OK
+> * checking for executable files ... OK
+> * checking whether package ?Gviz? can be installed ... OK
+> * checking installed package size ... OK
+> * checking package directory ... OK
+> * checking for portable file names ... OK
+> * checking for sufficient/correct file permissions ... OK
+> * checking DESCRIPTION meta-information ... OK
+> * checking top-level files ... OK
+> * checking index information ... OK
+> * checking package subdirectories ... OK
+> * checking R files for non-ASCII characters ... OK
+> * checking R files for syntax errors ... OK
+> * checking whether the package can be loaded ... ERROR
+> Loading this package had a fatal error status code 1
+> Loading log:
+> Loading required package: grid
+> Error in loadNamespace(i[[1L]], c(lib.loc, .libPaths())) :
+>    there is no package called ?Biobase?
+> Error: package/namespace load failed for ?Gviz?
+> Execution halted
+>
+> I can build and install the Gviz package as well as loading it in an
+interactive R-session (and grid and Biobase, too). Any idea how to
+figure out where the problem is?
+
+My guess is either that you are using a different R, or that in your 
+interactive session you have (implicitly?) source'd a startup file 
+(.Rprofile, .RData, ..., see ?Startup) that is not source'd at the 
+command line. If you are using the same R, then starting with R 
+--vanilla would be more like installation at the command line; I'd look 
+to the definition of .libPaths().
+
+Martin
+
+>
+>   Thanks a lot for your help,
+>
+>   Arne
+>
+>
+> 	[[alternative HTML version deleted]]
+>
+>
+>
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From hpages at fhcrc.org  Fri Feb 24 20:15:02 2012
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Fri, 24 Feb 2012 11:15:02 -0800
+Subject: [Bioc-devel] coverage,GenomicRanges interpretation of 'weight'
+In-Reply-To: <200E6399-587A-40C5-B33B-0992F653271F@embl.de>
+References: <2C40E43D1F7A56408C4463FD245DDDF997D77A84@EXCHMB-02.stowers-institute.org>
+	<2C40E43D1F7A56408C4463FD245DDDF997D77A8B@EXCHMB-02.stowers-institute.org>
+	<4F46C175.10108@fhcrc.org>
+	<200E6399-587A-40C5-B33B-0992F653271F@embl.de>
+Message-ID: <4F47E1B6.7090501@fhcrc.org>
+
+On 02/24/2012 12:30 AM, Nicolas Delhomme wrote:
+> Hi Herv?,
+>
+> Although I agree that the change makes sense (and how!), quite some of my own functions use the RangedData "old" width interface and these pieces of code have been distributed around. Therefore, when you change it, could you do so in a backward compatible fashion? I.e. that it still accepts a list but convert it internally to a vector while emitting a "deprecation" warning for example? That'd be awesome :-)
+
+Sure, we'll do that. Thanks for the feedback!
+
+H.
+
+>
+> Cheers,
+>
+> Nico
+>
+> ---------------------------------------------------------------
+> Nicolas Delhomme
+>
+> Genome Biology Computational Support
+>
+> European Molecular Biology Laboratory
+>
+> Tel: +49 6221 387 8310
+> Email: nicolas.delhomme at embl.de
+> Meyerhofstrasse 1 - Postfach 10.2209
+> 69102 Heidelberg, Germany
+> ---------------------------------------------------------------
+>
+>
+>
+>
+>
+> On 23 Feb 2012, at 23:45, Herv? Pag?s wrote:
+>
+>> On 02/23/2012 11:22 AM, Cook, Malcolm wrote:
+>>> Another way the interface to coverage could/should agree between GenomicRanges and RangedData is the expectation of how width is encoded.
+>>>
+>>> For GenomicRanges   "'width' must be NULL or a numeric vector"
+>>> For RangedData, "  'width' must be a non-empty list"
+>>>
+>>> Of course not crucial.  But, the disagreement is easy to trip over.
+>>
+>> In the early days, the "coverage" method for GenomicRanges also used
+>> to take a non-empty list but I changed this about one year ago for
+>> the "NULL or a numeric vector" interface, which I find more natural
+>> (putting the widths for each seqlevel in a numeric vector is
+>> more natural than putting them in a list where each element is a
+>> numeric vector of length 1, and it's consistent with 'seqlengths(x)').
+>>
+>> We should definitely make the same change to the other "coverage"
+>> methods that still use the old interface though (RangesList,
+>> RangedData, there might be more...). I've put this on our list.
+>>
+>> Thanks,
+>> H.
+>>
+>>>
+>>> ~Malcolm
+>>>
+>>>
+>>>> -----Original Message-----
+>>>> From: bioc-devel-bounces at r-project.org [mailto:bioc-devel-bounces at r-
+>>>> project.org] On Behalf Of Cook, Malcolm
+>>>> Sent: Thursday, February 23, 2012 1:14 PM
+>>>> To: 'bioc-devel at r-project.org'
+>>>> Subject: [Bioc-devel] coverage,GenomicRanges interpretation of 'weight'
+>>>>
+>>>> It would be great I think if coverage,GenomicRanges  interpetation of
+>>>> 'weight' would be similar to that for RangedData
+>>>>
+>>>> 	For 'RangedData' objects, this can also be a single string naming a
+>>>> column to be used as the weights.
+>>>>
+>>>> In the case for coverage,GenomicRanges  we would want to weigh by any
+>>>> attribute (i.e. score) in the values DataTable.
+>>>>
+>>>> is this reasonable?
+>>>>
+>>>> I like being able to refer symbolically as provided by RangedData.  It allows
+>>>> me to write, for instance, this utility function:
+>>>>
+>>>> coverageByStrand<-function(x,...){
+>>>>    ## PURPOSE: compute the coverage of x, split by 'strand'.
+>>>>    ## RETURNS: a list of SimpleRLEList (by chromosome)
+>>>>    res<-lapply(split(x,strand(x)),coverage,...)
+>>>> }
+>>>>
+>>>> which I can then use as
+>>>>
+>>>> someStrandedCoverage<-
+>>>> coverageByStrand(someStrandedFeaturesAsGenomicRanges,weight='theDa
+>>>> taTableAttributeHoldingSomeWeightFactor')
+>>>>
+>>>> Otherwise I would have to test for the presence of a weight attribute and
+>>>> split it by strand, and use mapply instead, etc....
+>>>>
+>>>> Regardless of the merits, having the interface to coverage be similar
+>>>> between RangedData and GenomicRanges is arguably desirable.
+>>>>
+>>>> My workaround is to convert to RangedData for the computation.  Definitely
+>>>> not urgent.
+>>>>
+>>>> Malcolm Cook
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at r-project.org mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>
+>> --
+>> Herv? Pag?s
+>>
+>> Program in Computational Biology
+>> Division of Public Health Sciences
+>> Fred Hutchinson Cancer Research Center
+>> 1100 Fairview Ave. N, M1-B514
+>> P.O. Box 19024
+>> Seattle, WA 98109-1024
+>>
+>> E-mail: hpages at fhcrc.org
+>> Phone:  (206) 667-5791
+>> Fax:    (206) 667-1319
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M1-B514
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From lawrence.michael at gene.com  Fri Feb 24 21:07:20 2012
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Fri, 24 Feb 2012 12:07:20 -0800
+Subject: [Bioc-devel] "score" column disappeared when importing bigWigs
+ w/ rtracklayer:::import.bw in R-devel?
+In-Reply-To: <CAHA9McPaj=aa3ugKxLgWWsNFZAqx+E6O=HYikZrc=itUt+Y45w@mail.gmail.com>
+References: <CAHA9McPaj=aa3ugKxLgWWsNFZAqx+E6O=HYikZrc=itUt+Y45w@mail.gmail.com>
+Message-ID: <CAOQ5Nyc6hGZAb58zb4JJ+=5ow7CKO-u27_KqJ+HNsdLwJZxDRg@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120224/3e98f2b3/attachment.pl>
+
+From jesper.gadin at gmail.com  Mon Feb 27 10:57:01 2012
+From: jesper.gadin at gmail.com (=?ISO-8859-1?Q?Jesper_G=E5din?=)
+Date: Mon, 27 Feb 2012 10:57:01 +0100
+Subject: [Bioc-devel] Subject: GRanges performance issue,
+	how to avoid looping?
+In-Reply-To: <CAOQ5NycHUoSGSkXXfFn_zXeySVCTzPDrUp7B4TyEE5dfBgf-RA@mail.gmail.com>
+References: <CAPmAPXPHv7bOrgwETmppAQQgDTscqtjUqqYgjgZYOw_g62c+QA@mail.gmail.com>
+	<CAOQ5NycHUoSGSkXXfFn_zXeySVCTzPDrUp7B4TyEE5dfBgf-RA@mail.gmail.com>
+Message-ID: <CAPmAPXPN1OYby-P1onMH97F3TbQo2syfQHoF=Z-ABvVSaw0DbA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120227/e5dc76b8/attachment.pl>
+
+From robert.castelo at upf.edu  Mon Feb 27 12:25:29 2012
+From: robert.castelo at upf.edu (Robert Castelo)
+Date: Mon, 27 Feb 2012 12:25:29 +0100
+Subject: [Bioc-devel] idempotent identifier mapping with
+	GSEABase::mapIdentifiers()
+Message-ID: <1330341929.23007.31.camel@llull.imim.es>
+
+hi,
+
+i collaborate mantaining the packages GSVA and GSVAdata and i have a
+question about the function mapIdentifiers() from the GSEABase package
+which i'm going to illustrate through an example.
+
+
+1. let's build first an ExpressionSet object whose annotation slot is
+going to point to the human organism-level annotation pacakge
+org.Hs.eg.db:
+
+library(Biobase)
+library(org.Hs.eg.db)
+
+mapped_genes <- mappedkeys(org.Hs.egSYMBOL)
+
+exp <- matrix(rnorm(1000), nrow=100,
+              dimnames=list(mapped_genes[1:100],
+                            paste("sample", 1:10, sep="")))
+eset <- new("ExpressionSet", exprs=exp, annotation="org.Hs.eg.db")
+ExpressionSet (storageMode: lockedEnvironment)
+assayData: 100 features, 10 samples 
+  element names: exprs 
+protocolData: none
+phenoData: none
+featureData: none
+experimentData: use 'experimentData(object)'
+Annotation: org.Hs.eg.db 
+
+2. now i'm going to load the Broad gene sets stored as a
+GeneSetCollection object in the experimental data package GSVAdata:
+
+library(GSVAdata)
+data(c2BroadSets)
+c2BroadSets
+GeneSetCollection
+  names: NAKAMURA_CANCER_MICROENVIRONMENT_UP,
+NAKAMURA_CANCER_MICROENVIRONMENT_DN, ...,
+ST_PHOSPHOINOSITIDE_3_KINASE_PATHWAY (3272 total)
+  unique identifiers: 5167, 100288400, ..., 57191 (29340 total)
+  types in collection:
+    geneIdType: EntrezIdentifier (1 total)
+    collectionType: BroadCollection (1 total)
+
+
+3. finally, i'd like to obtain a new GeneSetCollection object whose
+identifiers have been mapped between the two classes of identifiers in
+the GeneSetCollection and the ExpressionSet objects.
+
+in this case both objects actually work with the same class of
+identifiers (Entrez), so in fact i don't need to do that but this
+operation forms part of a piece of code in the package GSVA which i'd
+like it to work regardless of the kind of annotation package referred to
+in the ExpressionSet object. i had expected that the function
+mapIdentifiers() would have some kind of idempotent behavior, but i get
+the following error:
+
+gsc <- mapIdentifiers(c2BroadSets,
+                      AnnotationIdentifier(annotation(eset)))
+Error in GeneSetCollection(lapply(what, mapIdentifiers, to, ..., verbose
+= verbose)) : 
+  error in evaluating the argument 'object' in selecting a method for
+function 'GeneSetCollection': Error in get(mapName, envir = pkgEnv,
+inherits = FALSE) : 
+  object 'org.Hs.egENTREZID' not found
+
+
+which does not occur if the feature names and annotation of the
+ExpressionSet corresponds to a classical affy chip (e.g. "hgu95av2").
+
+i built the object c2BroadSets in the experiment data package GSVAdata
+by importing the entire xml file from the Broad sets so, i guess it
+could be also possible that i did something wrong when i built this
+'c2BroadSets' object and there's no problem, bug or lacking feature in
+mapIdentifiers().
+
+i look forward to your diagnostic and suggestions in any of these
+possible directions.
+
+
+thanks,
+robert.
+
+
+From stvjc at channing.harvard.edu  Mon Feb 27 13:45:41 2012
+From: stvjc at channing.harvard.edu (Vincent Carey)
+Date: Mon, 27 Feb 2012 07:45:41 -0500
+Subject: [Bioc-devel] idempotent identifier mapping with
+	GSEABase::mapIdentifiers()
+In-Reply-To: <1330341929.23007.31.camel@llull.imim.es>
+References: <1330341929.23007.31.camel@llull.imim.es>
+Message-ID: <CAANT7+V74gt+yPxfCLXdD0CQiZo+_bPKCrx9xeCQ8ZJ9nLXyKw@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120227/d807bd8e/attachment.pl>
+
+From mtmorgan at fhcrc.org  Mon Feb 27 14:50:05 2012
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 27 Feb 2012 05:50:05 -0800
+Subject: [Bioc-devel] idempotent identifier mapping
+	with	GSEABase::mapIdentifiers()
+In-Reply-To: <CAANT7+V74gt+yPxfCLXdD0CQiZo+_bPKCrx9xeCQ8ZJ9nLXyKw@mail.gmail.com>
+References: <1330341929.23007.31.camel@llull.imim.es>
+	<CAANT7+V74gt+yPxfCLXdD0CQiZo+_bPKCrx9xeCQ8ZJ9nLXyKw@mail.gmail.com>
+Message-ID: <4F4B8A0D.7060505@fhcrc.org>
+
+On 02/27/2012 04:45 AM, Vincent Carey wrote:
+> I have run into a very similar situation.  Ultimately a uniformization of
+> the annotation API will be called for.
+> I wonder if a global short-term fixup would get you through this situation?
+>
+>> org.Hs.egENTREZID = new.env(hash=TRUE)
+>> k = mappedkeys(org.Hs.egENSEMBL)  # or any other good source of all keys
+>> for (i in 1:length(k)) assign(k[i], k[i], org.Hs.egENTREZID)
+>> get("1000", org.Hs.egENTREZID)
+> [1] "1000"
+>
+>
+> On Mon, Feb 27, 2012 at 6:25 AM, Robert Castelo<robert.castelo at upf.edu>wrote:
+>
+>> hi,
+>>
+>> i collaborate mantaining the packages GSVA and GSVAdata and i have a
+>> question about the function mapIdentifiers() from the GSEABase package
+>> which i'm going to illustrate through an example.
+>>
+>>
+>> 1. let's build first an ExpressionSet object whose annotation slot is
+>> going to point to the human organism-level annotation pacakge
+>> org.Hs.eg.db:
+>>
+>> library(Biobase)
+>> library(org.Hs.eg.db)
+>>
+>> mapped_genes<- mappedkeys(org.Hs.egSYMBOL)
+>>
+>> exp<- matrix(rnorm(1000), nrow=100,
+>>               dimnames=list(mapped_genes[1:100],
+>>                             paste("sample", 1:10, sep="")))
+>> eset<- new("ExpressionSet", exprs=exp, annotation="org.Hs.eg.db")
+>> ExpressionSet (storageMode: lockedEnvironment)
+>> assayData: 100 features, 10 samples
+>>   element names: exprs
+>> protocolData: none
+>> phenoData: none
+>> featureData: none
+>> experimentData: use 'experimentData(object)'
+>> Annotation: org.Hs.eg.db
+>>
+>> 2. now i'm going to load the Broad gene sets stored as a
+>> GeneSetCollection object in the experimental data package GSVAdata:
+>>
+>> library(GSVAdata)
+>> data(c2BroadSets)
+>> c2BroadSets
+>> GeneSetCollection
+>>   names: NAKAMURA_CANCER_MICROENVIRONMENT_UP,
+>> NAKAMURA_CANCER_MICROENVIRONMENT_DN, ...,
+>> ST_PHOSPHOINOSITIDE_3_KINASE_PATHWAY (3272 total)
+>>   unique identifiers: 5167, 100288400, ..., 57191 (29340 total)
+>>   types in collection:
+>>     geneIdType: EntrezIdentifier (1 total)
+>>     collectionType: BroadCollection (1 total)
+>>
+>>
+>> 3. finally, i'd like to obtain a new GeneSetCollection object whose
+>> identifiers have been mapped between the two classes of identifiers in
+>> the GeneSetCollection and the ExpressionSet objects.
+>>
+>> in this case both objects actually work with the same class of
+>> identifiers (Entrez), so in fact i don't need to do that but this
+>> operation forms part of a piece of code in the package GSVA which i'd
+>> like it to work regardless of the kind of annotation package referred to
+>> in the ExpressionSet object. i had expected that the function
+>> mapIdentifiers() would have some kind of idempotent behavior, but i get
+>> the following error:
+>>
+>> gsc<- mapIdentifiers(c2BroadSets,
+>>                       AnnotationIdentifier(annotation(eset)))
+>> Error in GeneSetCollection(lapply(what, mapIdentifiers, to, ..., verbose
+>> = verbose)) :
+>>   error in evaluating the argument 'object' in selecting a method for
+>> function 'GeneSetCollection': Error in get(mapName, envir = pkgEnv,
+>> inherits = FALSE) :
+>>   object 'org.Hs.egENTREZID' not found
+>>
+>>
+>> which does not occur if the feature names and annotation of the
+>> ExpressionSet corresponds to a classical affy chip (e.g. "hgu95av2").
+
+The issue seems to be in GSEABase:::.mapIdentifiers_selectMaps where org 
+packages are handled specially, but apparently not in a general enough 
+way; I'll look in to this. Martin
+
+>>
+>> i built the object c2BroadSets in the experiment data package GSVAdata
+>> by importing the entire xml file from the Broad sets so, i guess it
+>> could be also possible that i did something wrong when i built this
+>> 'c2BroadSets' object and there's no problem, bug or lacking feature in
+>> mapIdentifiers().
+>>
+>> i look forward to your diagnostic and suggestions in any of these
+>> possible directions.
+>>
+>>
+>> thanks,
+>> robert.
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From robert.castelo at upf.edu  Mon Feb 27 18:08:05 2012
+From: robert.castelo at upf.edu (Robert Castelo)
+Date: Mon, 27 Feb 2012 18:08:05 +0100
+Subject: [Bioc-devel] idempotent identifier mapping with
+ GSEABase::mapIdentifiers()
+In-Reply-To: <CAANT7+V74gt+yPxfCLXdD0CQiZo+_bPKCrx9xeCQ8ZJ9nLXyKw@mail.gmail.com>
+References: <1330341929.23007.31.camel@llull.imim.es>
+	<CAANT7+V74gt+yPxfCLXdD0CQiZo+_bPKCrx9xeCQ8ZJ9nLXyKw@mail.gmail.com>
+Message-ID: <1330362485.23007.50.camel@llull.imim.es>
+
+thanks Vincent,
+
+what you suggest fixes the situation temporarily and hopefully, as
+Martin said in his message before, this can have a more generic
+solution.
+
+you suggestion makes me think that, in fact, it could be of general
+interest to add a *ENTREZID (identity) map for every entrez-based
+organism-level annotation package. i think this could be useful in every
+situation in which one would like to programmatically retrieve the
+entrez id of a feature using any annotation package without knowing
+whether the feature is already an entrez id.
+
+robert.
+
+
+On Mon, 2012-02-27 at 07:45 -0500, Vincent Carey wrote:
+> I have run into a very similar situation.  Ultimately a uniformization
+> of the annotation API will be called for.
+> I wonder if a global short-term fixup would get you through this
+> situation?
+> 
+> > org.Hs.egENTREZID = new.env(hash=TRUE)
+> > k = mappedkeys(org.Hs.egENSEMBL)  # or any other good source of all
+> keys
+> > for (i in 1:length(k)) assign(k[i], k[i], org.Hs.egENTREZID)
+> > get("1000", org.Hs.egENTREZID)
+> [1] "1000"
+> 
+> 
+> On Mon, Feb 27, 2012 at 6:25 AM, Robert Castelo
+> <robert.castelo at upf.edu> wrote:
+>         hi,
+>         
+>         i collaborate mantaining the packages GSVA and GSVAdata and i
+>         have a
+>         question about the function mapIdentifiers() from the GSEABase
+>         package
+>         which i'm going to illustrate through an example.
+>         
+>         
+>         1. let's build first an ExpressionSet object whose annotation
+>         slot is
+>         going to point to the human organism-level annotation pacakge
+>         org.Hs.eg.db:
+>         
+>         library(Biobase)
+>         library(org.Hs.eg.db)
+>         
+>         mapped_genes <- mappedkeys(org.Hs.egSYMBOL)
+>         
+>         exp <- matrix(rnorm(1000), nrow=100,
+>                      dimnames=list(mapped_genes[1:100],
+>                                    paste("sample", 1:10, sep="")))
+>         eset <- new("ExpressionSet", exprs=exp,
+>         annotation="org.Hs.eg.db")
+>         ExpressionSet (storageMode: lockedEnvironment)
+>         assayData: 100 features, 10 samples
+>          element names: exprs
+>         protocolData: none
+>         phenoData: none
+>         featureData: none
+>         experimentData: use 'experimentData(object)'
+>         Annotation: org.Hs.eg.db
+>         
+>         2. now i'm going to load the Broad gene sets stored as a
+>         GeneSetCollection object in the experimental data package
+>         GSVAdata:
+>         
+>         library(GSVAdata)
+>         data(c2BroadSets)
+>         c2BroadSets
+>         GeneSetCollection
+>          names: NAKAMURA_CANCER_MICROENVIRONMENT_UP,
+>         NAKAMURA_CANCER_MICROENVIRONMENT_DN, ...,
+>         ST_PHOSPHOINOSITIDE_3_KINASE_PATHWAY (3272 total)
+>          unique identifiers: 5167, 100288400, ..., 57191 (29340 total)
+>          types in collection:
+>            geneIdType: EntrezIdentifier (1 total)
+>            collectionType: BroadCollection (1 total)
+>         
+>         
+>         3. finally, i'd like to obtain a new GeneSetCollection object
+>         whose
+>         identifiers have been mapped between the two classes of
+>         identifiers in
+>         the GeneSetCollection and the ExpressionSet objects.
+>         
+>         in this case both objects actually work with the same class of
+>         identifiers (Entrez), so in fact i don't need to do that but
+>         this
+>         operation forms part of a piece of code in the package GSVA
+>         which i'd
+>         like it to work regardless of the kind of annotation package
+>         referred to
+>         in the ExpressionSet object. i had expected that the function
+>         mapIdentifiers() would have some kind of idempotent behavior,
+>         but i get
+>         the following error:
+>         
+>         gsc <- mapIdentifiers(c2BroadSets,
+>                              AnnotationIdentifier(annotation(eset)))
+>         Error in GeneSetCollection(lapply(what, mapIdentifiers,
+>         to, ..., verbose
+>         = verbose)) :
+>          error in evaluating the argument 'object' in selecting a
+>         method for
+>         function 'GeneSetCollection': Error in get(mapName, envir =
+>         pkgEnv,
+>         inherits = FALSE) :
+>          object 'org.Hs.egENTREZID' not found
+>         
+>         
+>         which does not occur if the feature names and annotation of
+>         the
+>         ExpressionSet corresponds to a classical affy chip (e.g.
+>         "hgu95av2").
+>         
+>         i built the object c2BroadSets in the experiment data package
+>         GSVAdata
+>         by importing the entire xml file from the Broad sets so, i
+>         guess it
+>         could be also possible that i did something wrong when i built
+>         this
+>         'c2BroadSets' object and there's no problem, bug or lacking
+>         feature in
+>         mapIdentifiers().
+>         
+>         i look forward to your diagnostic and suggestions in any of
+>         these
+>         possible directions.
+>         
+>         
+>         thanks,
+>         robert.
+>         
+>         _______________________________________________
+>         Bioc-devel at r-project.org mailing list
+>         https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From lawrence.michael at gene.com  Tue Feb 28 03:27:43 2012
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Mon, 27 Feb 2012 18:27:43 -0800
+Subject: [Bioc-devel] Subject: GRanges performance issue,
+	how to avoid looping?
+In-Reply-To: <CAPmAPXPN1OYby-P1onMH97F3TbQo2syfQHoF=Z-ABvVSaw0DbA@mail.gmail.com>
+References: <CAPmAPXPHv7bOrgwETmppAQQgDTscqtjUqqYgjgZYOw_g62c+QA@mail.gmail.com>
+	<CAOQ5NycHUoSGSkXXfFn_zXeySVCTzPDrUp7B4TyEE5dfBgf-RA@mail.gmail.com>
+	<CAPmAPXPN1OYby-P1onMH97F3TbQo2syfQHoF=Z-ABvVSaw0DbA@mail.gmail.com>
+Message-ID: <CAOQ5NycfeUP6aRriKGfSdmZVQ4ysqcMec9ShA0nj4XxV7jn=aw@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120227/597675aa/attachment.pl>
+
+From arne.mueller at novartis.com  Tue Feb 28 12:15:57 2012
+From: arne.mueller at novartis.com (Mueller, Arne)
+Date: Tue, 28 Feb 2012 11:15:57 +0000
+Subject: [Bioc-devel] package cannot be loaded
+In-Reply-To: <4F47BE92.9090402@fhcrc.org>
+Message-ID: <CB7275D1.DB60%arne.mueller@novartis.com>
+
+Hello - thanks for the hint, it did source the .Rprofile!
+
+  Arne
+
+
+On 2/24/12 5:45 PM, "Martin Morgan" <mtmorgan at fhcrc.org> wrote:
+
+>On 02/24/2012 07:14 AM, Mueller, Arne wrote:
+>> Hello,
+>>
+>> I'm relatively new to bioconductor development, and I've a problem with
+>>an error R CMD check spits out:
+>>
+>> R CMD check Gviz
+>>
+>> BiocInstaller version 1.3.7, ?biocLite for help
+>> * using log directory ?/Users/muellar2/workspace-indigo/Gviz.Rcheck?
+>> * using R Under development (unstable) (2012-02-22 r58461)
+>> * using platform: x86_64-apple-darwin10.8.0 (64-bit)
+>> * using session charset: UTF-8
+>> * checking for file ?Gviz/DESCRIPTION? ... OK
+>> * this is package ?Gviz? version ?0.99.0?
+>> * checking package namespace information ... OK
+>> * checking package dependencies ... OK
+>> * checking if this is a source package ... OK
+>> * checking if there is a namespace ... OK
+>> * checking for executable files ... OK
+>> * checking whether package ?Gviz? can be installed ... OK
+>> * checking installed package size ... OK
+>> * checking package directory ... OK
+>> * checking for portable file names ... OK
+>> * checking for sufficient/correct file permissions ... OK
+>> * checking DESCRIPTION meta-information ... OK
+>> * checking top-level files ... OK
+>> * checking index information ... OK
+>> * checking package subdirectories ... OK
+>> * checking R files for non-ASCII characters ... OK
+>> * checking R files for syntax errors ... OK
+>> * checking whether the package can be loaded ... ERROR
+>> Loading this package had a fatal error status code 1
+>> Loading log:
+>> Loading required package: grid
+>> Error in loadNamespace(i[[1L]], c(lib.loc, .libPaths())) :
+>>    there is no package called ?Biobase?
+>> Error: package/namespace load failed for ?Gviz?
+>> Execution halted
+>>
+>> I can build and install the Gviz package as well as loading it in an
+>interactive R-session (and grid and Biobase, too). Any idea how to
+>figure out where the problem is?
+>
+>My guess is either that you are using a different R, or that in your
+>interactive session you have (implicitly?) source'd a startup file
+>(.Rprofile, .RData, ..., see ?Startup) that is not source'd at the
+>command line. If you are using the same R, then starting with R
+>--vanilla would be more like installation at the command line; I'd look
+>to the definition of .libPaths().
+>
+>Martin
+>
+>>
+>>   Thanks a lot for your help,
+>>
+>>   Arne
+>>
+>>
+>> 	[[alternative HTML version deleted]]
+>>
+>>
+>>
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+>-- 
+>Computational Biology
+>Fred Hutchinson Cancer Research Center
+>1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+>
+>Location: M1-B861
+>Telephone: 206 667-2793
+
+
+From jesper.gadin at gmail.com  Wed Feb 29 00:00:27 2012
+From: jesper.gadin at gmail.com (=?ISO-8859-1?Q?Jesper_G=E5din?=)
+Date: Wed, 29 Feb 2012 00:00:27 +0100
+Subject: [Bioc-devel] Subject: GRanges performance issue,
+	how to avoid looping?
+In-Reply-To: <CAOQ5NycfeUP6aRriKGfSdmZVQ4ysqcMec9ShA0nj4XxV7jn=aw@mail.gmail.com>
+References: <CAPmAPXPHv7bOrgwETmppAQQgDTscqtjUqqYgjgZYOw_g62c+QA@mail.gmail.com>
+	<CAOQ5NycHUoSGSkXXfFn_zXeySVCTzPDrUp7B4TyEE5dfBgf-RA@mail.gmail.com>
+	<CAPmAPXPN1OYby-P1onMH97F3TbQo2syfQHoF=Z-ABvVSaw0DbA@mail.gmail.com>
+	<CAOQ5NycfeUP6aRriKGfSdmZVQ4ysqcMec9ShA0nj4XxV7jn=aw@mail.gmail.com>
+Message-ID: <CAPmAPXPTYJAzg4ovshkLoZVDS418au0Dvz61CwX0=CKfWpYsoQ@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120229/71d29c7b/attachment.pl>
+

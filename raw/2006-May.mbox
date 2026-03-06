@@ -1,0 +1,2866 @@
+From hpages at fhcrc.org  Mon May  1 21:45:51 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Mon, 01 May 2006 12:45:51 -0700
+Subject: [Bioc-devel] Build/check report news
+In-Reply-To: <B0BFF92F-FCE5-4060-8A16-38EEC5B8E33C@stat.berkeley.edu>
+References: <1145836670.444c147e8d3cc@webmail.fhcrc.org>	<55148C20-84EF-4CCA-8740-574E31F969EE@stat.berkeley.edu>	<m2aca9vse7.fsf@ziti.local>
+	<B0BFF92F-FCE5-4060-8A16-38EEC5B8E33C@stat.berkeley.edu>
+Message-ID: <4456656F.9030601@fhcrc.org>
+
+Thanks Kasper for your feedback!
+
+Some of your requests/suggestions are already here:
+
+  http://bioconductor.org/checkResults/1.9/
+
+  o A build timestamp:
+    There are now 2 more timestamps on the report:
+    1) The time the report itself was generated (t1).
+    2) The Snapshot Date (t2) i.e. the time the Build System performed 
+the 'svn up'
+       on the Bioconductor working copy that it uses to build/check the 
+packages.
+    t1 - t2 is more or less 9h30 wich is the time required by the Build 
+System to build
+    and check all the packages on all the platforms.
+    The timestamp we always had (t3) and still have is the 'SVN Last 
+Changed Date' i.e.
+    the time of the last change in the Bioconductor tree at the time of 
+the snapshot.
+    We should always see t3 < t2 < t1 or something is broken in the 
+Build System :-/
+    With these new timestamps you still don't know when your package was 
+build or
+    tested ;-), all you know is that this happened between t2 and t1...
+
+  o Other automatic build platforms:
+    Solaris, Windows and 32-bit Linux builds are back.
+
+  o The -Wall flag is back. We've been using it for the 1.8 builds since 
+February.
+    It's back in the 1.9 builds too. I will also try to add the 
+-pedantic flag if this
+    can lead to even more usefull compiler messages.
+
+Other will come soon:
+
+  o More details on the build platform especially compiler versions:
+    I'm currently working on this. Expect to see some changes before the 
+end of this week.
+
+  o The ability to see the contents of the 00INSTALL: OK, as Seth 
+suggested, you can force
+    the installation of your package during the 'R CMD build' step by 
+having a vignette in it.
+    Then you can see the output produced by this installation by 
+following the link in the
+    BUILD column. Anyway, I'm going to provide the output of the package 
+installation.
+    This can be done in at least 3 different ways:
+    1) By providing access to the content of the 00install.out file 
+(generated
+       during 'R CMD check <pkg>')
+    2) By providing the output of 'R CMD INSTALL <pkg>'
+    3) By providing the output of 'install.packages("pkg")' (this could 
+be followed by
+       a 'library(pkg)' just to make sure that pkg can be loaded).
+    I still have to make my mind... May be some of you see some 
+advantages to one method
+    over the other. Please let me know.
+
+  o I'm also going to start working on the MacOS X builds.
+
+Best, and thanks again for your feedback,
+
+H.
+
+Kasper Daniel Hansen wrote:
+
+> On Apr 25, 2006, at 10:05 PM, Seth Falcon wrote:
+>
+>> Hi Kasper,
+>>
+>> Kasper Daniel Hansen <khansen at stat.berkeley.edu> writes:
+>>
+>>> In my opinion one of the greatest assets of the BioC build/check
+>>> routine is the ability to get your code tested on various platforms,
+>>> and that is most important for non-R code (typically C but it may
+>>> include other languages).
+>>>
+>>> I would like to see
+>>> * Other automatic build platforms like Solaris, Windows and MacOS
+>>> X. Perhaps a 32bit Linux as well? (I am sure that this will be the
+>>> case in due time, just wanted to mention it :)
+>>
+>> I'm glad to hear you find the automated builds useful. Note that
+>> Herve's announcement for the 1.9 build page is just what we have
+>> available _today_. As we did for 1.8, we will have:
+>>
+>> - Windows
+>> - 32 and 64 bit Linux
+>> - Solaris
+>>
+>> And we hope to add at least one OS X build as well. :-)
+>>
+>>> * More details on the build platform especially compiler versions.
+>>> Eg. I have no idea about the difference between SuSE 9.2 and 10.0
+>>
+>> That's a nice suggestion. I think we will be able to add that easily.
+>>
+>>> * A build timestamp.
+>>
+>> I'm not really sure what you want when you say timestamp (I know it
+>> sounds obvious, but humor me). The build report says at the top of
+>> the page:
+>>
+>> This is the Multiple platform build/check report for BioC 1.8:
+>> - SVN URL: https://hedgehog.fhcrc.org/bioconductor/branches/
+>> RELEASE_1_8/madman
+>> - SVN Revision: 17679
+>> - SVN Last Changed Date: 2006-04-24 22:18:08 -0700 (Mon, 24 Apr
+>> 2006)
+>>
+>> This tells you that the report is for a build based on rev 17679 which
+>> last changed on 24 April at 22:18. What else can we tell you?
+>
+>
+> I have cleaned my glasses and found the above mentioned information.
+> That was indeed was I was looking for :)
+>
+>>> * The ability to see the contents of the 00INSTALL file which
+>>> contains compiler warnings/errors. I would like to see this _even if
+>>> the package build successfully_ as there can be some differences in
+>>> the warnings the different compilers/platforms yields. This is
+>>> something that the old pages lacked as well. At first I looked at the
+>>> aCGH package and did indeed see appropriate g++ output, but then I
+>>> check the affxparser package and saw none. A bit strange... - indeed
+>>> I do not even see the building of help pages? (hmm this difference
+>>> also exists on the BioC 1.8 page - why?)
+>>
+>> We had this same conversation 6 months ago. We'll see what we can do
+>> about making the install log available.
+>>
+>> But all you have to do is add a vignette to your package; it is
+>> supposed to have one anyway. Any vignette will do. Then your package
+>> will be compiled during R CMD build and you will be able to view the
+>> output. :-P
+>
+>
+> Ah.
+>
+>>> * perhaps it should be considered to use the -Wall flag for gcc
+>>> and/or -pendantic?
+>>
+>> I believe -Wall is already being set for the build, don't know about
+>> -pedantic.
+>
+>
+> If I look at the build output for aCGH (using g++) and affy (using
+> gcc) I do not see the -Wall flag. Also -std=g99 is only set for gcc,
+> not g++. I have no idea if that matters.
+>
+>>> * If the building process takes too much time, perhaps one only
+>>> needs to check code in /src on the various platforms - eg. skip the
+>>> generation of help pages?
+>>
+>> Hmm, that's another interesting idea.
+>>
+>> Thanks for the comments, hope we can get around to some of the
+>> improvements over the next few weeks.
+>>
+>
+> Thanks, Kasper
+>
+>> Best,
+>>
+>> + seth
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+Phone: (206) 667-5791
+Fax: (206) 667-1319
+
+
+From hpages at fhcrc.org  Mon May  1 22:03:11 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Mon, 01 May 2006 13:03:11 -0700
+Subject: [Bioc-devel] Build/check report news
+In-Reply-To: <B0BFF92F-FCE5-4060-8A16-38EEC5B8E33C@stat.berkeley.edu>
+References: <1145836670.444c147e8d3cc@webmail.fhcrc.org>	<55148C20-84EF-4CCA-8740-574E31F969EE@stat.berkeley.edu>	<m2aca9vse7.fsf@ziti.local>
+	<B0BFF92F-FCE5-4060-8A16-38EEC5B8E33C@stat.berkeley.edu>
+Message-ID: <4456697F.5060002@fhcrc.org>
+
+Sorry for the poor formatting of my previous post!
+Here it goes again...
+--------------------------------------------------------------------
+
+Thanks Kasper for your feedback!
+
+Some of your requests/suggestions are already here:
+
+  http://bioconductor.org/checkResults/1.9/
+
+  o A build timestamp:
+    There are now 2 more timestamps on the report:
+    1) The time the report itself was generated (t1).
+    2) The Snapshot Date (t2) i.e. the time the Build System performed
+       the 'svn up' on the Bioconductor working copy that it uses to
+       build/check the packages.
+    t1 - t2 is more or less 9h30 wich is the time required by the
+    Build System to build and check all the packages on all the
+    platforms.
+    The timestamp we always had (t3) and still have is the
+    'SVN Last Changed Date' i.e. the time of the last change in the
+    Bioconductor tree at the time of the snapshot.
+    We should always see t3 < t2 < t1 or something is broken in the
+    Build System :-/
+    With these new timestamps you still don't know when your package
+    was build or tested ;-), all you know is that this happened
+    between t2 and t1...
+
+  o Other automatic build platforms:
+    Solaris, Windows and 32-bit Linux builds are back.
+
+  o The -Wall flag is back. We've been using it for the 1.8 builds
+    since February.
+    It's back in the 1.9 builds too. I will also try to add the
+    -pedantic flag if this can lead to even more usefull compiler
+    messages.
+
+Other will come soon:
+
+  o More details on the build platform especially compiler versions:
+    I'm currently working on this. Expect to see some changes before
+    the end of this week.
+
+  o The ability to see the contents of the 00INSTALL: OK, as Seth
+    suggested, you can force the installation of your package during
+    the 'R CMD build' step by having a vignette in it.
+    Then you can see the output produced by this installation by
+    following the link in the BUILD column. Anyway, I'm going to
+    provide the output of the package installation.
+    This can be done in at least 3 different ways:
+    1) By providing access to the content of the 00install.out
+       file (generated during 'R CMD check <pkg>')
+    2) By providing the output of 'R CMD INSTALL <pkg>'
+    3) By providing the output of 'install.packages("pkg")' (this
+       could be followed by a 'library(pkg)' just to make sure that
+       pkg can be loaded).
+    I still have to make my mind... May be some of you see some
+    advantages to one method over the other. Please let me know.
+
+  o I'm also going to start working on the MacOS X builds.
+
+Best, and thanks again for your feedback,
+
+H.
+
+Kasper Daniel Hansen wrote:
+
+> On Apr 25, 2006, at 10:05 PM, Seth Falcon wrote:
+>
+>> Hi Kasper,
+>>
+>> Kasper Daniel Hansen <khansen at stat.berkeley.edu> writes:
+>>
+>>> In my opinion one of the greatest assets of the BioC build/check
+>>> routine is the ability to get your code tested on various platforms,
+>>> and that is most important for non-R code (typically C but it may
+>>> include other languages).
+>>>
+>>> I would like to see
+>>> * Other automatic build platforms like Solaris, Windows and MacOS
+>>> X. Perhaps a 32bit Linux as well? (I am sure that this will be the
+>>> case in due time, just wanted to mention it :)
+>>
+>> I'm glad to hear you find the automated builds useful. Note that
+>> Herve's announcement for the 1.9 build page is just what we have
+>> available _today_. As we did for 1.8, we will have:
+>>
+>> - Windows
+>> - 32 and 64 bit Linux
+>> - Solaris
+>>
+>> And we hope to add at least one OS X build as well. :-)
+>>
+>>> * More details on the build platform especially compiler versions.
+>>> Eg. I have no idea about the difference between SuSE 9.2 and 10.0
+>>
+>> That's a nice suggestion. I think we will be able to add that easily.
+>>
+>>> * A build timestamp.
+>>
+>> I'm not really sure what you want when you say timestamp (I know it
+>> sounds obvious, but humor me). The build report says at the top of
+>> the page:
+>>
+>> This is the Multiple platform build/check report for BioC 1.8:
+>> - SVN URL: https://hedgehog.fhcrc.org/bioconductor/branches/
+>> RELEASE_1_8/madman
+>> - SVN Revision: 17679
+>> - SVN Last Changed Date: 2006-04-24 22:18:08 -0700 (Mon, 24 Apr
+>> 2006)
+>>
+>> This tells you that the report is for a build based on rev 17679 which
+>> last changed on 24 April at 22:18. What else can we tell you?
+>
+>
+> I have cleaned my glasses and found the above mentioned information.
+> That was indeed was I was looking for :)
+>
+>>> * The ability to see the contents of the 00INSTALL file which
+>>> contains compiler warnings/errors. I would like to see this _even if
+>>> the package build successfully_ as there can be some differences in
+>>> the warnings the different compilers/platforms yields. This is
+>>> something that the old pages lacked as well. At first I looked at the
+>>> aCGH package and did indeed see appropriate g++ output, but then I
+>>> check the affxparser package and saw none. A bit strange... - indeed
+>>> I do not even see the building of help pages? (hmm this difference
+>>> also exists on the BioC 1.8 page - why?)
+>>
+>> We had this same conversation 6 months ago. We'll see what we can do
+>> about making the install log available.
+>>
+>> But all you have to do is add a vignette to your package; it is
+>> supposed to have one anyway. Any vignette will do. Then your package
+>> will be compiled during R CMD build and you will be able to view the
+>> output. :-P
+>
+>
+> Ah.
+>
+>>> * perhaps it should be considered to use the -Wall flag for gcc
+>>> and/or -pendantic?
+>>
+>> I believe -Wall is already being set for the build, don't know about
+>> -pedantic.
+>
+>
+> If I look at the build output for aCGH (using g++) and affy (using
+> gcc) I do not see the -Wall flag. Also -std=g99 is only set for gcc,
+> not g++. I have no idea if that matters.
+>
+>>> * If the building process takes too much time, perhaps one only
+>>> needs to check code in /src on the various platforms - eg. skip the
+>>> generation of help pages?
+>>
+>> Hmm, that's another interesting idea.
+>>
+>> Thanks for the comments, hope we can get around to some of the
+>> improvements over the next few weeks.
+>>
+>
+> Thanks, Kasper
+>
+>> Best,
+>>
+>> + seth
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+Phone: (206) 667-5791
+Fax: (206) 667-1319
+
+
+From sfalcon at fhcrc.org  Tue May  2 00:01:47 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 01 May 2006 15:01:47 -0700
+Subject: [Bioc-devel] [BioC] NAMESPACES, export, and unit tests
+In-Reply-To: <44567F9C.9050702@fhcrc.org> (Herve Pages's message of "Mon,
+	01 May 2006 14:37:32 -0700")
+References: <51047947-5143-4FD6-8B6F-17DC2F9C3C45@systemsbiology.net>
+	<m2r73dtry8.fsf@ziti.local> <44567F9C.9050702@fhcrc.org>
+Message-ID: <m2ejzdtnec.fsf@ziti.local>
+
+Herve Pages <hpages at fhcrc.org> writes:
+
+> But the question is: do we consider it a feature for the unit tests
+> not being able to access the non-exported objects in the normal
+> way... or is it a bug?
+
+I would say that the "normal" way to access non-exported objects is to
+not access them :-)
+
+IMHO, unit tests should focus on the exported API.  Part of the value
+that unit tests give you is that when you change implementation, they
+tell you whether or not you broke anything.  If you instrument your
+code with unit tests at too fine grain a level, every code change will
+require a test change.  That gets boring quickly.
+
+So I guess I would argue that it's a feature :-)
+
+> I'm asking because there seems to be other things that you can't do
+> in the unit tests (like defining S4 classes or dispatching on an S4
+> class defined somewhere in the package, I don't remember exactly).
+> I'm wondering what's the motivation behind these restrictions...
+
+If you are interested, how about some specifics on what doesn't work.
+
+I don't think there is any "motivation" behind the observed
+restrictions.  Certainly there are limitations of the current S4
+implementation, but I do not believe anyone has sat down and said,
+"let's make this particular thing not work for people wanting to do
+unit testing".
+
+
++ seth
+
+
+From hpages at fhcrc.org  Tue May  2 05:28:41 2006
+From: hpages at fhcrc.org (hpages at fhcrc.org)
+Date: Mon,  1 May 2006 20:28:41 -0700
+Subject: [Bioc-devel] [BioC] NAMESPACES, export, and unit tests
+In-Reply-To: <m2ejzdtnec.fsf@ziti.local>
+References: <51047947-5143-4FD6-8B6F-17DC2F9C3C45@systemsbiology.net>
+	<m2r73dtry8.fsf@ziti.local> <44567F9C.9050702@fhcrc.org>
+	<m2ejzdtnec.fsf@ziti.local>
+Message-ID: <1146540521.4456d1e9514ab@webmail.fhcrc.org>
+
+Hi Seth,
+
+Quoting Seth Falcon <sfalcon at fhcrc.org>:
+
+> Herve Pages <hpages at fhcrc.org> writes:
+> > I'm asking because there seems to be other things that you can't do
+> > in the unit tests (like defining S4 classes or dispatching on an S4
+> > class defined somewhere in the package, I don't remember exactly).
+> > I'm wondering what's the motivation behind these restrictions...
+> 
+> If you are interested, how about some specifics on what doesn't work.
+
+Yes sorry, I could not remember exactly what I've tried once and that
+didn't work for me. Now I found it: you can't use setGeneric() or
+setMethod() in a test unit. For example, you can't have this in your
+runit-toto.R file:
+
+  setMethod("==", signature(e1="BString", e2="DNAString"),
+    function(e1, e2) { ... }
+  )
+
+at the top level or nested in one of your test_totoN() functions.
+Even if you don't have a NAMESPACE.
+Or you'll get something like:
+
+  Executing test function test_totoN  ...
+  Error in setMethod("==", signature(e1 = "BString", e2 = "DNAString"),  :
+  the environment 'RUnit' is locked; cannot assign methods for function '=='
+
+> I don't think there is any "motivation" behind the observed
+> restrictions.  Certainly there are limitations of the current S4
+> implementation, but I do not believe anyone has sat down and said,
+> "let's make this particular thing not work for people wanting to do
+> unit testing".
+
+My comment was more about the motivations on the RUnit side than
+on the S4 implementation side. Lets's keep the S4 implementation
+discussion for another day ;-)
+
+H.
+
+
+From sfalcon at fhcrc.org  Tue May  2 16:12:22 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 02 May 2006 07:12:22 -0700
+Subject: [Bioc-devel] [BioC] NAMESPACES, export, and unit tests
+In-Reply-To: <1146540521.4456d1e9514ab@webmail.fhcrc.org> (hpages@fhcrc.org's
+	message of "Mon, 1 May 2006 20:28:41 -0700")
+References: <51047947-5143-4FD6-8B6F-17DC2F9C3C45@systemsbiology.net>
+	<m2r73dtry8.fsf@ziti.local> <44567F9C.9050702@fhcrc.org>
+	<m2ejzdtnec.fsf@ziti.local>
+	<1146540521.4456d1e9514ab@webmail.fhcrc.org>
+Message-ID: <m2r73cqzw9.fsf@ziti.local>
+
+hpages at fhcrc.org writes:
+> Yes sorry, I could not remember exactly what I've tried once and that
+> didn't work for me. Now I found it: you can't use setGeneric() or
+> setMethod() in a test unit. For example, you can't have this in your
+> runit-toto.R file:
+>
+>   setMethod("==", signature(e1="BString", e2="DNAString"),
+>     function(e1, e2) { ... }
+>   )
+>
+> at the top level or nested in one of your test_totoN() functions.
+> Even if you don't have a NAMESPACE.
+> Or you'll get something like:
+>
+>   Executing test function test_totoN  ...
+>   Error in setMethod("==", signature(e1 = "BString", e2 = "DNAString"),  :
+>   the environment 'RUnit' is locked; cannot assign methods for
+>   function '=='
+
+I see.  Usually one has a test runner file that sets up the RUnit test
+suite.  Have you tried putting these helpers there?  That is, defined
+before you actually start running the tests?
+
+> My comment was more about the motivations on the RUnit side than
+> on the S4 implementation side. Lets's keep the S4 implementation
+> discussion for another day ;-)
+
+Well, the namespace on RUnit is quite useful.  If you have ever had a
+name collision with your testing framework, then you have probably
+spent hours trying to sort out a really strange bug (yes, it has
+happened to me).
+
+One point of view is that if you need to define new methods to test
+your code then there is likely a design improvement to be had.  A nice
+way to use unit testing is to help it drive your design.
+
+I think there is a difference between helper functions in tests that
+reduce duplication across tests and adding new behaviors to the
+objects you are testing (that is your case with "==").  In Python, for
+example, that would be like defining a subclass within your test
+method and testing that.  In most cases, that just seems like a weird
+thing to do in test code.
+
+An additional consideration is that unit tests can be a valuable API
+reference for other developers.  That value is diminished if many of
+the method calls are test-only code.
+
++ seth
+
+
+From pshannon at systemsbiology.org  Wed May  3 15:24:27 2006
+From: pshannon at systemsbiology.org (Paul Shannon)
+Date: Wed, 3 May 2006 06:24:27 -0700
+Subject: [Bioc-devel] adapting 'biocinstall' to my  institute's needs
+Message-ID: <767E1B76-28F8-41D7-948B-25115440F63E@systemsbiology.org>
+
+I hope this email is not misplaced.  I searched the archives and did not
+find the information I am looking for.
+
+I have a number of R-shy users.  One big hurdle they face is installing
+packages.  'getBioC' and 'biocLite'  seem like just the right approach.
+
+I want to emulate this approach by creating a local version of that  
+function which
+my users can easily source and execute.  They will then be able to  
+load (or update)
+all the R and bioc packages they need, along with local packages and  
+code we write.
+
+Examining the source for getBioC leads me to 'biocinstall' but -- sorry
+if this is obvious, and I just missed it -- I can't find the source
+of that function, to study, learn from, and adapt.
+
+Could someone clue me in?  I welcome any comments on the overall plan
+as well.
+
+Thanks!
+
+  - Paul
+
+
+From fhahne at gmx.de  Wed May  3 15:54:45 2006
+From: fhahne at gmx.de (Florian Hahne)
+Date: Wed, 03 May 2006 15:54:45 +0200
+Subject: [Bioc-devel] adapting 'biocinstall' to my  institute's needs
+In-Reply-To: <767E1B76-28F8-41D7-948B-25115440F63E@systemsbiology.org>
+References: <767E1B76-28F8-41D7-948B-25115440F63E@systemsbiology.org>
+Message-ID: <4458B625.5060102@gmx.de>
+
+Hi Paul,
+biocinstall is sourced from the Bioconductor Webpage by these lines of
+code in biocLite:
+
+  choppedRVer <- gsub("(\\w+).(\\w+).(\\w+)", "\\1.\\2", thisRVer)
+  scriptUrl <- paste("http://www.bioconductor.org/", "scripts/",
+choppedRVer, "/biocinstall.R", sep="")
+  source(scriptUrl)
+
+choppedRVer eveluates to something like 2.3 (depending on your R
+version) so the comple URL could for example be:
+http://www.bioconductor.org/scripts/2.3/biocinstall.R
+
+Hope this helps,
+
+Florian
+
+
+
+Paul Shannon schrieb:
+> I hope this email is not misplaced.  I searched the archives and did not
+> find the information I am looking for.
+>
+> I have a number of R-shy users.  One big hurdle they face is installing
+> packages.  'getBioC' and 'biocLite'  seem like just the right approach.
+>
+> I want to emulate this approach by creating a local version of that  
+> function which
+> my users can easily source and execute.  They will then be able to  
+> load (or update)
+> all the R and bioc packages they need, along with local packages and  
+> code we write.
+>
+> Examining the source for getBioC leads me to 'biocinstall' but -- sorry
+> if this is obvious, and I just missed it -- I can't find the source
+> of that function, to study, learn from, and adapt.
+>
+> Could someone clue me in?  I welcome any comments on the overall plan
+> as well.
+>
+> Thanks!
+>
+>   - Paul
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>   
+
+
+-- 
+Florian Hahne
+Abt. Molekulare Genomanalyse (B050)
+Deutsches Krebsforschungszentrum (DKFZ)
+Im Neuenheimer Feld 580
+D-69120 Heidelberg
+phone: 0049 6221 424764
+fax: 0049 6221 422399
+web: www.dkfz.de/mga
+
+
+From sfalcon at fhcrc.org  Wed May  3 18:11:42 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 03 May 2006 09:11:42 -0700
+Subject: [Bioc-devel] adapting 'biocinstall' to my  institute's needs
+In-Reply-To: <767E1B76-28F8-41D7-948B-25115440F63E@systemsbiology.org> (Paul
+	Shannon's message of "Wed, 3 May 2006 06:24:27 -0700")
+References: <767E1B76-28F8-41D7-948B-25115440F63E@systemsbiology.org>
+Message-ID: <m2k693ks01.fsf@ziti.local>
+
+Paul Shannon <pshannon at systemsbiology.org> writes:
+> I have a number of R-shy users.  One big hurdle they face is installing
+> packages.  'getBioC' and 'biocLite'  seem like just the right
+> approach.
+
+biocLite is trying to solve two problems:
+
+1. Make it easy to install Bioc and/or CRAN packages and their
+   dependencies.  To this end, it is really just a wrapper around
+   install.packages that sets the repos option to a vector of Bioc
+   package repositories (software, annotation, experiment, etc).
+
+2. Choose the right collection of Bioc package repositories based on
+   the version of R being used.
+
+Florian pointed you towards the source.  If you plan to locally
+support multiple R/Bioc versions then modifying these scripts seem
+like a good way to go.  OTOH, if you can live with support for single
+version, then you could simplify quite a bit --- that is, you just
+need a wrapper on install.packages that lists all of your repositories
+(and possibly points to internet repositories as well).
+
++ seth
+
+
+From hpages at fhcrc.org  Thu May  4 00:22:31 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Wed, 03 May 2006 15:22:31 -0700
+Subject: [Bioc-devel] gfortran instead of g77 ?
+In-Reply-To: <4458B447.70705@lmu.de>
+References: <1145836670.444c147e8d3cc@webmail.fhcrc.org>	<55148C20-84EF-4CCA-8740-574E31F969EE@stat.berkeley.edu>	<m2aca9vse7.fsf@ziti.local>	<B0BFF92F-FCE5-4060-8A16-38EEC5B8E33C@stat.berkeley.edu>
+	<4456697F.5060002@fhcrc.org> <4458B447.70705@lmu.de>
+Message-ID: <44592D27.5060404@fhcrc.org>
+
+Hi Korbinian,
+
+(I've cc'ed to bioc-devel where, I think, we can benefit from more 
+feedback.)
+
+Korbinian Strimmer wrote:
+
+>Dear Herve,
+>
+>  
+>
+>>  o The -Wall flag is back. We've been using it for the 1.8 builds
+>>    since February.
+>>    It's back in the 1.9 builds too. I will also try to add the
+>>    -pedantic flag if this can lead to even more usefull compiler
+>>    messages.
+>>    
+>>
+>
+>I have another suggestion for BioC 1.9 and 1.10:  would it be possible
+>that in the Linux tool chain instead of the (obsolete) "g77" you
+>now use the "gfortran" compiler?
+>
+>"gfortran" is the official Fortran 95 compiler and is part of
+>gcc 4 (http://gcc.gnu.org/wiki/GFortran).
+>
+>R itself compiles perfectly with "gfortran", but unfortunately not all
+>BioC packages (e.g. impute). So having "gfortran" as default this would
+>probably lead to more compatible Fortran code...
+>  
+>
+
+When we build R on our Build System machines, we let the 'configure' script
+pick up the right compilers for us.
+The default search for the Fortran compiler is described here
+  http://cran.r-project.org/doc/manuals/R-admin.html#Using-FORTRAN)
+
+So, g77 will be picked up on a Linux systems with gcc 3 (e.g. SUSE 9.2) and
+it will be gfortran on a Linux system with gcc 4 (e.g. SUSE 10.0).
+
+Compare the BUILD output for the DNAcopy package on gopher5 (SUSE 9.2)
+vs gladstone (SUSE 10.0):
+  http://bioconductor.org/checkResults/1.9/gopher5/DNAcopy.buildsrc.html
+  http://bioconductor.org/checkResults/1.9/gladstone/DNAcopy.buildsrc.html
+
+To make this more clear, more details about the platforms used on our
+Build System machines will be available on the build/check report soon...
+Thanks for your feedback.
+Best,
+
+H.
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+ Phone: (206) 667-5791
+   Fax: (206) 667-1319
+
+
+From venkatre at mskcc.org  Thu May  4 00:57:59 2006
+From: venkatre at mskcc.org (E. S. Venkatraman)
+Date: Wed, 03 May 2006 18:57:59 -0400
+Subject: [Bioc-devel] gfortran instead of g77 ?
+In-Reply-To: <44592D27.5060404@fhcrc.org>
+References: <1145836670.444c147e8d3cc@webmail.fhcrc.org>
+	<55148C20-84EF-4CCA-8740-574E31F969EE@stat.berkeley.edu>
+	<m2aca9vse7.fsf@ziti.local>
+	<B0BFF92F-FCE5-4060-8A16-38EEC5B8E33C@stat.berkeley.edu>
+	<4456697F.5060002@fhcrc.org> <4458B447.70705@lmu.de>
+	<44592D27.5060404@fhcrc.org>
+Message-ID: <44593577.1060205@mskcc.org>
+
+Is performance still an issue with gfortran?  I remember reading a while 
+ago that code compiled with gfortran runs slower than that compiled with 
+g77.
+
+Thanks,
+Venkat
+
+Herve Pages wrote:
+
+>
+>>I have another suggestion for BioC 1.9 and 1.10:  would it be possible
+>>that in the Linux tool chain instead of the (obsolete) "g77" you
+>>now use the "gfortran" compiler?
+>>
+>>"gfortran" is the official Fortran 95 compiler and is part of
+>>gcc 4 (http://gcc.gnu.org/wiki/GFortran).
+>>
+>>R itself compiles perfectly with "gfortran", but unfortunately not all
+>>BioC packages (e.g. impute). So having "gfortran" as default this would
+>>probably lead to more compatible Fortran code...
+>>
+
+ 
+     =====================================================================
+     
+     Please note that this e-mail and any files transmitted with it may be 
+     privileged, confidential, and protected from disclosure under 
+     applicable law. If the reader of this message is not the intended 
+     recipient, or an employee or agent responsible for delivering this 
+     message to the intended recipient, you are hereby notified that any 
+     reading, dissemination, distribution, copying, or other use of this 
+     communication or any of its attachments is strictly prohibited.  If 
+     you have received this communication in error, please notify the 
+     sender immediately by replying to this message and deleting this 
+     message, any attachments, and all copies and backups from your 
+     computer.
+
+
+From hpages at fhcrc.org  Thu May  4 01:04:58 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Wed, 03 May 2006 16:04:58 -0700
+Subject: [Bioc-devel] biocLite() ready for BioC devel downloads (R 2.4
+	required)
+Message-ID: <4459371A.7010901@fhcrc.org>
+
+Hi,
+
+biocLite() can now be used to download and install Bioconductor
+developmental packages again.
+
+Reminder:
+
+  - "Bioconductor devel" is now Bioconductor 1.9.
+
+  - The build/check results for "Bioconductor devel" are here:
+      http://bioconductor.org/checkResults/1.9/
+
+  - biocLite() knows which is the "right" version of Bioconductor
+    for you. This depends on the version of R that you are using:
+      R 2.2.z -> BioC 1.7
+      R 2.3.z -> BioC 1.8
+      R 2.4.z -> BioC 1.9
+
+  - Doing this from R 2.4.0:
+      > source("http://bioconductor.org/biocLite.R")
+      > biocLite("Biobase")
+    will install last Biobase devel (1.11.3).
+
+Cheers,
+
+H.
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+Phone: (206) 667-5791
+Fax: (206) 667-1319
+
+
+From smyth at wehi.EDU.AU  Thu May  4 03:56:37 2006
+From: smyth at wehi.EDU.AU (Gordon Smyth)
+Date: Thu, 04 May 2006 11:56:37 +1000
+Subject: [Bioc-devel] limma 2.6.2
+Message-ID: <6.2.5.6.1.20060504115502.021a0da0@wehi.edu.au>
+
+I have committed to the BioC 1.8 release branch bug fixes for limma 
+functions read.imagene() and plotMA3by2(). The release version number 
+of limma is incremented to 2.6.2.
+
+Gordon
+
+
+From huber at ebi.ac.uk  Thu May  4 12:14:12 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Thu, 04 May 2006 11:14:12 +0100
+Subject: [Bioc-devel] biocLite() ready for BioC devel downloads (R 2.4
+ required)
+In-Reply-To: <4459371A.7010901@fhcrc.org>
+References: <4459371A.7010901@fhcrc.org>
+Message-ID: <4459D3F4.2030201@ebi.ac.uk>
+
+
+Hi Herve,
+
+can you please also check it in to /madman/installScripts (or to some
+other documented place). I like to have the line
+
+source("/home/huber/madman/installScripts/biocLite.R")
+
+in my .Rprofile to avoid typing the tedious URL all the time.
+
+  Cheers
+  Wolfgang
+
+Herve Pages wrote:
+> Hi,
+> 
+> biocLite() can now be used to download and install Bioconductor
+> developmental packages again.
+> 
+> Reminder:
+> 
+>   - "Bioconductor devel" is now Bioconductor 1.9.
+> 
+>   - The build/check results for "Bioconductor devel" are here:
+>       http://bioconductor.org/checkResults/1.9/
+> 
+>   - biocLite() knows which is the "right" version of Bioconductor
+>     for you. This depends on the version of R that you are using:
+>       R 2.2.z -> BioC 1.7
+>       R 2.3.z -> BioC 1.8
+>       R 2.4.z -> BioC 1.9
+> 
+>   - Doing this from R 2.4.0:
+>       > source("http://bioconductor.org/biocLite.R")
+>       > biocLite("Biobase")
+>     will install last Biobase devel (1.11.3).
+> 
+> Cheers,
+> 
+> H.
+> 
+
+
+-- 
+Best regards
+   Wolfgang
+
+-------------------------------------
+Wolfgang Huber
+European Bioinformatics Institute
+European Molecular Biology Laboratory
+Cambridge CB10 1SD
+England
+Phone: +44 1223 494642
+Fax:   +44 1223 494486
+Http:  www.ebi.ac.uk/huber
+
+
+From sfalcon at fhcrc.org  Thu May  4 16:55:28 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 04 May 2006 07:55:28 -0700
+Subject: [Bioc-devel] biocLite() ready for BioC devel downloads (R 2.4
+	required)
+In-Reply-To: <4459D3F4.2030201@ebi.ac.uk> (Wolfgang Huber's message of "Thu,
+	04 May 2006 11:14:12 +0100")
+References: <4459371A.7010901@fhcrc.org> <4459D3F4.2030201@ebi.ac.uk>
+Message-ID: <m2d5etj0v3.fsf@ziti.local>
+
+Wolfgang Huber <huber at ebi.ac.uk> writes:
+
+> Hi Herve,
+>
+> can you please also check it in to /madman/installScripts (or to some
+> other documented place). I like to have the line
+>
+> source("/home/huber/madman/installScripts/biocLite.R")
+>
+> in my .Rprofile to avoid typing the tedious URL all the time.
+
+Here is my solution: put the following in ~/.Rprofile
+
+    tryCatch({
+        source("http://bioconductor.org/biocLite.R")
+    }, error=function() NULL)
+
+This way, if I'm not connected to the net, I don't get an error.
+Since you can't use biocLite without net connectivity anyhow, I don't
+see a real advantage of sourcing from local disk instead.  And there
+is a disadvantage in going from svn: it may not correspond with what
+is currently posted on the website and therefore may not work as
+expected.
+
++ seth
+
+
+From sfalcon at fhcrc.org  Thu May  4 16:56:46 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 04 May 2006 07:56:46 -0700
+Subject: [Bioc-devel] limma 2.6.2
+In-Reply-To: <6.2.5.6.1.20060504115502.021a0da0@wehi.edu.au> (Gordon Smyth's
+	message of "Thu, 04 May 2006 11:56:37 +1000")
+References: <6.2.5.6.1.20060504115502.021a0da0@wehi.edu.au>
+Message-ID: <m28xphj0sx.fsf@ziti.local>
+
+Gordon Smyth <smyth at wehi.EDU.AU> writes:
+
+> I have committed to the BioC 1.8 release branch bug fixes for limma 
+> functions read.imagene() and plotMA3by2(). The release version number 
+> of limma is incremented to 2.6.2.
+
+Thanks much, Gordon.  We will get the update posted to the repository
+by tomorrow.
+
++ seth
+
+
+From lgautier at altern.org  Thu May  4 17:26:51 2006
+From: lgautier at altern.org (lgautier at altern.org)
+Date: Thu, 4 May 2006 17:26:51 +0200 (CEST)
+Subject: [Bioc-devel] annotation package for Affymetrix Hum6000 array
+In-Reply-To: <m21wvjp0b7.fsf@ziti.local>
+References: <Pine.LNX.4.61.0604251001290.2313@jade.fhcrc.org>
+	<20060426050950.GB104533636@genome.cbs.dtu.dk>
+	<444F7678.6050207@med.umich.edu> <m2wtdcv4j8.fsf@ziti.local>
+	<35406.218.212.96.120.1146144175.squirrel@www.altern.org>
+	<m21wvjp0b7.fsf@ziti.local>
+Message-ID: <60655.218.212.96.120.1146756411.squirrel@www.altern.org>
+
+> lgautier at altern.org writes:
+>> Since we are about Affymetrix chips and data, apparently there is a
+>> quirk
+>> with the example data in 'affydata' and the corresponding probe sequence
+>> package (the probe sets in the AffyBatch does not seem to match the
+>> probe
+>> sequences).
+>>
+>> I am not sure this is a big deal, but it might be handy to know for the
+>> people having code dealing with Affymetrix probe sequence and having
+>> examples for it
+>> (for example, it makes some of example in 'affypdnn' examples behave
+>> erratically).
+>
+> Can you give a bit more detail or an example?
+
+Sorry for the delay. I get a zillion things to do those days.
+
+When running the example for 'find.params.pdnn'
+- the parameters Ns are strangely negative (while they are positive with
+"real" data.
+- if the parameter give.warnings is set to TRUE, there are a "apparently"
+problems catched by the function (I say "apparently", since the routine
+itself could be catching things that are not problems.
+
+Laurent
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From hpages at fhcrc.org  Thu May  4 18:16:35 2006
+From: hpages at fhcrc.org (hpages at fhcrc.org)
+Date: Thu,  4 May 2006 09:16:35 -0700
+Subject: [Bioc-devel] biocLite() ready for BioC devel downloads (R
+	2.4	required)
+In-Reply-To: <m2d5etj0v3.fsf@ziti.local>
+References: <4459371A.7010901@fhcrc.org> <4459D3F4.2030201@ebi.ac.uk>
+	<m2d5etj0v3.fsf@ziti.local>
+Message-ID: <1146759395.445a28e30238b@webmail.fhcrc.org>
+
+Hi,
+
+But of course, I'm going to check in the changes in
+to /madman/installScripts too.
+Cheers,
+
+H.
+
+Quoting Seth Falcon <sfalcon at fhcrc.org>:
+
+> Wolfgang Huber <huber at ebi.ac.uk> writes:
+> 
+> > Hi Herve,
+> >
+> > can you please also check it in to /madman/installScripts (or to some
+> > other documented place). I like to have the line
+> >
+> > source("/home/huber/madman/installScripts/biocLite.R")
+> >
+> > in my .Rprofile to avoid typing the tedious URL all the time.
+> 
+> Here is my solution: put the following in ~/.Rprofile
+> 
+>     tryCatch({
+>         source("http://bioconductor.org/biocLite.R")
+>     }, error=function() NULL)
+> 
+> This way, if I'm not connected to the net, I don't get an error.
+> Since you can't use biocLite without net connectivity anyhow, I don't
+> see a real advantage of sourcing from local disk instead.  And there
+> is a disadvantage in going from svn: it may not correspond with what
+> is currently posted on the website and therefore may not work as
+> expected.
+> 
+> + seth
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From hpages at fhcrc.org  Fri May  5 21:42:03 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Fri, 05 May 2006 12:42:03 -0700
+Subject: [Bioc-devel] limma 2.6.2
+In-Reply-To: <m28xphj0sx.fsf@ziti.local>
+References: <6.2.5.6.1.20060504115502.021a0da0@wehi.edu.au>
+	<m28xphj0sx.fsf@ziti.local>
+Message-ID: <445BAA8B.6020501@fhcrc.org>
+
+Hi,
+
+limma 2.6.2 is available on our BioC 1.8 repos since this morning:
+
+  http://bioconductor.org/packages/1.8/bioc/html/limma.html
+
+To update your current limma (for R 2.3.0 users only):
+
+  > source('http://bioconductor.org/biocLite.R')
+  > biocLite('limma')
+
+Regards,
+
+H.
+
+Seth Falcon wrote:
+> Gordon Smyth <smyth at wehi.EDU.AU> writes:
+>
+>   
+>> I have committed to the BioC 1.8 release branch bug fixes for limma 
+>> functions read.imagene() and plotMA3by2(). The release version number 
+>> of limma is incremented to 2.6.2.
+>>     
+>
+> Thanks much, Gordon.  We will get the update posted to the repository
+> by tomorrow.
+>
+> + seth
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>   
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+ Phone: (206) 667-5791
+   Fax: (206) 667-1319
+
+
+From sfalcon at fhcrc.org  Mon May  8 16:09:02 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 08 May 2006 07:09:02 -0700
+Subject: [Bioc-devel] annotation package for Affymetrix Hum6000 array
+In-Reply-To: <60655.218.212.96.120.1146756411.squirrel@www.altern.org>
+	(lgautier@altern.org's message of "Thu,
+	4 May 2006 17:26:51 +0200 (CEST)")
+References: <Pine.LNX.4.61.0604251001290.2313@jade.fhcrc.org>
+	<20060426050950.GB104533636@genome.cbs.dtu.dk>
+	<444F7678.6050207@med.umich.edu> <m2wtdcv4j8.fsf@ziti.local>
+	<35406.218.212.96.120.1146144175.squirrel@www.altern.org>
+	<m21wvjp0b7.fsf@ziti.local>
+	<60655.218.212.96.120.1146756411.squirrel@www.altern.org>
+Message-ID: <m2zmhs1udd.fsf@ziti.local>
+
+lgautier at altern.org writes:
+
+>> lgautier at altern.org writes:
+>>> Since we are about Affymetrix chips and data, apparently there is a
+>>> quirk
+>>> with the example data in 'affydata' and the corresponding probe sequence
+>>> package (the probe sets in the AffyBatch does not seem to match the
+>>> probe
+>>> sequences).
+>>>
+>>> I am not sure this is a big deal, but it might be handy to know for the
+>>> people having code dealing with Affymetrix probe sequence and having
+>>> examples for it
+>>> (for example, it makes some of example in 'affypdnn' examples behave
+>>> erratically).
+>>
+>> Can you give a bit more detail or an example?
+>
+> Sorry for the delay. I get a zillion things to do those days.
+
+I understand how that goes :-)
+
+Thanks for the details.  We'll look into it.
+
++ seth
+
+
+From korbinian.strimmer at lmu.de  Tue May  9 10:55:08 2006
+From: korbinian.strimmer at lmu.de (Korbinian Strimmer)
+Date: Tue, 09 May 2006 10:55:08 +0200
+Subject: [Bioc-devel] bug in graph package version 1.10.0 (fwd)
+Message-ID: <446058EC.7020702@lmu.de>
+
+Hi,
+ best to send these to the Bioconductor list,
+  thanks
+   Robert
+
+Korbinian Strimmer wrote:
+
+> Dear Rob,
+>
+>   I have encountered a problem with your "graph" package,
+> version 1.10.0.  In contrass to the previous versions, there
+> semms now to be a bug in the functions eWV() and pathWeights()
+> that cause all edge weights to be listed as "1".
+>
+> This effect can easily be reproduced by running this piece of
+> R code:
+>
+ ### begin code ###
+
+ library(graph) # load version 1.10.0
+
+ # construct a small graph with a single edge and weight 0.2
+ V <- LETTERS[1:4]
+ gR <- new("graphNEL", nodes=V)
+ gX <- addEdge("A", "C", gR, 0.2)  # weight = 0.2
+
+ # now we check the edge weight...
+
+ # first possibility: ok
+ edgeData(gX)                      # weight = 0.2
+
+ # second possibility: not ok
+ eWV(gX, edgeMatrix(gX), useNNames = TRUE)  # BUG: weight = 1
+
+ # third possibility: not ok
+ pathWeights(gX, c("A", "C"))               # BUG: weight = 1
+
+ ### end code ###
+
+
+> I discovered this issue because the network plots from GeneTS
+> now all look pretty weird - as I use eWV() to determine the
+> relative thickness of the lines...
+>
+> Cheers,
+>
+>   Korbinian
+>
+>
+> --
+> Korbinian Strimmer              http://www.statistik.lmu.de/~strimmer/
+> Dept. of Statistics, University of Munich, Ludwigstr. 33, 80539 Munich
+> +49 89 2180-3225 (phone), -5041 (fax), korbinian.strimmer at lmu.de
+>
+
+
+
+From korbinian.strimmer at lmu.de  Tue May  9 11:54:27 2006
+From: korbinian.strimmer at lmu.de (Korbinian Strimmer)
+Date: Tue, 09 May 2006 11:54:27 +0200
+Subject: [Bioc-devel] bug in graph package version 1.10.0 (fwd)
+Message-ID: <446066D3.5070302@lmu.de>
+
+CC: bioc-devel
+
+Hi,
+
+With the recent work on "graph", if you don't define an attribute
+"weight" for an edge/a node, the default edge weight will be 1.
+
+I suspect the codes didn't create attribute "weight" for the edge when
+adding the edge with weight, so "pathWeights()" uses default 1 for
+weights for all edges.  (I'm not familiar with eWV/pathWeights, but it
+sounds very similar to what I experienced with edgeWeight)
+
+Seth will be the one to ask
+
+Li
+
+
+
+From korbinian.strimmer at lmu.de  Tue May  9 11:54:33 2006
+From: korbinian.strimmer at lmu.de (Korbinian Strimmer)
+Date: Tue, 09 May 2006 11:54:33 +0200
+Subject: [Bioc-devel] bug in graph package version 1.10.0 (fwd)
+In-Reply-To: <33315.130.223.128.12.1147167339.squirrel@squirrel.isb-sib.ch>
+References: <446058EC.7020702@lmu.de>
+	<33315.130.223.128.12.1147167339.squirrel@squirrel.isb-sib.ch>
+Message-ID: <446066D9.3070908@lmu.de>
+
+Li.Long at isb-sib.ch schrieb:
+> Hi,
+> 
+> With the recent work on "graph", if you don't define an attribute "weight"
+> for an edge/a node, the default edge weight will be 1.
+> 
+> I suspect the codes didn't create attribute "weight" for the edge when
+> adding the edge with weight, so "pathWeights()" uses default 1 for weights
+> for all edges.  (I'm not familiar with eWV/pathWeights, but it sounds very
+> similar to what I experienced with edgeWeight)
+
+The problem is that that the weight *is* defined,
+because addEdge() implicitly creates it.
+If you run the example script you see that
+
+  edgeData(gX)                      # weight = 0.2
+
+gives
+
+$`A|C`
+$`A|C`$weight
+[1] 0.2
+
+
+$`C|A`
+$`C|A`$weight
+[1] 0.2
+
+
+In all previous versions of graph the command
+
+  eWV(gX, edgeMatrix(gX), useNNames = TRUE)
+
+would give the edge weight as "0.2", but not so in version
+1.10.0 Note that the above command appears in the examples
+on the help page of edgeMatrix():
+
+library("graph")
+?edgeMatrix
+
+
+Thanks, Korbinian
+
+-- 
+Korbinian Strimmer              http://www.statistik.lmu.de/~strimmer/
+Dept. of Statistics, University of Munich, Ludwigstr. 33, 80539 Munich
++49 89 2180-3225 (phone), -5041 (fax), korbinian.strimmer at lmu.de
+
+
+From sfalcon at fhcrc.org  Tue May  9 16:41:37 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 09 May 2006 07:41:37 -0700
+Subject: [Bioc-devel] bug in graph package version 1.10.0 (fwd)
+In-Reply-To: <446058EC.7020702@lmu.de> (Korbinian Strimmer's message of "Tue,
+	09 May 2006 10:55:08 +0200")
+References: <446058EC.7020702@lmu.de>
+Message-ID: <m2k68vxntq.fsf@ziti.local>
+
+Hi Korbinian,
+
+Korbinian Strimmer <korbinian.strimmer at lmu.de> writes:
+>>   I have encountered a problem with your "graph" package,
+>> version 1.10.0.  In contrass to the previous versions, there
+>> semms now to be a bug in the functions eWV() and pathWeights()
+>> that cause all edge weights to be listed as "1".
+>>
+>> This effect can easily be reproduced by running this piece of
+>> R code:
+
+Thanks for the bug report.  It is indeed a bug in the eWV function and
+your example was helpful in diagnosing the problem.
+
+I have a fix and will patch the release branch.  Look for graph 1.10.1
+tomorrow.
+
+Best,
+
++ seth
+
+
+From korbinian.strimmer at lmu.de  Tue May  9 17:29:19 2006
+From: korbinian.strimmer at lmu.de (Korbinian Strimmer)
+Date: Tue, 09 May 2006 17:29:19 +0200
+Subject: [Bioc-devel] bug in graph package version 1.10.0 (fwd)
+In-Reply-To: <m2k68vxntq.fsf@ziti.local>
+References: <446058EC.7020702@lmu.de> <m2k68vxntq.fsf@ziti.local>
+Message-ID: <4460B54F.6060404@lmu.de>
+
+Seth Falcon schrieb:
+> Hi Korbinian,
+..
+> 
+> Thanks for the bug report.  It is indeed a bug in the eWV function and
+> your example was helpful in diagnosing the problem.
+> 
+> I have a fix and will patch the release branch.  Look for graph 1.10.1
+> tomorrow.
+
+Excellent!
+
+Many thanks and best regards,
+
+ Korbinian
+
+
+-- 
+Korbinian Strimmer              http://www.statistik.lmu.de/~strimmer/
+Dept. of Statistics, University of Munich, Ludwigstr. 33, 80539 Munich
++49 89 2180-3225 (phone), -5041 (fax), korbinian.strimmer at lmu.de
+
+
+From sdavis2 at mail.nih.gov  Wed May 10 16:43:50 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Wed, 10 May 2006 10:43:50 -0400
+Subject: [Bioc-devel] Stability of biobase eSets
+Message-ID: <C0877466.B463%sdavis2@mail.nih.gov>
+
+Just a quick "developer" question--how stable are the data structures and
+methods for dealing with eSets likely to be?  I have been using eSets much
+more recently just for data handling, but I think I would probably like to
+extend them some and don't want to do that (given the availability of older,
+stable data structures) if they are going to be changing much.
+
+Thanks,
+Sean
+
+
+From mtmorgan at fhcrc.org  Thu May 11 00:52:06 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 10 May 2006 15:52:06 -0700
+Subject: [Bioc-devel] Stability of biobase eSets
+In-Reply-To: <C0877466.B463%sdavis2@mail.nih.gov> (Sean Davis's message of
+	"Wed, 10 May 2006 10:43:50 -0400")
+References: <C0877466.B463%sdavis2@mail.nih.gov>
+Message-ID: <6phac9pwl0p.fsf@gopher3.fhcrc.org>
+
+Excellent and timely question!
+
+1. Our plan is to never again make changes at the very end of the
+development cycle. We also plan to move all our hosted experiment data
+to ExpressionSet over the next few weeks -- i.e., we think this is the
+future, and want to encourage feedback.
+
+2. We have one change planned for the underlying data structure,
+hopefully to make a preview by the end of this week.  Our plan is to
+define a 'Versioned' class in Biobase. This class contains information
+about the version of Biobase in use when an object is created. If the
+object is 'serialized' (e.g., stored to disk) and retrieved at a later
+date, then the version information can be consulted to check that it
+is current, and can be used to update the instance to the current
+definition. More details to follow shortly...
+
+3. We plan to introduce a new method, updateClass, that can be
+used to update instances, either to their current version or to a
+different representation (e.g., from exprSet to ExpressionSet, but
+allowing more flexibility than 'setAs' methods might).
+
+4. We do not have definite plans to remove methods, but I suspect
+there is room for limited housekeeping. Again, any changes at this
+level will occur sooner rather than later.
+
+5. We are also developing additional classes. These will add to,
+rather than change, the existing repertoire. For instance, we are
+looking at an 'EmptyMatrix' class that contains information about
+dimensions and type, but not actual data. The idea is that these would
+be convenient placeholders for elements missing from assayData. They
+would look like matricies for many operations (is, dim, rownames, as,
+[ to other EmptyMatrix, etc.) but not contain numerical
+data.
+
+Hope that helps. Look for more information about Versioned class
+shortly. Feedback most welcome!
+
+Martin
+
+
+
+Sean Davis <sdavis2 at mail.nih.gov> writes:
+
+> Just a quick "developer" question--how stable are the data structures and
+> methods for dealing with eSets likely to be?  I have been using eSets much
+> more recently just for data handling, but I think I would probably like to
+> extend them some and don't want to do that (given the availability of older,
+> stable data structures) if they are going to be changing much.
+>
+> Thanks,
+> Sean
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From sdavis2 at mail.nih.gov  Thu May 11 01:10:17 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Wed, 10 May 2006 19:10:17 -0400
+Subject: [Bioc-devel] Stability of biobase eSets
+In-Reply-To: <6phac9pwl0p.fsf@gopher3.fhcrc.org>
+References: <C0877466.B463%sdavis2@mail.nih.gov>
+	<6phac9pwl0p.fsf@gopher3.fhcrc.org>
+Message-ID: <446272D9.20003@mail.nih.gov>
+
+Martin Morgan wrote:
+> Excellent and timely question!
+> 
+> 1. Our plan is to never again make changes at the very end of the
+> development cycle. We also plan to move all our hosted experiment data
+> to ExpressionSet over the next few weeks -- i.e., we think this is the
+> future, and want to encourage feedback.
+
+I personally like what I have been seeing.  I particularly like the 
+environment storage (with the obvious potential for other types of 
+storage down the road, from looking at the code...).
+
+> 2. We have one change planned for the underlying data structure,
+> hopefully to make a preview by the end of this week.  Our plan is to
+> define a 'Versioned' class in Biobase. This class contains information
+> about the version of Biobase in use when an object is created. If the
+> object is 'serialized' (e.g., stored to disk) and retrieved at a later
+> date, then the version information can be consulted to check that it
+> is current, and can be used to update the instance to the current
+> definition. More details to follow shortly...
+
+This is precisely why I am asking.  I just went back to some data from 
+about 1.5 years ago and was unhappy to find that many of the data 
+structures in use at the time were not available at all, resulting in 
+MANY calls looking like ma at ....@...
+
+> 3. We plan to introduce a new method, updateClass, that can be
+> used to update instances, either to their current version or to a
+> different representation (e.g., from exprSet to ExpressionSet, but
+> allowing more flexibility than 'setAs' methods might).
+
+Sounds good.  I would think that the annotation packages might benefit 
+from this as well, as often peoples' analyses were based on a particular 
+set of annotations and switching would result in different results.
+
+> 4. We do not have definite plans to remove methods, but I suspect
+> there is room for limited housekeeping. Again, any changes at this
+> level will occur sooner rather than later.
+
+> 5. We are also developing additional classes. These will add to,
+> rather than change, the existing repertoire. For instance, we are
+> looking at an 'EmptyMatrix' class that contains information about
+> dimensions and type, but not actual data. The idea is that these would
+> be convenient placeholders for elements missing from assayData. They
+> would look like matricies for many operations (is, dim, rownames, as,
+> [ to other EmptyMatrix, etc.) but not contain numerical
+> data.
+> 
+> Hope that helps. Look for more information about Versioned class
+> shortly. Feedback most welcome!
+
+I'll chime in if I can.  Thanks for the extensive answer.
+
+Sean
+
+
+From hb at maths.lth.se  Thu May 11 23:32:39 2006
+From: hb at maths.lth.se (Henrik Bengtsson)
+Date: Thu, 11 May 2006 14:32:39 -0700
+Subject: [Bioc-devel] Bioconductor website suggestion
+Message-ID: <59d7961d0605111432y2b2c1e9dw671f45745c9d3ac8@mail.gmail.com>
+
+Hi,
+
+if the web server supports it, may I suggest to create a "virtual"
+(Unix-like) link so that, say,
+http://www.bioconductor.org/download/bioc-release/ always points to
+the latest stable release, e.g.
+http://www.bioconductor.org/download/bioc1.8/ and similar for
+http://www.bioconductor.org/download/bioc-devel/?
+
+This is really useful if you wish to link from another website to,
+say, the current "BioC [1.8] Package Repositories" without having to
+update the pages every now and then.
+
+Cheers
+
+Henrik
+
+
+From m.vroonhoven at erasmusmc.nl  Fri May 12 17:31:42 2006
+From: m.vroonhoven at erasmusmc.nl (Mirjam van Vroonhoven)
+Date: Fri, 12 May 2006 17:31:42 +0200
+Subject: [Bioc-devel] Memory problem in affy package of BioC 1.7 and BioC 1.8
+In-Reply-To: <m2hd3yro9h.fsf@ziti.local>
+References: <m2hd3yro9h.fsf@ziti.local>
+Message-ID: <20060512153142.GA3637@bioinf-235-161.pc.fgg.eur.nl>
+
+Dear bioconductor developer community,
+
+We have an SGI Origin computation server (32 cpu, 64 Gb RAM) running irix
+6.5.27.  We had previously R 2.0.0 with Bioconductor 1.5, and recently we
+upgraded to R 2.2.1 with BioConductor 1.7. I tried posting this message to the
+bioc-devel list before I subscribed myself but this didn't work. After
+suggestion of the list moderator, I also installed R 2.3.0 with BioConductor
+1.8 today.
+
+In the newer versions of R we receive memory errors in the affy library, in the
+ReadAffy() and the mas5() command, and we also saw them in the vsn
+normalization from the vsn library. The same commands run fine in R 2.0.0, on
+the same CEL files. It depends on the set of CEL files used, whether we see
+errors or not, i.e. enlarging or reducing the set of CEL files with one
+or more arrays may introduce the error.
+
+example output in R 2.2.1:
+  R : Copyright 2005, The R Foundation for Statistical Computing
+  Version 2.2.1  (2005-12-20 r36812)
+  ISBN 3-900051-07-0
+    <snipped the default R message>
+  > library(affy)
+  Loading required package: Biobase
+  Loading required package: tools
+  
+  Welcome to Bioconductor
+  
+          Vignettes contain introductory material.
+          To view, simply type 'openVignette()' or start with 'help(Biobase)'.
+          For details on reading vignettes, see the openVignette help page.
+  
+  > data<-ReadAffy()
+  > data2<-mas5(data)
+  background correction: mas
+  PM/MM correction : mas
+  expression values: mas
+  background correcting...Error: cannot allocate vector of size 211702 Kb
+  >
+
+
+whereas the same commands on the same set of CEL files yield in R 2.0.0:
+
+  R : Copyright 2004, The R Foundation for Statistical Computing
+  Version 2.0.0  (2004-10-04), ISBN 3-900051-07-0
+    <snipped the default R message>
+  > library(affy)
+  Loading required package: Biobase
+  Loading required package: tools
+  Welcome to Bioconductor
+           Vignettes contain introductory material.  To view,
+           simply type: openVignette()
+           For details on reading vignettes, see
+           the openVignette help page.
+  Loading required package: reposTools
+  > data<-ReadAffy()
+  > data2<-mas5(data)
+  background correction: mas
+  PM/MM correction : mas
+  expression values: mas
+  background correcting...done.
+  54675 ids to be processed
+  |                    |
+  |####################|
+  Warning message:
+  package 'hgu133plus2cdf' was built under R version 2.2.1
+  >
+
+And in R 2.3.0 it yields also an error:
+  R : Copyright 2006, The R Foundation for Statistical Computing
+  Version 2.3.0 (2006-04-24)
+  ISBN 3-900051-07-0
+    <snipped the default R message>
+  > library(affy)
+  Loading required package: Biobase
+  Loading required package: tools
+  
+  Welcome to Bioconductor
+  
+  
+      Vignettes contain introductory material.
+  
+      To view, simply type 'openVignette()' or start with 'help(Biobase)'.
+  
+      For details on reading vignettes, see the openVignette help page.
+  
+  
+  Loading required package: affyio
+  > data<-ReadAffy()
+  > data2<-mas5(data)
+  background correction: mas
+  PM/MM correction : mas
+  expression values: mas
+  background correcting...Error: cannot allocate vector of size 188830 Kb
+  > 
+
+
+
+The memory error occured while 37 Gb of RAM was free.
+Memory usage		after 		in mas5() command
+			ReadAffy()	
+			command
+R 2.0.0 / BioC 1.5 	1070M		1189M - 1854M - 2060M
+R 2.2.1 / BioC 1.7	 851M		1220M - crash
+R 2.3.0 / BioC 1.8	1058M		1242M - crash
+
+I'm puzzled by this....
+Has anybody else seen this behaviour?  Is this a bug in the affy package? Is
+there a place that I can submit bug reports?
+
+						With kind regards,
+
+
+						Mirjam van Vroonhoven
+-- 
+Dr. Mirjam van Vroonhoven
+	system administrator/programmer, dept. of Bioinformatics
+	Erasmus Medical Center, Rotterdam, The Netherlands
+	Room Number Ee 15.32, phone +31-10-463 81 11
+Web: 	http://www.erasmusmc.nl/bioinformatics/
+E-mail: m.vroonhoven at erasmusmc.nl
+
+
+From sfalcon at fhcrc.org  Fri May 12 18:36:51 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 12 May 2006 09:36:51 -0700
+Subject: [Bioc-devel] Stability of biobase eSets
+In-Reply-To: <446272D9.20003@mail.nih.gov> (Sean Davis's message of "Wed,
+	10 May 2006 19:10:17 -0400")
+References: <C0877466.B463%sdavis2@mail.nih.gov>
+	<6phac9pwl0p.fsf@gopher3.fhcrc.org> <446272D9.20003@mail.nih.gov>
+Message-ID: <m2y7x7gpy4.fsf@ziti.local>
+
+Sean Davis <sdavis2 at mail.nih.gov> writes:
+>> 3. We plan to introduce a new method, updateClass, that can be
+>> used to update instances, either to their current version or to a
+>> different representation (e.g., from exprSet to ExpressionSet, but
+>> allowing more flexibility than 'setAs' methods might).
+>
+> Sounds good.  I would think that the annotation packages might benefit 
+> from this as well, as often peoples' analyses were based on a particular 
+> set of annotations and switching would result in different results.
+
+I'm not sure what you have in mind here.  The updateClass idea allows
+for a way of dealing with the following situation: you have saved an
+instance X of a given class FOO and later updated the class definition
+for FOO.  When you load X, updateClass will provide for a means to
+attempt to update the data contained in the instance to the new class
+definition structure (imagine a case where a slot was renamed as a
+simple example).
+
+Certainly annotation data changes over time and results will change
+with it, but I don't think there is much we can/want to do about
+that.  If you want the same results, use the same versions of the
+annotation data.  If I've misunderstood, please feel free to explain
+further.  I don't want to discourage suggestions or ways we can make
+the software more useful. :-)
+
++ seth
+
+
+From sdavis2 at mail.nih.gov  Fri May 12 18:59:48 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Fri, 12 May 2006 12:59:48 -0400
+Subject: [Bioc-devel] Stability of biobase eSets
+In-Reply-To: <m2y7x7gpy4.fsf@ziti.local>
+Message-ID: <C08A3744.B79C%sdavis2@mail.nih.gov>
+
+
+
+
+On 5/12/06 12:36 PM, "Seth Falcon" <sfalcon at fhcrc.org> wrote:
+
+> Sean Davis <sdavis2 at mail.nih.gov> writes:
+>>> 3. We plan to introduce a new method, updateClass, that can be
+>>> used to update instances, either to their current version or to a
+>>> different representation (e.g., from exprSet to ExpressionSet, but
+>>> allowing more flexibility than 'setAs' methods might).
+>> 
+>> Sounds good.  I would think that the annotation packages might benefit
+>> from this as well, as often peoples' analyses were based on a particular
+>> set of annotations and switching would result in different results.
+> 
+> I'm not sure what you have in mind here.  The updateClass idea allows
+> for a way of dealing with the following situation: you have saved an
+> instance X of a given class FOO and later updated the class definition
+> for FOO.  When you load X, updateClass will provide for a means to
+> attempt to update the data contained in the instance to the new class
+> definition structure (imagine a case where a slot was renamed as a
+> simple example).
+
+This is exactly the situation I had in mind, yes.  Ideally, the data would
+remain the same and the class structures would be updated to as close as
+possible to that in use by the current release.
+
+> Certainly annotation data changes over time and results will change
+> with it, but I don't think there is much we can/want to do about
+> that.  If you want the same results, use the same versions of the
+> annotation data.  If I've misunderstood, please feel free to explain
+> further.  I don't want to discourage suggestions or ways we can make
+> the software more useful. :-)
+
+I guess my more general point was that there are many (fairly complicated)
+data structures that undergo change over time besides those that contain the
+expression data.  When possible and when it makes sense, it might be
+beneficial to think about versioning and updateClass-type ideas for them as
+well.  The annotation packages might be candidates for that treatment.
+
+Sean
+
+
+From stvjc at channing.harvard.edu  Fri May 12 19:10:49 2006
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Fri, 12 May 2006 13:10:49 -0400 (EDT)
+Subject: [Bioc-devel] Stability of biobase eSets/annotation
+In-Reply-To: <C08A3744.B79C%sdavis2@mail.nih.gov>
+References: <C08A3744.B79C%sdavis2@mail.nih.gov>
+Message-ID: <Pine.GSO.4.58.0605121304241.2322@capecod.bwh.harvard.edu>
+
+>
+> > Certainly annotation data changes over time and results will change
+> > with it, but I don't think there is much we can/want to do about
+> > that.  If you want the same results, use the same versions of the
+> > annotation data.  If I've misunderstood, please feel free to explain
+> > further.  I don't want to discourage suggestions or ways we can make
+> > the software more useful. :-)
+>
+> I guess my more general point was that there are many (fairly complicated)
+> data structures that undergo change over time besides those that contain the
+> expression data.  When possible and when it makes sense, it might be
+> beneficial to think about versioning and updateClass-type ideas for them as
+> well.  The annotation packages might be candidates for that treatment.
+
+Perhaps the distinction between structure and content can help
+clarify these issues.  golubEsets is a package whose content is supposed
+to be immutable, but the container structure changed in Biobase.  This
+made it hard to use the old objects.  We want to simplify restoration
+of old objects when externally defined structures change, and updateClass
+is supposed to address this.
+
+The annotation packages can change in structure, but the principal
+aspect of change that we are concerned with is change in content.
+Such changes arise as biological knowledge changes, and are basically
+orthogonal to data structure design (bioc classes).
+
+It does seem desirable to identify the version of an annotation resource
+and to propagate that through the reporting workflow.  it would
+be nice to have an object that could be updated with respect to
+annotation content if new annotation environments came into being
+after it was created.  An Sweave document that scripts the analysis
+seems to be the closest thing we have to such an updateable object.
+Swap in the new annotation and rerun.  Hopefully all the APIs are
+unchanged; updateClass might even help in this situation if some
+container structures changed in the mean time.  but it is -- under
+current thinking -- independent of evolution of annotation content.
+
+
+From hpages at fhcrc.org  Sat May 13 02:31:22 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Fri, 12 May 2006 17:31:22 -0700
+Subject: [Bioc-devel] Build system news
+Message-ID: <446528DA.2050503@fhcrc.org>
+
+Hi Bioconductor developers,
+
+Here are the last improvements in the build/check report produced
+by our Build System:
+
+  http://bioconductor.org/checkResults/1.9/
+
+- The hostnames at the top of the main page are now clickable:
+  this gives you more information about the system used on the
+  build machine (only compilers versions & flags for now, but more
+  to come soon).
+
+- In the main table, when you click on a glyph in the CHECK column,
+  you'll see the content of the <pkg>.Rcheck/00install.out file
+  generated by the 'R CMD check <pkg>' command.
+  This is usefull for having the compilation output for packages
+  that don't have a vignette. On platform where we don't build
+  binaries, if your package has source files in src/ but has no
+  vignette, then it's not compiled during 'R CMD build', so there
+  was no way (until now) to see the output produced by compilation.
+
+Comments/suggestions are welcome.
+
+H.
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+ Phone: (206) 667-5791
+   Fax: (206) 667-1319
+
+
+From hpages at fhcrc.org  Sat May 13 05:08:07 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Fri, 12 May 2006 20:08:07 -0700
+Subject: [Bioc-devel] Bioconductor website suggestion
+In-Reply-To: <59d7961d0605111432y2b2c1e9dw671f45745c9d3ac8@mail.gmail.com>
+References: <59d7961d0605111432y2b2c1e9dw671f45745c9d3ac8@mail.gmail.com>
+Message-ID: <44654D97.70806@fhcrc.org>
+
+Hi Henrik,
+
+For the latest "release", we added this URL:
+    http://bioconductor.org/download/release/
+It will redirect you to http://bioconductor.org/download/bioc1.8/
+and we will try to always have it redirecting to the latest "release".
+
+Be aware that it uses redirection though. Redirection has 2 inconvenients:
+  - When the page starts to load, you don't see the URL
+    that you've entered anymore (it's replaced by the target URL).
+  - Your browser has to send 2 requests before to start loading the page.
+
+Note that with symlinks created at the file system level, or with Apache
+aliasing mechanism, you don't "see" where you have been redirected so
+it makes it easier to bookmark the "permanent" URL. But our website
+uses Plone and Plone uses redirection :-/
+
+For the latest "devel", we usually don't have it under the download section.
+The developper zone has now been moved to an external wiki:
+  http://wiki.fhcrc.org/bioc/DeveloperPage
+(The "For Developpers" link on the left frame of the bioconductor.org
+home page now points to this wiki.)
+
+Best,
+
+H.
+
+Henrik Bengtsson wrote:
+> Hi,
+>
+> if the web server supports it, may I suggest to create a "virtual"
+> (Unix-like) link so that, say,
+> http://www.bioconductor.org/download/bioc-release/ always points to
+> the latest stable release, e.g.
+> http://www.bioconductor.org/download/bioc1.8/ and similar for
+> http://www.bioconductor.org/download/bioc-devel/?
+>
+> This is really useful if you wish to link from another website to,
+> say, the current "BioC [1.8] Package Repositories" without having to
+> update the pages every now and then.
+>
+> Cheers
+>
+> Henrik
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>   
+
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+ Phone: (206) 667-5791
+   Fax: (206) 667-1319
+
+
+From hb at maths.lth.se  Sat May 13 15:35:21 2006
+From: hb at maths.lth.se (Henrik Bengtsson)
+Date: Sat, 13 May 2006 06:35:21 -0700
+Subject: [Bioc-devel] Bioconductor website suggestion
+In-Reply-To: <44654D97.70806@fhcrc.org>
+References: <59d7961d0605111432y2b2c1e9dw671f45745c9d3ac8@mail.gmail.com>
+	<44654D97.70806@fhcrc.org>
+Message-ID: <59d7961d0605130635m4d5f88cdvf395f66f8230dc80@mail.gmail.com>
+
+Thanks for this.  Very handy.  Best /Henrik
+
+On 5/12/06, Herve Pages <hpages at fhcrc.org> wrote:
+> Hi Henrik,
+>
+> For the latest "release", we added this URL:
+>     http://bioconductor.org/download/release/
+> It will redirect you to http://bioconductor.org/download/bioc1.8/
+> and we will try to always have it redirecting to the latest "release".
+>
+> Be aware that it uses redirection though. Redirection has 2 inconvenients:
+>   - When the page starts to load, you don't see the URL
+>     that you've entered anymore (it's replaced by the target URL).
+>   - Your browser has to send 2 requests before to start loading the page.
+>
+> Note that with symlinks created at the file system level, or with Apache
+> aliasing mechanism, you don't "see" where you have been redirected so
+> it makes it easier to bookmark the "permanent" URL. But our website
+> uses Plone and Plone uses redirection :-/
+>
+> For the latest "devel", we usually don't have it under the download section.
+> The developper zone has now been moved to an external wiki:
+>   http://wiki.fhcrc.org/bioc/DeveloperPage
+> (The "For Developpers" link on the left frame of the bioconductor.org
+> home page now points to this wiki.)
+>
+> Best,
+>
+> H.
+>
+> Henrik Bengtsson wrote:
+> > Hi,
+> >
+> > if the web server supports it, may I suggest to create a "virtual"
+> > (Unix-like) link so that, say,
+> > http://www.bioconductor.org/download/bioc-release/ always points to
+> > the latest stable release, e.g.
+> > http://www.bioconductor.org/download/bioc1.8/ and similar for
+> > http://www.bioconductor.org/download/bioc-devel/?
+> >
+> > This is really useful if you wish to link from another website to,
+> > say, the current "BioC [1.8] Package Repositories" without having to
+> > update the pages every now and then.
+> >
+> > Cheers
+> >
+> > Henrik
+> >
+> > _______________________________________________
+> > Bioc-devel at stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >
+>
+>
+> --
+> ------------------------
+> Herv? Pag?s
+> E-mail: hpages at fhcrc.org
+>  Phone: (206) 667-5791
+>    Fax: (206) 667-1319
+> ------------------------
+>
+>
+
+
+-- 
+Henrik Bengtsson
+
+Mobile: +46 708 909208 (-7h UTC)
+1415 Josephine St #1/2, Berkeley, CA 94703
+
+
+From khansen at stat.Berkeley.EDU  Sun May 14 06:11:50 2006
+From: khansen at stat.Berkeley.EDU (Kasper Daniel Hansen)
+Date: Sat, 13 May 2006 21:11:50 -0700
+Subject: [Bioc-devel] Build system news
+In-Reply-To: <446528DA.2050503@fhcrc.org>
+References: <446528DA.2050503@fhcrc.org>
+Message-ID: <8F793564-C7AD-4E41-AB87-D82BDC054133@stat.Berkeley.EDU>
+
+This is awesome! Exactly what I wanted. I really like the fact that  
+you do not wrap the lines in the output from 00install, that make sit  
+sooo much easier to spot warnings and errors.
+
+Thanks a lot.
+
+/Kasper
+
+On May 12, 2006, at 5:31 PM, Herve Pages wrote:
+
+> Hi Bioconductor developers,
+>
+> Here are the last improvements in the build/check report produced
+> by our Build System:
+>
+>  http://bioconductor.org/checkResults/1.9/
+>
+> - The hostnames at the top of the main page are now clickable:
+>  this gives you more information about the system used on the
+>  build machine (only compilers versions & flags for now, but more
+>  to come soon).
+>
+> - In the main table, when you click on a glyph in the CHECK column,
+>  you'll see the content of the <pkg>.Rcheck/00install.out file
+>  generated by the 'R CMD check <pkg>' command.
+>  This is usefull for having the compilation output for packages
+>  that don't have a vignette. On platform where we don't build
+>  binaries, if your package has source files in src/ but has no
+>  vignette, then it's not compiled during 'R CMD build', so there
+>  was no way (until now) to see the output produced by compilation.
+>
+> Comments/suggestions are welcome.
+>
+> H.
+>
+> -- 
+> ------------------------
+> Herv? Pag?s
+> E-mail: hpages at fhcrc.org
+> Phone: (206) 667-5791
+>   Fax: (206) 667-1319
+> ------------------------
+
+
+From sfalcon at fhcrc.org  Mon May 15 07:35:45 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Sun, 14 May 2006 22:35:45 -0700
+Subject: [Bioc-devel] Memory problem in affy package of BioC 1.7 and
+	BioC 1.8
+In-Reply-To: <20060512153142.GA3637@bioinf-235-161.pc.fgg.eur.nl> (Mirjam van
+	Vroonhoven's message of "Fri, 12 May 2006 17:31:42 +0200")
+References: <m2hd3yro9h.fsf@ziti.local>
+	<20060512153142.GA3637@bioinf-235-161.pc.fgg.eur.nl>
+Message-ID: <m2slnbn93i.fsf@ziti.local>
+
+Hi Mirjam,
+
+Mirjam van Vroonhoven <m.vroonhoven at erasmusmc.nl> writes:
+> We have an SGI Origin computation server (32 cpu, 64 Gb RAM) running irix
+> 6.5.27. 
+
+We don't have such a system which makes reproducing/debugging this
+issue rather difficult.  If anyone else on the list has such a system,
+it would be great to attempt to reproduce this (I'm not holding my
+breath :-)
+
+> In the newer versions of R we receive memory errors in the affy library, in the
+> ReadAffy() and the mas5() command, and we also saw them in the vsn
+> normalization from the vsn library. The same commands run fine in R 2.0.0, on
+> the same CEL files. It depends on the set of CEL files used, whether we see
+> errors or not, i.e. enlarging or reducing the set of CEL files with one
+> or more arrays may introduce the error.
+
+> example output in R 2.2.1:
+> And in R 2.3.0 it yields also an error:
+>   R : Copyright 2006, The R Foundation for Statistical Computing
+>   Version 2.3.0 (2006-04-24)
+>   ISBN 3-900051-07-0
+>     <snipped the default R message>
+>   > library(affy)
+>   Loading required package: Biobase
+>   Loading required package: tools
+>   
+>   Welcome to Bioconductor
+>   
+>   
+>       Vignettes contain introductory material.
+>   
+>       To view, simply type 'openVignette()' or start with 'help(Biobase)'.
+>   
+>       For details on reading vignettes, see the openVignette help page.
+>   
+>   
+>   Loading required package: affyio
+>   > data<-ReadAffy()
+>   > data2<-mas5(data)
+>   background correction: mas
+>   PM/MM correction : mas
+>   expression values: mas
+>   background correcting...Error: cannot allocate vector of size 188830 Kb
+>   > 
+
+affy and vsn aside, with R 2.3.0 can you address a reasonable amount
+of your RAM?  For example, you can test by allocating many large
+sequence vectors:  v <- seq(1, 2^29)
+
+> The memory error occured while 37 Gb of RAM was free.
+> Memory usage		after 		in mas5() command
+> 			ReadAffy()	
+> 			command
+> R 2.0.0 / BioC 1.5 	1070M		1189M - 1854M - 2060M
+> R 2.2.1 / BioC 1.7	 851M		1220M - crash
+> R 2.3.0 / BioC 1.8	1058M		1242M - crash
+>
+> I'm puzzled by this....
+> Has anybody else seen this behaviour?  
+
+If you can share your cel files, we could try to reproduce this on a
+different system.  We have a Linux based system that has a fair amount
+of RAM, but not 64GB.
+
+> Is this a bug in the affy package? 
+
+Hard to say.  You mentioned that you had a similar issue with vsn.  
+
+> Is there a place that I can submit bug reports?
+
+This is the place, although it is also recommended to correspond with
+package maintainers directly.
+
+Sorry I can't be more helpful.
+
+Best,
+
++ seth
+
+
+From m.vroonhoven at erasmusmc.nl  Mon May 15 14:53:20 2006
+From: m.vroonhoven at erasmusmc.nl (Mirjam van Vroonhoven)
+Date: Mon, 15 May 2006 14:53:20 +0200
+Subject: [Bioc-devel] Bioc-devel Digest, Vol 26, Issue 12
+In-Reply-To: <mailman.1.1147687202.23475.bioc-devel@stat.math.ethz.ch>
+References: <mailman.1.1147687202.23475.bioc-devel@stat.math.ethz.ch>
+Message-ID: <20060515125320.GE6479@bioinf-235-161.pc.fgg.eur.nl>
+
+Hello all,
+
+> From: Seth Falcon <sfalcon at fhcrc.org>
+> Subject: Re: [Bioc-devel] Memory problem in affy package of BioC 1.7
+> 	and	BioC 1.8
+> 
+> Mirjam van Vroonhoven <m.vroonhoven at erasmusmc.nl> writes:
+> > We have an SGI Origin computation server (32 cpu, 64 Gb RAM) running irix
+> > 6.5.27. 
+> 
+> We don't have such a system which makes reproducing/debugging this
+> issue rather difficult.  If anyone else on the list has such a system,
+> it would be great to attempt to reproduce this (I'm not holding my
+> breath :-)
+
+> 
+> 
+> affy and vsn aside, with R 2.3.0 can you address a reasonable amount
+> of your RAM?  For example, you can test by allocating many large
+> sequence vectors:  v <- seq(1, 2^29)
+
+Good question. Tested it. No. So it's not a problem in Bioconductor, but
+a problem in R. In R 2.0.0 I can allocate 8 Gb of RAM without any
+problem by running
+v1 <- seq(1,2^29)
+v2 <- seq(1,2^29)
+v3 <- seq(1,2^29)
+v4 <- seq(1,2^29)
+
+but in R 2.3.0 I cannot allocate even one vector of 2 Gb. I can go to
+almost 1300 Mb, but no more....
+
+
+I'll contact the R developers on this problem, Thanks for helping out
+and diagnosing the problem!
+
+						With kind regards,
+
+
+
+						Mirjam
+-- 
+Dr. Mirjam van Vroonhoven
+	system administrator/programmer, dept. of Bioinformatics
+	Erasmus Medical Center, Rotterdam, The Netherlands
+	Room Number Ee 15.32, phone +31-10-463 81 11
+Web: 	http://www.erasmusmc.nl/bioinformatics/
+E-mail: m.vroonhoven at erasmusmc.nl
+
+
+From pshannon at systemsbiology.org  Mon May 15 17:13:31 2006
+From: pshannon at systemsbiology.org (Paul Shannon)
+Date: Mon, 15 May 2006 08:13:31 -0700
+Subject: [Bioc-devel] how to create my own repository of mac os x binaries?
+In-Reply-To: <51110.218.212.96.120.1147538804.squirrel@www.altern.org>
+References: <4d27b790893b02a76495096249d0cdda@bu.edu>
+	<51110.218.212.96.120.1147538804.squirrel@www.altern.org>
+Message-ID: <A65E3943-9F3F-4C45-993F-9DE2BE5AA432@systemsbiology.org>
+
+My still-in-development bioc package, gaggle, needs a slew
+of bioc packages to run:  Ruuid,  graph, rJava at a minimum,
+GO, GOstats, RBGL, annotate, xtable, multtest to do more
+interesting work.
+
+I wish to build binaries for my mac users, and put them
+in a local repository -- at least until the bioc 1.8 mac
+binaries are available.
+
+I made a few naive attempts to create such a repository.
+In my last attempt,
+
+    1) I built the binaries on a mac
+    2) moved them to <package-base>/bin/macosx/powerpc/contrib/2.3/
+    3) rebuilt the repository (using repos tools).
+
+This didn't work:  install.packages could find source
+packages in this repository, but not the binaries.
+
+Can anyone help me out of my muddle here?  Perhaps point
+me towards some instructions explaining the directory
+structures and techniques used to provide binary packages
+in a repository?
+
+Thanks!
+
+  - Paul
+
+
+From m.ruschhaupt at dkfz-heidelberg.de  Mon May 15 18:23:31 2006
+From: m.ruschhaupt at dkfz-heidelberg.de (Markus Ruschhaupt)
+Date: Mon, 15 May 2006 18:23:31 +0200
+Subject: [Bioc-devel] Question graph package 1.10.2
+Message-ID: <4468AB03.70704@dkfz-heidelberg.de>
+
+Hi,
+
+I have a question regarding graph package version 1.10.2. I would like 
+to transform a matrix into a graph and later on transform the graph back 
+into a matrix. But when I do so, the weights of the edges seems to be 
+lost. Please have a look at the example:
+
+ > library(graph)
+ > A <- matrix(c(0,0.2,1,0.2,0,0,1,0,0),ncol=3)
+ > rownames(A) <- colnames(A) <- letters[1:3]
+ > A
+
+    a   b c
+a 0.0 0.2 1
+b 0.2 0.0 0
+c 1.0 0.0 0
+
+ > as(as(A,"graphNEL"),"matrix")
+   a b c
+a 0 1 1
+b 1 0 0
+c 1 0 0
+
+ > sessionInfo()
+
+Version 2.3.0 (2006-04-24)
+i686-pc-linux-gnu
+
+attached base packages:
+[1] "methods"   "stats"     "graphics"  "grDevices" "utils"     "datasets"
+[7] "base"
+
+other attached packages:
+    graph    Ruuid
+"1.10.2" "1.10.0"
+
+
+Is this a bug or is this a feature? I also tested the graph package 1.8. 
+with R.2.2.1 and this behaved as expected (the weights are included into 
+the matrix).
+
+Best,
+  Markus
+
+
+From sfalcon at fhcrc.org  Mon May 15 19:33:12 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 15 May 2006 10:33:12 -0700
+Subject: [Bioc-devel] Question graph package 1.10.2
+In-Reply-To: <4468AB03.70704@dkfz-heidelberg.de> (Markus Ruschhaupt's message
+	of "Mon, 15 May 2006 18:23:31 +0200")
+References: <4468AB03.70704@dkfz-heidelberg.de>
+Message-ID: <m2mzdjgplz.fsf@ziti.local>
+
+Hi Markus,
+
+How timely.  Martin Maechler uncovered this same regression last
+Friday.  I have a fix available in trunk and will be patching the
+release today.
+
+However, some discussion is warranted.  With the new node/edge
+attribute handling, returning the edge weights is actually a bit
+strange.  Why?
+
+  * Because it would be perfectly reasonable to return the values
+    of a different edge attribute instead of "weight".
+
+  * Because the "weight" edge attribute can actually be any R object
+    and may not be appropriate for the entries of a matrix.
+
+When you create a graphNEL or graphAM instance with edge weights, they
+are now stored as any other edge attribute and can be accessed
+directly using edgeData(g, from, to, attr="weight").
+
+The fix for as() checks to see if an edge attribute named "weight" is
+defined, and if so, uses it to fill the non-zero matrix elements.
+
+We plan to add a toMatrix generic that will provide for more flexible
+conversion from the graph classes to matrices.  So that, for example,
+one can have the values replaced by any edge attribute.
+
+Anyhow, thank you for the report and look for a patched version in the
+next couple of days.
+
+Best,
+
++ seth
+
+
+From sfalcon at fhcrc.org  Tue May 16 05:42:41 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 15 May 2006 20:42:41 -0700
+Subject: [Bioc-devel] how to create my own repository of mac os x
+	binaries?
+In-Reply-To: <A65E3943-9F3F-4C45-993F-9DE2BE5AA432@systemsbiology.org> (Paul
+	Shannon's message of "Mon, 15 May 2006 08:13:31 -0700")
+References: <4d27b790893b02a76495096249d0cdda@bu.edu>
+	<51110.218.212.96.120.1147538804.squirrel@www.altern.org>
+	<A65E3943-9F3F-4C45-993F-9DE2BE5AA432@systemsbiology.org>
+Message-ID: <m2odxyocsu.fsf@ziti.fhcrc.org>
+
+Hi Paul,
+
+Paul Shannon <pshannon at systemsbiology.org> writes:
+> I made a few naive attempts to create such a repository.
+> In my last attempt,
+>
+>     1) I built the binaries on a mac
+>     2) moved them to <package-base>/bin/macosx/powerpc/contrib/2.3/
+>     3) rebuilt the repository (using repos tools).
+
+When you say "using repos tools", can you give us a bit more detail?
+I'm afraid you may be using the deprecated reposTools package. 
+
+To create the control files that install.packages and friends will
+look for, you want the write_PACKAGES function which is in the tools
+package (comes with R).
+
+> Can anyone help me out of my muddle here?  Perhaps point
+> me towards some instructions explaining the directory
+> structures and techniques used to provide binary packages
+> in a repository?
+
+A CRAN-style repository (that's what you want) looks like this:
+
+some_root/-
+           |
+           - src/contrib/
+           |             |
+           |             - PACKAGES 
+           |             |
+           |             - *.tar.gz packages here
+           |
+           - bin/
+                 |
+                 - windows/contrib/2.3/
+                 |                     |
+                 |                     - PACKAGES
+                 |                     |
+                 |                     - *.zip packages here
+                 |
+                 - macosx/ppc/contrib/2.3/
+                                          |
+                                          - PACKAGES
+                                          |
+                                          - *.tgz packages here
+
+
+
++ seth
+
+
+From sfalcon at fhcrc.org  Tue May 16 15:25:45 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 16 May 2006 06:25:45 -0700
+Subject: [Bioc-devel] how to create my own repository of mac os x
+	binaries?
+In-Reply-To: <207E45CB-F47A-45BB-BFE7-525549E2DDDB@unimi.it> (stefano iacus's
+	message of "Tue, 16 May 2006 09:40:42 +0200")
+References: <4d27b790893b02a76495096249d0cdda@bu.edu>
+	<51110.218.212.96.120.1147538804.squirrel@www.altern.org>
+	<A65E3943-9F3F-4C45-993F-9DE2BE5AA432@systemsbiology.org>
+	<m2odxyocsu.fsf@ziti.fhcrc.org>
+	<207E45CB-F47A-45BB-BFE7-525549E2DDDB@unimi.it>
+Message-ID: <m27j4mnlt2.fsf@ziti.fhcrc.org>
+
+stefano iacus <stefano.iacus at unimi.it> writes:
+
+> Please, take care that the new R binary for OS X is Universal, which
+> means you have to consider also a universal build of the packages.
+
+Two questions about this:
+
+Is it possible to create Universal binaries on the PPC-based macs?
+
+Won't CRAN-style repositories continue to support separate locations
+for ppc and intel OSX packages?  If so, creating universal binaries
+seems a convenience for the package producer rather than end users.
+
+We are finding some difficulties in building universal binaries for
+packages that depend upon external libraries and it isn't clear to me
+that it won't be easier to build ppc and intel packages separately
+(assuming one has access to both types of systems).
+
++ seth
+
+PS: The OP was asking about setting up a repository for use at his
+workplace, so unless he has intel-mac users to support, I'm not sure
+what difference it makes... :-)
+
+
+From raffaele.calogero at unito.it  Wed May 17 10:07:04 2006
+From: raffaele.calogero at unito.it (rcaloger)
+Date: Wed, 17 May 2006 10:07:04 +0200
+Subject: [Bioc-devel] COPA vignette
+Message-ID: <446AD9A8.80506@unito.it>
+
+Hi,
+just to make the mantainer of COPA informed :
+ in the release 1.8 of Bioconductor the COPA vignette is 3111 page long ! 
+due to the commands:
+ > library(colonCA)
+ > data(colonCA)
+ > colonCA
+An object of class "exprSet"
+Slot "exprs":
+Hsa.3004 Hsa.13491
+....
+3111 pages
+the informative part of the vignette start again at page 3108
+Best
+Raffaele
+
+-- 
+
+----------------------------------------
+Prof. Raffaele A. Calogero
+Bioinformatics and Genomics Unit
+Dipartimento di Scienze Cliniche e Biologiche
+c/o Az. Ospedaliera S. Luigi
+Regione Gonzole 10, Orbassano
+10043 Torino
+tel.   ++39 0116705420
+Lab.   ++39 0116705408
+Fax    ++39 0119038639
+Mobile ++39 3333827080
+email: raffaele.calogero at unito.it
+www:   www.bioinformatica.unito.it
+
+
+From raffaele.calogero at unito.it  Wed May 17 10:58:02 2006
+From: raffaele.calogero at unito.it (rcaloger)
+Date: Wed, 17 May 2006 10:58:02 +0200
+Subject: [Bioc-devel] pdmclass vignette is 1903 page long!
+Message-ID: <446AE59A.5060706@unito.it>
+
+For the pdmclass mantainers:
+The vignette for the pdmclass is 1903 pages long due to the 
+visualization of the fibroEset
+Best
+Raffaele
+
+-- 
+
+----------------------------------------
+Prof. Raffaele A. Calogero
+Bioinformatics and Genomics Unit
+Dipartimento di Scienze Cliniche e Biologiche
+c/o Az. Ospedaliera S. Luigi
+Regione Gonzole 10, Orbassano
+10043 Torino
+tel.   ++39 0116705420
+Lab.   ++39 0116705408
+Fax    ++39 0119038639
+Mobile ++39 3333827080
+email: raffaele.calogero at unito.it
+www:   www.bioinformatica.unito.it
+
+
+From sfalcon at fhcrc.org  Wed May 17 16:14:00 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 17 May 2006 07:14:00 -0700
+Subject: [Bioc-devel] COPA vignette
+In-Reply-To: <446AD9A8.80506@unito.it> (rcaloger's message of "Wed,
+	17 May 2006 10:07:04 +0200")
+References: <446AD9A8.80506@unito.it>
+Message-ID: <m2odxwkac7.fsf@ziti.fhcrc.org>
+
+rcaloger <raffaele.calogero at unito.it> writes:
+> Hi,
+> just to make the mantainer of COPA informed :
+>  in the release 1.8 of Bioconductor the COPA vignette is 3111 page long ! 
+> due to the commands:
+>  > library(colonCA)
+>  > data(colonCA)
+>  > colonCA
+> An object of class "exprSet"
+> Slot "exprs":
+> Hsa.3004 Hsa.13491
+> ....
+> 3111 pages
+> the informative part of the vignette start again at page 3108
+
+I took a quick look at this one and it is very strange: the colonCA
+exprSet is not getting recognized as such and instead of the show
+method, we're getting the default print method which is causing the
+spew of output.
+
+I wasn't able to reproduce it by installing copa and colonCA and
+repeating the commands in the vignette.
+
+Herve, can you take a look at a more recent build of copa for 1.8 and
+see if the vignette is significantly smaller than 3Mb?
+
+Raffaele, thanks very much for these reports.  We will work with the
+package's maintainer to find a fix and make it available as soon as we
+can.
+
+Best,
+
++ seth
+
+
+From mtmorgan at fhcrc.org  Wed May 17 21:52:30 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 17 May 2006 12:52:30 -0700
+Subject: [Bioc-devel] Biobase class versions
+Message-ID: <6ph4pzo2zup.fsf@gopher3.fhcrc.org>
+
+Bioconductor developers!
+
+As anticipated last week, the most recent svn data classes in Biobase
+have now been changed. The hope is that this will make future changes
+as transparent as possible.
+
+* Affected classes
+
+The affected classes are
+
+eSet and its derivatives (ExpressionSet, SnpSet, and MultiSet)
+exprSet
+AnnotatedDataFrame
+annotatedDataset, MIAME, phenoData
+
+These classes now 'contain' either 'Versioned' or
+'VersionedBiobase'. Previous instances (e.g., stored to disk) can be
+updated to the new version using steps such as
+
+> data(sample.ExpressionSet)
+> sample.ExpressionSet <- updateObject(sample.ExpressionSet)
+
+* How do you benefit?
+
+The new information available to developers can be accessed as
+
+> classVersion(sample.ExpressionSet)
+            R       Biobase          eSet ExpressionSet 
+      "2.4.0"     "1.11.10"       "1.0.0"       "1.0.0" 
+> isVersioned(sample.ExpressionSet) # FALSE before update
+[1] TRUE
+> isCurrent(sample.ExpressionSet)
+            R       Biobase          eSet ExpressionSet 
+         TRUE         FALSE          TRUE          TRUE
+
+You'll notice that the version information for this object is a named
+list. The first two elements indicate the version of R and Biobase
+used to create the object. The latter two elements are contained in
+the class prototype, and the class prototype is consulted to see if
+the instance of an object is 'current'. These lists can be subsetted
+in the usual way, e.g.,
+
+> isCurrent(sample.ExpressionSet)[c("eSet", "ExpressionSet")]
+         eSet ExpressionSet 
+         TRUE          TRUE 
+
+Versioned classes and updateObject and related methods simplify the
+long-term maintenance of data objects. Take 'MultiSet' as an
+example. This is a new class, and might undergo changes in its
+structure at some point in the future. When these changes are
+introduced, the developer will change the version number of the class
+in its prototype (the last line, below):
+
+setClass("MultiSet",
+         contains = "eSet",
+         prototype = prototype(
+           new("VersionedBiobase",
+               versions=c(classVersion("eSet"), MultiSet="1.0.1"))))
+
+and add code to update to the new version
+
+setMethod("updateObject", signature(object="MultiSet"),
+          function(object, ..., verbose=FALSE) {
+              if (verbose) message("updateObject(object = 'MultiSet')")
+              object <- callNextMethod()
+              if (isCurrent(object)["MultiSet"]) return(object)
+              ## Create an updated instance.
+              if (!isVersioned(object))
+                  ## Radical surgery -- create a new, up-to-date instance
+                  new("MultiSet",
+                      assayData = updateObject(assayData(object)),
+                      phenoData = updateObject(phenoData(object)),
+                      experimentData = updateObject(experimentData(object)),
+                      annotation = updateObject(annotation(object)))
+              else {
+                  ## Make minor changes, and update version by consulting class definition
+                  classVersion(object)["MultiSet"] <-
+                      classVersion("MultiSet")["MultiSet"]
+                  object
+              }
+          })
+
+updateObject then returns a new, enhanced object:
+
+> classVersion(updateObject(obj))
+        R   Biobase      eSet  MultiSet 
+  "2.4.0" "1.11.11"   "1.0.0"   "1.0.1" 
+
+As in the example, versioning helps in choosing which modifications to
+perform -- minor changes for a slightly out-of-date object, radical
+surgery for something more ancient. Version information might also be
+used in methods, where changing class representation might facilitate
+more efficient routines.
+
+* Versioned versus VersionedBiobase
+
+The information on R and Biobase versions is present in eSet derived
+classes becasue eSet contains VersionedBiobase. On the other hand,
+phenoData contains Versioned, and has only information about its own
+class version.
+
+> classVersion(new("phenoData"))
+phenoData 
+  "1.0.0" 
+
+The rationale for this is that phenoData is and will likely remain
+relatively simple, and details about R and Biobase are probably
+irrelevant to its use. On the other hand, some aspects of eSet and the
+algorithms that operate on them are more cutting edge and more subject
+to changes in R or Biobase. Knowing the version of R and Biobase used
+to create an instance might provide valuable debugging information.
+
+* Adding Versioned information to your own classes
+
+The key to versioning your own classes is to define your class to
+'contain' Versioned or VersionedBiobase, and to add the version
+information in the prototype. See the examples in the Versioned help
+page.
+
+It is also possible to add arbitrary information to particular
+instances, though these might not persist through updateObject.
+
+> classVersion(obj)["MyID"] <- "0.0.1"
+> classVersion(obj)
+        R   Biobase      eSet  MultiSet      MyID 
+  "2.4.0" "1.11.11"   "1.0.0"   "1.0.0"   "0.0.1" 
+> classVersion(updateObject(obj))
+        R   Biobase      eSet  MultiSet      MyID 
+  "2.4.0" "1.11.11"   "1.0.0"   "1.0.1"   "0.0.1" 
+
+There is considerable documentation about these classes and methods in
+Biobase. I'll be watching for anomalies that these changes produce,
+and am eager to respond to any questions or issues that arise.
+
+Martin
+-- 
+Bioconductor
+
+
+From hpages at fhcrc.org  Fri May 19 19:23:09 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Fri, 19 May 2006 10:23:09 -0700
+Subject: [Bioc-devel] Universal mac OS X packages for BioC 1.8 ready for
+	testing
+Message-ID: <446DFEFD.8000002@fhcrc.org>
+
+Hi all,
+
+Thanks to Simon Urbanek, the universal Mac OS X packages for BioC 1.8
+are finally ready for testing. As always, the easiest way to install
+is to use the biocLite() function:
+
+  > source("http://bioconductor.org/biocLite.R")
+  > biocLite("name_of_the_package")
+
+You _must_ use the universal R 2.3.0 built from CRAN for this to work.
+Also don't forget to pass 'type="mac.binary"' to the biocLite() function
+in case you have the default type set to "source" (you can check this
+with 'getOption("pkgType")').
+You can also install a default set of Bioconductor 1.8 packages by
+simply doing:
+
+  > biocLite()
+
+If you are looking for a particular package but you are not sure about
+its name or even its existence, you can browse the Bioconductor 1.8
+package repositories by going to:
+
+  http://bioconductor.org/packages/1.8/BiocViews.html
+
+When available, a link to the Mac OS X universal package (.tgz file) will
+show up on the package homepages. You can use this link for individual
+package download.
+
+Please try and give us some feedback (these universal binaries are still
+experimental). If things are not too bad, we plan to announce on the BioC
+list next tuesday.
+
+Thanks,
+
+H.
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+Phone: (206) 667-5791
+Fax: (206) 667-1319
+
+
+From khansen at stat.Berkeley.EDU  Fri May 19 21:25:36 2006
+From: khansen at stat.Berkeley.EDU (Kasper Daniel Hansen)
+Date: Fri, 19 May 2006 12:25:36 -0700
+Subject: [Bioc-devel] Universal mac OS X packages for BioC 1.8 ready for
+	testing
+In-Reply-To: <446DFEFD.8000002@fhcrc.org>
+References: <446DFEFD.8000002@fhcrc.org>
+Message-ID: <4B941C37-D4EE-4C89-99D1-B13B1B2196C8@stat.berkeley.edu>
+
+I am unable to access the repository using the Mac OS pull-down menu  
+where I choose "Bioconductor (binaries)". I know this is not the way  
+you specific below, but I gues it is the most natural way for most  
+users. Perhaps one can do it using a "Other repository". Perhaps this  
+needs changes in R.app - in that case it should be updated for R-2.3.1
+
+Also: I tried installing affxparser which I know does not compile on  
+Mac OS X with the GCC shipped with R-2.3.0 (we have a fix I will  
+merge into Bioc 1.8 today). It looked like it installed, and the .tgz  
+file contains .so libs both for i386 and ppc. Both I cannot load the  
+package, dyn.load complains about unresolved Symbols (which makes  
+sense, the lib does not fully compile). Anyway, it looks like the  
+binary have been build even though the compilation fails. That is a  
+bit strange.
+
+/Kasper
+
+On May 19, 2006, at 10:23 AM, Herve Pages wrote:
+
+> Hi all,
+>
+> Thanks to Simon Urbanek, the universal Mac OS X packages for BioC 1.8
+> are finally ready for testing. As always, the easiest way to install
+> is to use the biocLite() function:
+>
+>> source("http://bioconductor.org/biocLite.R")
+>> biocLite("name_of_the_package")
+>
+> You _must_ use the universal R 2.3.0 built from CRAN for this to work.
+> Also don't forget to pass 'type="mac.binary"' to the biocLite()  
+> function
+> in case you have the default type set to "source" (you can check this
+> with 'getOption("pkgType")').
+> You can also install a default set of Bioconductor 1.8 packages by
+> simply doing:
+>
+>> biocLite()
+>
+> If you are looking for a particular package but you are not sure about
+> its name or even its existence, you can browse the Bioconductor 1.8
+> package repositories by going to:
+>
+>   http://bioconductor.org/packages/1.8/BiocViews.html
+>
+> When available, a link to the Mac OS X universal package (.tgz  
+> file) will
+> show up on the package homepages. You can use this link for individual
+> package download.
+>
+> Please try and give us some feedback (these universal binaries are  
+> still
+> experimental). If things are not too bad, we plan to announce on  
+> the BioC
+> list next tuesday.
+>
+> Thanks,
+>
+> H.
+>
+> -- 
+> ------------------------
+> Herv? Pag?s
+> E-mail: hpages at fhcrc.org
+> Phone: (206) 667-5791
+> Fax: (206) 667-1319
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From sfalcon at fhcrc.org  Sat May 20 01:12:19 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 19 May 2006 16:12:19 -0700
+Subject: [Bioc-devel] Universal mac OS X packages for BioC 1.8 ready for
+	testing
+In-Reply-To: <4B941C37-D4EE-4C89-99D1-B13B1B2196C8@stat.berkeley.edu> (Kasper
+	Daniel Hansen's message of "Fri, 19 May 2006 12:25:36 -0700")
+References: <446DFEFD.8000002@fhcrc.org>
+	<4B941C37-D4EE-4C89-99D1-B13B1B2196C8@stat.berkeley.edu>
+Message-ID: <m23bf54njg.fsf@ziti.fhcrc.org>
+
+Kasper Daniel Hansen <khansen at stat.berkeley.edu> writes:
+
+> I am unable to access the repository using the Mac OS pull-down menu  
+> where I choose "Bioconductor (binaries)". I know this is not the way  
+> you specific below, but I gues it is the most natural way for most  
+> users. Perhaps one can do it using a "Other repository". Perhaps this  
+> needs changes in R.app - in that case it should be updated for
+> R-2.3.1
+
+That's something for the R-SIG-Mac list, perhaps.  I think it would
+take a fair amount of work to get the package installation to work via
+the GUI.  Why?  Because to intall packages you need to install
+dependencies and ours are spread across multiple repositories.
+
+> Also: I tried installing affxparser which I know does not compile on  
+> Mac OS X with the GCC shipped with R-2.3.0 (we have a fix I will  
+> merge into Bioc 1.8 today). It looked like it installed, and the .tgz  
+> file contains .so libs both for i386 and ppc. Both I cannot load the  
+> package, dyn.load complains about unresolved Symbols (which makes  
+> sense, the lib does not fully compile). Anyway, it looks like the  
+> binary have been build even though the compilation fails. That is a  
+> bit strange.
+
+Indeed.  Thanks for testing and providing some feedback.
+
++ seth
+
+

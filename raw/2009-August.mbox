@@ -1,0 +1,2577 @@
+From Matthias.Kohl at stamats.de  Mon Aug  3 11:47:42 2009
+From: Matthias.Kohl at stamats.de (Matthias Kohl)
+Date: Mon, 03 Aug 2009 11:47:42 +0200
+Subject: [Bioc-devel] initialize method for ExpressionSet
+Message-ID: <4A76B23E.7010009@stamats.de>
+
+Dear all,
+
+just had a look at the initialize method for class ExpressionSet.
+
+As far as I understand, the part "else if (missing(exprs))" won't be 
+called as you have "exprs = new("matrix")" in the definition of the method.
+
+So, is
+
+new("ExpressionSet")
+
+expected to give an error?
+
+Best,
+Matthias
+
+-- 
+Dr. Matthias Kohl
+www.stamats.de
+
+
+From mtmorgan at fhcrc.org  Mon Aug  3 14:46:05 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 03 Aug 2009 05:46:05 -0700
+Subject: [Bioc-devel] initialize method for ExpressionSet
+In-Reply-To: <4A76B23E.7010009@stamats.de>
+References: <4A76B23E.7010009@stamats.de>
+Message-ID: <4A76DC0D.1070104@fhcrc.org>
+
+Hi Matthias --
+
+Matthias Kohl wrote:
+> Dear all,
+> 
+> just had a look at the initialize method for class ExpressionSet.
+> 
+> As far as I understand, the part "else if (missing(exprs))" won't be
+> called as you have "exprs = new("matrix")" in the definition of the method.
+
+In an R function
+
+  foo <- function(x=integer()) missing(x)
+
+> f()
+[1] TRUE
+> f(x=1)
+[1] FALSE
+
+'missing' has to do with whether the argument is provided by the user,
+not in the function definition.
+
+> 
+> So, is
+> 
+> new("ExpressionSet")
+> 
+> expected to give an error?
+
+no, no error expected, or seen.
+
+> new("ExpressionSet")
+ExpressionSet (storageMode: lockedEnvironment)
+assayData: 0 features, 0 samples
+  element names: exprs
+phenoData
+  sampleNames:
+  varLabels and varMetadata description: none
+featureData
+  featureNames:
+  fvarLabels and fvarMetadata description: none
+experimentData: use 'experimentData(object)'
+Annotation:
+
+It helps to have your sessionInfo(); implementations change and it's
+hard to know which version you're referring to. Here's mine for the above:
+
+> sessionInfo()
+R version 2.9.0 Patched (2009-06-06 r48723)
+x86_64-unknown-linux-gnu
+
+locale:
+LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8;LC_COLLATE=en_US.UTF-8;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] Biobase_2.4.1
+
+loaded via a namespace (and not attached):
+[1] tools_2.9.0
+
+Martin
+> 
+> Best,
+> Matthias
+>
+
+
+From Matthias.Kohl at stamats.de  Mon Aug  3 14:47:26 2009
+From: Matthias.Kohl at stamats.de (Matthias Kohl)
+Date: Mon, 03 Aug 2009 14:47:26 +0200
+Subject: [Bioc-devel] initialize method for ExpressionSet
+In-Reply-To: <4A76DC0D.1070104@fhcrc.org>
+References: <4A76B23E.7010009@stamats.de> <4A76DC0D.1070104@fhcrc.org>
+Message-ID: <4A76DC5E.7050602@stamats.de>
+
+Hi Martin,
+
+sorry, my fault ...
+
+Best,
+Matthias
+
+Martin Morgan schrieb:
+> Hi Matthias --
+>
+> Matthias Kohl wrote:
+>   
+>> Dear all,
+>>
+>> just had a look at the initialize method for class ExpressionSet.
+>>
+>> As far as I understand, the part "else if (missing(exprs))" won't be
+>> called as you have "exprs = new("matrix")" in the definition of the method.
+>>     
+>
+> In an R function
+>
+>   foo <- function(x=integer()) missing(x)
+>
+>   
+>> f()
+>>     
+> [1] TRUE
+>   
+>> f(x=1)
+>>     
+> [1] FALSE
+>
+> 'missing' has to do with whether the argument is provided by the user,
+> not in the function definition.
+>
+>   
+>> So, is
+>>
+>> new("ExpressionSet")
+>>
+>> expected to give an error?
+>>     
+>
+> no, no error expected, or seen.
+>
+>   
+>> new("ExpressionSet")
+>>     
+> ExpressionSet (storageMode: lockedEnvironment)
+> assayData: 0 features, 0 samples
+>   element names: exprs
+> phenoData
+>   sampleNames:
+>   varLabels and varMetadata description: none
+> featureData
+>   featureNames:
+>   fvarLabels and fvarMetadata description: none
+> experimentData: use 'experimentData(object)'
+> Annotation:
+>
+> It helps to have your sessionInfo(); implementations change and it's
+> hard to know which version you're referring to. Here's mine for the above:
+>
+>   
+>> sessionInfo()
+>>     
+> R version 2.9.0 Patched (2009-06-06 r48723)
+> x86_64-unknown-linux-gnu
+>
+> locale:
+> LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8;LC_COLLATE=en_US.UTF-8;LC_MONETARY=C;LC_MESSAGES=en_US.UTF-8;LC_PAPER=en_US.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_US.UTF-8;LC_IDENTIFICATION=C
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> other attached packages:
+> [1] Biobase_2.4.1
+>
+> loaded via a namespace (and not attached):
+> [1] tools_2.9.0
+>
+> Martin
+>   
+>> Best,
+>> Matthias
+>>
+>>     
+>
+>   
+
+-- 
+Dr. Matthias Kohl
+www.stamats.de
+
+
+From alevchuk at gmail.com  Tue Aug  4 04:17:54 2009
+From: alevchuk at gmail.com (Aleksandr Levchuk)
+Date: Mon, 3 Aug 2009 19:17:54 -0700
+Subject: [Bioc-devel] Sequences from non-disk sources
+Message-ID: <a39d6f080908031917j1a081b0y876b1f91db894954@mail.gmail.com>
+
+Dear BioC developers,
+
+Some of my sequences come from non-disk sources:
+  Network
+  Un-compressors
+  Other tool arranged as piplines
+
+I was able to stream such sources into R without touching the disk:
+=========================
+#!/usr/bin/env Rscript
+
+library(Biostrings)
+s <- read.AAStringSet("/dev/stdin", "fasta")
+
+#
+# operate on s
+#
+=========================
+
+Assuming the above file is called my.R, I can run:
+  chmod +x my.R
+  cat my.fasta.gz |  gzip -dc | ./my.R
+
+Very powerful and flexible.
+
+
+But I would like to would eliminate my "hackish" /dev/stdin fifo approach.
+
+I noticed that functions 'write.XStringSet' and 'write.XStringViews'
+have an official documented way that allows writing to standard
+output.
+
+
+Would it be difficult to add an argument to the Biostrings read
+functions to allow reading sequences from standard input?
+
+
+Alex
+
+-- 
+---------------------------------------------------------------
+Aleksandr Levchuk
+Bioinformatic Systems and Databases
+
+University of California, Riverside
+Institute for Integrative Genome Biology
+
+
+From mflawren at fhcrc.org  Tue Aug  4 15:47:22 2009
+From: mflawren at fhcrc.org (Michael Lawrence)
+Date: Tue, 4 Aug 2009 06:47:22 -0700
+Subject: [Bioc-devel] Sequences from non-disk sources
+In-Reply-To: <a39d6f080908031917j1a081b0y876b1f91db894954@mail.gmail.com>
+References: <a39d6f080908031917j1a081b0y876b1f91db894954@mail.gmail.com>
+Message-ID: <509e0620908040647w11982159r6a3db758cf948724@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090804/b05f941e/attachment.pl>
+
+From paboyoun at fhcrc.org  Tue Aug  4 20:11:29 2009
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Tue, 04 Aug 2009 11:11:29 -0700
+Subject: [Bioc-devel] Modified eSet class definition,
+ updated serialized eSet objects, and broken BioC 2.4 builds
+Message-ID: <4A7879D1.5040600@fhcrc.org>
+
+After receiving your collective feedback on a recent eSet class 
+definition modifications I made, we changed our design to better reflect 
+the reality microarray data analysts face.
+
+In the newly updated Biobase package we take the view of there being two 
+main curators of covariates (be they of type phenotype, genotype, 
+experimental, etc.): those covariates recorded by the experimenter and 
+those covariates recorded by the measuring device (typically stored as 
+header information in a data file). In terms of the eSet class and its 
+derivatives, experimenter curated covariates should be housed in the 
+phenoData (AnnotatedDataFrame) slot and manufacturer curated covariates 
+are to be stored in a new protocolData (AnnotatedDataFrame) slot. The 
+intent is that the new protocolData slot is only modified by a data file 
+read operation, like affy's read.affybatch function. Read function 
+ownership of the protocolData slot will provide the developer with the 
+assurance that they are not stomping on the user's data as well as 
+provide the end user with a clean representation of what metadata was 
+contained within the original data files. The end user can always copy 
+the protocolData information into the phenoData slot to make analysis 
+easier. The power of this new protocolData slot will be dependent on the 
+maintainers of packages that read in microarray data since there is a 
+fair amount of metadata that can be harvested from data file headers 
+that, through standard conventions, is currently being ignored. As part 
+of this change, the scanDate slot has been removed from the eSet class.
+
+To make this transition smoother, I spent a day or so updating all the 
+serialized eSet objects I could find so they will have the protocolData 
+slot and pass a validObject() check. From my examination, all is well in 
+the BioC 2.5 branch, but now the BioC 2.4 branch has a number of build 
+failures because we don't fork data experiment packages and data 
+experiment packages that have newly serialized eSet objects will not 
+work with the release branch. These build package failures do not affect 
+end users of BioC 2.4 since bioconductor.org has versions of the data 
+packages that contain the old serialized eSet objects. The main problem 
+we have now is that if you wish to patch a BioC 2.4 package and your 
+package does not build due to a dependency on a data experiment package, 
+we will need to hand build and push your package. This issue may get us 
+to rethink our policy of not forking data experiment packages in svn. 
+There is a cost with forking the data experiment packages and so far it 
+has outweighed the benefits we would receive. If we find the benefits 
+rising, we will adopt the same svn forking approach we have with the 
+software packages.
+
+Thanks again for your feedback the first go around.
+
+
+- The Biocore Team
+
+
+From mtmorgan at fhcrc.org  Wed Aug  5 18:59:13 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 05 Aug 2009 09:59:13 -0700
+Subject: [Bioc-devel] Sequences from non-disk sources
+In-Reply-To: <509e0620908040647w11982159r6a3db758cf948724@mail.gmail.com>
+	(Michael Lawrence's message of "Tue, 4 Aug 2009 06:47:22 -0700")
+References: <a39d6f080908031917j1a081b0y876b1f91db894954@mail.gmail.com>
+	<509e0620908040647w11982159r6a3db758cf948724@mail.gmail.com>
+Message-ID: <6pheirq9oym.fsf@gopher4.fhcrc.org>
+
+Michael Lawrence <mflawren at fhcrc.org> writes:
+
+> On Mon, Aug 3, 2009 at 7:17 PM, Aleksandr Levchuk <alevchuk at gmail.com>wrote:
+>
+>> Dear BioC developers,
+>>
+>> Some of my sequences come from non-disk sources:
+>>  Network
+>>  Un-compressors
+>>  Other tool arranged as piplines
+>>
+>> I was able to stream such sources into R without touching the disk:
+>> =========================
+>> #!/usr/bin/env Rscript
+>>
+>> library(Biostrings)
+>> s <- read.AAStringSet("/dev/stdin", "fasta")
+>>
+>> #
+>> # operate on s
+>> #
+>> =========================
+>>
+>> Assuming the above file is called my.R, I can run:
+>>  chmod +x my.R
+>>  cat my.fasta.gz |  gzip -dc | ./my.R
+>>
+>> Very powerful and flexible.
+>>
+>>
+>> But I would like to would eliminate my "hackish" /dev/stdin fifo approach.
+
+Hi Alex
+
+from ?stdin it would appear that your hackish approach is close to R's
+recommendation; file("stdin") is documented to access the C-level
+stdin.  For other connections on linux it seems like one needs, e.g.,
+gzfile("/dev/stdin"); I don't know about other OS.
+
+The reason this works for things like read.AAStringSet is that at it's
+root it uses R's built-in functions like 'scan', 'read.table', and
+'readLines'. These make use of connections (the thing returned by
+file()) without any additional effort on the part of the package
+developer.
+
+Most package developers write parsers that are expecting a character
+string naming a file, and then using C's fopen or the like to connect
+to a simple files. This is partly because the C-level interface to
+'connection' objects is not developer friendly. The two challenges are
+thus a) connections are not generally available for all parsers and b)
+developers are not likely to be in a position to implement them even
+if provided a good use case (and your use case is a really nice
+illustration that it would be useful for this to work). These are
+general statements, and there might be tweaks to existing code that
+would allow more flexible use of connections.
+
+If I'm mistaken and there really is an easy way to use connections in
+C, then please correct me!
+
+Martin
+
+>
+> What about R connections? There's a gzfile() connection that would handle
+> the case above, as well as network connections, url().
+>
+> Just as untested example:
+> s <- read.AAStringSet(gzfile("my.fasta.gz"), "fasta")
+>
+>
+>>
+>> I noticed that functions 'write.XStringSet' and 'write.XStringViews'
+>> have an official documented way that allows writing to standard
+>> output.
+>>
+>>
+>> Would it be difficult to add an argument to the Biostrings read
+>> functions to allow reading sequences from standard input?
+>>
+>>
+>> Alex
+>>
+>> --
+>> ---------------------------------------------------------------
+>> Aleksandr Levchuk
+>> Bioinformatic Systems and Databases
+>>
+>> University of California, Riverside
+>> Institute for Integrative Genome Biology
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From alevchuk at gmail.com  Wed Aug  5 21:37:39 2009
+From: alevchuk at gmail.com (Aleksandr Levchuk)
+Date: Wed, 5 Aug 2009 12:37:39 -0700
+Subject: [Bioc-devel] Sequences from non-disk sources
+In-Reply-To: <6pheirq9oym.fsf@gopher4.fhcrc.org>
+References: <a39d6f080908031917j1a081b0y876b1f91db894954@mail.gmail.com>
+	<509e0620908040647w11982159r6a3db758cf948724@mail.gmail.com>
+	<6pheirq9oym.fsf@gopher4.fhcrc.org>
+Message-ID: <a39d6f080908051237r7f2cc01fnb9b165136cf98f0a@mail.gmail.com>
+
+Thank you Martin.
+
+I checked, your method works:
+  s <- read.AAStringSet(file("stdin"), "fasta")
+
+In C-level, a developer can read files in a non-sequential fashion,
+skipping to various places around the file. This would cause a C-level
+error if the input is coming from stdin because stdin is implemented
+as a sequential stream.
+
+It would make the Biostrings more stable, if an official argument
+(e.g. ' "" ' for file) is documented under ?read.AAStringSet and
+others, because C-level developers will then avoid the non-sequential
+fashion of reading files.
+
+Alex
+
+
+On Wed, Aug 5, 2009 at 9:59 AM, Martin Morgan<mtmorgan at fhcrc.org> wrote:
+> Michael Lawrence <mflawren at fhcrc.org> writes:
+>
+>> On Mon, Aug 3, 2009 at 7:17 PM, Aleksandr Levchuk <alevchuk at gmail.com>wrote:
+>>
+>>> Dear BioC developers,
+>>>
+>>> Some of my sequences come from non-disk sources:
+>>> ?Network
+>>> ?Un-compressors
+>>> ?Other tool arranged as piplines
+>>>
+>>> I was able to stream such sources into R without touching the disk:
+>>> =========================
+>>> #!/usr/bin/env Rscript
+>>>
+>>> library(Biostrings)
+>>> s <- read.AAStringSet("/dev/stdin", "fasta")
+>>>
+>>> #
+>>> # operate on s
+>>> #
+>>> =========================
+>>>
+>>> Assuming the above file is called my.R, I can run:
+>>> ?chmod +x my.R
+>>> ?cat my.fasta.gz | ?gzip -dc | ./my.R
+>>>
+>>> Very powerful and flexible.
+>>>
+>>>
+>>> But I would like to would eliminate my "hackish" /dev/stdin fifo approach.
+>
+> Hi Alex
+>
+> from ?stdin it would appear that your hackish approach is close to R's
+> recommendation; file("stdin") is documented to access the C-level
+> stdin. ?For other connections on linux it seems like one needs, e.g.,
+> gzfile("/dev/stdin"); I don't know about other OS.
+>
+> The reason this works for things like read.AAStringSet is that at it's
+> root it uses R's built-in functions like 'scan', 'read.table', and
+> 'readLines'. These make use of connections (the thing returned by
+> file()) without any additional effort on the part of the package
+> developer.
+>
+> Most package developers write parsers that are expecting a character
+> string naming a file, and then using C's fopen or the like to connect
+> to a simple files. This is partly because the C-level interface to
+> 'connection' objects is not developer friendly. The two challenges are
+> thus a) connections are not generally available for all parsers and b)
+> developers are not likely to be in a position to implement them even
+> if provided a good use case (and your use case is a really nice
+> illustration that it would be useful for this to work). These are
+> general statements, and there might be tweaks to existing code that
+> would allow more flexible use of connections.
+>
+> If I'm mistaken and there really is an easy way to use connections in
+> C, then please correct me!
+>
+> Martin
+>
+>>
+>> What about R connections? There's a gzfile() connection that would handle
+>> the case above, as well as network connections, url().
+>>
+>> Just as untested example:
+>> s <- read.AAStringSet(gzfile("my.fasta.gz"), "fasta")
+>>
+>>
+>>>
+>>> I noticed that functions 'write.XStringSet' and 'write.XStringViews'
+>>> have an official documented way that allows writing to standard
+>>> output.
+>>>
+>>>
+>>> Would it be difficult to add an argument to the Biostrings read
+>>> functions to allow reading sequences from standard input?
+>>>
+>>>
+>>> Alex
+>>>
+>>> --
+>>> ---------------------------------------------------------------
+>>> Aleksandr Levchuk
+>>> Bioinformatic Systems and Databases
+>>>
+>>> University of California, Riverside
+>>> Institute for Integrative Genome Biology
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>> ? ? ? [[alternative HTML version deleted]]
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> --
+> Martin Morgan
+> Computational Biology / Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N.
+> PO Box 19024 Seattle, WA 98109
+>
+> Location: Arnold Building M1 B861
+> Phone: (206) 667-2793
+>
+
+
+
+-- 
+---------------------------------------------------------------
+Aleksandr Levchuk
+Bioinformatic Systems and Databases
+Cell Phone: (951) 368-0004
+
+Institute for Integrative Genome Biology
+University of California, Riverside
+
+
+From bcarvalh at jhsph.edu  Fri Aug  7 19:00:50 2009
+From: bcarvalh at jhsph.edu (Benilton Carvalho)
+Date: Fri, 7 Aug 2009 14:00:50 -0300
+Subject: [Bioc-devel] problem when building oligo on wilson2
+Message-ID: <8F5DD234-85B4-47FD-8F20-0E59EDAA90D0@jhsph.edu>
+
+(resending the message as my initial attempts were refused)
+
+Hi,
+
+I'm looking for some insight on the source of the problem reported by  
+'wilson2' when building oligo:
+
+http://www.bioconductor.org/checkResults/2.5/bioc-LATEST/oligo/wilson2-buildsrc.html
+
+This machine has R-devel r49067... The other machines have r49060 and  
+r49021.
+
+So, because the pkg builds just fine on other machines but wilson2, I  
+thought that the source of the problem would be on changes between  
+r49060 and r49067.
+
+Looking at the log of R-devel for all these revisions, I don't see any  
+change that would cause the error "'dimnames' applied to non-array" to  
+come up.
+
+I just installed the latest R-devel and I can't reproduce the problem.  
+So, is it just a matter of waiting until R-devel is updated on the  
+machines used to build the packages?
+
+Thanks a lot,
+
+b
+
+
+From rgentlem at fhcrc.org  Fri Aug  7 19:11:46 2009
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Fri, 07 Aug 2009 10:11:46 -0700
+Subject: [Bioc-devel] problem when building oligo on wilson2
+In-Reply-To: <8F5DD234-85B4-47FD-8F20-0E59EDAA90D0@jhsph.edu>
+References: <8F5DD234-85B4-47FD-8F20-0E59EDAA90D0@jhsph.edu>
+Message-ID: <4A7C6052.9010803@fhcrc.org>
+
+Hi Benilton,
+   It could be any one of a number of things, not necessarily the build 
+of R (although that could be a factor).  Someone here will likely need 
+to try to run this and see if it is reproducible from the command line 
+and if so, to try and find the problem.  Alternatively you could check 
+out that version of R and see if the problem is reproducible on a 
+computer near you.
+
+   best wishes
+     Robert
+
+
+Benilton Carvalho wrote:
+> (resending the message as my initial attempts were refused)
+> 
+> Hi,
+> 
+> I'm looking for some insight on the source of the problem reported by 
+> 'wilson2' when building oligo:
+> 
+> http://www.bioconductor.org/checkResults/2.5/bioc-LATEST/oligo/wilson2-buildsrc.html 
+> 
+> 
+> This machine has R-devel r49067... The other machines have r49060 and 
+> r49021.
+> 
+> So, because the pkg builds just fine on other machines but wilson2, I 
+> thought that the source of the problem would be on changes between 
+> r49060 and r49067.
+> 
+> Looking at the log of R-devel for all these revisions, I don't see any 
+> change that would cause the error "'dimnames' applied to non-array" to 
+> come up.
+> 
+> I just installed the latest R-devel and I can't reproduce the problem. 
+> So, is it just a matter of waiting until R-devel is updated on the 
+> machines used to build the packages?
+> 
+> Thanks a lot,
+> 
+> b
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M1-B514
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From paboyoun at fhcrc.org  Fri Aug  7 19:17:28 2009
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Fri, 07 Aug 2009 10:17:28 -0700
+Subject: [Bioc-devel] problem when building oligo on wilson2
+In-Reply-To: <4A7C6052.9010803@fhcrc.org>
+References: <8F5DD234-85B4-47FD-8F20-0E59EDAA90D0@jhsph.edu>
+	<4A7C6052.9010803@fhcrc.org>
+Message-ID: <4A7C61A8.6010606@fhcrc.org>
+
+Benilton,
+I pushed an early report of the builds today that don't include Windows 
+because those machines haven't completed the build process yet. For 
+today's report oligo isn't building on wilson2 (Linux), pitt (Mac OS X 
+Tiger), pelham (Mac OSX Leopard).
+
+http://www.bioconductor.org/checkResults/2.5/bioc-LATEST/oligo/wilson2-buildsrc.html
+http://www.bioconductor.org/checkResults/2.5/bioc-LATEST/oligo/pitt-buildsrc.html
+http://www.bioconductor.org/checkResults/2.5/bioc-LATEST/oligo/pelham-buildsrc.html
+
+because of the error
+
+Error: processing vignette 'oligo.Rnw' failed with diagnostics:
+ chunk 3 (label=crlmm)
+Error in crlmm(fullFilenames, outputDir, verbose = FALSE) :
+  could not find function "requireAnnotation"
+Execution halted
+
+
+This missing symbol could be masking the more subtler problem you 
+mentioned, but at least the current error should be easy to correct.
+
+
+
+Patrick
+
+
+
+
+Robert Gentleman wrote:
+> Hi Benilton,
+>   It could be any one of a number of things, not necessarily the build 
+> of R (although that could be a factor).  Someone here will likely need 
+> to try to run this and see if it is reproducible from the command line 
+> and if so, to try and find the problem.  Alternatively you could check 
+> out that version of R and see if the problem is reproducible on a 
+> computer near you.
+>
+>   best wishes
+>     Robert
+>
+>
+> Benilton Carvalho wrote:
+>> (resending the message as my initial attempts were refused)
+>>
+>> Hi,
+>>
+>> I'm looking for some insight on the source of the problem reported by 
+>> 'wilson2' when building oligo:
+>>
+>> http://www.bioconductor.org/checkResults/2.5/bioc-LATEST/oligo/wilson2-buildsrc.html 
+>>
+>>
+>> This machine has R-devel r49067... The other machines have r49060 and 
+>> r49021.
+>>
+>> So, because the pkg builds just fine on other machines but wilson2, I 
+>> thought that the source of the problem would be on changes between 
+>> r49060 and r49067.
+>>
+>> Looking at the log of R-devel for all these revisions, I don't see 
+>> any change that would cause the error "'dimnames' applied to 
+>> non-array" to come up.
+>>
+>> I just installed the latest R-devel and I can't reproduce the 
+>> problem. So, is it just a matter of waiting until R-devel is updated 
+>> on the machines used to build the packages?
+>>
+>> Thanks a lot,
+>>
+>> b
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+
+
+From bcarvalh at jhsph.edu  Fri Aug  7 19:27:31 2009
+From: bcarvalh at jhsph.edu (Benilton Carvalho)
+Date: Fri, 7 Aug 2009 14:27:31 -0300
+Subject: [Bioc-devel] problem when building oligo on wilson2
+In-Reply-To: <4A7C61A8.6010606@fhcrc.org>
+References: <8F5DD234-85B4-47FD-8F20-0E59EDAA90D0@jhsph.edu>
+	<4A7C6052.9010803@fhcrc.org> <4A7C61A8.6010606@fhcrc.org>
+Message-ID: <A0E20721-67BB-4257-9E82-2B9B8171A2E2@jhsph.edu>
+
+Dear Robert and Patrick,
+
+Thank you very much for your time.
+
+Patrick, I just exposed the function, thanks for the heads up.
+
+Robert, thanks for the hint. I'll get r49067 and try to reproduce the  
+problem.
+
+b
+
+On Aug 7, 2009, at 2:17 PM, Patrick Aboyoun wrote:
+
+> Benilton,
+> I pushed an early report of the builds today that don't include  
+> Windows
+> because those machines haven't completed the build process yet. For
+> today's report oligo isn't building on wilson2 (Linux), pitt (Mac OS X
+> Tiger), pelham (Mac OSX Leopard).
+>
+> http://www.bioconductor.org/checkResults/2.5/bioc-LATEST/oligo/wilson2-buildsrc.html
+> http://www.bioconductor.org/checkResults/2.5/bioc-LATEST/oligo/pitt-buildsrc.html
+> http://www.bioconductor.org/checkResults/2.5/bioc-LATEST/oligo/pelham-buildsrc.html
+>
+> because of the error
+>
+> Error: processing vignette 'oligo.Rnw' failed with diagnostics:
+> chunk 3 (label=crlmm)
+> Error in crlmm(fullFilenames, outputDir, verbose = FALSE) :
+>  could not find function "requireAnnotation"
+> Execution halted
+>
+>
+> This missing symbol could be masking the more subtler problem you
+> mentioned, but at least the current error should be easy to correct.
+>
+>
+>
+> Patrick
+>
+>
+>
+>
+> Robert Gentleman wrote:
+>> Hi Benilton,
+>>  It could be any one of a number of things, not necessarily the build
+>> of R (although that could be a factor).  Someone here will likely  
+>> need
+>> to try to run this and see if it is reproducible from the command  
+>> line
+>> and if so, to try and find the problem.  Alternatively you could  
+>> check
+>> out that version of R and see if the problem is reproducible on a
+>> computer near you.
+>>
+>>  best wishes
+>>    Robert
+>>
+>>
+>> Benilton Carvalho wrote:
+>>> (resending the message as my initial attempts were refused)
+>>>
+>>> Hi,
+>>>
+>>> I'm looking for some insight on the source of the problem reported  
+>>> by
+>>> 'wilson2' when building oligo:
+>>>
+>>> http://www.bioconductor.org/checkResults/2.5/bioc-LATEST/oligo/wilson2-buildsrc.html
+>>>
+>>>
+>>> This machine has R-devel r49067... The other machines have r49060  
+>>> and
+>>> r49021.
+>>>
+>>> So, because the pkg builds just fine on other machines but  
+>>> wilson2, I
+>>> thought that the source of the problem would be on changes between
+>>> r49060 and r49067.
+>>>
+>>> Looking at the log of R-devel for all these revisions, I don't see
+>>> any change that would cause the error "'dimnames' applied to
+>>> non-array" to come up.
+>>>
+>>> I just installed the latest R-devel and I can't reproduce the
+>>> problem. So, is it just a matter of waiting until R-devel is updated
+>>> on the machines used to build the packages?
+>>>
+>>> Thanks a lot,
+>>>
+>>> b
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>
+
+
+From bcarvalh at jhsph.edu  Sat Aug  8 00:26:52 2009
+From: bcarvalh at jhsph.edu (Benilton Carvalho)
+Date: Fri, 7 Aug 2009 19:26:52 -0300
+Subject: [Bioc-devel] problem when building oligo on wilson2
+In-Reply-To: <A0E20721-67BB-4257-9E82-2B9B8171A2E2@jhsph.edu>
+References: <8F5DD234-85B4-47FD-8F20-0E59EDAA90D0@jhsph.edu>
+	<4A7C6052.9010803@fhcrc.org> <4A7C61A8.6010606@fhcrc.org>
+	<A0E20721-67BB-4257-9E82-2B9B8171A2E2@jhsph.edu>
+Message-ID: <D7B92C92-05C7-4EC2-8947-5F5C49B0AC7F@jhsph.edu>
+
+I got the revision 49067, but wasn't able to reproduce the problem on  
+the machine I have access to... so I'll just wait for the next build  
+and see what comes up.
+
+Thank you very much,
+
+b
+
+On Aug 7, 2009, at 2:27 PM, Benilton Carvalho wrote:
+
+> Dear Robert and Patrick,
+>
+> Thank you very much for your time.
+>
+> Patrick, I just exposed the function, thanks for the heads up.
+>
+> Robert, thanks for the hint. I'll get r49067 and try to reproduce the
+> problem.
+>
+> b
+>
+> On Aug 7, 2009, at 2:17 PM, Patrick Aboyoun wrote:
+>
+>> Benilton,
+>> I pushed an early report of the builds today that don't include
+>> Windows
+>> because those machines haven't completed the build process yet. For
+>> today's report oligo isn't building on wilson2 (Linux), pitt (Mac  
+>> OS X
+>> Tiger), pelham (Mac OSX Leopard).
+>>
+>> http://www.bioconductor.org/checkResults/2.5/bioc-LATEST/oligo/wilson2-buildsrc.html
+>> http://www.bioconductor.org/checkResults/2.5/bioc-LATEST/oligo/pitt-buildsrc.html
+>> http://www.bioconductor.org/checkResults/2.5/bioc-LATEST/oligo/pelham-buildsrc.html
+>>
+>> because of the error
+>>
+>> Error: processing vignette 'oligo.Rnw' failed with diagnostics:
+>> chunk 3 (label=crlmm)
+>> Error in crlmm(fullFilenames, outputDir, verbose = FALSE) :
+>> could not find function "requireAnnotation"
+>> Execution halted
+>>
+>>
+>> This missing symbol could be masking the more subtler problem you
+>> mentioned, but at least the current error should be easy to correct.
+>>
+>>
+>>
+>> Patrick
+>>
+>>
+>>
+>>
+>> Robert Gentleman wrote:
+>>> Hi Benilton,
+>>> It could be any one of a number of things, not necessarily the build
+>>> of R (although that could be a factor).  Someone here will likely
+>>> need
+>>> to try to run this and see if it is reproducible from the command
+>>> line
+>>> and if so, to try and find the problem.  Alternatively you could
+>>> check
+>>> out that version of R and see if the problem is reproducible on a
+>>> computer near you.
+>>>
+>>> best wishes
+>>>   Robert
+>>>
+>>>
+>>> Benilton Carvalho wrote:
+>>>> (resending the message as my initial attempts were refused)
+>>>>
+>>>> Hi,
+>>>>
+>>>> I'm looking for some insight on the source of the problem reported
+>>>> by
+>>>> 'wilson2' when building oligo:
+>>>>
+>>>> http://www.bioconductor.org/checkResults/2.5/bioc-LATEST/oligo/wilson2-buildsrc.html
+>>>>
+>>>>
+>>>> This machine has R-devel r49067... The other machines have r49060
+>>>> and
+>>>> r49021.
+>>>>
+>>>> So, because the pkg builds just fine on other machines but
+>>>> wilson2, I
+>>>> thought that the source of the problem would be on changes between
+>>>> r49060 and r49067.
+>>>>
+>>>> Looking at the log of R-devel for all these revisions, I don't see
+>>>> any change that would cause the error "'dimnames' applied to
+>>>> non-array" to come up.
+>>>>
+>>>> I just installed the latest R-devel and I can't reproduce the
+>>>> problem. So, is it just a matter of waiting until R-devel is  
+>>>> updated
+>>>> on the machines used to build the packages?
+>>>>
+>>>> Thanks a lot,
+>>>>
+>>>> b
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>>
+>>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From M.Johannes at DKFZ.de  Tue Aug 18 13:19:55 2009
+From: M.Johannes at DKFZ.de (Marc Johannes)
+Date: Tue, 18 Aug 2009 13:19:55 +0200
+Subject: [Bioc-devel] Problems reported by the "Multiple platform
+	build/check report" for BioC 2.4
+Message-ID: <2ef2f0f20908180419o5f78e6a6wfa2f3219c4fdc2d0@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090818/9cb03b34/attachment.pl>
+
+From jmacdon at med.umich.edu  Tue Aug 18 14:57:53 2009
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Tue, 18 Aug 2009 08:57:53 -0400
+Subject: [Bioc-devel] Problems reported by the "Multiple
+ platform	build/check report" for BioC 2.4
+In-Reply-To: <2ef2f0f20908180419o5f78e6a6wfa2f3219c4fdc2d0@mail.gmail.com>
+References: <2ef2f0f20908180419o5f78e6a6wfa2f3219c4fdc2d0@mail.gmail.com>
+Message-ID: <4A8AA551.2090206@med.umich.edu>
+
+Hi Marc,
+
+Marc Johannes wrote:
+> Hi mailinglist,
+> 
+> this is my first post, so hopefully I'm doing everything right.
+> 
+> I am the maintainer of the pakage MCRestimate. Without changing any code
+> this pakage does no longer pass the multiple platform check:
+> 
+> -
+> http://bioconductor.org/checkResults/2.4/bioc-LATEST/MCRestimate/pitt-buildsrc.html
+> -
+> http://bioconductor.org/checkResults/2.4/bioc-LATEST/MCRestimate/pelham-buildsrc.html
+> 
+>>From the command output I read that it isn't a problem of my pakage, since
+> we are dependent on Biobase (>= 1.4.2) and golubEsets (>= 1.2). Am I right?
+
+Yes. Usually if your package errors on only one or two of the build 
+machines the problem is specific to that machine, which is the case here.
+
+> 
+> What can I do to avoid this error?
+
+Nothing, but keep your eye on things. Between release cycles as people 
+update packages the build machines can get off-cycle (as here - it 
+appears that the golubEsets package has been updated but Biobase hasn't 
+yet). These things are usually resolved in a day or two, and certainly 
+will be by the time the next release rolls around.
+
+Best,
+
+Jim
+
+
+> 
+> Thank in advance.
+> 
+> Best,
+> Marc Johannes
+> 
+> 	[[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Douglas Lab
+University of Michigan
+Department of Human Genetics
+5912 Buhl
+1241 E. Catherine St.
+Ann Arbor MI 48109-5618
+734-615-7826
+
+
+From hpages at fhcrc.org  Wed Aug 19 21:36:46 2009
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Wed, 19 Aug 2009 12:36:46 -0700
+Subject: [Bioc-devel] Problems reported by the "Multiple
+ platform	build/check report" for BioC 2.4
+In-Reply-To: <2ef2f0f20908180419o5f78e6a6wfa2f3219c4fdc2d0@mail.gmail.com>
+References: <2ef2f0f20908180419o5f78e6a6wfa2f3219c4fdc2d0@mail.gmail.com>
+Message-ID: <4A8C544E.8080807@fhcrc.org>
+
+Hi Marc,
+
+Yes as Jim said, the problem was specific to the Mac build machines
+where some non-compatible experimental packages (from the devel branch)
+were breaking the builds for the software packages that depend on them.
+Patrick did some cleaning today (thanks Patrick!) just before the build
+started so the problem you see now should go away around midnight
+(Seattle time) when the build/check report is updated.
+
+Cheers,
+H.
+
+Marc Johannes wrote:
+> Hi mailinglist,
+> 
+> this is my first post, so hopefully I'm doing everything right.
+> 
+> I am the maintainer of the pakage MCRestimate. Without changing any code
+> this pakage does no longer pass the multiple platform check:
+> 
+> -
+> http://bioconductor.org/checkResults/2.4/bioc-LATEST/MCRestimate/pitt-buildsrc.html
+> -
+> http://bioconductor.org/checkResults/2.4/bioc-LATEST/MCRestimate/pelham-buildsrc.html
+> 
+>>From the command output I read that it isn't a problem of my pakage, since
+> we are dependent on Biobase (>= 1.4.2) and golubEsets (>= 1.2). Am I right?
+> 
+> What can I do to avoid this error?
+> 
+> Thank in advance.
+> 
+> Best,
+> Marc Johannes
+> 
+> 	[[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From hong.yi at sgh.com.sg  Thu Aug 20 09:21:45 2009
+From: hong.yi at sgh.com.sg (hong.yi at sgh.com.sg)
+Date: Thu, 20 Aug 2009 15:21:45 +0800
+Subject: [Bioc-devel] biocLite.R error
+In-Reply-To: <mailman.0.1250749898.31813.bioc-devel@stat.math.ethz.ch>
+References: <mailman.0.1250749898.31813.bioc-devel@stat.math.ethz.ch>
+Message-ID: <OFE9455097.CA304F8A-ON48257618.0028719B-48257618.002871AB@sgh.com.sg>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090820/3b30897b/attachment.pl>
+
+From pengchy at gmail.com  Thu Aug 20 10:13:50 2009
+From: pengchy at gmail.com (Pengcheng Yang)
+Date: Thu, 20 Aug 2009 16:13:50 +0800
+Subject: [Bioc-devel] biocLite.R error
+In-Reply-To: <OFE9455097.CA304F8A-ON48257618.0028719B-48257618.002871AB@sgh.com.sg>
+References: <mailman.0.1250749898.31813.bioc-devel@stat.math.ethz.ch>
+	<OFE9455097.CA304F8A-ON48257618.0028719B-48257618.002871AB@sgh.com.sg>
+Message-ID: <3b874df70908200113j18994d25m60c60becbb73c99b@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090820/fde93718/attachment.pl>
+
+From sebastien.laigre at gmail.com  Tue Aug 25 16:40:43 2009
+From: sebastien.laigre at gmail.com (=?ISO-8859-1?Q?S=E9bastien_Laigre?=)
+Date: Tue, 25 Aug 2009 16:40:43 +0200
+Subject: [Bioc-devel] Creating a package, Error in match.arg(units)
+Message-ID: <842c20050908250740y13c57c3ardaaf40aa3c6924c3@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090825/99eb7d91/attachment.pl>
+
+From mtmorgan at fhcrc.org  Tue Aug 25 17:54:06 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Tue, 25 Aug 2009 08:54:06 -0700
+Subject: [Bioc-devel] Creating a package, Error in match.arg(units)
+In-Reply-To: <842c20050908250740y13c57c3ardaaf40aa3c6924c3@mail.gmail.com>
+References: <842c20050908250740y13c57c3ardaaf40aa3c6924c3@mail.gmail.com>
+Message-ID: <4A94091E.1070207@fhcrc.org>
+
+S?bastien Laigre wrote:
+> Hello everybody,
+> 
+> I have got several S4 classes for my R application, and I'm trying to create
+> a package to deal it easier. It runs on windows XP.
+> 
+> So I make :
+> 
+>    - a package.build(........) to build the skeleton of the package.
+>    - Rcmd check c:/base/MyApp
+> 
+> But, checking whether package 'MyApp' can be installed, I have the following
+> error (in the install.out file) :
+> Error in match.arg(units) :
+>   'arg' should be one of "secs", "mins", "hours", "days"
+> 
+> I already encountered this kind error, and adding "importFrom("package",
+> "function") " in the NAMESPACE file solved it.
+> But the match.arg function is in the base package and I can not do that.
+> 
+> Can anyone help me please ? Does anybody knows what can it be due to ?
+
+Have you tried to start a new R session
+
+   R --vanilla
+
+and then source each of the files in the 'R' directory of the package, 
+along the lines of
+
+   fls = list.files("c:/base/MyApp/R", full=TRUE)
+   for (f in fls) { cat(f, "\n"); source(f) }
+
+? Or can you provide more information about where during the 
+installation the error message is generated? Please also include 
+sessionInfo().
+
+Martin
+
+> 
+> Thank you in advance.
+> 
+> 
+> Sebastien
+> 
+> 	[[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From sebastien.laigre at gmail.com  Tue Aug 25 18:24:06 2009
+From: sebastien.laigre at gmail.com (=?ISO-8859-1?Q?S=E9bastien_Laigre?=)
+Date: Tue, 25 Aug 2009 18:24:06 +0200
+Subject: [Bioc-devel] Creating a package, Error in match.arg(units)
+In-Reply-To: <4A94091E.1070207@fhcrc.org>
+References: <842c20050908250740y13c57c3ardaaf40aa3c6924c3@mail.gmail.com>
+	<4A94091E.1070207@fhcrc.org>
+Message-ID: <842c20050908250924g4d0ac4c7q17bd865a88faa2fe@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090825/41e07f4d/attachment.pl>
+
+From mtmorgan at fhcrc.org  Wed Aug 26 04:46:31 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Tue, 25 Aug 2009 19:46:31 -0700
+Subject: [Bioc-devel] Creating a package, Error in match.arg(units)
+In-Reply-To: <842c20050908250924g4d0ac4c7q17bd865a88faa2fe@mail.gmail.com>
+References: <842c20050908250740y13c57c3ardaaf40aa3c6924c3@mail.gmail.com>	
+	<4A94091E.1070207@fhcrc.org>
+	<842c20050908250924g4d0ac4c7q17bd865a88faa2fe@mail.gmail.com>
+Message-ID: <4A94A207.8020803@fhcrc.org>
+
+Hi S?bastien --
+
+S?bastien Laigre wrote:
+> Hi Martin,
+> 
+> Thank you for helping me.
+> I just tried to create a new R session, but it doesn't work so much. I
+> also tried to load files one by one using your 2 code lines, but there
+> are dependancies problems including files files ar not loaded in the
+> right order.
+
+it is not too hard to figure out how to load all the packages, e.g.,
+following the sequence listed in the 00install.out output, below.
+
+> In fact, I managed to check & build the package a few time ago, but it
+> doesn't work now. I had the right methodology, but I can't know what has
+> changed (sorry). My methodolgy is :
+> 1. Create the package skeleton with package.build(...) in R console.
+
+Perhaps it would help to review the manual 'Writing R Extensions' so
+that you can get an understanding of what various files are?
+
+> 2. Fill R documentation files in the man folder in skeleton, NAMESPACE
+> and DESCRIPTION files
+> 3. Execute "Rcmd check c:/base/MyApp" with cmd.exe (located in R/bin folder)
+> 4. Execute "Rcmd build c:/base/MyApp" with cmd.exe (located in R/bin folder)
+
+Usually you want to do Rcmd build ... and then Rcmd check ....
+
+Make sure that there are no 'hidden' files (starting with a '.') in any
+of the folders in c:/base/MyApp/.
+
+I don't really have other suggestions, other than to try to narrow down
+where in your package the error occurs, e.g., by temporarily renaming
+one file after the other in the MyApp/R directory.
+
+Martin
+
+> 5. Execute "Rcmd INSTALL MyApp.tar.gz" with cmd.exe (located in R/bin
+> folder)
+> 
+> The error occurs when executing check command, here it is the full
+> install00.out :
+> 
+> Le chargement a n?cessit? le package : tcltk
+> Chargement de Tcl/Tk... termin?
+> Le chargement a n?cessit? le package : Hmisc
+> Attachement du package : 'Hmisc'
+> 
+>     The following object(s) are masked from package:base :
+> 
+>      format.pval,
+>      round.POSIXt,
+>      trunc.POSIXt,
+>      units
+
+> Le chargement a n?cessit? le package : R2HTML
+> Le chargement a n?cessit? le package : svMisc
+> 
+> *** 'hhc.exe' introuvable : l'aide CHM ne peut ?tre g?n?r?e
+> 
+> * Installing *source* package 'MyApp' ...
+> ** R
+> ** preparing package for lazy loading
+> Loading required package: grid
+> Loading required package: reshape
+> Loading required package: plyr
+> 
+> Attaching package: 'plyr'
+> 
+>     The following object(s) are masked from package:Hmisc :
+> 
+>      is.discrete,
+>      summarize
+> 
+> 
+> Attaching package: 'ggplot2'
+> 
+>     The following object(s) are masked from package:grid :
+> 
+>      nullGrob
+> 
+> 
+> Attaching package: 'xtable'
+> 
+>     The following object(s) are masked from package:Hmisc :
+> 
+>      label,
+>      label<-
+> 
+> Error in match.arg(units) :
+>   'arg' should be one of "secs", "mins", "hours", "days"
+> Error : unable to load R code in package 'MyApp'
+> ERREUR : lazy loading failed pour le package 'MyApp'
+> * Removing 'C:/PROGRA~1/R/R-29~1.1/bin/MYAPP~1.RCH/MyApp'
+> 
+> 
+> 
+> Thank you again for you help.
+> 
+> 
+> 
+> S?bastien
+> 
+> 
+> 
+> 2009/8/25 Martin Morgan <mtmorgan at fhcrc.org <mailto:mtmorgan at fhcrc.org>>
+> 
+>     S?bastien Laigre wrote:
+> 
+>         Hello everybody,
+> 
+>         I have got several S4 classes for my R application, and I'm
+>         trying to create
+>         a package to deal it easier. It runs on windows XP.
+> 
+>         So I make :
+> 
+>           - a package.build(........) to build the skeleton of the package.
+>           - Rcmd check c:/base/MyApp
+> 
+>         But, checking whether package 'MyApp' can be installed, I have
+>         the following
+>         error (in the install.out file) :
+>         Error in match.arg(units) :
+>          'arg' should be one of "secs", "mins", "hours", "days"
+> 
+>         I already encountered this kind error, and adding
+>         "importFrom("package",
+>         "function") " in the NAMESPACE file solved it.
+>         But the match.arg function is in the base package and I can not
+>         do that.
+> 
+>         Can anyone help me please ? Does anybody knows what can it be
+>         due to ?
+> 
+> 
+>     Have you tried to start a new R session
+> 
+>      R --vanilla
+> 
+>     and then source each of the files in the 'R' directory of the
+>     package, along the lines of
+> 
+>      fls = list.files("c:/base/MyApp/R", full=TRUE)
+>      for (f in fls) { cat(f, "\n"); source(f) }
+> 
+>     ? Or can you provide more information about where during the
+>     installation the error message is generated? Please also include
+>     sessionInfo().
+> 
+>     Martin
+> 
+> 
+>         Thank you in advance.
+> 
+> 
+>         Sebastien
+> 
+>                [[alternative HTML version deleted]]
+> 
+>         _______________________________________________
+>         Bioc-devel at stat.math.ethz.ch
+>         <mailto:Bioc-devel at stat.math.ethz.ch> mailing list
+>         https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> 
+> 
+>     -- 
+>     Martin Morgan
+>     Computational Biology / Fred Hutchinson Cancer Research Center
+>     1100 Fairview Ave. N.
+>     PO Box 19024 Seattle, WA 98109
+> 
+>     Location: Arnold Building M1 B861
+>     Phone: (206) 667-2793
+> 
+>
+
+
+From sebastien.laigre at gmail.com  Wed Aug 26 10:37:38 2009
+From: sebastien.laigre at gmail.com (=?ISO-8859-1?Q?S=E9bastien_Laigre?=)
+Date: Wed, 26 Aug 2009 10:37:38 +0200
+Subject: [Bioc-devel] Creating a package, Error in match.arg(units)
+In-Reply-To: <4A94A207.8020803@fhcrc.org>
+References: <842c20050908250740y13c57c3ardaaf40aa3c6924c3@mail.gmail.com>
+	<4A94091E.1070207@fhcrc.org>
+	<842c20050908250924g4d0ac4c7q17bd865a88faa2fe@mail.gmail.com>
+	<4A94A207.8020803@fhcrc.org>
+Message-ID: <842c20050908260137x5e54d123l1cefb990b4123ae5@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090826/c7e35e69/attachment.pl>
+
+From sebastien.laigre at gmail.com  Thu Aug 27 09:58:35 2009
+From: sebastien.laigre at gmail.com (=?ISO-8859-1?Q?S=E9bastien_Laigre?=)
+Date: Thu, 27 Aug 2009 09:58:35 +0200
+Subject: [Bioc-devel] Creating a package, Error in match.arg(units)
+In-Reply-To: <842c20050908260137x5e54d123l1cefb990b4123ae5@mail.gmail.com>
+References: <842c20050908250740y13c57c3ardaaf40aa3c6924c3@mail.gmail.com>
+	<4A94091E.1070207@fhcrc.org>
+	<842c20050908250924g4d0ac4c7q17bd865a88faa2fe@mail.gmail.com>
+	<4A94A207.8020803@fhcrc.org>
+	<842c20050908260137x5e54d123l1cefb990b4123ae5@mail.gmail.com>
+Message-ID: <842c20050908270058jc60f053je6cb5ac977aa482b@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090827/79e8ce3f/attachment.pl>
+
+From mtmorgan at fhcrc.org  Thu Aug 27 15:15:31 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 27 Aug 2009 06:15:31 -0700
+Subject: [Bioc-devel] Creating a package, Error in match.arg(units)
+In-Reply-To: <842c20050908270058jc60f053je6cb5ac977aa482b@mail.gmail.com>
+References: <842c20050908250740y13c57c3ardaaf40aa3c6924c3@mail.gmail.com>	
+	<4A94091E.1070207@fhcrc.org>	
+	<842c20050908250924g4d0ac4c7q17bd865a88faa2fe@mail.gmail.com>	
+	<4A94A207.8020803@fhcrc.org>	
+	<842c20050908260137x5e54d123l1cefb990b4123ae5@mail.gmail.com>
+	<842c20050908270058jc60f053je6cb5ac977aa482b@mail.gmail.com>
+Message-ID: <4A9686F3.5080704@fhcrc.org>
+
+S?bastien Laigre wrote:
+> Hi Martin,
+> 
+> I just saw that in install.out, there are the following lines :
+> 
+>> Attachement du package : 'Hmisc'
+>>
+>>     The following object(s) are masked from package:base :
+>>
+>>      format.pval,
+>>      round.POSIXt,
+>>      trunc.POSIXt,
+>>      units
+> 
+> Then an error occurs with match.arg(units)...
+> 
+> So, could it be a conflict between "units" of Hmisc package and "units"
+> of base package ?
+> It sounds that units is taken from Hmisc instead of base, how can tell
+> the compiler to take it into base package ? I tried with importFrom in
+> NAMESPACE but it sounds it is not allowed...
+
+Your own package should have a name space, and if you use functions from
+Hmisc you should import just those
+
+importFrom(Hmisc, foo, bar, baz)
+
+If you are importing from Hmisc, then the DESCRIPTION file should have
+Imports: Hmisc. If there are still problems, you can fully qualify the
+symbols that you want
+
+  base::units
+
+It might be that there is still a problem, e.g., a third package that
+does not have a name space but uses units, and so must find 'units' on
+the search() path. In this case you must work around this by convincing
+the third party author to use a name space, not use the third package,
+or not use Hmisc.
+
+Martin
+
+> 
+> Thank you in advance.
+> 
+> Sebastien
+> 
+> 
+> 2009/8/26 S?bastien Laigre <sebastien.laigre at gmail.com
+> <mailto:sebastien.laigre at gmail.com>>
+> 
+>     Hi Martin,
+> 
+>     Thank you for your suggestions. I tried once again with LazyLoad =
+>     no (in DESCRIPTION file), and now, it tells me :
+> 
+>     ...
+>     Attachement du package : 'xtable'
+> 
+> 
+> 
+>             The following object(s) are masked from package:Hmisc :
+> 
+>              label,
+>              label<-
+> 
+>     Error in match.arg(units) :
+>       'arg' doit ?tre un de "secs", "mins", "hours", "days"
+>     Error : impossible de charger le code R depuis le package 'MyApp'
+>     Erreur : le chargement du package / espace de noms a ?chou? pour 'MyApp'
+>     Ex?cution arr?t?e
+> 
+>     It looks like this package has a loading problem: see the messages for
+>     details.
+> 
+>     It sounds that a package could not be loaded correctly, but I can
+>     not find which one. Is it the latest loaded (xtable) ? How can I
+>     "load it correctly" ?
+>     Thank you.
+> 
+>     Sebastien
+> 
+> 
+> 
+> 
+>     2009/8/26 Martin Morgan <mtmorgan at fhcrc.org <mailto:mtmorgan at fhcrc.org>>
+> 
+>         Hi S?bastien --
+> 
+>         S?bastien Laigre wrote:
+>         > Hi Martin,
+>         >
+>         > Thank you for helping me.
+>         > I just tried to create a new R session, but it doesn't work so
+>         much. I
+>         > also tried to load files one by one using your 2 code lines,
+>         but there
+>         > are dependancies problems including files files ar not loaded
+>         in the
+>         > right order.
+> 
+>         it is not too hard to figure out how to load all the packages, e.g.,
+>         following the sequence listed in the 00install.out output, below.
+> 
+>         > In fact, I managed to check & build the package a few time
+>         ago, but it
+>         > doesn't work now. I had the right methodology, but I can't
+>         know what has
+>         > changed (sorry). My methodolgy is :
+>         > 1. Create the package skeleton with package.build(...) in R
+>         console.
+> 
+>         Perhaps it would help to review the manual 'Writing R Extensions' so
+>         that you can get an understanding of what various files are?
+> 
+>         > 2. Fill R documentation files in the man folder in skeleton,
+>         NAMESPACE
+>         > and DESCRIPTION files
+>         > 3. Execute "Rcmd check c:/base/MyApp" with cmd.exe (located in
+>         R/bin folder)
+>         > 4. Execute "Rcmd build c:/base/MyApp" with cmd.exe (located in
+>         R/bin folder)
+> 
+>         Usually you want to do Rcmd build ... and then Rcmd check ....
+> 
+>         Make sure that there are no 'hidden' files (starting with a '.')
+>         in any
+>         of the folders in c:/base/MyApp/.
+> 
+>         I don't really have other suggestions, other than to try to
+>         narrow down
+>         where in your package the error occurs, e.g., by temporarily
+>         renaming
+>         one file after the other in the MyApp/R directory.
+> 
+>         Martin
+> 
+>         > 5. Execute "Rcmd INSTALL MyApp.tar.gz" with cmd.exe (located
+>         in R/bin
+>         > folder)
+>         >
+>         > The error occurs when executing check command, here it is the full
+>         > install00.out :
+>         >
+>         > Le chargement a n?cessit? le package : tcltk
+>         > Chargement de Tcl/Tk... termin?
+>         > Le chargement a n?cessit? le package : Hmisc
+>         > Attachement du package : 'Hmisc'
+>         >
+>         >     The following object(s) are masked from package:base :
+>         >
+>         >      format.pval,
+>         >      round.POSIXt,
+>         >      trunc.POSIXt,
+>         >      units
+> 
+>         > Le chargement a n?cessit? le package : R2HTML
+>         > Le chargement a n?cessit? le package : svMisc
+>         >
+>         > *** 'hhc.exe' introuvable : l'aide CHM ne peut ?tre g?n?r?e
+>         >
+>         > * Installing *source* package 'MyApp' ...
+>         > ** R
+>         > ** preparing package for lazy loading
+>         > Loading required package: grid
+>         > Loading required package: reshape
+>         > Loading required package: plyr
+>         >
+>         > Attaching package: 'plyr'
+>         >
+>         >     The following object(s) are masked from package:Hmisc :
+>         >
+>         >      is.discrete,
+>         >      summarize
+>         >
+>         >
+>         > Attaching package: 'ggplot2'
+>         >
+>         >     The following object(s) are masked from package:grid :
+>         >
+>         >      nullGrob
+>         >
+>         >
+>         > Attaching package: 'xtable'
+>         >
+>         >     The following object(s) are masked from package:Hmisc :
+>         >
+>         >      label,
+>         >      label<-
+>         >
+>         > Error in match.arg(units) :
+>         >   'arg' should be one of "secs", "mins", "hours", "days"
+>         > Error : unable to load R code in package 'MyApp'
+>         > ERREUR : lazy loading failed pour le package 'MyApp'
+>         > * Removing 'C:/PROGRA~1/R/R-29~1.1/bin/MYAPP~1.RCH/MyApp'
+>         >
+>         >
+>         >
+>         > Thank you again for you help.
+>         >
+>         >
+>         >
+>         > S?bastien
+>         >
+>         >
+>         >
+>         > 2009/8/25 Martin Morgan <mtmorgan at fhcrc.org
+>         <mailto:mtmorgan at fhcrc.org> <mailto:mtmorgan at fhcrc.org
+>         <mailto:mtmorgan at fhcrc.org>>>
+>         >
+>         >     S?bastien Laigre wrote:
+>         >
+>         >         Hello everybody,
+>         >
+>         >         I have got several S4 classes for my R application,
+>         and I'm
+>         >         trying to create
+>         >         a package to deal it easier. It runs on windows XP.
+>         >
+>         >         So I make :
+>         >
+>         >           - a package.build(........) to build the skeleton of
+>         the package.
+>         >           - Rcmd check c:/base/MyApp
+>         >
+>         >         But, checking whether package 'MyApp' can be
+>         installed, I have
+>         >         the following
+>         >         error (in the install.out file) :
+>         >         Error in match.arg(units) :
+>         >          'arg' should be one of "secs", "mins", "hours", "days"
+>         >
+>         >         I already encountered this kind error, and adding
+>         >         "importFrom("package",
+>         >         "function") " in the NAMESPACE file solved it.
+>         >         But the match.arg function is in the base package and
+>         I can not
+>         >         do that.
+>         >
+>         >         Can anyone help me please ? Does anybody knows what
+>         can it be
+>         >         due to ?
+>         >
+>         >
+>         >     Have you tried to start a new R session
+>         >
+>         >      R --vanilla
+>         >
+>         >     and then source each of the files in the 'R' directory of the
+>         >     package, along the lines of
+>         >
+>         >      fls = list.files("c:/base/MyApp/R", full=TRUE)
+>         >      for (f in fls) { cat(f, "\n"); source(f) }
+>         >
+>         >     ? Or can you provide more information about where during the
+>         >     installation the error message is generated? Please also
+>         include
+>         >     sessionInfo().
+>         >
+>         >     Martin
+>         >
+>         >
+>         >         Thank you in advance.
+>         >
+>         >
+>         >         Sebastien
+>         >
+>         >                [[alternative HTML version deleted]]
+>         >
+>         >         _______________________________________________
+>         >         Bioc-devel at stat.math.ethz.ch
+>         <mailto:Bioc-devel at stat.math.ethz.ch>
+>         >         <mailto:Bioc-devel at stat.math.ethz.ch
+>         <mailto:Bioc-devel at stat.math.ethz.ch>> mailing list
+>         >         https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>         >
+>         >
+>         >
+>         >     --
+>         >     Martin Morgan
+>         >     Computational Biology / Fred Hutchinson Cancer Research Center
+>         >     1100 Fairview Ave. N.
+>         >     PO Box 19024 Seattle, WA 98109
+>         >
+>         >     Location: Arnold Building M1 B861
+>         >     Phone: (206) 667-2793
+>         >
+>         >
+> 
+> 
+>
+
+
+From sebastien.laigre at gmail.com  Mon Aug 31 20:03:08 2009
+From: sebastien.laigre at gmail.com (=?ISO-8859-1?Q?S=E9bastien_Laigre?=)
+Date: Mon, 31 Aug 2009 20:03:08 +0200
+Subject: [Bioc-devel] Creating a package, Error in match.arg(units)
+In-Reply-To: <4A9686F3.5080704@fhcrc.org>
+References: <842c20050908250740y13c57c3ardaaf40aa3c6924c3@mail.gmail.com>
+	<4A94091E.1070207@fhcrc.org>
+	<842c20050908250924g4d0ac4c7q17bd865a88faa2fe@mail.gmail.com>
+	<4A94A207.8020803@fhcrc.org>
+	<842c20050908260137x5e54d123l1cefb990b4123ae5@mail.gmail.com>
+	<842c20050908270058jc60f053je6cb5ac977aa482b@mail.gmail.com>
+	<4A9686F3.5080704@fhcrc.org>
+Message-ID: <842c20050908311103g5c3f2694x3ef81bf80e0054b2@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090831/3edabf1e/attachment.pl>
+
+From mtmorgan at fhcrc.org  Mon Aug 31 20:15:19 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 31 Aug 2009 11:15:19 -0700
+Subject: [Bioc-devel] Creating a package, Error in match.arg(units)
+In-Reply-To: <842c20050908311103g5c3f2694x3ef81bf80e0054b2@mail.gmail.com>
+References: <842c20050908250740y13c57c3ardaaf40aa3c6924c3@mail.gmail.com>	
+	<4A94091E.1070207@fhcrc.org>	
+	<842c20050908250924g4d0ac4c7q17bd865a88faa2fe@mail.gmail.com>	
+	<4A94A207.8020803@fhcrc.org>	
+	<842c20050908260137x5e54d123l1cefb990b4123ae5@mail.gmail.com>	
+	<842c20050908270058jc60f053je6cb5ac977aa482b@mail.gmail.com>	
+	<4A9686F3.5080704@fhcrc.org>
+	<842c20050908311103g5c3f2694x3ef81bf80e0054b2@mail.gmail.com>
+Message-ID: <4A9C1337.9030505@fhcrc.org>
+
+S?bastien Laigre wrote:
+> Hi Martin,
+> 
+> Thank you for answering. I managed to solved my problem. In fact, it was
+> a conflict between Hmisc and xtable. Hmisc overrided units from base
+> package, and xtable needed it, so there was a problem. I used only 2
+> functions, so I copied/pasted these 2 functions in my package, and do
+> not use Hmisc. So the problem disapeared !
+
+A better solution is to use a name space and 'importsFrom', for instance
+in the DESCRIPTION file:
+
+Imports: Hmisc
+
+and in the NAMESPACE file
+
+importFrom(Hmisc, someFunction, anotherFunction)
+
+if you are not already using a name space, then I'd strongly encourage
+you to use one. It'll help avoid conflicts like this in the future. Use
+is documented in the 'Writing R extensions' manual.
+
+Martin
+
+> Thank you very much for your help.
+> 
+> 
+> 2009/8/27 Martin Morgan <mtmorgan at fhcrc.org <mailto:mtmorgan at fhcrc.org>>
+> 
+>     S?bastien Laigre wrote:
+>     > Hi Martin,
+>     >
+>     > I just saw that in install.out, there are the following lines :
+>     >
+>     >> Attachement du package : 'Hmisc'
+>     >>
+>     >>     The following object(s) are masked from package:base :
+>     >>
+>     >>      format.pval,
+>     >>      round.POSIXt,
+>     >>      trunc.POSIXt,
+>     >>      units
+>     >
+>     > Then an error occurs with match.arg(units)...
+>     >
+>     > So, could it be a conflict between "units" of Hmisc package and
+>     "units"
+>     > of base package ?
+>     > It sounds that units is taken from Hmisc instead of base, how can tell
+>     > the compiler to take it into base package ? I tried with importFrom in
+>     > NAMESPACE but it sounds it is not allowed...
+> 
+>     Your own package should have a name space, and if you use functions from
+>     Hmisc you should import just those
+> 
+>     importFrom(Hmisc, foo, bar, baz)
+> 
+>     If you are importing from Hmisc, then the DESCRIPTION file should have
+>     Imports: Hmisc. If there are still problems, you can fully qualify the
+>     symbols that you want
+> 
+>      base::units
+> 
+>     It might be that there is still a problem, e.g., a third package that
+>     does not have a name space but uses units, and so must find 'units' on
+>     the search() path. In this case you must work around this by convincing
+>     the third party author to use a name space, not use the third package,
+>     or not use Hmisc.
+> 
+>     Martin
+> 
+>     >
+>     > Thank you in advance.
+>     >
+>     > Sebastien
+>     >
+>     >
+>     > 2009/8/26 S?bastien Laigre <sebastien.laigre at gmail.com
+>     <mailto:sebastien.laigre at gmail.com>
+>     > <mailto:sebastien.laigre at gmail.com
+>     <mailto:sebastien.laigre at gmail.com>>>
+>     >
+>     >     Hi Martin,
+>     >
+>     >     Thank you for your suggestions. I tried once again with LazyLoad =
+>     >     no (in DESCRIPTION file), and now, it tells me :
+>     >
+>     >     ...
+>     >     Attachement du package : 'xtable'
+>     >
+>     >
+>     >
+>     >             The following object(s) are masked from package:Hmisc :
+>     >
+>     >              label,
+>     >              label<-
+>     >
+>     >     Error in match.arg(units) :
+>     >       'arg' doit ?tre un de "secs", "mins", "hours", "days"
+>     >     Error : impossible de charger le code R depuis le package 'MyApp'
+>     >     Erreur : le chargement du package / espace de noms a ?chou?
+>     pour 'MyApp'
+>     >     Ex?cution arr?t?e
+>     >
+>     >     It looks like this package has a loading problem: see the
+>     messages for
+>     >     details.
+>     >
+>     >     It sounds that a package could not be loaded correctly, but I can
+>     >     not find which one. Is it the latest loaded (xtable) ? How can I
+>     >     "load it correctly" ?
+>     >     Thank you.
+>     >
+>     >     Sebastien
+>     >
+>     >
+>     >
+>     >
+>     >     2009/8/26 Martin Morgan <mtmorgan at fhcrc.org
+>     <mailto:mtmorgan at fhcrc.org> <mailto:mtmorgan at fhcrc.org
+>     <mailto:mtmorgan at fhcrc.org>>>
+>     >
+>     >         Hi S?bastien --
+>     >
+>     >         S?bastien Laigre wrote:
+>     >         > Hi Martin,
+>     >         >
+>     >         > Thank you for helping me.
+>     >         > I just tried to create a new R session, but it doesn't
+>     work so
+>     >         much. I
+>     >         > also tried to load files one by one using your 2 code lines,
+>     >         but there
+>     >         > are dependancies problems including files files ar not
+>     loaded
+>     >         in the
+>     >         > right order.
+>     >
+>     >         it is not too hard to figure out how to load all the
+>     packages, e.g.,
+>     >         following the sequence listed in the 00install.out output,
+>     below.
+>     >
+>     >         > In fact, I managed to check & build the package a few time
+>     >         ago, but it
+>     >         > doesn't work now. I had the right methodology, but I can't
+>     >         know what has
+>     >         > changed (sorry). My methodolgy is :
+>     >         > 1. Create the package skeleton with package.build(...) in R
+>     >         console.
+>     >
+>     >         Perhaps it would help to review the manual 'Writing R
+>     Extensions' so
+>     >         that you can get an understanding of what various files are?
+>     >
+>     >         > 2. Fill R documentation files in the man folder in skeleton,
+>     >         NAMESPACE
+>     >         > and DESCRIPTION files
+>     >         > 3. Execute "Rcmd check c:/base/MyApp" with cmd.exe
+>     (located in
+>     >         R/bin folder)
+>     >         > 4. Execute "Rcmd build c:/base/MyApp" with cmd.exe
+>     (located in
+>     >         R/bin folder)
+>     >
+>     >         Usually you want to do Rcmd build ... and then Rcmd check ....
+>     >
+>     >         Make sure that there are no 'hidden' files (starting with
+>     a '.')
+>     >         in any
+>     >         of the folders in c:/base/MyApp/.
+>     >
+>     >         I don't really have other suggestions, other than to try to
+>     >         narrow down
+>     >         where in your package the error occurs, e.g., by temporarily
+>     >         renaming
+>     >         one file after the other in the MyApp/R directory.
+>     >
+>     >         Martin
+>     >
+>     >         > 5. Execute "Rcmd INSTALL MyApp.tar.gz" with cmd.exe (located
+>     >         in R/bin
+>     >         > folder)
+>     >         >
+>     >         > The error occurs when executing check command, here it
+>     is the full
+>     >         > install00.out :
+>     >         >
+>     >         > Le chargement a n?cessit? le package : tcltk
+>     >         > Chargement de Tcl/Tk... termin?
+>     >         > Le chargement a n?cessit? le package : Hmisc
+>     >         > Attachement du package : 'Hmisc'
+>     >         >
+>     >         >     The following object(s) are masked from package:base :
+>     >         >
+>     >         >      format.pval,
+>     >         >      round.POSIXt,
+>     >         >      trunc.POSIXt,
+>     >         >      units
+>     >
+>     >         > Le chargement a n?cessit? le package : R2HTML
+>     >         > Le chargement a n?cessit? le package : svMisc
+>     >         >
+>     >         > *** 'hhc.exe' introuvable : l'aide CHM ne peut ?tre g?n?r?e
+>     >         >
+>     >         > * Installing *source* package 'MyApp' ...
+>     >         > ** R
+>     >         > ** preparing package for lazy loading
+>     >         > Loading required package: grid
+>     >         > Loading required package: reshape
+>     >         > Loading required package: plyr
+>     >         >
+>     >         > Attaching package: 'plyr'
+>     >         >
+>     >         >     The following object(s) are masked from package:Hmisc :
+>     >         >
+>     >         >      is.discrete,
+>     >         >      summarize
+>     >         >
+>     >         >
+>     >         > Attaching package: 'ggplot2'
+>     >         >
+>     >         >     The following object(s) are masked from package:grid :
+>     >         >
+>     >         >      nullGrob
+>     >         >
+>     >         >
+>     >         > Attaching package: 'xtable'
+>     >         >
+>     >         >     The following object(s) are masked from package:Hmisc :
+>     >         >
+>     >         >      label,
+>     >         >      label<-
+>     >         >
+>     >         > Error in match.arg(units) :
+>     >         >   'arg' should be one of "secs", "mins", "hours", "days"
+>     >         > Error : unable to load R code in package 'MyApp'
+>     >         > ERREUR : lazy loading failed pour le package 'MyApp'
+>     >         > * Removing 'C:/PROGRA~1/R/R-29~1.1/bin/MYAPP~1.RCH/MyApp'
+>     >         >
+>     >         >
+>     >         >
+>     >         > Thank you again for you help.
+>     >         >
+>     >         >
+>     >         >
+>     >         > S?bastien
+>     >         >
+>     >         >
+>     >         >
+>     >         > 2009/8/25 Martin Morgan <mtmorgan at fhcrc.org
+>     <mailto:mtmorgan at fhcrc.org>
+>     >         <mailto:mtmorgan at fhcrc.org <mailto:mtmorgan at fhcrc.org>>
+>     <mailto:mtmorgan at fhcrc.org <mailto:mtmorgan at fhcrc.org>
+>     >         <mailto:mtmorgan at fhcrc.org <mailto:mtmorgan at fhcrc.org>>>>
+>     >         >
+>     >         >     S?bastien Laigre wrote:
+>     >         >
+>     >         >         Hello everybody,
+>     >         >
+>     >         >         I have got several S4 classes for my R application,
+>     >         and I'm
+>     >         >         trying to create
+>     >         >         a package to deal it easier. It runs on windows XP.
+>     >         >
+>     >         >         So I make :
+>     >         >
+>     >         >           - a package.build(........) to build the
+>     skeleton of
+>     >         the package.
+>     >         >           - Rcmd check c:/base/MyApp
+>     >         >
+>     >         >         But, checking whether package 'MyApp' can be
+>     >         installed, I have
+>     >         >         the following
+>     >         >         error (in the install.out file) :
+>     >         >         Error in match.arg(units) :
+>     >         >          'arg' should be one of "secs", "mins", "hours",
+>     "days"
+>     >         >
+>     >         >         I already encountered this kind error, and adding
+>     >         >         "importFrom("package",
+>     >         >         "function") " in the NAMESPACE file solved it.
+>     >         >         But the match.arg function is in the base
+>     package and
+>     >         I can not
+>     >         >         do that.
+>     >         >
+>     >         >         Can anyone help me please ? Does anybody knows what
+>     >         can it be
+>     >         >         due to ?
+>     >         >
+>     >         >
+>     >         >     Have you tried to start a new R session
+>     >         >
+>     >         >      R --vanilla
+>     >         >
+>     >         >     and then source each of the files in the 'R'
+>     directory of the
+>     >         >     package, along the lines of
+>     >         >
+>     >         >      fls = list.files("c:/base/MyApp/R", full=TRUE)
+>     >         >      for (f in fls) { cat(f, "\n"); source(f) }
+>     >         >
+>     >         >     ? Or can you provide more information about where
+>     during the
+>     >         >     installation the error message is generated? Please also
+>     >         include
+>     >         >     sessionInfo().
+>     >         >
+>     >         >     Martin
+>     >         >
+>     >         >
+>     >         >         Thank you in advance.
+>     >         >
+>     >         >
+>     >         >         Sebastien
+>     >         >
+>     >         >                [[alternative HTML version deleted]]
+>     >         >
+>     >         >         _______________________________________________
+>     >         >         Bioc-devel at stat.math.ethz.ch
+>     <mailto:Bioc-devel at stat.math.ethz.ch>
+>     >         <mailto:Bioc-devel at stat.math.ethz.ch
+>     <mailto:Bioc-devel at stat.math.ethz.ch>>
+>     >         >         <mailto:Bioc-devel at stat.math.ethz.ch
+>     <mailto:Bioc-devel at stat.math.ethz.ch>
+>     >         <mailto:Bioc-devel at stat.math.ethz.ch
+>     <mailto:Bioc-devel at stat.math.ethz.ch>>> mailing list
+>     >         >         https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>     >         >
+>     >         >
+>     >         >
+>     >         >     --
+>     >         >     Martin Morgan
+>     >         >     Computational Biology / Fred Hutchinson Cancer
+>     Research Center
+>     >         >     1100 Fairview Ave. N.
+>     >         >     PO Box 19024 Seattle, WA 98109
+>     >         >
+>     >         >     Location: Arnold Building M1 B861
+>     >         >     Phone: (206) 667-2793
+>     >         >
+>     >         >
+>     >
+>     >
+>     >
+> 
+>
+
+
+From paboyoun at fhcrc.org  Mon Aug 31 20:27:36 2009
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Mon, 31 Aug 2009 11:27:36 -0700
+Subject: [Bioc-devel] Creating a package, Error in match.arg(units)
+In-Reply-To: <4A9C1337.9030505@fhcrc.org>
+References: <842c20050908250740y13c57c3ardaaf40aa3c6924c3@mail.gmail.com>		<4A94091E.1070207@fhcrc.org>		<842c20050908250924g4d0ac4c7q17bd865a88faa2fe@mail.gmail.com>		<4A94A207.8020803@fhcrc.org>		<842c20050908260137x5e54d123l1cefb990b4123ae5@mail.gmail.com>		<842c20050908270058jc60f053je6cb5ac977aa482b@mail.gmail.com>		<4A9686F3.5080704@fhcrc.org>	<842c20050908311103g5c3f2694x3ef81bf80e0054b2@mail.gmail.com>
+	<4A9C1337.9030505@fhcrc.org>
+Message-ID: <4A9C1618.90004@fhcrc.org>
+
+S?bastien,
+In addition to Martin's comments, copying code from Hmisc to your package could be a violation of Hmisc's license. As Martin's e-mail shows, importing symbols is a straight-forward process and is the recommended method in this situation.
+
+
+Patrick
+
+
+
+
+Martin Morgan wrote:
+> S?bastien Laigre wrote:
+>   
+>> Hi Martin,
+>>
+>> Thank you for answering. I managed to solved my problem. In fact, it was
+>> a conflict between Hmisc and xtable. Hmisc overrided units from base
+>> package, and xtable needed it, so there was a problem. I used only 2
+>> functions, so I copied/pasted these 2 functions in my package, and do
+>> not use Hmisc. So the problem disapeared !
+>>     
+>
+> A better solution is to use a name space and 'importsFrom', for instance
+> in the DESCRIPTION file:
+>
+> Imports: Hmisc
+>
+> and in the NAMESPACE file
+>
+> importFrom(Hmisc, someFunction, anotherFunction)
+>
+> if you are not already using a name space, then I'd strongly encourage
+> you to use one. It'll help avoid conflicts like this in the future. Use
+> is documented in the 'Writing R extensions' manual.
+>
+> Martin
+>
+>   
+>> Thank you very much for your help.
+>>
+>>
+>> 2009/8/27 Martin Morgan <mtmorgan at fhcrc.org <mailto:mtmorgan at fhcrc.org>>
+>>
+>>     S?bastien Laigre wrote:
+>>     > Hi Martin,
+>>     >
+>>     > I just saw that in install.out, there are the following lines :
+>>     >
+>>     >> Attachement du package : 'Hmisc'
+>>     >>
+>>     >>     The following object(s) are masked from package:base :
+>>     >>
+>>     >>      format.pval,
+>>     >>      round.POSIXt,
+>>     >>      trunc.POSIXt,
+>>     >>      units
+>>     >
+>>     > Then an error occurs with match.arg(units)...
+>>     >
+>>     > So, could it be a conflict between "units" of Hmisc package and
+>>     "units"
+>>     > of base package ?
+>>     > It sounds that units is taken from Hmisc instead of base, how can tell
+>>     > the compiler to take it into base package ? I tried with importFrom in
+>>     > NAMESPACE but it sounds it is not allowed...
+>>
+>>     Your own package should have a name space, and if you use functions from
+>>     Hmisc you should import just those
+>>
+>>     importFrom(Hmisc, foo, bar, baz)
+>>
+>>     If you are importing from Hmisc, then the DESCRIPTION file should have
+>>     Imports: Hmisc. If there are still problems, you can fully qualify the
+>>     symbols that you want
+>>
+>>      base::units
+>>
+>>     It might be that there is still a problem, e.g., a third package that
+>>     does not have a name space but uses units, and so must find 'units' on
+>>     the search() path. In this case you must work around this by convincing
+>>     the third party author to use a name space, not use the third package,
+>>     or not use Hmisc.
+>>
+>>     Martin
+>>
+>>     >
+>>     > Thank you in advance.
+>>     >
+>>     > Sebastien
+>>     >
+>>     >
+>>     > 2009/8/26 S?bastien Laigre <sebastien.laigre at gmail.com
+>>     <mailto:sebastien.laigre at gmail.com>
+>>     > <mailto:sebastien.laigre at gmail.com
+>>     <mailto:sebastien.laigre at gmail.com>>>
+>>     >
+>>     >     Hi Martin,
+>>     >
+>>     >     Thank you for your suggestions. I tried once again with LazyLoad =
+>>     >     no (in DESCRIPTION file), and now, it tells me :
+>>     >
+>>     >     ...
+>>     >     Attachement du package : 'xtable'
+>>     >
+>>     >
+>>     >
+>>     >             The following object(s) are masked from package:Hmisc :
+>>     >
+>>     >              label,
+>>     >              label<-
+>>     >
+>>     >     Error in match.arg(units) :
+>>     >       'arg' doit ?tre un de "secs", "mins", "hours", "days"
+>>     >     Error : impossible de charger le code R depuis le package 'MyApp'
+>>     >     Erreur : le chargement du package / espace de noms a ?chou?
+>>     pour 'MyApp'
+>>     >     Ex?cution arr?t?e
+>>     >
+>>     >     It looks like this package has a loading problem: see the
+>>     messages for
+>>     >     details.
+>>     >
+>>     >     It sounds that a package could not be loaded correctly, but I can
+>>     >     not find which one. Is it the latest loaded (xtable) ? How can I
+>>     >     "load it correctly" ?
+>>     >     Thank you.
+>>     >
+>>     >     Sebastien
+>>     >
+>>     >
+>>     >
+>>     >
+>>     >     2009/8/26 Martin Morgan <mtmorgan at fhcrc.org
+>>     <mailto:mtmorgan at fhcrc.org> <mailto:mtmorgan at fhcrc.org
+>>     <mailto:mtmorgan at fhcrc.org>>>
+>>     >
+>>     >         Hi S?bastien --
+>>     >
+>>     >         S?bastien Laigre wrote:
+>>     >         > Hi Martin,
+>>     >         >
+>>     >         > Thank you for helping me.
+>>     >         > I just tried to create a new R session, but it doesn't
+>>     work so
+>>     >         much. I
+>>     >         > also tried to load files one by one using your 2 code lines,
+>>     >         but there
+>>     >         > are dependancies problems including files files ar not
+>>     loaded
+>>     >         in the
+>>     >         > right order.
+>>     >
+>>     >         it is not too hard to figure out how to load all the
+>>     packages, e.g.,
+>>     >         following the sequence listed in the 00install.out output,
+>>     below.
+>>     >
+>>     >         > In fact, I managed to check & build the package a few time
+>>     >         ago, but it
+>>     >         > doesn't work now. I had the right methodology, but I can't
+>>     >         know what has
+>>     >         > changed (sorry). My methodolgy is :
+>>     >         > 1. Create the package skeleton with package.build(...) in R
+>>     >         console.
+>>     >
+>>     >         Perhaps it would help to review the manual 'Writing R
+>>     Extensions' so
+>>     >         that you can get an understanding of what various files are?
+>>     >
+>>     >         > 2. Fill R documentation files in the man folder in skeleton,
+>>     >         NAMESPACE
+>>     >         > and DESCRIPTION files
+>>     >         > 3. Execute "Rcmd check c:/base/MyApp" with cmd.exe
+>>     (located in
+>>     >         R/bin folder)
+>>     >         > 4. Execute "Rcmd build c:/base/MyApp" with cmd.exe
+>>     (located in
+>>     >         R/bin folder)
+>>     >
+>>     >         Usually you want to do Rcmd build ... and then Rcmd check ....
+>>     >
+>>     >         Make sure that there are no 'hidden' files (starting with
+>>     a '.')
+>>     >         in any
+>>     >         of the folders in c:/base/MyApp/.
+>>     >
+>>     >         I don't really have other suggestions, other than to try to
+>>     >         narrow down
+>>     >         where in your package the error occurs, e.g., by temporarily
+>>     >         renaming
+>>     >         one file after the other in the MyApp/R directory.
+>>     >
+>>     >         Martin
+>>     >
+>>     >         > 5. Execute "Rcmd INSTALL MyApp.tar.gz" with cmd.exe (located
+>>     >         in R/bin
+>>     >         > folder)
+>>     >         >
+>>     >         > The error occurs when executing check command, here it
+>>     is the full
+>>     >         > install00.out :
+>>     >         >
+>>     >         > Le chargement a n?cessit? le package : tcltk
+>>     >         > Chargement de Tcl/Tk... termin?
+>>     >         > Le chargement a n?cessit? le package : Hmisc
+>>     >         > Attachement du package : 'Hmisc'
+>>     >         >
+>>     >         >     The following object(s) are masked from package:base :
+>>     >         >
+>>     >         >      format.pval,
+>>     >         >      round.POSIXt,
+>>     >         >      trunc.POSIXt,
+>>     >         >      units
+>>     >
+>>     >         > Le chargement a n?cessit? le package : R2HTML
+>>     >         > Le chargement a n?cessit? le package : svMisc
+>>     >         >
+>>     >         > *** 'hhc.exe' introuvable : l'aide CHM ne peut ?tre g?n?r?e
+>>     >         >
+>>     >         > * Installing *source* package 'MyApp' ...
+>>     >         > ** R
+>>     >         > ** preparing package for lazy loading
+>>     >         > Loading required package: grid
+>>     >         > Loading required package: reshape
+>>     >         > Loading required package: plyr
+>>     >         >
+>>     >         > Attaching package: 'plyr'
+>>     >         >
+>>     >         >     The following object(s) are masked from package:Hmisc :
+>>     >         >
+>>     >         >      is.discrete,
+>>     >         >      summarize
+>>     >         >
+>>     >         >
+>>     >         > Attaching package: 'ggplot2'
+>>     >         >
+>>     >         >     The following object(s) are masked from package:grid :
+>>     >         >
+>>     >         >      nullGrob
+>>     >         >
+>>     >         >
+>>     >         > Attaching package: 'xtable'
+>>     >         >
+>>     >         >     The following object(s) are masked from package:Hmisc :
+>>     >         >
+>>     >         >      label,
+>>     >         >      label<-
+>>     >         >
+>>     >         > Error in match.arg(units) :
+>>     >         >   'arg' should be one of "secs", "mins", "hours", "days"
+>>     >         > Error : unable to load R code in package 'MyApp'
+>>     >         > ERREUR : lazy loading failed pour le package 'MyApp'
+>>     >         > * Removing 'C:/PROGRA~1/R/R-29~1.1/bin/MYAPP~1.RCH/MyApp'
+>>     >         >
+>>     >         >
+>>     >         >
+>>     >         > Thank you again for you help.
+>>     >         >
+>>     >         >
+>>     >         >
+>>     >         > S?bastien
+>>     >         >
+>>     >         >
+>>     >         >
+>>     >         > 2009/8/25 Martin Morgan <mtmorgan at fhcrc.org
+>>     <mailto:mtmorgan at fhcrc.org>
+>>     >         <mailto:mtmorgan at fhcrc.org <mailto:mtmorgan at fhcrc.org>>
+>>     <mailto:mtmorgan at fhcrc.org <mailto:mtmorgan at fhcrc.org>
+>>     >         <mailto:mtmorgan at fhcrc.org <mailto:mtmorgan at fhcrc.org>>>>
+>>     >         >
+>>     >         >     S?bastien Laigre wrote:
+>>     >         >
+>>     >         >         Hello everybody,
+>>     >         >
+>>     >         >         I have got several S4 classes for my R application,
+>>     >         and I'm
+>>     >         >         trying to create
+>>     >         >         a package to deal it easier. It runs on windows XP.
+>>     >         >
+>>     >         >         So I make :
+>>     >         >
+>>     >         >           - a package.build(........) to build the
+>>     skeleton of
+>>     >         the package.
+>>     >         >           - Rcmd check c:/base/MyApp
+>>     >         >
+>>     >         >         But, checking whether package 'MyApp' can be
+>>     >         installed, I have
+>>     >         >         the following
+>>     >         >         error (in the install.out file) :
+>>     >         >         Error in match.arg(units) :
+>>     >         >          'arg' should be one of "secs", "mins", "hours",
+>>     "days"
+>>     >         >
+>>     >         >         I already encountered this kind error, and adding
+>>     >         >         "importFrom("package",
+>>     >         >         "function") " in the NAMESPACE file solved it.
+>>     >         >         But the match.arg function is in the base
+>>     package and
+>>     >         I can not
+>>     >         >         do that.
+>>     >         >
+>>     >         >         Can anyone help me please ? Does anybody knows what
+>>     >         can it be
+>>     >         >         due to ?
+>>     >         >
+>>     >         >
+>>     >         >     Have you tried to start a new R session
+>>     >         >
+>>     >         >      R --vanilla
+>>     >         >
+>>     >         >     and then source each of the files in the 'R'
+>>     directory of the
+>>     >         >     package, along the lines of
+>>     >         >
+>>     >         >      fls = list.files("c:/base/MyApp/R", full=TRUE)
+>>     >         >      for (f in fls) { cat(f, "\n"); source(f) }
+>>     >         >
+>>     >         >     ? Or can you provide more information about where
+>>     during the
+>>     >         >     installation the error message is generated? Please also
+>>     >         include
+>>     >         >     sessionInfo().
+>>     >         >
+>>     >         >     Martin
+>>     >         >
+>>     >         >
+>>     >         >         Thank you in advance.
+>>     >         >
+>>     >         >
+>>     >         >         Sebastien
+>>     >         >
+>>     >         >                [[alternative HTML version deleted]]
+>>     >         >
+>>     >         >         _______________________________________________
+>>     >         >         Bioc-devel at stat.math.ethz.ch
+>>     <mailto:Bioc-devel at stat.math.ethz.ch>
+>>     >         <mailto:Bioc-devel at stat.math.ethz.ch
+>>     <mailto:Bioc-devel at stat.math.ethz.ch>>
+>>     >         >         <mailto:Bioc-devel at stat.math.ethz.ch
+>>     <mailto:Bioc-devel at stat.math.ethz.ch>
+>>     >         <mailto:Bioc-devel at stat.math.ethz.ch
+>>     <mailto:Bioc-devel at stat.math.ethz.ch>>> mailing list
+>>     >         >         https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>     >         >
+>>     >         >
+>>     >         >
+>>     >         >     --
+>>     >         >     Martin Morgan
+>>     >         >     Computational Biology / Fred Hutchinson Cancer
+>>     Research Center
+>>     >         >     1100 Fairview Ave. N.
+>>     >         >     PO Box 19024 Seattle, WA 98109
+>>     >         >
+>>     >         >     Location: Arnold Building M1 B861
+>>     >         >     Phone: (206) 667-2793
+>>     >         >
+>>     >         >
+>>     >
+>>     >
+>>     >
+>>
+>>
+>>     
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+

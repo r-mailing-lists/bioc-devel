@@ -1,0 +1,1571 @@
+From mtmorgan at fhcrc.org  Thu Feb  2 16:19:50 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 02 Feb 2006 07:19:50 -0800
+Subject: [Bioc-devel] Biobase eSet and exprSet validation
+Message-ID: <6phk6cdaiuh.fsf@gopher3.fhcrc.org>
+
+Bioconductors,
+
+A recent change to Biobase checks that eSet and exprSet objects have
+the correct format, and in particular that the 'sampleNames' are
+identical to the row names of the phenoData. This consistency is
+important, because it is what allows coordination between the
+expression and phenotype data.
+
+The change creates a certain amount of havoc with other
+packages. Often the consequences are minor (e.g., creating an invalid
+object in a vignette), but it would be great to have these cleaned up
+in the next couple of weeks. Please let me or the list know if we can
+help, or if the object validation needs tweaking.
+
+Now might also be a good time to replace any use of the deprecated
+eset data with the new sample.eSet and sample.exprSet data sets.
+
+Errors during build (e.g.,  functions constructing invalid objects)
+
+GEOquery
+LMGene
+affycoretools
+ecolitk
+matchprobes
+metaArray
+sscore
+
+Errors during check (e.g., examples, vignettes)
+
+MergeMaid
+affy
+convert
+edd
+macat
+
+Cheers!
+-- 
+Martin Morgan
+
+
+From stvjc at channing.harvard.edu  Thu Feb  2 16:50:28 2006
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Thu, 2 Feb 2006 10:50:28 -0500 (EST)
+Subject: [Bioc-devel] Biobase eSet and exprSet validation
+In-Reply-To: <6phk6cdaiuh.fsf@gopher3.fhcrc.org>
+References: <6phk6cdaiuh.fsf@gopher3.fhcrc.org>
+Message-ID: <Pine.GSO.4.58.0602021046250.3328@capecod.bwh.harvard.edu>
+
+>
+> Now might also be a good time to replace any use of the deprecated
+> eset data with the new sample.eSet and sample.exprSet data sets.
+
+how about converting all serialized exprSets to eSets?  there is an "as" operator
+to help with this in Biobase...
+
+should we try to eliminate all reliance on exprSets?  it can only be
+confusing to newcomers that there are two basic containers
+doing the same thing.
+
+
+From fhahne at gmx.de  Thu Feb  2 17:31:22 2006
+From: fhahne at gmx.de (Florian Hahne)
+Date: Thu, 02 Feb 2006 16:31:22 +0000
+Subject: [Bioc-devel] methods package is not attached in .onLoad for Biobase
+Message-ID: <43E233DA.7010708@gmx.de>
+
+Hi everyone,
+I just noticed some strange behaviour when starting R with a saved
+workspace containing objects of class cytoFrame or cytoSet. These
+classes are defined in my own package prada and make heavy use of
+Biobase generics. I get the error
+
+Error in .initContents() : couldn't find function "isGeneric"
+Error: .onLoad failed in 'loadNamespace' for 'Biobase'
+Fatal error: unable to restore saved data in .RData
+
+When looking at the .onLoad function for Biobase I realized that the
+methods package is not attached, thus isGeneric can not be found in the
+call to .initContents().
+Adding a required(methods) to .onLoad fixed this for me. To my
+understanding, attaching methods is mandatory for every package that
+uses the S4 system  (at least that's what's stated in the writing R
+extensions documentation), so I guess it should be fixed?!
+
+Best wishes,
+Florian
+
+-- 
+Florian Hahne
+European Bioinformatics Institute
+European Molecular Biology Laboratory
+Cambridge CB10 1SD
+England
+Web: www.ebi.ac.uk
+
+
+From sfalcon at fhcrc.org  Thu Feb  2 18:20:20 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 02 Feb 2006 09:20:20 -0800
+Subject: [Bioc-devel] Biobase eSet and exprSet validation
+In-Reply-To: <Pine.GSO.4.58.0602021046250.3328@capecod.bwh.harvard.edu>
+	(Vincent Carey's message of "Thu,
+	2 Feb 2006 10:50:28 -0500 (EST)")
+References: <6phk6cdaiuh.fsf@gopher3.fhcrc.org>
+	<Pine.GSO.4.58.0602021046250.3328@capecod.bwh.harvard.edu>
+Message-ID: <m2y80tbru3.fsf@ziti.local>
+
+On  2 Feb 2006, stvjc at channing.harvard.edu wrote:
+>> Now might also be a good time to replace any use of the deprecated
+>> eset data with the new sample.eSet and sample.exprSet data sets.
+>
+> how about converting all serialized exprSets to eSets?  there is an
+> "as" operator to help with this in Biobase...
+>
+> should we try to eliminate all reliance on exprSets?  it can only be
+> confusing to newcomers that there are two basic containers
+> doing the same thing.
+
+I think it would be beneficial to solidify and simplify the basic
+container(s).  
+
+A first step, IMO, is to update the vignette that describes eSets.
+The vignette should probably renamed and the provisional comments
+removed. 
+
+A second step would be to updte the Biobase vignette to reflect that
+eSets are the main show in town.
+
+If there is consensus that eSets are "ready", then at the same time as
+the above two steps, package maintainers could start to convert
+vignettes and examples to using eSets and ensure that all functions
+know how to deal with eSets.
+
+But for functions that currently know how to process exprSets, what
+should the behavior be when processing an eSet which may have multiple
+expression matrices?  Should the function check that there is only
+one?  Should the function gain an arg that specifies which matrix to
+operate on?  Should functions be changed so that they always return a
+list of results and always do operations on all matrices present?
+
+I think we need to hash out some answers and examples to the above
+before we can start calling as(foo, "eSet").  Am I making a mountain
+out of a mole hill?
+
+Best Wishes,
+
++ seth
+
+
+From sfalcon at fhcrc.org  Thu Feb  2 18:36:53 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 02 Feb 2006 09:36:53 -0800
+Subject: [Bioc-devel] methods package is not attached in .onLoad for
+	Biobase
+In-Reply-To: <43E233DA.7010708@gmx.de> (Florian Hahne's message of "Thu,
+	02 Feb 2006 16:31:22 +0000")
+References: <43E233DA.7010708@gmx.de>
+Message-ID: <m2k6cdbr2i.fsf@ziti.local>
+
+Hi Florian,
+
+On  2 Feb 2006, fhahne at gmx.de wrote:
+> I just noticed some strange behaviour when starting R with a saved
+> workspace containing objects of class cytoFrame or cytoSet. These
+> classes are defined in my own package prada and make heavy use of
+> Biobase generics. I get the error
+>
+> Error in .initContents() : couldn't find function "isGeneric"
+> Error: .onLoad failed in 'loadNamespace' for 'Biobase'
+> Fatal error: unable to restore saved data in .RData
+>
+> When looking at the .onLoad function for Biobase I realized that the
+> methods package is not attached thus isGeneric can not be found in
+> the call to .initContents().  Adding a required(methods) to .onLoad
+> fixed this for me. To my understanding, attaching methods is
+> mandatory for every package that uses the S4 system (at least that's
+> what's stated in the writing R extensions documentation), so I guess
+> it should be fixed?!
+
+Absolutely.  Thanks for the report.  A fix is in svn and will show up
+in the devel repository within 24hrs or so.
+
+Note to other package maintainers:
+
+If your package has a NAMESPACE file and you define S4 classes or
+methods, it is essential that you add a .onLoad function that looks
+like this to your package:
+
+  .onLoad <- function(libname, pkgname) {
+      require("methods")
+  }
+
+Best,
+
++ seth
+
+
+From ririzarr at jhsph.edu  Thu Feb  2 20:12:38 2006
+From: ririzarr at jhsph.edu (Rafael A. Irizarry)
+Date: Thu, 2 Feb 2006 14:12:38 -0500 (EST)
+Subject: [Bioc-devel] Biobase eSet and exprSet validation
+In-Reply-To: <Pine.GSO.4.58.0602021046250.3328@capecod.bwh.harvard.edu>
+References: <6phk6cdaiuh.fsf@gopher3.fhcrc.org>
+	<Pine.GSO.4.58.0602021046250.3328@capecod.bwh.harvard.edu>
+Message-ID: <Pine.LNX.4.61.0602021410590.4604@enigma.biostat.jhsph.edu>
+
+i agree that we should get rid of exprSet. the oligo package uses the eSet 
+exclusiveley. but we need to be very careful not lose functionailty, for 
+example, i know that exprs<- does not exist for eSet. i suspect this 
+method is used in various places
+
+
+On Thu, 2 Feb 2006, Vincent Carey 525-2265 wrote:
+
+>>
+>> Now might also be a good time to replace any use of the deprecated
+>> eset data with the new sample.eSet and sample.exprSet data sets.
+>
+> how about converting all serialized exprSets to eSets?  there is an "as" operator
+> to help with this in Biobase...
+>
+> should we try to eliminate all reliance on exprSets?  it can only be
+> confusing to newcomers that there are two basic containers
+> doing the same thing.
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From sdavis2 at mail.nih.gov  Thu Feb  2 20:34:09 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Thu, 02 Feb 2006 14:34:09 -0500
+Subject: [Bioc-devel] Couple of eSet questions
+Message-ID: <C007C8E1.507B%sdavis2@mail.nih.gov>
+
+Since we are talking about eSets, I thought I would ask a couple more
+questions.
+
+1)  What is the thinking as to "standard use" for two-color data and eSets?
+
+2)  With regard to reporterInfo, is there going to be a constraint to keep
+the single-column data.frame idea as presented in the vignette, or is that
+slot meant to be more flexible (left as a generic data.frame)?
+
+I ask here because I get the sense that these things are developing, still.
+If I am wrong, I can certainly redirect to the Bioc list.
+
+Thanks,
+Sean
+
+
+From sfalcon at fhcrc.org  Thu Feb  2 21:00:08 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 02 Feb 2006 12:00:08 -0800
+Subject: [Bioc-devel] Couple of eSet questions
+In-Reply-To: <C007C8E1.507B%sdavis2@mail.nih.gov> (Sean Davis's message of
+	"Thu, 02 Feb 2006 14:34:09 -0500")
+References: <C007C8E1.507B%sdavis2@mail.nih.gov>
+Message-ID: <m2hd7ha5vb.fsf@ziti.local>
+
+On  2 Feb 2006, sdavis2 at mail.nih.gov wrote:
+> I ask here because I get the sense that these things are developing,
+> still.  If I am wrong, I can certainly redirect to the Bioc list.
+
+This is a good forum for the discussion.
+
+> 2)  With regard to reporterInfo, is there going to be a constraint
+>     to keep
+> the single-column data.frame idea as presented in the vignette, or is that
+> slot meant to be more flexible (left as a generic data.frame)?
+
+I would like to see the reporterInfo be an instance of a class much
+like the phenoData in that it is data.frame like but also has some
+description of what is in it.  
+
+So to me, the phenoData class might be better named AnnotatedDataFrame
+and then both the phenoData and reporterInfo slots can have one of
+these.
+
++ seth
+
+
+From sfalcon at fhcrc.org  Thu Feb  2 22:55:19 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 02 Feb 2006 13:55:19 -0800
+Subject: [Bioc-devel] Biobase eSet and exprSet validation
+In-Reply-To: <Pine.LNX.4.61.0602021410590.4604@enigma.biostat.jhsph.edu>
+	(Rafael A. Irizarry's message of "Thu,
+	2 Feb 2006 14:12:38 -0500 (EST)")
+References: <6phk6cdaiuh.fsf@gopher3.fhcrc.org>
+	<Pine.GSO.4.58.0602021046250.3328@capecod.bwh.harvard.edu>
+	<Pine.LNX.4.61.0602021410590.4604@enigma.biostat.jhsph.edu>
+Message-ID: <m28xsta0jc.fsf@ziti.local>
+
+On  2 Feb 2006, ririzarr at jhsph.edu wrote:
+> i agree that we should get rid of exprSet. the oligo package uses
+> the eSet exclusiveley. but we need to be very careful not lose
+> functionailty, for example, i know that exprs<- does not exist for
+> eSet. i suspect this method is used in various places
+
+I'm a bit confused about what is going on in eSet.  I see that there
+is an exprs method that is now Deprecated in favor of assayData.  
+
+For using eSets in place of exprSets, I wonder if we want to revive
+that interface and make it work like this:
+
+   es <-  ## an eSet instance
+
+   exprs(es) - If es at assayData has length 1, return the first element,
+   otherwise, error.  Same for replacement.
+
+   exprs(es, n) - Return the n-th element of assayData.  This won't
+   work if assayData is an environment unless we store some additional
+   info that defines the order.
+
+Also, I'm confused about the constraint on the number of columns in
+the expression matrices stored in assayData.  Can they be different?
+My glance at the validEset function gives me the feeling that they
+cannot, but then I'm confused about why ncol should report ncol for
+each if they are constrained to be the same.
+
++ seth
+
+
+From stvjc at channing.harvard.edu  Fri Feb  3 00:57:01 2006
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Thu, 2 Feb 2006 18:57:01 -0500 (EST)
+Subject: [Bioc-devel] Biobase eSet and exprSet validation
+In-Reply-To: <m28xsta0jc.fsf@ziti.local>
+References: <6phk6cdaiuh.fsf@gopher3.fhcrc.org>
+	<Pine.GSO.4.58.0602021046250.3328@capecod.bwh.harvard.edu>
+	<Pine.LNX.4.61.0602021410590.4604@enigma.biostat.jhsph.edu>
+	<m28xsta0jc.fsf@ziti.local>
+Message-ID: <Pine.GSO.4.58.0602021852250.14274@capecod.bwh.harvard.edu>
+
+> > i agree that we should get rid of exprSet. the oligo package uses
+> > the eSet exclusiveley. but we need to be very careful not lose
+> > functionailty, for example, i know that exprs<- does not exist for
+> > eSet. i suspect this method is used in various places
+>
+> I'm a bit confused about what is going on in eSet.  I see that there
+> is an exprs method that is now Deprecated in favor of assayData.
+>
+> For using eSets in place of exprSets, I wonder if we want to revive
+> that interface and make it work like this:
+>
+>    es <-  ## an eSet instance
+>
+>    exprs(es) - If es at assayData has length 1, return the first element,
+>    otherwise, error.  Same for replacement.
+>
+>    exprs(es, n) - Return the n-th element of assayData.  This won't
+>    work if assayData is an environment unless we store some additional
+>    info that defines the order.
+>
+> Also, I'm confused about the constraint on the number of columns in
+> the expression matrices stored in assayData.  Can they be different?
+> My glance at the validEset function gives me the feeling that they
+> cannot, but then I'm confused about why ncol should report ncol for
+> each if they are constrained to be the same.
+
+we need use cases.  i don't think anyone ever tried to work with
+multicolor arrays in this context.  i wrote the initial validity
+conditions i think because no one had any objections to that constraint
+(common dimensions)
+
+eSet means (perhaps) "everything" set, and there is no justification to
+interpret a single assayData matrix as expression.  so making the exprs
+method look for something named "exprs" makes some sense.
+
+
+From sdavis2 at mail.nih.gov  Fri Feb  3 12:49:04 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Fri, 03 Feb 2006 06:49:04 -0500
+Subject: [Bioc-devel] Biobase eSet and exprSet validation
+In-Reply-To: <Pine.GSO.4.58.0602021852250.14274@capecod.bwh.harvard.edu>
+Message-ID: <C008AD60.5122%sdavis2@mail.nih.gov>
+
+
+
+
+On 2/2/06 6:57 PM, "Vincent Carey 525-2265" <stvjc at channing.harvard.edu>
+wrote:
+
+>>> i agree that we should get rid of exprSet. the oligo package uses
+>>> the eSet exclusiveley. but we need to be very careful not lose
+>>> functionailty, for example, i know that exprs<- does not exist for
+>>> eSet. i suspect this method is used in various places
+>> 
+>> I'm a bit confused about what is going on in eSet.  I see that there
+>> is an exprs method that is now Deprecated in favor of assayData.
+>> 
+>> For using eSets in place of exprSets, I wonder if we want to revive
+>> that interface and make it work like this:
+>> 
+>>    es <-  ## an eSet instance
+>> 
+>>    exprs(es) - If es at assayData has length 1, return the first element,
+>>    otherwise, error.  Same for replacement.
+>> 
+>>    exprs(es, n) - Return the n-th element of assayData.  This won't
+>>    work if assayData is an environment unless we store some additional
+>>    info that defines the order.
+>> 
+>> Also, I'm confused about the constraint on the number of columns in
+>> the expression matrices stored in assayData.  Can they be different?
+>> My glance at the validEset function gives me the feeling that they
+>> cannot, but then I'm confused about why ncol should report ncol for
+>> each if they are constrained to be the same.
+> 
+> we need use cases.  i don't think anyone ever tried to work with
+> multicolor arrays in this context.  i wrote the initial validity
+> conditions i think because no one had any objections to that constraint
+> (common dimensions)
+> 
+> eSet means (perhaps) "everything" set, and there is no justification to
+> interpret a single assayData matrix as expression.  so making the exprs
+> method look for something named "exprs" makes some sense.
+
+Going with the MIAME thought process, it makes sense to have an exprs()
+matrix and an se.exprs() matrix that are treated as "special" (the "derived
+measurement values" and the "reliability indicator" in the MIAME 1.1 draft).
+I think having some standard here is important for general development
+purposes (other packages need to know where to get data for processing).
+Then, the other matrices in assayData are simply "raw data" and could be
+obtained using standard list accessors.
+
+Sean
+
+
+From sdavis2 at mail.nih.gov  Fri Feb  3 13:08:17 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Fri, 03 Feb 2006 07:08:17 -0500
+Subject: [Bioc-devel] Biobase eSet and exprSet validation
+In-Reply-To: <m28xsta0jc.fsf@ziti.local>
+Message-ID: <C008B1E1.512C%sdavis2@mail.nih.gov>
+
+
+
+
+On 2/2/06 4:55 PM, "Seth Falcon" <sfalcon at fhcrc.org> wrote:
+
+> On  2 Feb 2006, ririzarr at jhsph.edu wrote:
+>> i agree that we should get rid of exprSet. the oligo package uses
+>> the eSet exclusiveley. but we need to be very careful not lose
+>> functionailty, for example, i know that exprs<- does not exist for
+>> eSet. i suspect this method is used in various places
+> 
+> I'm a bit confused about what is going on in eSet.  I see that there
+> is an exprs method that is now Deprecated in favor of assayData.
+> 
+> For using eSets in place of exprSets, I wonder if we want to revive
+> that interface and make it work like this:
+> 
+>    es <-  ## an eSet instance
+> 
+>    exprs(es) - If es at assayData has length 1, return the first element,
+>    otherwise, error.  Same for replacement.
+> 
+>    exprs(es, n) - Return the n-th element of assayData.  This won't
+>    work if assayData is an environment unless we store some additional
+>    info that defines the order.
+> 
+> Also, I'm confused about the constraint on the number of columns in
+> the expression matrices stored in assayData.  Can they be different?
+> My glance at the validEset function gives me the feeling that they
+> cannot, but then I'm confused about why ncol should report ncol for
+> each if they are constrained to be the same.
+
+What happens with subsetting if they are not the same?  Seems like a reason
+to keep the constraint.  I didn't look, sub the number of rows is also
+constrained to be the same?
+
+Sean
+
+
+From sfalcon at fhcrc.org  Fri Feb  3 18:06:44 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 03 Feb 2006 09:06:44 -0800
+Subject: [Bioc-devel] Biobase eSet and exprSet validation
+In-Reply-To: <C008AD60.5122%sdavis2@mail.nih.gov> (Sean Davis's message of
+	"Fri, 03 Feb 2006 06:49:04 -0500")
+References: <C008AD60.5122%sdavis2@mail.nih.gov>
+Message-ID: <m2bqxo8j8b.fsf@ziti.local>
+
+On  3 Feb 2006, sdavis2 at mail.nih.gov wrote:
+>> Vince wrote:
+>> eSet means (perhaps) "everything" set, and there is no
+>> justification to interpret a single assayData matrix as expression.
+>> so making the exprs method look for something named "exprs" makes
+>> some sense.
+
+ok, I was missing some concepts and am in agreement that we don't want
+to force an eSet with a length one assayData slot to be an exprSet
+equivalent.
+
+> Going with the MIAME thought process, it makes sense to have an
+> exprs() matrix and an se.exprs() matrix that are treated as
+> "special" (the "derived measurement values" and the "reliability
+> indicator" in the MIAME 1.1 draft).  I think having some standard
+> here is important for general development purposes (other packages
+> need to know where to get data for processing).  Then, the other
+> matrices in assayData are simply "raw data" and could be obtained
+> using standard list accessors.
+
+So it sounds like the original implementation in which special names
+are recognized for identifying elements of the assayData is sensible?
+If we put this back in, I propose more verbose names:
+
+expressionValues 
+expressionStandardErrors
+
+The method names should not change: exprs() and se.exprs(),
+respectively.
+
+One thing I'm wondering, however, is whether these deserve their own
+slots?  The magic list/env element names make me nervous --- going
+down that road, we could start putting more and more special names in
+the list/env and it really starts to look like an object without any
+real definition.
+
++ seth
+
+
+From sfalcon at fhcrc.org  Fri Feb  3 18:27:39 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 03 Feb 2006 09:27:39 -0800
+Subject: [Bioc-devel] Your bioc package has R_PROFILE.R
+In-Reply-To: <Pine.LNX.4.64.0602030859210.11654@scf-pc9.berkeley.edu> (Yu
+	Chuan Tai's message of "Fri, 3 Feb 2006 09:04:52 -0800 (PST)")
+References: <m2irrydh6l.fsf@fhcrc.org>
+	<Pine.LNX.4.64.0602030859210.11654@scf-pc9.berkeley.edu>
+Message-ID: <m21wyk8i9g.fsf@ziti.local>
+
+Hi Yu Chuan,
+
+I'm cc'ing bioc-devel because I suspect there are others with similar
+questions, it will be useful to have the answer in the archives, and
+I'd like to encourage using bioc-devel for developer questions :-)
+
+On  3 Feb 2006, yuchuan at stat.berkeley.edu wrote:
+> Thanks for your notifications. I do have R_PROFILE.R in my source
+> directory, how should I remove this file from SVN? 
+
+With svn, everything happens in two steps.  The first step is to
+"schedule" something to happen and the second step is to "commit" the
+something to the repository.  More specifically, the "schedule" step
+is what you do in your working copy on your system.  The "commit" step
+is when you run 'svn commit' in your working copy to send changes to
+the repository.
+
+So to remove a file:
+
+svn rm filefoo.txt
+svn status  ## will show that filefoo.txt is schedule for removal
+svn commit
+
+> And how to use Depends to load dependencies?
+
+In your package code, you do not need to call library() or require().
+Instead, simply list the packages that your package depends on in the
+'Depends' field of the DESCRIPTION file.
+
+If you have a NAMESPACE file for your package (recommended), then when
+you are using functions from another package that also has a
+namespace, you have a choice of using the Depends field and the
+Imports field, in which case you use import directives in the
+NAMESPACE file.  This latter approach is, IMO, more elegant.
+
+> A more general question, I made some changes to the package which
+> will be included in the next release of bioC, how can I update the
+> whole package on SVN?
+
+1. checkout a working copy of your package using svn.
+
+2. Make the edits.  If you already have the edits, copy the changed
+   files over the files that come from the checkout.
+
+3. Run svn status to verify changes.  
+
+4. Test, test, test
+
+5. svn commit.
+
+Further questions NAMESPACE files, Depends, Imports, and even svn
+usage are fair game for this list.
+
+Best,
+
++ seth
+
+
+From yuchuan at stat.Berkeley.EDU  Fri Feb  3 18:53:21 2006
+From: yuchuan at stat.Berkeley.EDU (Yu Chuan Tai)
+Date: Fri, 3 Feb 2006 09:53:21 -0800 (PST)
+Subject: [Bioc-devel] Your bioc package has R_PROFILE.R
+In-Reply-To: <m21wyk8i9g.fsf@ziti.local>
+References: <m2irrydh6l.fsf@fhcrc.org>
+	<Pine.LNX.4.64.0602030859210.11654@scf-pc9.berkeley.edu>
+	<m21wyk8i9g.fsf@ziti.local>
+Message-ID: <Pine.LNX.4.64.0602030952220.11725@scf-pc9.berkeley.edu>
+
+Hi Seth,
+
+Thanks for your clarifications. I will follow your instructions and let 
+you know if I have more questions.
+
+Best,
+Yu Chuan
+
+On Fri, 3 Feb 2006, Seth Falcon wrote:
+
+> Hi Yu Chuan,
+>
+> I'm cc'ing bioc-devel because I suspect there are others with similar
+> questions, it will be useful to have the answer in the archives, and
+> I'd like to encourage using bioc-devel for developer questions :-)
+>
+> On  3 Feb 2006, yuchuan at stat.berkeley.edu wrote:
+>> Thanks for your notifications. I do have R_PROFILE.R in my source
+>> directory, how should I remove this file from SVN?
+>
+> With svn, everything happens in two steps.  The first step is to
+> "schedule" something to happen and the second step is to "commit" the
+> something to the repository.  More specifically, the "schedule" step
+> is what you do in your working copy on your system.  The "commit" step
+> is when you run 'svn commit' in your working copy to send changes to
+> the repository.
+>
+> So to remove a file:
+>
+> svn rm filefoo.txt
+> svn status  ## will show that filefoo.txt is schedule for removal
+> svn commit
+>
+>> And how to use Depends to load dependencies?
+>
+> In your package code, you do not need to call library() or require().
+> Instead, simply list the packages that your package depends on in the
+> 'Depends' field of the DESCRIPTION file.
+>
+> If you have a NAMESPACE file for your package (recommended), then when
+> you are using functions from another package that also has a
+> namespace, you have a choice of using the Depends field and the
+> Imports field, in which case you use import directives in the
+> NAMESPACE file.  This latter approach is, IMO, more elegant.
+>
+>> A more general question, I made some changes to the package which
+>> will be included in the next release of bioC, how can I update the
+>> whole package on SVN?
+>
+> 1. checkout a working copy of your package using svn.
+>
+> 2. Make the edits.  If you already have the edits, copy the changed
+>   files over the files that come from the checkout.
+>
+> 3. Run svn status to verify changes.
+>
+> 4. Test, test, test
+>
+> 5. svn commit.
+>
+> Further questions NAMESPACE files, Depends, Imports, and even svn
+> usage are fair game for this list.
+>
+> Best,
+>
+> + seth
+>
+
+
+From sfalcon at fhcrc.org  Fri Feb  3 19:36:21 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 03 Feb 2006 10:36:21 -0800
+Subject: [Bioc-devel] Couple of eSet questions
+In-Reply-To: <C007C8E1.507B%sdavis2@mail.nih.gov> (Sean Davis's message of
+	"Thu, 02 Feb 2006 14:34:09 -0500")
+References: <C007C8E1.507B%sdavis2@mail.nih.gov>
+Message-ID: <m2oe1o70ii.fsf@ziti.local>
+
+More thoughts on eSet...
+
+On  2 Feb 2006, sdavis2 at mail.nih.gov wrote:
+> Since we are talking about eSets, I thought I would ask a couple
+> more questions.
+>
+> 1)  What is the thinking as to "standard use" for two-color data and
+>     eSets?
+
+That's a good question.  For me it points to a downside of the notion
+of an "everything set".  In its currnet form, "standard use" for
+two-color data would require a convention for how to name the
+assayData elements.
+
+I think the notion of grouping together assay data that shares
+reporterInfo and phenoData is a good one, but I wonder if the actual
+data storage/access is best handled by technology specific subclasses.
+
+Here are three usage scenarios:
+
+1. Two-color data.  Want to store two expression matrices for red and
+   green scans along with an associated standard error matrix for
+   each.  
+
+2. Time-course data.  Same samples, same chip.  Want to store
+   timepoint expression matrix pairs.
+
+3. Combine 1 & 2.
+
+While I can imagine ways to use eSet for all three, they would all require
+ad-hoc naming schemes for the elements of the assayData slot.  Here,
+there may be a real advantage to a technology-specific subclass that
+defines an appropriate structure (redExprs, greenExprs, etc).
+
+Another angle is to search for methods that make sense across
+different technologies:
+
+  description()
+  notes()
+  annotation()
+  history()?
+  phenoData()
+  reporterInfo()
+  sampleNames()
+  reporternames()
+
+>
+> 2)  With regard to reporterInfo, is there going to be a constraint
+>     to keep
+> the single-column data.frame idea as presented in the vignette, or is that
+> slot meant to be more flexible (left as a generic data.frame)?
+
+Seems to me that reporterInfo and phenoData slots should contain the
+same class, a data.frame with some additional meta data.
+
++ seth
+
+
+From sdavis2 at mail.nih.gov  Fri Feb  3 20:02:20 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Fri, 03 Feb 2006 14:02:20 -0500
+Subject: [Bioc-devel] Couple of eSet questions
+In-Reply-To: <m2oe1o70ii.fsf@ziti.local>
+Message-ID: <C00912EC.51C0%sdavis2@mail.nih.gov>
+
+
+
+
+On 2/3/06 1:36 PM, "Seth Falcon" <sfalcon at fhcrc.org> wrote:
+
+> More thoughts on eSet...
+> 
+> On  2 Feb 2006, sdavis2 at mail.nih.gov wrote:
+>> Since we are talking about eSets, I thought I would ask a couple
+>> more questions.
+>> 
+>> 1)  What is the thinking as to "standard use" for two-color data and
+>>     eSets?
+> 
+> That's a good question.  For me it points to a downside of the notion
+> of an "everything set".  In its currnet form, "standard use" for
+> two-color data would require a convention for how to name the
+> assayData elements.
+> 
+> I think the notion of grouping together assay data that shares
+> reporterInfo and phenoData is a good one, but I wonder if the actual
+> data storage/access is best handled by technology specific subclasses.
+> 
+> Here are three usage scenarios:
+> 
+> 1. Two-color data.  Want to store two expression matrices for red and
+>    green scans along with an associated standard error matrix for
+>    each.  
+
+What about a "channel" data structure which would include the label used
+(Cy3, Cy5, etc.), of which there can be 1..2?
+
+I still think there needs to be an accepted data matrix and associated error
+matrix for the whole dataset, though.  This would represent the normalized
+and processed data to be used in any further analysis.
+
+> 2. Time-course data.  Same samples, same chip.  Want to store
+>    timepoint expression matrix pairs.
+
+Time course data needs to be combined with metadata in order to be useful.
+I'm not sure that two-color data and time-course data are analogous from
+that point of view, but I may just be thinking about it slightly
+differently.
+
+Sean
+
+
+From sfalcon at fhcrc.org  Fri Feb  3 20:12:21 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 03 Feb 2006 11:12:21 -0800
+Subject: [Bioc-devel] Couple of eSet questions
+In-Reply-To: <C00912EC.51C0%sdavis2@mail.nih.gov> (Sean Davis's message of
+	"Fri, 03 Feb 2006 14:02:20 -0500")
+References: <C00912EC.51C0%sdavis2@mail.nih.gov>
+Message-ID: <m2y80s5ka2.fsf@ziti.local>
+
+On  3 Feb 2006, sdavis2 at mail.nih.gov wrote:
+>> 1. Two-color data.  Want to store two expression matrices for red
+>>    and
+>> green scans along with an associated standard error matrix for
+>> each.  
+>
+> What about a "channel" data structure which would include the label
+> used (Cy3, Cy5, etc.), of which there can be 1..2?
+
+I was making up the specifics and it shows ;-)
+Where I think we agree, is that technology specific data structures
+might be best represented as part of the class structure not left to
+an ad-hoc how to use list names setup.
+
+> I still think there needs to be an accepted data matrix and
+> associated error matrix for the whole dataset, though.  This would
+> represent the normalized and processed data to be used in any
+> further analysis.
+>
+>> 2. Time-course data.  Same samples, same chip.  Want to store
+>> timepoint expression matrix pairs.
+>
+> Time course data needs to be combined with metadata in order to be
+> useful.  I'm not sure that two-color data and time-course data are
+> analogous from that point of view, but I may just be thinking about
+> it slightly differently.
+
+Right, this was supposed to be not-analogous apart from wanting to
+have a single place to put the metadata.  
+
++ seth
+
+
+From stvjc at channing.harvard.edu  Fri Feb  3 20:27:57 2006
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Fri, 3 Feb 2006 14:27:57 -0500 (EST)
+Subject: [Bioc-devel] Couple of eSet questions
+In-Reply-To: <m2y80s5ka2.fsf@ziti.local>
+References: <C00912EC.51C0%sdavis2@mail.nih.gov> <m2y80s5ka2.fsf@ziti.local>
+Message-ID: <Pine.GSO.4.58.0602031422280.19960@capecod.bwh.harvard.edu>
+
+it sounds to me as if we are finding some use cases, and that
+we want to extend eSet to cope with those that have well-defined
+requirements.  all we know about assayData at present is that
+it is either a list or an environment.  for twochannel data
+we may want to define a specific extension of listOrEnv (i think
+this is possible) that has guaranteed structure and names.
+for data with standard errors we might have to do likewise.
+
+but i would say that part of the intention of the eSet is to
+require the developer always to allow an environment representation
+for the assayData.  the validity criteria can impose restrictions
+on this environment.
+
+eSet itself does not need to solve the two channel or error-available
+problems at once.  it should be extended to do so, with explicit
+use cases stated.
+
+---
+Vince Carey, PhD
+Assoc. Prof Med (Biostatistics)
+Harvard Medical School
+Channing Laboratory - ph 6175252265 fa 6177311541
+181 Longwood Ave Boston MA 02115 USA
+stvjc at channing.harvard.edu
+
+On Fri, 3 Feb 2006, Seth Falcon wrote:
+
+> On  3 Feb 2006, sdavis2 at mail.nih.gov wrote:
+> >> 1. Two-color data.  Want to store two expression matrices for red
+> >>    and
+> >> green scans along with an associated standard error matrix for
+> >> each.
+> >
+> > What about a "channel" data structure which would include the label
+> > used (Cy3, Cy5, etc.), of which there can be 1..2?
+>
+> I was making up the specifics and it shows ;-)
+> Where I think we agree, is that technology specific data structures
+> might be best represented as part of the class structure not left to
+> an ad-hoc how to use list names setup.
+>
+> > I still think there needs to be an accepted data matrix and
+> > associated error matrix for the whole dataset, though.  This would
+> > represent the normalized and processed data to be used in any
+> > further analysis.
+> >
+> >> 2. Time-course data.  Same samples, same chip.  Want to store
+> >> timepoint expression matrix pairs.
+> >
+> > Time course data needs to be combined with metadata in order to be
+> > useful.  I'm not sure that two-color data and time-course data are
+> > analogous from that point of view, but I may just be thinking about
+> > it slightly differently.
+>
+> Right, this was supposed to be not-analogous apart from wanting to
+> have a single place to put the metadata.
+>
+> + seth
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From sfalcon at fhcrc.org  Fri Feb  3 21:17:35 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 03 Feb 2006 12:17:35 -0800
+Subject: [Bioc-devel] Couple of eSet questions
+In-Reply-To: <Pine.GSO.4.58.0602031422280.19960@capecod.bwh.harvard.edu>
+	(Vincent Carey's message of "Fri,
+	3 Feb 2006 14:27:57 -0500 (EST)")
+References: <C00912EC.51C0%sdavis2@mail.nih.gov> <m2y80s5ka2.fsf@ziti.local>
+	<Pine.GSO.4.58.0602031422280.19960@capecod.bwh.harvard.edu>
+Message-ID: <m2lkws5h9c.fsf@ziti.local>
+
+On  3 Feb 2006, stvjc at channing.harvard.edu wrote:
+> it sounds to me as if we are finding some use cases, and that
+> we want to extend eSet to cope with those that have well-defined
+> requirements.  all we know about assayData at present is that
+> it is either a list or an environment.  for twochannel data
+> we may want to define a specific extension of listOrEnv (i think
+> this is possible) that has guaranteed structure and names.
+> for data with standard errors we might have to do likewise.
+>
+> but i would say that part of the intention of the eSet is to
+> require the developer always to allow an environment representation
+> for the assayData.  the validity criteria can impose restrictions
+> on this environment.
+
+Respectfully, I think I disagree.  I would like to have the use cases
+drive the design of specific subclasses of an eSet-like class where
+the structure is expressed as part of the class definition
+(e.g. exprSet should have an exprs slot, not a named element of an
+env).
+
+Pushing the definition of the structure to the validity function makes
+the actual structure harder to see (IMO) and I'm concerned that it
+will make extensions which otherwise would be trivial subclasses,
+tricky.  I guess a part of my objection is that it feels as though we
+will be implementing our own mini class system where slots are the
+named elements of an env.
+
+A compelling argument for forcing the actual data to be in an
+environment is to avoid copying.  
+
+> eSet itself does not need to solve the two channel or
+> error-available problems at once.  it should be extended to do so,
+> with explicit use cases stated.
+
+Yes, I'm just not convinced that eSet has any business having actual
+data slots; those are the domain of its subclasses.
+
+Putting aside my perhaps ideological objections, maybe a compromise is
+to work on some of the concrete subclasses (two-channel data being one
+good example) and factor out the common elements as the evolve.  
+
++ seth
+
+
+From stvjc at channing.harvard.edu  Fri Feb  3 22:05:27 2006
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Fri, 3 Feb 2006 16:05:27 -0500 (EST)
+Subject: [Bioc-devel] Couple of eSet questions
+In-Reply-To: <m2lkws5h9c.fsf@ziti.local>
+References: <C00912EC.51C0%sdavis2@mail.nih.gov> <m2y80s5ka2.fsf@ziti.local>
+	<Pine.GSO.4.58.0602031422280.19960@capecod.bwh.harvard.edu>
+	<m2lkws5h9c.fsf@ziti.local>
+Message-ID: <Pine.GSO.4.58.0602031552320.21286@capecod.bwh.harvard.edu>
+
+
+> On  3 Feb 2006, stvjc at channing.harvard.edu wrote:
+> > it sounds to me as if we are finding some use cases, and that
+> > we want to extend eSet to cope with those that have well-defined
+> > requirements.  all we know about assayData at present is that
+> > it is either a list or an environment.  for twochannel data
+> > we may want to define a specific extension of listOrEnv (i think
+> > this is possible) that has guaranteed structure and names.
+> > for data with standard errors we might have to do likewise.
+> >
+> > but i would say that part of the intention of the eSet is to
+> > require the developer always to allow an environment representation
+> > for the assayData.  the validity criteria can impose restrictions
+> > on this environment.
+>
+> Respectfully, I think I disagree.  I would like to have the use cases
+> drive the design of specific subclasses of an eSet-like class where
+> the structure is expressed as part of the class definition
+> (e.g. exprSet should have an exprs slot, not a named element of an
+> env).
+
+I think the use case should be used to describe what behaviors
+we want and then the representation can be chosen to allow
+those behaviors.
+
+The internal representation should be subordinate
+to the methods that expose the structure through its behaviors.
+Now perhaps my comment on requiring the developer to allow for
+an environment is inconsistent with this position.
+
+>
+> Pushing the definition of the structure to the validity function makes
+> the actual structure harder to see (IMO) and I'm concerned that it
+> will make extensions which otherwise would be trivial subclasses,
+> tricky.  I guess a part of my objection is that it feels as though we
+> will be implementing our own mini class system where slots are the
+> named elements of an env.
+
+I am open to discussion of how the visibility of a structure needs
+to be cared for in our project.  If it is only visible through
+methods, it shouldn't matter whether the information components are
+slots or environment elements.  And the class designers should
+be free to change the internal representations without downstream
+consequences.  We have not achieved this in several domains --
+should we be trying harder?
+
+>
+> A compelling argument for forcing the actual data to be in an
+> environment is to avoid copying.
+
+That's the intention -- but not to force people to use environments,
+but to allow them to do so when it makes sense to do so.
+
+>
+> > eSet itself does not need to solve the two channel or
+> > error-available problems at once.  it should be extended to do so,
+> > with explicit use cases stated.
+>
+> Yes, I'm just not convinced that eSet has any business having actual
+> data slots; those are the domain of its subclasses.
+
+It would be good to get some agreement on this.  I would say that
+the eSet schematizes high throughput assay data.  We hold, to
+some benefit, that there needs to be an assayData component, and that
+it has reporterInfo and phenoData by virtue of its extension of
+annotatedDataset.  Less than this and we are not solving the
+high-throughput problem.  It has some other slots that I am not
+so sure about that seem to be there for continuity with the
+previous incarnation.
+
+>
+> Putting aside my perhaps ideological objections, maybe a compromise is
+> to work on some of the concrete subclasses (two-channel data being one
+> good example) and factor out the common elements as the evolve.
+
+i agree.  i don't mean to be very pedantic about the representation/
+method access concepts ... i have to run now.
+
+
+From sdavis2 at mail.nih.gov  Mon Feb  6 14:09:02 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Mon, 06 Feb 2006 08:09:02 -0500
+Subject: [Bioc-devel] Couple of eSet questions
+In-Reply-To: <Pine.GSO.4.58.0602031552320.21286@capecod.bwh.harvard.edu>
+Message-ID: <C00CB49E.536F%sdavis2@mail.nih.gov>
+
+
+
+
+On 2/3/06 4:05 PM, "Vincent Carey 525-2265" <stvjc at channing.harvard.edu>
+wrote:
+
+>>> eSet itself does not need to solve the two channel or
+>>> error-available problems at once.  it should be extended to do so,
+>>> with explicit use cases stated.
+>> 
+>> Yes, I'm just not convinced that eSet has any business having actual
+>> data slots; those are the domain of its subclasses.
+
+I'm just curious as to when and by whom eSets will be subclassed?  Will that
+be left to individual package developers, or will these subclasses be
+available in biobase for general consumption?
+
+Sean
+
+
+From rgentlem at fhcrc.org  Mon Feb  6 16:55:58 2006
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Mon, 06 Feb 2006 07:55:58 -0800
+Subject: [Bioc-devel] Couple of eSet questions
+In-Reply-To: <C00CB49E.536F%sdavis2@mail.nih.gov>
+References: <C00CB49E.536F%sdavis2@mail.nih.gov>
+Message-ID: <43E7718E.6050809@fhcrc.org>
+
+
+
+Sean Davis wrote:
+> 
+> 
+> On 2/3/06 4:05 PM, "Vincent Carey 525-2265" <stvjc at channing.harvard.edu>
+> wrote:
+> 
+> 
+>>>>eSet itself does not need to solve the two channel or
+>>>>error-available problems at once.  it should be extended to do so,
+>>>>with explicit use cases stated.
+>>>
+>>>Yes, I'm just not convinced that eSet has any business having actual
+>>>data slots; those are the domain of its subclasses.
+> 
+> 
+> I'm just curious as to when and by whom eSets will be subclassed?  Will that
+> be left to individual package developers, or will these subclasses be
+> available in biobase for general consumption?
+
+  Ideally there would be platform/experimentt specific subclasses. 
+Initially I would expect them all to be different, but overtime for 
+consensus to appear. For example, we would be really supportive of some 
+move on the arrayCGH front that went for a standardized data format (and 
+some form of eSet could be used). For flow cytometry the prada package 
+has already done something along these lines and we make some use of it 
+in rflowcyt.
+
+   I doubt it would all go in Biobase, but rather that there might be a 
+aCGHBase and a flowBase etc that would help to accommodate different groups.
+
+   Whether that happens depends a lot on those folks. We try pretty hard 
+not to enforce any particular style but rather to show that there are 
+benefits from using common formats and to having the data be as 
+self-describing as possible.
+
+Hopefully, once we make some progress on the microarray experiment 
+repository more people will see the benefits of this approach, but maybe 
+not.
+
+  best wishes
+    Robert
+
+
+> 
+> Sean
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From hpages at fhcrc.org  Mon Feb  6 20:08:37 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Mon, 06 Feb 2006 11:08:37 -0800
+Subject: [Bioc-devel] Incorrect Rd files
+Message-ID: <43E79EB5.2000903@fhcrc.org>
+
+Hi all,
+
+Due to a recent change in R-devel, "R CMD check" now validates
+the Rd files. The consequence is that some Bioconductor packages that
+used to pass the "R CMD check" test with no problems now get some
+warnings because some Rd files with unknown sections are detected.
+
+Packages affected by the "Rd files with unknown sections" warning
+are the following:
+  - aCGH
+  - affxparser
+  - affy
+  - affypdnn
+  - bim
+  - bioDist
+  - biomaRt
+  - DynDoc
+  - genArise
+  - GraphAT
+  - hopach
+  - ideogram
+  - impute
+  - limma
+  - makecdfenv
+  - MantelCorr
+  - MergeMaid
+  - Mfuzz
+  - multtest
+  - OLIN
+  - pairseqsim
+  - RankProd
+  - RMAGEML
+  - simpleaffy
+  - simulatorAPMS
+  - snapCGH
+  - stam
+
+All the above packages contain one or more incorrect sections in their
+Rd files resulting in incorrect ouput (or at least, not the intended 
+output).
+The most frequent errors are:
+  a) An empty \alias section.
+  b) \notes instead of \note.
+  c) The markup command \code being used as a section command.
+  d) A \warnings (or \warning, or \Warning) section. There is no such 
+section
+     command. Use \section(Warning}{...}
+  e) \detail (or \Details) instead of \details.
+  f) \ref (or \reference) instead of |\references.|
+|  g) \doctype (or ||\docTye) ||instead of ||\docType.|
+|  h) \syntax (or \syntaxis) instead of \usage.|
+|  i) The markup command \email being used as a section command.|
+|  j) \example instead of ||\examples.|
+|  k) The use of \creatingobjects, \slots, \methods or \nodes as section
+     commands.|| There is no such section commands.|||
+|  l) The markup command \url being used as a section command.|
+
+Please, see "Writing R documentation files" (section 2 of the "Writing R 
+extensions"
+manual) for more information.
+
+Regards,
+
+H.
+
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+Phone: (206) 667-5791
+Fax: (206) 667-1319
+
+
+From rgentlem at fhcrc.org  Wed Feb  8 02:10:16 2006
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Tue, 07 Feb 2006 17:10:16 -0800
+Subject: [Bioc-devel] BioC2006 Call for Practicals
+Message-ID: <43E944F8.4090803@fhcrc.org>
+
+Hi,
+   We are preparing for BioC 2006, which will be held here in Seattle 
+(for statisticians, just before the JSM), Aug 3 and 4. The format will 
+be the same as last year, morning talks and afternoon practicals.
+
+   This is a call for proposals for practical presentations. They should 
+be approximately 3 hours long, and should be based on showing how to 
+make use of some computational software.
+
+   Please send proposals to Nianhua Li <nli at fhcrc.org>,
+with the following information:
+   1) Speaker names and contact email
+   2) Title of presentation
+   3) A one paragraph abstract.
+
+  As we did last year, all proposals will be put on the web and 
+conference attendees will vote for the ones that they want to attend. We 
+(the organizing committee) will then select those that get the highest 
+vote totals for presentation at BioC2006.
+
+   Attendees will have access to the internet via wireless LAN and we 
+will have a variety of media available for distributing software and 
+data. We will have very limited ability to provide hardcopy material, so 
+please do not plan on massive handouts.
+
+   The conference will also have a poster session so that is an 
+alternative method for presenting your material, but more details on 
+that shortly.
+
+   Thanks,
+     Robert
+
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From sfalcon at fhcrc.org  Wed Feb 15 20:02:09 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 15 Feb 2006 11:02:09 -0800
+Subject: [Bioc-devel] Request for Comment: SNP Annotation package design
+Message-ID: <m21wy4wimm.fsf@ziti.local>
+
+Greetings all,
+
+Some of us have been working on a design for annotation packages for
+SNP chips.
+
+We would like to get input from the community at large.  A summary of
+our current design notes is available here:
+
+http://wiki.fhcrc.org/bioc/SNP_Annotation_Package_Discussion
+
+You can comment either by replying to this thread or creating an
+account on the wiki (see above URL) and adding comments directly to
+the page.  Adding to the wiki directly is preferred.
+
+We will let the discussion evolve for 1 week before beginning
+implementation work.
+
+Best Wishes,
+
++ seth
+
+
+From sdavis2 at mail.nih.gov  Wed Feb 15 20:53:35 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Wed, 15 Feb 2006 14:53:35 -0500
+Subject: [Bioc-devel] Request for Comment: SNP Annotation package design
+In-Reply-To: <m21wy4wimm.fsf@ziti.local>
+Message-ID: <C018F0EF.5E10%sdavis2@mail.nih.gov>
+
+Seth,
+
+It seems like there is more information available than that in your proposed
+table structure.  Do you really want to drop those accessory data (like Avg
+Het. or from what database the snps are derived)?  If you stuck with the
+table structure from UCSC, then on the implementation side of things, one
+could envision being able to use RMySQL, RSQLite, or RdbiPgSQL to access the
+tables which could be easily obtained from bioc (RSQLite) or via a local
+database (which probably several of us already have running).  I don't do
+much SNP work, so I shouldn't really be saying much, but disk space is
+pretty cheap, so it seems like more might be better (or at least not worse)
+here?
+
+Sean
+
+
+On 2/15/06 2:02 PM, "Seth Falcon" <sfalcon at fhcrc.org> wrote:
+
+> Greetings all,
+> 
+> Some of us have been working on a design for annotation packages for
+> SNP chips.
+> 
+> We would like to get input from the community at large.  A summary of
+> our current design notes is available here:
+> 
+> http://wiki.fhcrc.org/bioc/SNP_Annotation_Package_Discussion
+> 
+> You can comment either by replying to this thread or creating an
+> account on the wiki (see above URL) and adding comments directly to
+> the page.  Adding to the wiki directly is preferred.
+> 
+> We will let the discussion evolve for 1 week before beginning
+> implementation work.
+> 
+> Best Wishes,
+> 
+> + seth
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From sfalcon at fhcrc.org  Wed Feb 15 21:11:34 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 15 Feb 2006 12:11:34 -0800
+Subject: [Bioc-devel] Request for Comment: SNP Annotation package design
+In-Reply-To: <C018F0EF.5E10%sdavis2@mail.nih.gov> (Sean Davis's message of
+	"Wed, 15 Feb 2006 14:53:35 -0500")
+References: <C018F0EF.5E10%sdavis2@mail.nih.gov>
+Message-ID: <m2wtfws7pl.fsf@ziti.local>
+
+Hi Sean,
+
+On 15 Feb 2006, sdavis2 at mail.nih.gov wrote:
+> It seems like there is more information available than that in your
+> proposed table structure.  Do you really want to drop those
+> accessory data (like Avg Het. or from what database the snps are
+> derived)?  
+
+That's a good question.  What is in the proposal is the info
+specifically requested by Rafael and his collaborators.
+
+> If you stuck with the table structure from UCSC, then on
+> the implementation side of things, one could envision being able to
+> use RMySQL, RSQLite, or RdbiPgSQL to access the tables which could
+> be easily obtained from bioc (RSQLite) or via a local database
+> (which probably several of us already have running).
+
+Interesting.  We are planning to use a database (SQLite) as the
+backend for the SNP annotation.  If we are not going to integrate any
+information from any other data source, then mirroring the UCSC
+structure has a number of advantages.  
+
+> I don't do much SNP work, so I shouldn't really be saying much, but
+> disk space is pretty cheap, so it seems like more might be better
+> (or at least not worse) here?
+
+Yes, disk space is cheap, but network bandwidth is not.  There is some
+value in keeping just the annotation data that is needed and having
+smaller downloads, etc.
+
++ seth
+
+
+From sfalcon at fhcrc.org  Wed Feb 15 21:41:02 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 15 Feb 2006 12:41:02 -0800
+Subject: [Bioc-devel] Request for Comment: SNP Annotation package design
+In-Reply-To: <m21wy4wimm.fsf@ziti.local> (Seth Falcon's message of "Wed,
+	15 Feb 2006 11:02:09 -0800")
+References: <m21wy4wimm.fsf@ziti.local>
+Message-ID: <m2oe18s6ch.fsf@ziti.local>
+
+Hi,
+
+I'm posting this for Carsten who isn't yet subscribed to bioc-devel.
+
+A couple notes:
+
+1. If you want to post to this list, you need to subscribe.  See:
+   http://www.stat.math.ethz.ch/mailman/listinfo/bioc-devel
+
+2. If you want to update the wiki, create an account for yourself by
+   going to http://wiki.fhcrc.org/bioc/UserPreferences, filling out
+   the form and clicking on 'create profile'.  Then login using your
+   new username/password and you should see an edit link on each page.
+
+3. The wiki uses reST markup.  See notes and links on the main page:
+   http://wiki.fhcrc.org/bioc/MyStartingPage
+
+   Unfortunately, the markup hints on the edit page are totally
+   wrong.  Sorry, working on a fix for that.
+
+Here is Carten's post:
+
+From: <carsten_rosenow at agilent.com>
+Subject: FW: [Bioc-devel] Request for Comment: SNP Annotation package design
+To: <bioc-devel-bounces at stat.math.ethz.ch>
+Cc: <SMurray at illumina.com>, <eric_boyer at agilent.com>
+Date: Wed Feb 15 12:22:54 2006 -0800
+
+ 
+Dear Seth,
+
+It would be great to get involved in this discussion. I had a quick
+look at the page and couldn't figure out how to comment in Wiki.
+
+I think it is very important to include flanking sequences. A
+certainly longer discussion is the strandedness of the SNPs in
+dbSNP. Coming up with a solution would clearly ease the use of the
+database.
+
+In addition you might want to check with Illumina on their SNP
+annotations.
+
+We are currently working on proposals and will keep you posted. Is
+there an Email list I can subscribe to?
+
+ 
+
+Thanks
+
+Carsten
+
+CARSTEN ROSENOW, Ph.D.
+Product Manager Genotyping and Systems Biology
+IBS Informatics
+Agilent Technologies 
+5301 Stevens Creek Blvd 
+Santa Clara, CA 95051
+
+
+From huber at ebi.ac.uk  Tue Feb 28 21:21:03 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Tue, 28 Feb 2006 20:21:03 +0000
+Subject: [Bioc-devel] BioC Developers Meeting
+Message-ID: <4404B0AF.9030103@ebi.ac.uk>
+
+Dear Bioconductors,
+
+as a satellite event to the BioC2006 Conference
+https://cobra.fhcrc.org/BioC2006 there will be a "Developers Meeting" on
+Wed 2 Aug. A formal announcement will follow soon.
+
+This day will include presentations about how to design and program
+software for Bioconductor, but perhaps more importantly, we would like
+to use this day to tackle the question of making the various packages
+that you contribute work together better. In other words, "package
+integration and API standardization".
+
+In order to prepare the agenda for this, I would like to ask for
+feedback and discussion, on this mailing list, about this:
+
+- in which packages or application domains do you see the most need for
+standardization / unification / simplification of what we currently do?
+
+- what data structures (S4 classes and methods) that we currently have
+do you like, or dislike; where should we put in more work?
+
+- there is apparently a trade-off between creativity and
+standardization, do you think we (Bioconductor) are getting it about
+right, or should we put more emphasis on one or another?
+
+- what should be the criteria for emphasizing work on standardization in
+a particular package, or set of related packages, and how can the
+authors be convinced that this is a worthwhile investment of their time?
+
+Best regards
+    Wolfgang
+
+-------------------------------------
+Wolfgang Huber
+European Bioinformatics Institute
+European Molecular Biology Laboratory
+Cambridge CB10 1SD
+England
+Phone: +44 1223 494642
+Fax:   +44 1223 494486
+Http:  www.ebi.ac.uk/huber
+
+
+From hpages at fhcrc.org  Tue Feb 28 21:42:49 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Tue, 28 Feb 2006 12:42:49 -0800
+Subject: [Bioc-devel] Some build system changes
+Message-ID: <4404B5C9.2040906@fhcrc.org>
+
+Hi Bioc-developers,
+
+Some small changes introduced recently in our build system:
+
+   - We now build and check all Bioconductor devel packages twice a day
+     instead of once only. The build/check report page:
+       http://www.bioconductor.org/checkResults/1.8/html/report.html
+     is updated every day at 3:00 AM and 3:00 PM.
+
+   - R-devel used by the build system has been updated to 2006-02-27
+     snapshot (r37445).
+
+   - Packages containing C code are now compiled on our Linux build
+     machines with gcc flags "-g -O2 -ansi -pedantic -Wall" instead
+     of default "-g -O2 -std=gnu99".
+     This has the advantage of producing more usefull debugging info
+     (available on the build/check report) and to also warn you when
+     your C code uses some C99 feature that might not compile on old
+     systems. A typical warning will look like:
+
+       warning: ISO C90 forbids variable-size array `myarray'
+
+These changes should be visible tomorrow morning on the build/check
+report.
+
+Regards,
+
+H.
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+Phone: (206) 667-5791
+   Fax: (206) 667-1319
+
+

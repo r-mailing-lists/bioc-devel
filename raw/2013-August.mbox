@@ -1,0 +1,4884 @@
+From hpages at fhcrc.org  Thu Aug  1 01:05:07 2013
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Wed, 31 Jul 2013 16:05:07 -0700
+Subject: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+In-Reply-To: <A4D0AD48C137224D9E532742F418928A1CFB92AC@BL2PRD0111MB520.prod.exchangelabs.com>
+References: <A4D0AD48C137224D9E532742F418928A1CFB8D42@BL2PRD0111MB520.prod.exchangelabs.com>,
+	<1881665518.1447208.1375075786170.JavaMail.root@fhcrc.org>
+	<A4D0AD48C137224D9E532742F418928A1CFB8D7B@BL2PRD0111MB520.prod.exchangelabs.com>,
+	<51F6A697.7070909@fhcrc.org>
+	<A4D0AD48C137224D9E532742F418928A1CFB92AC@BL2PRD0111MB520.prod.exchangelabs.com>
+Message-ID: <51F99823.3050104@fhcrc.org>
+
+Hi Dario,
+
+Thanks for providing the file.
+
+The file has 55780092 records in it and yes it only contains primary
+alignments so this is the best situation for the pairing algorithm.
+
+Here are the timings I get for the readBamGappedAlignmentPairs()
+function (renamed readGAlignmentPairsFromBam() in devel) on a 64-bit
+Ubuntu server with 384 Gb of RAM:
+
+## With BioC release (Rsamtools 1.12.3)
+## ------------------------------------
+## Timings:
+##   - readBamGappedAlignments: 10 min 30 s (A=A1+A2)
+##     - scanBam:                6 min      (A1)
+##     - other:                  4 min 30 s (A2)
+##   - makeGappedAlignmentPairs: 5 min 30 s (B=B1+B2)
+##     - findMateAlignment:      1 min 30 s (B1)
+##     - other:                  4 min      (B2)
+##   Total time:                16 min      (A+B)
+## Memory usage: 13 Gb
+
+## With BioC devel (Rsamtools 1.13.19)
+## -----------------------------------
+## Timings:
+##   - readGAlignmentsFromBam: 11 min      (A=A1+A2)
+##     - scanBam:               6 min      (A1)
+##     - other:                 5 min      (A2)
+##   - makeGAlignmentPairs:     4 min      (B=B1+B2)
+##     - findMateAlignment:     1 min      (B1)
+##     - other:                 3 min      (B2)
+##   Total time:               15 min      (A+B)
+## Memory usage: 13 Gb
+
+Indeed, not much difference between release and devel :-/
+
+I didn't have the opportunity to do this kind of detailed timing of
+the readGAlignmentPairsFromBam() function on such a big file before,
+but I find it pretty interesting (I only benchmarked findMateAlignment()
+and it was on simulated data).
+
+In particular I'm quite surprised to discover that the pairing algo
+(implemented in findMateAlignment) is actually not the bottleneck
+(and it being optimized in BioC devel explains the small difference
+between total time in release and total time in devel).
+
+Just a note on the timings you sent earlier (I'm copying them here
+again):
+
+   > system.time(RNAreads <- readBamGappedAlignmentPairs(file))
+         user  system elapsed
+      1852.16   59.00 1939.11
+   > system.time(RNAreads <- readBamGappedAlignments(file))
+         user  system elapsed
+       192.80    8.12  214.97
+
+Subtracting the 2 times above to infer the time spent for the pairing
+is a shortcut that overlooks the following: when
+readBamGappedAlignmentPairs() calls readBamGappedAlignments()
+internally, it calls it with 'use.names=TRUE', and also with a 'param'
+arg that specifies the extra BAM fields, and also with a specific flag
+filter. All those things are required for the pairing algo. So a more
+sensible comparison is to compare:
+
+   RNAreads <- readBamGappedAlignmentPairs(file)
+
+versus:
+
+   flag0 <- scanBamFlag(isPaired=TRUE, isUnmappedQuery=FALSE, 
+hasUnmappedMate=FALSE)
+   what0 <- c("rname", "strand", "pos", "cigar", "flag", "mrnm", "mpos")
+   param0 <- ScanBamParam(flag=flag0, what=what0)
+   RNAreads <- readBamGappedAlignments(file, use.names=TRUE, param=param0)
+
+This internal call to readBamGappedAlignments() takes more than 70%
+of the total time of readBamGappedAlignmentPairs() (11 min / 15 min
+with BioC devel on my Linux server). This is a little bit surprising
+to me and that's something I'd like to investigate.
+
+Cheers,
+H.
+
+
+On 07/30/2013 05:00 PM, Dario Strbenac wrote:
+> Hi.
+>
+> The files are
+>
+> http://www.maths.usyd.edu.au/u/dario/RNAAlignedSorted.bam
+> http://www.maths.usyd.edu.au/u/dario/RNAAlignedSorted.bam.bai
+>
+> While you have them, could you also investigate the granges coercion function ? It also took half an hour.
+>
+> ________________________________________
+> From: Herv? Pag?s [hpages at fhcrc.org]
+> Sent: Tuesday, 30 July 2013 3:29 AM
+> To: Dario Strbenac
+> Cc: bioc-devel at r-project.org
+> Subject: Re: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+>
+> On 07/29/2013 12:00 AM, Dario Strbenac wrote:
+>> Because I only allowed unique mappings, the ratio is 2. After installing the development package versions, I only got a 10% improvement.
+>
+> Mmmh that's disappointing. Can you put the file somewhere so I can have
+> a look? Thanks.
+>
+> H.
+>
+>>
+>>      user  system elapsed
+>> 1681.36   65.79 1752.10
+>>
+>> ________________________________________
+>> From: Pages, Herve [hpages at fhcrc.org]
+>> Sent: Monday, 29 July 2013 3:29 PM
+>> To: Dario Strbenac
+>> Cc: bioc-devel at r-project.org
+>> Subject: Re: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+>>
+>> Hi Dario,
+>>
+>> The function was optimized in Bioc-devel. Depending on the number
+>> of records in your BAM file (which is more relevant than its size),
+>> it should now be between 2x and 5x faster. Please give it a try and
+>> let us know.
+>>
+>> Also keep in mind that the pairing algo will slow down if
+>> the "average nb of records per unique QNAME" is 3 or more.
+>> This was discussed here last month:
+>>     https://stat.ethz.ch/pipermail/bioconductor/2013-June/053390.html
+>>
+>> Cheers,
+>> H.
+>>
+>>
+>> ----- Original Message -----
+>> From: "Dario Strbenac" <dstr7320 at uni.sydney.edu.au>
+>> To: bioc-devel at r-project.org
+>> Sent: Sunday, July 28, 2013 9:00:30 PM
+>> Subject: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+>>
+>> Hello,
+>>
+>> Could readBamGappedAlignmentPairs be optimised ? It's surprising that it takes an extra 29 minutes to calculate the pairing information, for the example below. The BAM file is 4 GB in size.
+>>
+>>> system.time(RNAreads <- readBamGappedAlignmentPairs(file))
+>>      user  system elapsed
+>> 1852.16   59.00 1939.11
+>>> system.time(RNAreads <- readBamGappedAlignments(file))
+>>      user  system elapsed
+>>    192.80    8.12  214.97
+>>
+>> --------------------------------------
+>> Dario Strbenac
+>> PhD Student
+>> University of Sydney
+>> Camperdown NSW 2050
+>> Australia
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+> --
+> Herv? Pag?s
+>
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M1-B514
+> P.O. Box 19024
+> Seattle, WA 98109-1024
+>
+> E-mail: hpages at fhcrc.org
+> Phone:  (206) 667-5791
+> Fax:    (206) 667-1319
+>
+>
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M1-B514
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From delhomme at embl.de  Thu Aug  1 17:45:48 2013
+From: delhomme at embl.de (Nicolas Delhomme)
+Date: Thu, 1 Aug 2013 17:45:48 +0200
+Subject: [Bioc-devel] the character to collapse the geneNames when using
+	the disjointExons function with aggregateGenes=TRUE
+In-Reply-To: <51F97682.3050904@embl.de>
+References: <38168A14-1E93-4482-89AF-B7CC8B3690D2@embl.de>
+	<51F94395.7020903@fhcrc.org> <51F94C7C.9010807@fhcrc.org>
+	<51F97682.3050904@embl.de>
+Message-ID: <C082CE1B-EE47-409C-AAC2-DA515C3BCF03@embl.de>
+
+Fantastic!
+
+Cheers,
+
+Nico
+
+---------------------------------------------------------------
+Nicolas Delhomme
+
+Genome Biology Computational Support
+
+European Molecular Biology Laboratory
+
+Tel: +49 6221 387 8310
+Email: nicolas.delhomme at embl.de
+Meyerhofstrasse 1 - Postfach 10.2209
+69102 Heidelberg, Germany
+---------------------------------------------------------------
+
+
+
+
+
+On Jul 31, 2013, at 10:41 PM, Alejandro Reyes wrote:
+
+> Dear all,
+> 
+> No problem from my side, I can adapt DEXSeq to those changes.
+> 
+> Best regards,
+> Alejandro Reyes
+> 
+>> Mike, Alejandro,
+>> 
+>> I also wonder about getting rid of the 'exonID' metadata column. This is redundant with 'exonic_part_number'. Do you have a preference for keeping one or the other?
+>> 
+>> Valerie
+>> 
+>> 
+>> On 07/31/2013 10:04 AM, Valerie Obenchain wrote:
+>>> Hi Nico,
+>>> 
+>>> (Adding Mike and Alejandro.)
+>>> 
+>>> Because disjointExons() came from DEXSeq I wanted to preserve the
+>>> behavior for backwards compatibility and familiarity to DEXSeq users.
+>>> There are a couple of changes I'd like to make so disjointExons() is
+>>> consistent with the other extractors in GenomicFeatures.
+>>> 
+>>> (1) Change metadata column names from 'geneNames' and 'transcripts' to
+>>> 'gene_id' and tx_name'.
+>>> 
+>>> (2) Instead of '+' or ';' to separate gene id's or transcript names,
+>>> these columns would each be a CharacterList.
+>>> 
+>>> If Mike and Alejandro are ok with these I'll go ahead and implement them.
+>>> 
+>>> Valerie
+>>> 
+>>> 
+>>> 
+>>> On 07/31/2013 06:29 AM, Nicolas Delhomme wrote:
+>>>> Hej Val, I believe that one is for you :-)
+>>>> 
+>>>> When using the aggregateGenes=TRUE parameter of the disjointExons
+>>>> function, the gene names are separated by a "+" character. Is there a
+>>>> particular reason for that? The reason I'm asking is that in the
+>>>> "transcripts" column the transcripts ID are separated by a semi-column
+>>>> and I was wondering if the "separator" could not be unified - i.e.
+>>>> using semi-colon for both the geneNames and transcripts column. Here a
+>>>> visual example of what I mean:
+>>>> 
+>>>> GRanges with 1 range and 4 metadata columns:
+>>>>       seqnames             ranges strand |
+>>>>          <Rle>          <IRanges>  <Rle> |
+>>>>   [1]    Chr03 [4541747, 4541782]      - |
+>>>>                                                geneNames
+>>>> <character>
+>>>>   [1] Potri.003G035500+Potri.003G035600+Potri.003G035700
+>>>> transcripts
+>>>> <character>
+>>>>   [1] PAC:26999771;PAC:26999331;PAC:26999330;PAC:26999332;PAC:26999333
+>>>>       exonic_part_number      exonID
+>>>>                <integer> <character>
+>>>>   [1]                  1        E001
+>>>>   ---
+>>>>   seqlengths:
+>>>>            Chr01         Chr02         Chr03 ... scaffold_99
+>>>> scaffold_991
+>>>>               NA            NA            NA ...
+>>>> NA            NA
+>>>> 
+>>>> 
+>>>> What do you say?
+>>>> 
+>>>> Cheers,
+>>>> 
+>>>> Nico
+>>>> 
+>>>> ---------------------------------------------------------------
+>>>> Nicolas Delhomme
+>>>> 
+>>>> Genome Biology Computational Support
+>>>> 
+>>>> European Molecular Biology Laboratory
+>>>> 
+>>>> Tel: +49 6221 387 8310
+>>>> Email: nicolas.delhomme at embl.de
+>>>> Meyerhofstrasse 1 - Postfach 10.2209
+>>>> 69102 Heidelberg, Germany
+>>>> ---------------------------------------------------------------
+>>>> 
+>>>> My sessionInfo()R version 3.0.1 (2013-05-16)
+>>>> Platform: x86_64-unknown-linux-gnu (64-bit)
+>>>> 
+>>>> locale:
+>>>>  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C
+>>>>  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8
+>>>>  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8
+>>>>  [7] LC_PAPER=C                 LC_NAME=C
+>>>>  [9] LC_ADDRESS=C               LC_TELEPHONE=C
+>>>> [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C
+>>>> 
+>>>> attached base packages:
+>>>> [1] parallel  stats     graphics  grDevices utils datasets  methods
+>>>> [8] base
+>>>> 
+>>>> other attached packages:
+>>>>  [1] Rsamtools_1.13.26       Biostrings_2.29.14 DEXSeq_1.7.6
+>>>>  [4] GenomicFeatures_1.13.21 AnnotationDbi_1.23.18 Biobase_2.21.6
+>>>>  [7] GenomicRanges_1.13.35   XVector_0.1.0 IRanges_1.19.19
+>>>> [10] BiocGenerics_0.7.3      BiocInstaller_1.11.4
+>>>> 
+>>>> loaded via a namespace (and not attached):
+>>>>  [1] biomaRt_2.17.2     bitops_1.0-5       BSgenome_1.29.1 DBI_0.2-7
+>>>>  [5] hwriter_1.3        RCurl_1.95-4.1     RSQLite_0.11.4
+>>>> rtracklayer_1.21.9
+>>>>  [9] statmod_1.4.17     stats4_3.0.1       stringr_0.6.2
+>>>> tools_3.0.1
+>>>> [13] XML_3.98-1.1       zlibbioc_1.7.0
+>>>> 
+>>>> _______________________________________________
+>>>> Bioc-devel at r-project.org mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>> 
+>>> 
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>> 
+> 
+
+
+From joe at rstudio.com  Thu Aug  1 19:40:06 2013
+From: joe at rstudio.com (Joe Cheng)
+Date: Thu, 1 Aug 2013 10:40:06 -0700
+Subject: [Bioc-devel] shiny, Bioconductor, and reproducible research
+In-Reply-To: <CAF_jjKqRVs7-szSUOroR-_jQ-p3v9rmMoouvNyfankbrQ1ovNw@mail.gmail.com>
+References: <CAF42j22enr64EuPaNdiUk_13h9gnFU-q0+8wsZ3Ur+85+2dNEQ@mail.gmail.com>
+	<76e7ddb184bc4be9b6617c190fb07f98@ENTWHUBT0000001.university.harvard.edu>
+	<CAOUXvx6_9HDAShG9Aq2MkrXHWQ9=kFSg0pwfT6yYc76afS=Neg@mail.gmail.com>
+	<CAC2h7us_9uo6CCbEN486g0d0V+Pj+oBWW4ZRTMvrF=-RgOurww@mail.gmail.com>
+	<CAF42j20LUDB8_2y6FhDb5_Q41-1y5ReWWLkZ9MPG8eKV=HX75g@mail.gmail.com>
+	<CADB12F1=T0E7es45+aO+Fz02ri80qtua4iqyZnVNQXDoi0Pe9Q@mail.gmail.com>
+	<CAF42j22pT8wT5q3P=QLg5_3RX5O7quZPg5ReM3gRXr_zcaPg6A@mail.gmail.com>
+	<CADB12F2sVUMXhKQrZsWxiJmhnm-LsQ5EV6VrAz+uQHB3wnBePg@mail.gmail.com>
+	<CAC2h7uu-iBRS_jia7CbV6J-Y9i7hJUo4_q4cVbk5oSncte-uRQ@mail.gmail.com>
+	<E55D9F13-2BA7-4A07-A8CE-0F18A7575509@gmail.com>
+	<CAF_jjKqRVs7-szSUOroR-_jQ-p3v9rmMoouvNyfankbrQ1ovNw@mail.gmail.com>
+Message-ID: <CAF_jjKrbR8woNzcqTgfL+=CE1Lj-uHKhyROjuMRrxf50h8f=VQ@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130801/4fd82381/attachment.pl>
+
+From kasperdanielhansen at gmail.com  Thu Aug  1 21:11:19 2013
+From: kasperdanielhansen at gmail.com (Kasper Daniel Hansen)
+Date: Thu, 1 Aug 2013 15:11:19 -0400
+Subject: [Bioc-devel] SummarizedExperiment and recent changes in
+	GenomicRanges
+Message-ID: <CAC2h7uu99MtyzDPxmsX1BaLY4dRqBsrQN8WO5YLHmDoaCDd-Nw@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130801/27373e51/attachment.pl>
+
+From hcorrada at gmail.com  Thu Aug  1 21:34:53 2013
+From: hcorrada at gmail.com (Hector Corrada Bravo)
+Date: Thu, 01 Aug 2013 12:34:53 -0700 (PDT)
+Subject: [Bioc-devel] SummarizedExperiment and recent changes in
+ GenomicRanges
+In-Reply-To: <CAC2h7uu99MtyzDPxmsX1BaLY4dRqBsrQN8WO5YLHmDoaCDd-Nw@mail.gmail.com>
+References: <CAC2h7uu99MtyzDPxmsX1BaLY4dRqBsrQN8WO5YLHmDoaCDd-Nw@mail.gmail.com>
+Message-ID: <1375385692153.9f9a5112@Nodemailer>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130801/4b645267/attachment.pl>
+
+From kasperdanielhansen at gmail.com  Thu Aug  1 21:45:30 2013
+From: kasperdanielhansen at gmail.com (Kasper Daniel Hansen)
+Date: Thu, 1 Aug 2013 15:45:30 -0400
+Subject: [Bioc-devel] SummarizedExperiment and recent changes in
+	GenomicRanges
+In-Reply-To: <1375385692153.9f9a5112@Nodemailer>
+References: <CAC2h7uu99MtyzDPxmsX1BaLY4dRqBsrQN8WO5YLHmDoaCDd-Nw@mail.gmail.com>
+	<1375385692153.9f9a5112@Nodemailer>
+Message-ID: <CAC2h7utJ5oFaxQawh8SaT3iet7Co=u8-mrLhDLyUv6m=fubMbA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130801/650b087c/attachment.pl>
+
+From kasperdanielhansen at gmail.com  Thu Aug  1 22:28:31 2013
+From: kasperdanielhansen at gmail.com (Kasper Daniel Hansen)
+Date: Thu, 1 Aug 2013 16:28:31 -0400
+Subject: [Bioc-devel] SummarizedExperiment and recent changes in
+	GenomicRanges
+In-Reply-To: <CAC2h7utJ5oFaxQawh8SaT3iet7Co=u8-mrLhDLyUv6m=fubMbA@mail.gmail.com>
+References: <CAC2h7uu99MtyzDPxmsX1BaLY4dRqBsrQN8WO5YLHmDoaCDd-Nw@mail.gmail.com>
+	<1375385692153.9f9a5112@Nodemailer>
+	<CAC2h7utJ5oFaxQawh8SaT3iet7Co=u8-mrLhDLyUv6m=fubMbA@mail.gmail.com>
+Message-ID: <CAC2h7uvh=rQYzQ6GKXzBpxEVC8NuROKWiOogdnSLU4qq=kJPng@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130801/3805ae10/attachment.pl>
+
+From hcorrada at gmail.com  Thu Aug  1 22:48:37 2013
+From: hcorrada at gmail.com (Hector Corrada Bravo)
+Date: Thu, 01 Aug 2013 13:48:37 -0700 (PDT)
+Subject: [Bioc-devel] SummarizedExperiment and recent changes in
+ GenomicRanges
+In-Reply-To: <CAC2h7uvh=rQYzQ6GKXzBpxEVC8NuROKWiOogdnSLU4qq=kJPng@mail.gmail.com>
+References: <CAC2h7uvh=rQYzQ6GKXzBpxEVC8NuROKWiOogdnSLU4qq=kJPng@mail.gmail.com>
+Message-ID: <1375390115985.71fc43ca@Nodemailer>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130801/8a67900e/attachment.pl>
+
+From kasperdanielhansen at gmail.com  Thu Aug  1 22:55:25 2013
+From: kasperdanielhansen at gmail.com (Kasper Daniel Hansen)
+Date: Thu, 1 Aug 2013 16:55:25 -0400
+Subject: [Bioc-devel] SummarizedExperiment and recent changes in
+	GenomicRanges
+In-Reply-To: <1375390115985.71fc43ca@Nodemailer>
+References: <CAC2h7uvh=rQYzQ6GKXzBpxEVC8NuROKWiOogdnSLU4qq=kJPng@mail.gmail.com>
+	<1375390115985.71fc43ca@Nodemailer>
+Message-ID: <CAC2h7uuKp-ZpWz5A3WVzLKubLKQEeq4wXNcxaLie3+r-=V5iTA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130801/96461f93/attachment.pl>
+
+From kasperdanielhansen at gmail.com  Thu Aug  1 23:21:12 2013
+From: kasperdanielhansen at gmail.com (Kasper Daniel Hansen)
+Date: Thu, 1 Aug 2013 17:21:12 -0400
+Subject: [Bioc-devel] SummarizedExperiment and recent changes in
+	GenomicRanges
+In-Reply-To: <1375390115985.71fc43ca@Nodemailer>
+References: <CAC2h7uvh=rQYzQ6GKXzBpxEVC8NuROKWiOogdnSLU4qq=kJPng@mail.gmail.com>
+	<1375390115985.71fc43ca@Nodemailer>
+Message-ID: <CAC2h7uuO9w7n-oxivmEd3OVNjFrSGZZtBHFXy88X+u00fhXwOA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130801/63a5a70f/attachment.pl>
+
+From stephen.piccolo at hsc.utah.edu  Fri Aug  2 05:42:25 2013
+From: stephen.piccolo at hsc.utah.edu (Steve Piccolo)
+Date: Fri, 2 Aug 2013 03:42:25 +0000
+Subject: [Bioc-devel] texi2dvi error on package build
+In-Reply-To: <CAF42j21M90F24DgHNzwSFn+8BQC-03XFryZhYjLKcfbTmUdOvA@mail.gmail.com>
+Message-ID: <CE208668.41F90%stephen.piccolo@hsc.utah.edu>
+
+Thanks, Dan! Turns out it was caused by having _ characters in the
+vignette. I escaped these using \_, and it compiled fine.
+
+-Steve
+
+---------------------------------------------------------------------------
+---------------
+Stephen Piccolo, Ph.D.
+Postdoctoral Research Associate
+
+Affiliations:
+  Department of Pharmacology and Toxicology, University of Utah
+  Division of Computational Biomedicine, Boston University School of
+Medicine
+
+Twitter: @stevepiccolo
+---------------------------------------------------------------------------
+----------------------------
+
+
+
+
+
+
+
+On 7/25/13 11:05 AM, "Dan Tenenbaum" <dtenenba at fhcrc.org> wrote:
+
+>On Thu, Jul 25, 2013 at 8:49 AM, Steve Piccolo
+><stephen.piccolo at hsc.utah.edu> wrote:
+>> I am trying to build my package locally using the following command:
+>>
+>> R CMD build SCAN.UPC
+>>
+>> I'm getting the following generic error. I looked for the log file but
+>> haven't been able to find it. I'm sure I am doing something silly that
+>>is
+>> causing this. Any tips on troubleshooting this error would be greatly
+>> appreciated. Thanks!
+>>
+>>
+>> * checking for file ?SCAN.UPC/DESCRIPTION? ... OK
+>> * preparing ?SCAN.UPC?:
+>> * checking DESCRIPTION meta-information ... OK
+>> * installing the package to re-build vignettes
+>> * creating vignettes ... ERROR
+>> Error in texi2dvi(file = file, pdf = TRUE, clean = clean, quiet = quiet,
+>> :
+>>   Running ?texi2dvi? on ?SCAN.vignette.tex? failed.
+>> Messages:
+>> /usr/bin/texi2dvi: pdflatex exited with bad status, quitting.
+>> /usr/bin/texi2dvi: see SCAN.vignette.log for errors.
+>
+>After installing the package, go to inst/doc and run
+>texi2dvi --pdf SCAN.vignette.Rnw
+>This should produce the SCAN.vignette.log file referred to here, you
+>can look at it and it may provide some clues.
+>
+>Dan
+>
+>
+>> Calls: <Anonymous> -> texi2pdf -> texi2dvi
+>> Execution halted
+>>
+>>
+>>
+>> My version info:
+>>
+>> R version 3.0.0 (2013-04-03)
+>> Platform: x86_64-apple-darwin10.8.0 (64-bit)
+>>
+>> locale:
+>> [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+>>
+>> attached base packages:
+>> [1] stats     graphics  grDevices utils     datasets  methods   base
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From vobencha at fhcrc.org  Fri Aug  2 07:29:56 2013
+From: vobencha at fhcrc.org (Valerie Obenchain)
+Date: Thu, 01 Aug 2013 22:29:56 -0700
+Subject: [Bioc-devel] the character to collapse the geneNames when using
+ the disjointExons function with aggregateGenes=TRUE
+In-Reply-To: <C082CE1B-EE47-409C-AAC2-DA515C3BCF03@embl.de>
+References: <38168A14-1E93-4482-89AF-B7CC8B3690D2@embl.de>
+	<51F94395.7020903@fhcrc.org> <51F94C7C.9010807@fhcrc.org>
+	<51F97682.3050904@embl.de>
+	<C082CE1B-EE47-409C-AAC2-DA515C3BCF03@embl.de>
+Message-ID: <51FB43D4.5020605@fhcrc.org>
+
+These changes are implemented in GenomicFeatures 1.13.26.
+
+Valerie
+
+
+On 08/01/2013 08:45 AM, Nicolas Delhomme wrote:
+> Fantastic!
+>
+> Cheers,
+>
+> Nico
+>
+> ---------------------------------------------------------------
+> Nicolas Delhomme
+>
+> Genome Biology Computational Support
+>
+> European Molecular Biology Laboratory
+>
+> Tel: +49 6221 387 8310
+> Email: nicolas.delhomme at embl.de
+> Meyerhofstrasse 1 - Postfach 10.2209
+> 69102 Heidelberg, Germany
+> ---------------------------------------------------------------
+>
+>
+>
+>
+>
+> On Jul 31, 2013, at 10:41 PM, Alejandro Reyes wrote:
+>
+>> Dear all,
+>>
+>> No problem from my side, I can adapt DEXSeq to those changes.
+>>
+>> Best regards,
+>> Alejandro Reyes
+>>
+>>> Mike, Alejandro,
+>>>
+>>> I also wonder about getting rid of the 'exonID' metadata column. This is redundant with 'exonic_part_number'. Do you have a preference for keeping one or the other?
+>>>
+>>> Valerie
+>>>
+>>>
+>>> On 07/31/2013 10:04 AM, Valerie Obenchain wrote:
+>>>> Hi Nico,
+>>>>
+>>>> (Adding Mike and Alejandro.)
+>>>>
+>>>> Because disjointExons() came from DEXSeq I wanted to preserve the
+>>>> behavior for backwards compatibility and familiarity to DEXSeq users.
+>>>> There are a couple of changes I'd like to make so disjointExons() is
+>>>> consistent with the other extractors in GenomicFeatures.
+>>>>
+>>>> (1) Change metadata column names from 'geneNames' and 'transcripts' to
+>>>> 'gene_id' and tx_name'.
+>>>>
+>>>> (2) Instead of '+' or ';' to separate gene id's or transcript names,
+>>>> these columns would each be a CharacterList.
+>>>>
+>>>> If Mike and Alejandro are ok with these I'll go ahead and implement them.
+>>>>
+>>>> Valerie
+>>>>
+>>>>
+>>>>
+>>>> On 07/31/2013 06:29 AM, Nicolas Delhomme wrote:
+>>>>> Hej Val, I believe that one is for you :-)
+>>>>>
+>>>>> When using the aggregateGenes=TRUE parameter of the disjointExons
+>>>>> function, the gene names are separated by a "+" character. Is there a
+>>>>> particular reason for that? The reason I'm asking is that in the
+>>>>> "transcripts" column the transcripts ID are separated by a semi-column
+>>>>> and I was wondering if the "separator" could not be unified - i.e.
+>>>>> using semi-colon for both the geneNames and transcripts column. Here a
+>>>>> visual example of what I mean:
+>>>>>
+>>>>> GRanges with 1 range and 4 metadata columns:
+>>>>>        seqnames             ranges strand |
+>>>>>           <Rle>          <IRanges>  <Rle> |
+>>>>>    [1]    Chr03 [4541747, 4541782]      - |
+>>>>>                                                 geneNames
+>>>>> <character>
+>>>>>    [1] Potri.003G035500+Potri.003G035600+Potri.003G035700
+>>>>> transcripts
+>>>>> <character>
+>>>>>    [1] PAC:26999771;PAC:26999331;PAC:26999330;PAC:26999332;PAC:26999333
+>>>>>        exonic_part_number      exonID
+>>>>>                 <integer> <character>
+>>>>>    [1]                  1        E001
+>>>>>    ---
+>>>>>    seqlengths:
+>>>>>             Chr01         Chr02         Chr03 ... scaffold_99
+>>>>> scaffold_991
+>>>>>                NA            NA            NA ...
+>>>>> NA            NA
+>>>>>
+>>>>>
+>>>>> What do you say?
+>>>>>
+>>>>> Cheers,
+>>>>>
+>>>>> Nico
+>>>>>
+>>>>> ---------------------------------------------------------------
+>>>>> Nicolas Delhomme
+>>>>>
+>>>>> Genome Biology Computational Support
+>>>>>
+>>>>> European Molecular Biology Laboratory
+>>>>>
+>>>>> Tel: +49 6221 387 8310
+>>>>> Email: nicolas.delhomme at embl.de
+>>>>> Meyerhofstrasse 1 - Postfach 10.2209
+>>>>> 69102 Heidelberg, Germany
+>>>>> ---------------------------------------------------------------
+>>>>>
+>>>>> My sessionInfo()R version 3.0.1 (2013-05-16)
+>>>>> Platform: x86_64-unknown-linux-gnu (64-bit)
+>>>>>
+>>>>> locale:
+>>>>>   [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C
+>>>>>   [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8
+>>>>>   [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8
+>>>>>   [7] LC_PAPER=C                 LC_NAME=C
+>>>>>   [9] LC_ADDRESS=C               LC_TELEPHONE=C
+>>>>> [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C
+>>>>>
+>>>>> attached base packages:
+>>>>> [1] parallel  stats     graphics  grDevices utils datasets  methods
+>>>>> [8] base
+>>>>>
+>>>>> other attached packages:
+>>>>>   [1] Rsamtools_1.13.26       Biostrings_2.29.14 DEXSeq_1.7.6
+>>>>>   [4] GenomicFeatures_1.13.21 AnnotationDbi_1.23.18 Biobase_2.21.6
+>>>>>   [7] GenomicRanges_1.13.35   XVector_0.1.0 IRanges_1.19.19
+>>>>> [10] BiocGenerics_0.7.3      BiocInstaller_1.11.4
+>>>>>
+>>>>> loaded via a namespace (and not attached):
+>>>>>   [1] biomaRt_2.17.2     bitops_1.0-5       BSgenome_1.29.1 DBI_0.2-7
+>>>>>   [5] hwriter_1.3        RCurl_1.95-4.1     RSQLite_0.11.4
+>>>>> rtracklayer_1.21.9
+>>>>>   [9] statmod_1.4.17     stats4_3.0.1       stringr_0.6.2
+>>>>> tools_3.0.1
+>>>>> [13] XML_3.98-1.1       zlibbioc_1.7.0
+>>>>>
+>>>>> _______________________________________________
+>>>>> Bioc-devel at r-project.org mailing list
+>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>>
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at r-project.org mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>
+
+
+From delhomme at embl.de  Fri Aug  2 12:47:34 2013
+From: delhomme at embl.de (Nicolas Delhomme)
+Date: Fri, 2 Aug 2013 12:47:34 +0200
+Subject: [Bioc-devel] the character to collapse the geneNames when using
+	the disjointExons function with aggregateGenes=TRUE
+In-Reply-To: <51FB43D4.5020605@fhcrc.org>
+References: <38168A14-1E93-4482-89AF-B7CC8B3690D2@embl.de>
+	<51F94395.7020903@fhcrc.org> <51F94C7C.9010807@fhcrc.org>
+	<51F97682.3050904@embl.de>
+	<C082CE1B-EE47-409C-AAC2-DA515C3BCF03@embl.de>
+	<51FB43D4.5020605@fhcrc.org>
+Message-ID: <6AA875C6-A266-465D-8C0E-F20D233A307A@embl.de>
+
+Thanks Val!
+
+I've been playing some more with that function and I was wondering if it would make sense to introduce an arguments to filter out synthetic exons if they are smaller than a given size. I.e. In my data I often get 1bp exons, which are obviously of no interest in the downstream analysis. I'm currently doing a post-filtering, but as that could benefit others it may be better if it's directly a function argument. The only issue is that I can't think of a decent default value; i.e. it depends much on the aligner used and on the kind of sequencing data, so it might have to be set to "NULL" by default.
+
+Alejandro - I've seen that in DEXSeq you conserve only these exons you can test - what you call testable exons - does that include a size filter?
+
+What's your take?
+
+Nico
+
+---------------------------------------------------------------
+Nicolas Delhomme
+
+Genome Biology Computational Support
+
+European Molecular Biology Laboratory
+
+Tel: +49 6221 387 8310
+Email: nicolas.delhomme at embl.de
+Meyerhofstrasse 1 - Postfach 10.2209
+69102 Heidelberg, Germany
+---------------------------------------------------------------
+
+
+
+
+
+On Aug 2, 2013, at 7:29 AM, Valerie Obenchain wrote:
+
+> These changes are implemented in GenomicFeatures 1.13.26.
+> 
+> Valerie
+> 
+> 
+> On 08/01/2013 08:45 AM, Nicolas Delhomme wrote:
+>> Fantastic!
+>> 
+>> Cheers,
+>> 
+>> Nico
+>> 
+>> ---------------------------------------------------------------
+>> Nicolas Delhomme
+>> 
+>> Genome Biology Computational Support
+>> 
+>> European Molecular Biology Laboratory
+>> 
+>> Tel: +49 6221 387 8310
+>> Email: nicolas.delhomme at embl.de
+>> Meyerhofstrasse 1 - Postfach 10.2209
+>> 69102 Heidelberg, Germany
+>> ---------------------------------------------------------------
+>> 
+>> 
+>> 
+>> 
+>> 
+>> On Jul 31, 2013, at 10:41 PM, Alejandro Reyes wrote:
+>> 
+>>> Dear all,
+>>> 
+>>> No problem from my side, I can adapt DEXSeq to those changes.
+>>> 
+>>> Best regards,
+>>> Alejandro Reyes
+>>> 
+>>>> Mike, Alejandro,
+>>>> 
+>>>> I also wonder about getting rid of the 'exonID' metadata column. This is redundant with 'exonic_part_number'. Do you have a preference for keeping one or the other?
+>>>> 
+>>>> Valerie
+>>>> 
+>>>> 
+>>>> On 07/31/2013 10:04 AM, Valerie Obenchain wrote:
+>>>>> Hi Nico,
+>>>>> 
+>>>>> (Adding Mike and Alejandro.)
+>>>>> 
+>>>>> Because disjointExons() came from DEXSeq I wanted to preserve the
+>>>>> behavior for backwards compatibility and familiarity to DEXSeq users.
+>>>>> There are a couple of changes I'd like to make so disjointExons() is
+>>>>> consistent with the other extractors in GenomicFeatures.
+>>>>> 
+>>>>> (1) Change metadata column names from 'geneNames' and 'transcripts' to
+>>>>> 'gene_id' and tx_name'.
+>>>>> 
+>>>>> (2) Instead of '+' or ';' to separate gene id's or transcript names,
+>>>>> these columns would each be a CharacterList.
+>>>>> 
+>>>>> If Mike and Alejandro are ok with these I'll go ahead and implement them.
+>>>>> 
+>>>>> Valerie
+>>>>> 
+>>>>> 
+>>>>> 
+>>>>> On 07/31/2013 06:29 AM, Nicolas Delhomme wrote:
+>>>>>> Hej Val, I believe that one is for you :-)
+>>>>>> 
+>>>>>> When using the aggregateGenes=TRUE parameter of the disjointExons
+>>>>>> function, the gene names are separated by a "+" character. Is there a
+>>>>>> particular reason for that? The reason I'm asking is that in the
+>>>>>> "transcripts" column the transcripts ID are separated by a semi-column
+>>>>>> and I was wondering if the "separator" could not be unified - i.e.
+>>>>>> using semi-colon for both the geneNames and transcripts column. Here a
+>>>>>> visual example of what I mean:
+>>>>>> 
+>>>>>> GRanges with 1 range and 4 metadata columns:
+>>>>>>       seqnames             ranges strand |
+>>>>>>          <Rle>          <IRanges>  <Rle> |
+>>>>>>   [1]    Chr03 [4541747, 4541782]      - |
+>>>>>>                                                geneNames
+>>>>>> <character>
+>>>>>>   [1] Potri.003G035500+Potri.003G035600+Potri.003G035700
+>>>>>> transcripts
+>>>>>> <character>
+>>>>>>   [1] PAC:26999771;PAC:26999331;PAC:26999330;PAC:26999332;PAC:26999333
+>>>>>>       exonic_part_number      exonID
+>>>>>>                <integer> <character>
+>>>>>>   [1]                  1        E001
+>>>>>>   ---
+>>>>>>   seqlengths:
+>>>>>>            Chr01         Chr02         Chr03 ... scaffold_99
+>>>>>> scaffold_991
+>>>>>>               NA            NA            NA ...
+>>>>>> NA            NA
+>>>>>> 
+>>>>>> 
+>>>>>> What do you say?
+>>>>>> 
+>>>>>> Cheers,
+>>>>>> 
+>>>>>> Nico
+>>>>>> 
+>>>>>> ---------------------------------------------------------------
+>>>>>> Nicolas Delhomme
+>>>>>> 
+>>>>>> Genome Biology Computational Support
+>>>>>> 
+>>>>>> European Molecular Biology Laboratory
+>>>>>> 
+>>>>>> Tel: +49 6221 387 8310
+>>>>>> Email: nicolas.delhomme at embl.de
+>>>>>> Meyerhofstrasse 1 - Postfach 10.2209
+>>>>>> 69102 Heidelberg, Germany
+>>>>>> ---------------------------------------------------------------
+>>>>>> 
+>>>>>> My sessionInfo()R version 3.0.1 (2013-05-16)
+>>>>>> Platform: x86_64-unknown-linux-gnu (64-bit)
+>>>>>> 
+>>>>>> locale:
+>>>>>>  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C
+>>>>>>  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8
+>>>>>>  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8
+>>>>>>  [7] LC_PAPER=C                 LC_NAME=C
+>>>>>>  [9] LC_ADDRESS=C               LC_TELEPHONE=C
+>>>>>> [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C
+>>>>>> 
+>>>>>> attached base packages:
+>>>>>> [1] parallel  stats     graphics  grDevices utils datasets  methods
+>>>>>> [8] base
+>>>>>> 
+>>>>>> other attached packages:
+>>>>>>  [1] Rsamtools_1.13.26       Biostrings_2.29.14 DEXSeq_1.7.6
+>>>>>>  [4] GenomicFeatures_1.13.21 AnnotationDbi_1.23.18 Biobase_2.21.6
+>>>>>>  [7] GenomicRanges_1.13.35   XVector_0.1.0 IRanges_1.19.19
+>>>>>> [10] BiocGenerics_0.7.3      BiocInstaller_1.11.4
+>>>>>> 
+>>>>>> loaded via a namespace (and not attached):
+>>>>>>  [1] biomaRt_2.17.2     bitops_1.0-5       BSgenome_1.29.1 DBI_0.2-7
+>>>>>>  [5] hwriter_1.3        RCurl_1.95-4.1     RSQLite_0.11.4
+>>>>>> rtracklayer_1.21.9
+>>>>>>  [9] statmod_1.4.17     stats4_3.0.1       stringr_0.6.2
+>>>>>> tools_3.0.1
+>>>>>> [13] XML_3.98-1.1       zlibbioc_1.7.0
+>>>>>> 
+>>>>>> _______________________________________________
+>>>>>> Bioc-devel at r-project.org mailing list
+>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>>> 
+>>>>> 
+>>>>> _______________________________________________
+>>>>> Bioc-devel at r-project.org mailing list
+>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>> 
+>>> 
+>> 
+> 
+
+
+From mtmorgan at fhcrc.org  Fri Aug  2 13:24:42 2013
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Fri, 02 Aug 2013 04:24:42 -0700
+Subject: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+In-Reply-To: <51F99823.3050104@fhcrc.org>
+References: <A4D0AD48C137224D9E532742F418928A1CFB8D42@BL2PRD0111MB520.prod.exchangelabs.com>,
+	<1881665518.1447208.1375075786170.JavaMail.root@fhcrc.org>
+	<A4D0AD48C137224D9E532742F418928A1CFB8D7B@BL2PRD0111MB520.prod.exchangelabs.com>,
+	<51F6A697.7070909@fhcrc.org>
+	<A4D0AD48C137224D9E532742F418928A1CFB92AC@BL2PRD0111MB520.prod.exchangelabs.com>
+	<51F99823.3050104@fhcrc.org>
+Message-ID: <51FB96FA.9060809@fhcrc.org>
+
+On 07/31/2013 04:05 PM, Herv? Pag?s wrote:
+> Hi Dario,
+>
+> Thanks for providing the file.
+>
+> The file has 55780092 records in it and yes it only contains primary
+> alignments so this is the best situation for the pairing algorithm.
+>
+> Here are the timings I get for the readBamGappedAlignmentPairs()
+> function (renamed readGAlignmentPairsFromBam() in devel) on a 64-bit
+> Ubuntu server with 384 Gb of RAM:
+>
+> ## With BioC release (Rsamtools 1.12.3)
+> ## ------------------------------------
+> ## Timings:
+> ##   - readBamGappedAlignments: 10 min 30 s (A=A1+A2)
+> ##     - scanBam:                6 min      (A1)
+
+I haven't looked at Dario's data directly, but a surprising bottleneck is the 
+creation of large character vectors
+
+$ R --vanilla
+[...]
+ >  i = seq_len(55780092/2)
+ > system.time(as.character(i))
+    user  system elapsed
+  74.880   0.408  75.451
+
+This can be alleviated by telling R that that you're likely to need lots of 
+memory up front; I alias R so that
+
+$ R --min-vsize=2048M --min-nsize=20M --vanilla
+[...]
+ > i = seq_len(55780092/2)
+ > system.time(as.character(i))
+    user  system elapsed
+  25.269   0.472  25.796
+
+or
+
+$ R_GC_MEM_GROW=3 R --min-vsize=2048M --min-nsize=20M --vanilla
+[...]
+ > i = seq_len(55780092/2)
+ > system.time(as.character(i))
+    user  system elapsed
+  12.196   0.464  12.687
+
+These are documented on ?Memory and with
+
+ > R.version.string
+[1] "R version 3.0.1 Patched (2013-06-05 r62876)"
+
+
+Martin
+
+> ##     - other:                  4 min 30 s (A2)
+> ##   - makeGappedAlignmentPairs: 5 min 30 s (B=B1+B2)
+> ##     - findMateAlignment:      1 min 30 s (B1)
+> ##     - other:                  4 min      (B2)
+> ##   Total time:                16 min      (A+B)
+> ## Memory usage: 13 Gb
+>
+> ## With BioC devel (Rsamtools 1.13.19)
+> ## -----------------------------------
+> ## Timings:
+> ##   - readGAlignmentsFromBam: 11 min      (A=A1+A2)
+> ##     - scanBam:               6 min      (A1)
+> ##     - other:                 5 min      (A2)
+> ##   - makeGAlignmentPairs:     4 min      (B=B1+B2)
+> ##     - findMateAlignment:     1 min      (B1)
+> ##     - other:                 3 min      (B2)
+> ##   Total time:               15 min      (A+B)
+> ## Memory usage: 13 Gb
+>
+> Indeed, not much difference between release and devel :-/
+>
+> I didn't have the opportunity to do this kind of detailed timing of
+> the readGAlignmentPairsFromBam() function on such a big file before,
+> but I find it pretty interesting (I only benchmarked findMateAlignment()
+> and it was on simulated data).
+>
+> In particular I'm quite surprised to discover that the pairing algo
+> (implemented in findMateAlignment) is actually not the bottleneck
+> (and it being optimized in BioC devel explains the small difference
+> between total time in release and total time in devel).
+>
+> Just a note on the timings you sent earlier (I'm copying them here
+> again):
+>
+>    > system.time(RNAreads <- readBamGappedAlignmentPairs(file))
+>          user  system elapsed
+>       1852.16   59.00 1939.11
+>    > system.time(RNAreads <- readBamGappedAlignments(file))
+>          user  system elapsed
+>        192.80    8.12  214.97
+>
+> Subtracting the 2 times above to infer the time spent for the pairing
+> is a shortcut that overlooks the following: when
+> readBamGappedAlignmentPairs() calls readBamGappedAlignments()
+> internally, it calls it with 'use.names=TRUE', and also with a 'param'
+> arg that specifies the extra BAM fields, and also with a specific flag
+> filter. All those things are required for the pairing algo. So a more
+> sensible comparison is to compare:
+>
+>    RNAreads <- readBamGappedAlignmentPairs(file)
+>
+> versus:
+>
+>    flag0 <- scanBamFlag(isPaired=TRUE, isUnmappedQuery=FALSE,
+> hasUnmappedMate=FALSE)
+>    what0 <- c("rname", "strand", "pos", "cigar", "flag", "mrnm", "mpos")
+>    param0 <- ScanBamParam(flag=flag0, what=what0)
+>    RNAreads <- readBamGappedAlignments(file, use.names=TRUE, param=param0)
+>
+> This internal call to readBamGappedAlignments() takes more than 70%
+> of the total time of readBamGappedAlignmentPairs() (11 min / 15 min
+> with BioC devel on my Linux server). This is a little bit surprising
+> to me and that's something I'd like to investigate.
+>
+> Cheers,
+> H.
+>
+>
+> On 07/30/2013 05:00 PM, Dario Strbenac wrote:
+>> Hi.
+>>
+>> The files are
+>>
+>> http://www.maths.usyd.edu.au/u/dario/RNAAlignedSorted.bam
+>> http://www.maths.usyd.edu.au/u/dario/RNAAlignedSorted.bam.bai
+>>
+>> While you have them, could you also investigate the granges coercion function
+>> ? It also took half an hour.
+>>
+>> ________________________________________
+>> From: Herv? Pag?s [hpages at fhcrc.org]
+>> Sent: Tuesday, 30 July 2013 3:29 AM
+>> To: Dario Strbenac
+>> Cc: bioc-devel at r-project.org
+>> Subject: Re: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+>>
+>> On 07/29/2013 12:00 AM, Dario Strbenac wrote:
+>>> Because I only allowed unique mappings, the ratio is 2. After installing the
+>>> development package versions, I only got a 10% improvement.
+>>
+>> Mmmh that's disappointing. Can you put the file somewhere so I can have
+>> a look? Thanks.
+>>
+>> H.
+>>
+>>>
+>>>      user  system elapsed
+>>> 1681.36   65.79 1752.10
+>>>
+>>> ________________________________________
+>>> From: Pages, Herve [hpages at fhcrc.org]
+>>> Sent: Monday, 29 July 2013 3:29 PM
+>>> To: Dario Strbenac
+>>> Cc: bioc-devel at r-project.org
+>>> Subject: Re: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+>>>
+>>> Hi Dario,
+>>>
+>>> The function was optimized in Bioc-devel. Depending on the number
+>>> of records in your BAM file (which is more relevant than its size),
+>>> it should now be between 2x and 5x faster. Please give it a try and
+>>> let us know.
+>>>
+>>> Also keep in mind that the pairing algo will slow down if
+>>> the "average nb of records per unique QNAME" is 3 or more.
+>>> This was discussed here last month:
+>>>     https://stat.ethz.ch/pipermail/bioconductor/2013-June/053390.html
+>>>
+>>> Cheers,
+>>> H.
+>>>
+>>>
+>>> ----- Original Message -----
+>>> From: "Dario Strbenac" <dstr7320 at uni.sydney.edu.au>
+>>> To: bioc-devel at r-project.org
+>>> Sent: Sunday, July 28, 2013 9:00:30 PM
+>>> Subject: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+>>>
+>>> Hello,
+>>>
+>>> Could readBamGappedAlignmentPairs be optimised ? It's surprising that it
+>>> takes an extra 29 minutes to calculate the pairing information, for the
+>>> example below. The BAM file is 4 GB in size.
+>>>
+>>>> system.time(RNAreads <- readBamGappedAlignmentPairs(file))
+>>>      user  system elapsed
+>>> 1852.16   59.00 1939.11
+>>>> system.time(RNAreads <- readBamGappedAlignments(file))
+>>>      user  system elapsed
+>>>    192.80    8.12  214.97
+>>>
+>>> --------------------------------------
+>>> Dario Strbenac
+>>> PhD Student
+>>> University of Sydney
+>>> Camperdown NSW 2050
+>>> Australia
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>> --
+>> Herv? Pag?s
+>>
+>> Program in Computational Biology
+>> Division of Public Health Sciences
+>> Fred Hutchinson Cancer Research Center
+>> 1100 Fairview Ave. N, M1-B514
+>> P.O. Box 19024
+>> Seattle, WA 98109-1024
+>>
+>> E-mail: hpages at fhcrc.org
+>> Phone:  (206) 667-5791
+>> Fax:    (206) 667-1319
+>>
+>>
+>
+
+
+-- 
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From lawrence.michael at gene.com  Fri Aug  2 16:33:24 2013
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Fri, 2 Aug 2013 07:33:24 -0700
+Subject: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+In-Reply-To: <51FB96FA.9060809@fhcrc.org>
+References: <A4D0AD48C137224D9E532742F418928A1CFB8D42@BL2PRD0111MB520.prod.exchangelabs.com>
+	<1881665518.1447208.1375075786170.JavaMail.root@fhcrc.org>
+	<A4D0AD48C137224D9E532742F418928A1CFB8D7B@BL2PRD0111MB520.prod.exchangelabs.com>
+	<51F6A697.7070909@fhcrc.org>
+	<A4D0AD48C137224D9E532742F418928A1CFB92AC@BL2PRD0111MB520.prod.exchangelabs.com>
+	<51F99823.3050104@fhcrc.org> <51FB96FA.9060809@fhcrc.org>
+Message-ID: <CAOQ5NyfUkuUOKvJageouC8zLLwNoh9PPsutiY+x+FD7YBF6tcQ@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130802/e0120e29/attachment.pl>
+
+From hcorrada at gmail.com  Fri Aug  2 16:43:20 2013
+From: hcorrada at gmail.com (Hector Corrada Bravo)
+Date: Fri, 2 Aug 2013 10:43:20 -0400
+Subject: [Bioc-devel] SummarizedExperiment and recent changes in
+	GenomicRanges
+In-Reply-To: <CAC2h7uuO9w7n-oxivmEd3OVNjFrSGZZtBHFXy88X+u00fhXwOA@mail.gmail.com>
+References: <CAC2h7uvh=rQYzQ6GKXzBpxEVC8NuROKWiOogdnSLU4qq=kJPng@mail.gmail.com>
+	<1375390115985.71fc43ca@Nodemailer>
+	<CAC2h7uuO9w7n-oxivmEd3OVNjFrSGZZtBHFXy88X+u00fhXwOA@mail.gmail.com>
+Message-ID: <CAAESmHk8ve5tvfY83yGBfV5EbZbbpqb_8Hpcub-Q-5d8Pijh0g@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130802/faef15d4/attachment.pl>
+
+From lawrence.michael at gene.com  Fri Aug  2 19:36:08 2013
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Fri, 2 Aug 2013 10:36:08 -0700
+Subject: [Bioc-devel] SummarizedExperiment and recent changes in
+	GenomicRanges
+In-Reply-To: <CAAESmHk8ve5tvfY83yGBfV5EbZbbpqb_8Hpcub-Q-5d8Pijh0g@mail.gmail.com>
+References: <CAC2h7uvh=rQYzQ6GKXzBpxEVC8NuROKWiOogdnSLU4qq=kJPng@mail.gmail.com>
+	<1375390115985.71fc43ca@Nodemailer>
+	<CAC2h7uuO9w7n-oxivmEd3OVNjFrSGZZtBHFXy88X+u00fhXwOA@mail.gmail.com>
+	<CAAESmHk8ve5tvfY83yGBfV5EbZbbpqb_8Hpcub-Q-5d8Pijh0g@mail.gmail.com>
+Message-ID: <CAOQ5Nyf=eX=uPtfbDuiNWa7tZDvSrXJXxMfhPYhHEMOts0cCvA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130802/78b28b4c/attachment.pl>
+
+From mtmorgan at fhcrc.org  Fri Aug  2 19:53:11 2013
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Fri, 02 Aug 2013 10:53:11 -0700
+Subject: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+In-Reply-To: <CAOQ5NyfUkuUOKvJageouC8zLLwNoh9PPsutiY+x+FD7YBF6tcQ@mail.gmail.com>
+References: <A4D0AD48C137224D9E532742F418928A1CFB8D42@BL2PRD0111MB520.prod.exchangelabs.com>
+	<1881665518.1447208.1375075786170.JavaMail.root@fhcrc.org>
+	<A4D0AD48C137224D9E532742F418928A1CFB8D7B@BL2PRD0111MB520.prod.exchangelabs.com>
+	<51F6A697.7070909@fhcrc.org>
+	<A4D0AD48C137224D9E532742F418928A1CFB92AC@BL2PRD0111MB520.prod.exchangelabs.com>
+	<51F99823.3050104@fhcrc.org> <51FB96FA.9060809@fhcrc.org>
+	<CAOQ5NyfUkuUOKvJageouC8zLLwNoh9PPsutiY+x+FD7YBF6tcQ@mail.gmail.com>
+Message-ID: <51FBF207.3010704@fhcrc.org>
+
+On 08/02/2013 07:33 AM, Michael Lawrence wrote:
+> This has come up several times I think, and I'm totally naive, but what about
+> making R smart enough to do that itself? One nice thing about the vectorization
+> is that R knows how many CHARSXPs it needs to allocate up-front, or at least an
+> upper-bound when they're all unique. Is the issue that the R heap needs to be
+> initialized in a special way and its behavior can't change at run-time? It's a
+> tricky thing to get right, I'm sure.
+
+Currently, R allocates space for a STRSXP containing n = 55780092/2 elements, 
+but for all R knows these could all be identical and no CHARSXP's are allocated; 
+I don't think there's a way to pre-allocate n CHARSXPs. As the elements are 
+filled, R sometimes needs to do garbage collection, and it has the increasingly 
+onerous task of checking each CHARSXP to see whether it is in use (I think -- it 
+seems like an in-use STRSXP might somehow be used to short-circuit this?). Maybe 
+it would be helpful to be able to pre-allocate space for n unique CHARSXPs.
+
+It seems like R_GC_MEM_GROW could be made accessible via C calls, but presumably 
+this is not a good thing for user code to be entrusted with.
+
+Martin
+
+>
+>
+> On Fri, Aug 2, 2013 at 4:24 AM, Martin Morgan <mtmorgan at fhcrc.org
+> <mailto:mtmorgan at fhcrc.org>> wrote:
+>
+>     On 07/31/2013 04:05 PM, Herv? Pag?s wrote:
+>
+>         Hi Dario,
+>
+>         Thanks for providing the file.
+>
+>         The file has 55780092 records in it and yes it only contains primary
+>         alignments so this is the best situation for the pairing algorithm.
+>
+>         Here are the timings I get for the readBamGappedAlignmentPairs()
+>         function (renamed readGAlignmentPairsFromBam() in devel) on a 64-bit
+>         Ubuntu server with 384 Gb of RAM:
+>
+>         ## With BioC release (Rsamtools 1.12.3)
+>         ## ------------------------------__------
+>         ## Timings:
+>         ##   - readBamGappedAlignments: 10 min 30 s (A=A1+A2)
+>         ##     - scanBam:                6 min      (A1)
+>
+>
+>     I haven't looked at Dario's data directly, but a surprising bottleneck is
+>     the creation of large character vectors
+>
+>     $ R --vanilla
+>     [...]
+>      >  i = seq_len(55780092/2)
+>      > system.time(as.character(i))
+>         user  system elapsed
+>       74.880   0.408  75.451
+>
+>     This can be alleviated by telling R that that you're likely to need lots of
+>     memory up front; I alias R so that
+>
+>     $ R --min-vsize=2048M --min-nsize=20M --vanilla
+>     [...]
+>      > i = seq_len(55780092/2)
+>      > system.time(as.character(i))
+>         user  system elapsed
+>       25.269   0.472  25.796
+>
+>     or
+>
+>     $ R_GC_MEM_GROW=3 R --min-vsize=2048M --min-nsize=20M --vanilla
+>     [...]
+>      > i = seq_len(55780092/2)
+>      > system.time(as.character(i))
+>         user  system elapsed
+>       12.196   0.464  12.687
+>
+>     These are documented on ?Memory and with
+>
+>      > R.version.string
+>     [1] "R version 3.0.1 Patched (2013-06-05 r62876)"
+>
+>
+>     Martin
+>
+>
+>         ##     - other:                  4 min 30 s (A2)
+>         ##   - makeGappedAlignmentPairs: 5 min 30 s (B=B1+B2)
+>         ##     - findMateAlignment:      1 min 30 s (B1)
+>         ##     - other:                  4 min      (B2)
+>         ##   Total time:                16 min      (A+B)
+>         ## Memory usage: 13 Gb
+>
+>         ## With BioC devel (Rsamtools 1.13.19)
+>         ## ------------------------------__-----
+>         ## Timings:
+>         ##   - readGAlignmentsFromBam: 11 min      (A=A1+A2)
+>         ##     - scanBam:               6 min      (A1)
+>         ##     - other:                 5 min      (A2)
+>         ##   - makeGAlignmentPairs:     4 min      (B=B1+B2)
+>         ##     - findMateAlignment:     1 min      (B1)
+>         ##     - other:                 3 min      (B2)
+>         ##   Total time:               15 min      (A+B)
+>         ## Memory usage: 13 Gb
+>
+>         Indeed, not much difference between release and devel :-/
+>
+>         I didn't have the opportunity to do this kind of detailed timing of
+>         the readGAlignmentPairsFromBam() function on such a big file before,
+>         but I find it pretty interesting (I only benchmarked findMateAlignment()
+>         and it was on simulated data).
+>
+>         In particular I'm quite surprised to discover that the pairing algo
+>         (implemented in findMateAlignment) is actually not the bottleneck
+>         (and it being optimized in BioC devel explains the small difference
+>         between total time in release and total time in devel).
+>
+>         Just a note on the timings you sent earlier (I'm copying them here
+>         again):
+>
+>             > system.time(RNAreads <- readBamGappedAlignmentPairs(__file))
+>                   user  system elapsed
+>                1852.16   59.00 1939.11
+>             > system.time(RNAreads <- readBamGappedAlignments(file))
+>                   user  system elapsed
+>                 192.80    8.12  214.97
+>
+>         Subtracting the 2 times above to infer the time spent for the pairing
+>         is a shortcut that overlooks the following: when
+>         readBamGappedAlignmentPairs() calls readBamGappedAlignments()
+>         internally, it calls it with 'use.names=TRUE', and also with a 'param'
+>         arg that specifies the extra BAM fields, and also with a specific flag
+>         filter. All those things are required for the pairing algo. So a more
+>         sensible comparison is to compare:
+>
+>             RNAreads <- readBamGappedAlignmentPairs(__file)
+>
+>         versus:
+>
+>             flag0 <- scanBamFlag(isPaired=TRUE, isUnmappedQuery=FALSE,
+>         hasUnmappedMate=FALSE)
+>             what0 <- c("rname", "strand", "pos", "cigar", "flag", "mrnm", "mpos")
+>             param0 <- ScanBamParam(flag=flag0, what=what0)
+>             RNAreads <- readBamGappedAlignments(file, use.names=TRUE, param=param0)
+>
+>         This internal call to readBamGappedAlignments() takes more than 70%
+>         of the total time of readBamGappedAlignmentPairs() (11 min / 15 min
+>         with BioC devel on my Linux server). This is a little bit surprising
+>         to me and that's something I'd like to investigate.
+>
+>         Cheers,
+>         H.
+>
+>
+>         On 07/30/2013 05:00 PM, Dario Strbenac wrote:
+>
+>             Hi.
+>
+>             The files are
+>
+>             http://www.maths.usyd.edu.au/__u/dario/RNAAlignedSorted.bam
+>             <http://www.maths.usyd.edu.au/u/dario/RNAAlignedSorted.bam>
+>             http://www.maths.usyd.edu.au/__u/dario/RNAAlignedSorted.bam.__bai
+>             <http://www.maths.usyd.edu.au/u/dario/RNAAlignedSorted.bam.bai>
+>
+>             While you have them, could you also investigate the granges coercion
+>             function
+>             ? It also took half an hour.
+>
+>             __________________________________________
+>             From: Herv? Pag?s [hpages at fhcrc.org <mailto:hpages at fhcrc.org>]
+>             Sent: Tuesday, 30 July 2013 3:29 AM
+>             To: Dario Strbenac
+>             Cc: bioc-devel at r-project.org <mailto:bioc-devel at r-project.org>
+>             Subject: Re: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+>
+>             On 07/29/2013 12:00 AM, Dario Strbenac wrote:
+>
+>                 Because I only allowed unique mappings, the ratio is 2. After
+>                 installing the
+>                 development package versions, I only got a 10% improvement.
+>
+>
+>             Mmmh that's disappointing. Can you put the file somewhere so I can have
+>             a look? Thanks.
+>
+>             H.
+>
+>
+>                       user  system elapsed
+>                 1681.36 65.79 1752.10 <tel:65.79%201752.10>
+>
+>                 __________________________________________
+>                 From: Pages, Herve [hpages at fhcrc.org <mailto:hpages at fhcrc.org>]
+>                 Sent: Monday, 29 July 2013 3:29 PM
+>                 To: Dario Strbenac
+>                 Cc: bioc-devel at r-project.org <mailto:bioc-devel at r-project.org>
+>                 Subject: Re: [Bioc-devel] Running Time of
+>                 readBamGappedAlignmentPairs
+>
+>                 Hi Dario,
+>
+>                 The function was optimized in Bioc-devel. Depending on the number
+>                 of records in your BAM file (which is more relevant than its size),
+>                 it should now be between 2x and 5x faster. Please give it a try and
+>                 let us know.
+>
+>                 Also keep in mind that the pairing algo will slow down if
+>                 the "average nb of records per unique QNAME" is 3 or more.
+>                 This was discussed here last month:
+>                 https://stat.ethz.ch/__pipermail/bioconductor/2013-__June/053390.html
+>                 <https://stat.ethz.ch/pipermail/bioconductor/2013-June/053390.html>
+>
+>                 Cheers,
+>                 H.
+>
+>
+>                 ----- Original Message -----
+>                 From: "Dario Strbenac" <dstr7320 at uni.sydney.edu.au
+>                 <mailto:dstr7320 at uni.sydney.edu.au>>
+>                 To: bioc-devel at r-project.org <mailto:bioc-devel at r-project.org>
+>                 Sent: Sunday, July 28, 2013 9:00:30 PM
+>                 Subject: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+>
+>                 Hello,
+>
+>                 Could readBamGappedAlignmentPairs be optimised ? It's surprising
+>                 that it
+>                 takes an extra 29 minutes to calculate the pairing information,
+>                 for the
+>                 example below. The BAM file is 4 GB in size.
+>
+>                     system.time(RNAreads <- readBamGappedAlignmentPairs(__file))
+>
+>                       user  system elapsed
+>                 1852.16   59.00 1939.11
+>
+>                     system.time(RNAreads <- readBamGappedAlignments(file))
+>
+>                       user  system elapsed
+>                     192.80    8.12  214.97
+>
+>                 ------------------------------__--------
+>                 Dario Strbenac
+>                 PhD Student
+>                 University of Sydney
+>                 Camperdown NSW 2050
+>                 Australia
+>
+>                 _________________________________________________
+>                 Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>
+>                 mailing list
+>                 https://stat.ethz.ch/mailman/__listinfo/bioc-devel
+>                 <https://stat.ethz.ch/mailman/listinfo/bioc-devel>
+>
+>
+>                 _________________________________________________
+>                 Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>
+>                 mailing list
+>                 https://stat.ethz.ch/mailman/__listinfo/bioc-devel
+>                 <https://stat.ethz.ch/mailman/listinfo/bioc-devel>
+>
+>
+>             --
+>             Herv? Pag?s
+>
+>             Program in Computational Biology
+>             Division of Public Health Sciences
+>             Fred Hutchinson Cancer Research Center
+>             1100 Fairview Ave. N, M1-B514
+>             P.O. Box 19024
+>             Seattle, WA 98109-1024
+>
+>             E-mail: hpages at fhcrc.org <mailto:hpages at fhcrc.org>
+>             Phone: (206) 667-5791 <tel:%28206%29%20667-5791>
+>             Fax: (206) 667-1319 <tel:%28206%29%20667-1319>
+>
+>
+>
+>
+>
+>     --
+>     Computational Biology / Fred Hutchinson Cancer Research Center
+>     1100 Fairview Ave. N.
+>     PO Box 19024 Seattle, WA 98109
+>
+>     Location: Arnold Building M1 B861
+>     Phone: (206) 667-2793 <tel:%28206%29%20667-2793>
+>
+>
+>     _________________________________________________
+>     Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org> mailing list
+>     https://stat.ethz.ch/mailman/__listinfo/bioc-devel
+>     <https://stat.ethz.ch/mailman/listinfo/bioc-devel>
+>
+>
+
+
+-- 
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From hcorrada at gmail.com  Fri Aug  2 20:04:49 2013
+From: hcorrada at gmail.com (Hector Corrada Bravo)
+Date: Fri, 2 Aug 2013 14:04:49 -0400
+Subject: [Bioc-devel] SummarizedExperiment and recent changes in
+	GenomicRanges
+In-Reply-To: <CAOQ5Nyf=eX=uPtfbDuiNWa7tZDvSrXJXxMfhPYhHEMOts0cCvA@mail.gmail.com>
+References: <CAC2h7uvh=rQYzQ6GKXzBpxEVC8NuROKWiOogdnSLU4qq=kJPng@mail.gmail.com>
+	<1375390115985.71fc43ca@Nodemailer>
+	<CAC2h7uuO9w7n-oxivmEd3OVNjFrSGZZtBHFXy88X+u00fhXwOA@mail.gmail.com>
+	<CAAESmHk8ve5tvfY83yGBfV5EbZbbpqb_8Hpcub-Q-5d8Pijh0g@mail.gmail.com>
+	<CAOQ5Nyf=eX=uPtfbDuiNWa7tZDvSrXJXxMfhPYhHEMOts0cCvA@mail.gmail.com>
+Message-ID: <CAAESmHm_DmA36=gOHpLyusVesRHW=Ed8Oaqw2R1jCxkx2vtcVA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130802/ebbba111/attachment.pl>
+
+From lawrence.michael at gene.com  Fri Aug  2 22:42:45 2013
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Fri, 2 Aug 2013 13:42:45 -0700
+Subject: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+In-Reply-To: <51FBF207.3010704@fhcrc.org>
+References: <A4D0AD48C137224D9E532742F418928A1CFB8D42@BL2PRD0111MB520.prod.exchangelabs.com>
+	<1881665518.1447208.1375075786170.JavaMail.root@fhcrc.org>
+	<A4D0AD48C137224D9E532742F418928A1CFB8D7B@BL2PRD0111MB520.prod.exchangelabs.com>
+	<51F6A697.7070909@fhcrc.org>
+	<A4D0AD48C137224D9E532742F418928A1CFB92AC@BL2PRD0111MB520.prod.exchangelabs.com>
+	<51F99823.3050104@fhcrc.org> <51FB96FA.9060809@fhcrc.org>
+	<CAOQ5NyfUkuUOKvJageouC8zLLwNoh9PPsutiY+x+FD7YBF6tcQ@mail.gmail.com>
+	<51FBF207.3010704@fhcrc.org>
+Message-ID: <CAOQ5NycN1vE+8Ap0EA58FOrYHs67oETyBfwR9L_4H=TZ5SBj3g@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130802/5f32fd47/attachment.pl>
+
+From j.hettling at vu.nl  Mon Aug  5 15:23:13 2013
+From: j.hettling at vu.nl (hettling)
+Date: Mon, 5 Aug 2013 15:23:13 +0200
+Subject: [Bioc-devel] read SBML file from BiGG database,
+	unit consistency check
+Message-ID: <1375708993.2905.13.camel@meerschwein>
+
+Dear all,
+
+We are developing a package (BiGGR) which includes rsbml objects
+generated from SBML exports of the BiGG database. For the Bioconductor
+revisions I was asked to describe for each dataset how it was made in
+the .Rd file. 
+
+Datasets were made a few months ago by downloading the SBML files (for
+example the metabolic reconstruction H.Pylori) from
+http://bigg.ucsd.edu/bigg/exportSelect.pl and then we used the
+rsbml_read function to parse the SBML and store the reconstruction as a
+rsbml dataset. 
+
+This worked fine when we were creating the datasets. Now, however, maybe
+due to an update in BiGG, I get an error reading the SBML files from
+BiGG that there is an inconsistency in the units. 
+
+Indeed, if I check the validity of the documents at
+http://sbml.org/validator/ and include a unit check, it gives me errors
+which are correctly identified by rsbml.
+
+How can I describe how my datasets were made now? My rsbml objects work
+fine, the problem is that it would be difficult for the user to
+reproduce how the datasets were made. 
+
+I hope someone can help me,
+
+many thanks in advance
+
+Hannes Hettling
+
+
+From whuber at embl.de  Tue Aug  6 14:25:35 2013
+From: whuber at embl.de (Wolfgang Huber)
+Date: Tue, 6 Aug 2013 14:25:35 +0200
+Subject: [Bioc-devel] =?windows-1252?q?=22R_CMD_check=22_and_par=28mfrow?=
+ =?windows-1252?q?=3D=85=29_in_vignettes?=
+Message-ID: <AA0EB66C-7FAB-43E0-92EF-0599A1136192@embl.de>
+
+Hi
+
+one of my packages [1] has several places in its vignette where multi-panel figures are generated via the likes of "par(mfrow=c(4,2))" within <<fig=TRUE>> code chunks. The package builds fine with 'R CMD build', and the vignette builds fine when calling Sweave manually. However, 'R CMD check' fails with
+* checking running R code from vignettes ...
+   ?Hiiragi2013.Rnw? ... failed
+ ERROR
+Errors in running code in vignettes:
+[..snip..]
+  When sourcing ?Hiiragi2013.R?:
+Error: figure margins too large
+
+I believe this is because R CMD check calls Stangle on the .Rnw and then sources the .R file disregarding any device size settings. I can think of several ways to work around this, but this seems like a rather basic deficiency of the current system that asks for a more generic answer. Does anybody have any insight here?
+
+	Best wishes
+	Wolfgang
+
+PS I am sorry if this has been discussed elsewhere, but digging in the R-exts manual and in Google did not turn up a solution for me.  
+
+[1] https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/pkg/Hiiragi2013
+
+From lawrence.michael at gene.com  Tue Aug  6 20:03:59 2013
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Tue, 6 Aug 2013 11:03:59 -0700
+Subject: [Bioc-devel] read SBML file from BiGG database,
+	unit consistency check
+In-Reply-To: <1375708993.2905.13.camel@meerschwein>
+References: <1375708993.2905.13.camel@meerschwein>
+Message-ID: <CAOQ5Nyd5q3Qig5UgSaKqq=7yJYPWy=iOWs4RDOY4didTTXrbRQ@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130806/8554ae6f/attachment.pl>
+
+From dtenenba at fhcrc.org  Wed Aug  7 00:25:48 2013
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Tue, 6 Aug 2013 15:25:48 -0700
+Subject: [Bioc-devel] Package Build RSS feeds now available
+Message-ID: <CAF42j21HCR3sRy429agTkPw6x94iGPYRH9suMPwXyJy3SuMj+A@mail.gmail.com>
+
+Bioconductors,
+
+We've received requests for more customizable notification to package
+maintainers (and other interested parties) when a package has build
+issues.
+
+So we are now generating and updating RSS feeds which report all build
+issues (errors, warnings, timeouts) with a package in both release and
+devel.
+
+Package maintainers are encouraged to subscribe to the feeds for the
+package(s) they maintain.
+
+The feeds are updated after every build (daily about 10:30 AM Seattle
+time) if the build has issues. If a package had no issues, its feed
+will not be updated.
+
+Each package has its own RSS URL which takes the form:
+
+http://bioconductor.org/rss/build/packages/PACKAGENAME.rss
+
+Replace PACKAGENAME with the name of your package.
+
+You can also arrange for RSS feeds to be emailed to you.
+
+Please see this web page for more information:
+
+http://www.bioconductor.org/developers/rss-feeds/
+
+Thanks,
+Dan
+
+
+From lg390 at cam.ac.uk  Wed Aug  7 00:42:41 2013
+From: lg390 at cam.ac.uk (Laurent Gatto)
+Date: Tue, 6 Aug 2013 23:42:41 +0100
+Subject: [Bioc-devel] Package Build RSS feeds now available
+In-Reply-To: <CAF42j21HCR3sRy429agTkPw6x94iGPYRH9suMPwXyJy3SuMj+A@mail.gmail.com>
+References: <CAF42j21HCR3sRy429agTkPw6x94iGPYRH9suMPwXyJy3SuMj+A@mail.gmail.com>
+Message-ID: <CA+uNOzitLS57vZOEPN1F64+42E4=pPfb24bqoL2RoQXtHsvxFA@mail.gmail.com>
+
+On 6 August 2013 23:25, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:
+> Bioconductors,
+>
+> We've received requests for more customizable notification to package
+> maintainers (and other interested parties) when a package has build
+> issues.
+>
+> So we are now generating and updating RSS feeds which report all build
+> issues (errors, warnings, timeouts) with a package in both release and
+> devel.
+>
+> Package maintainers are encouraged to subscribe to the feeds for the
+> package(s) they maintain.
+>
+> The feeds are updated after every build (daily about 10:30 AM Seattle
+> time) if the build has issues. If a package had no issues, its feed
+> will not be updated.
+>
+> Each package has its own RSS URL which takes the form:
+>
+> http://bioconductor.org/rss/build/packages/PACKAGENAME.rss
+>
+> Replace PACKAGENAME with the name of your package.
+>
+> You can also arrange for RSS feeds to be emailed to you.
+>
+> Please see this web page for more information:
+>
+> http://www.bioconductor.org/developers/rss-feeds/
+
+Thanks Dan, that's really great! Any plans to provide feeds for
+experiment data packages?
+
+Laurent
+
+> Thanks,
+> Dan
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From dtenenba at fhcrc.org  Wed Aug  7 00:47:18 2013
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Tue, 6 Aug 2013 15:47:18 -0700
+Subject: [Bioc-devel] Package Build RSS feeds now available
+In-Reply-To: <CA+uNOzitLS57vZOEPN1F64+42E4=pPfb24bqoL2RoQXtHsvxFA@mail.gmail.com>
+References: <CAF42j21HCR3sRy429agTkPw6x94iGPYRH9suMPwXyJy3SuMj+A@mail.gmail.com>
+	<CA+uNOzitLS57vZOEPN1F64+42E4=pPfb24bqoL2RoQXtHsvxFA@mail.gmail.com>
+Message-ID: <CAF42j225mFHZYg3pwCpOyYYnAj0Ks0xa=o=hDLC0vwq8ELO0qQ@mail.gmail.com>
+
+On Tue, Aug 6, 2013 at 3:42 PM, Laurent Gatto <lg390 at cam.ac.uk> wrote:
+> On 6 August 2013 23:25, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:
+>> Bioconductors,
+>>
+>> We've received requests for more customizable notification to package
+>> maintainers (and other interested parties) when a package has build
+>> issues.
+>>
+>> So we are now generating and updating RSS feeds which report all build
+>> issues (errors, warnings, timeouts) with a package in both release and
+>> devel.
+>>
+>> Package maintainers are encouraged to subscribe to the feeds for the
+>> package(s) they maintain.
+>>
+>> The feeds are updated after every build (daily about 10:30 AM Seattle
+>> time) if the build has issues. If a package had no issues, its feed
+>> will not be updated.
+>>
+>> Each package has its own RSS URL which takes the form:
+>>
+>> http://bioconductor.org/rss/build/packages/PACKAGENAME.rss
+>>
+>> Replace PACKAGENAME with the name of your package.
+>>
+>> You can also arrange for RSS feeds to be emailed to you.
+>>
+>> Please see this web page for more information:
+>>
+>> http://www.bioconductor.org/developers/rss-feeds/
+>
+> Thanks Dan, that's really great! Any plans to provide feeds for
+> experiment data packages?
+>
+
+I was going to wait and see if there was demand for it, but it sounds
+like there already is.
+
+So we will probably provide this soon.
+
+Dan
+
+
+> Laurent
+>
+>> Thanks,
+>> Dan
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From dtenenba at fhcrc.org  Wed Aug  7 02:20:22 2013
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Tue, 6 Aug 2013 17:20:22 -0700
+Subject: [Bioc-devel] Package Build RSS feeds now available
+In-Reply-To: <CA+uNOzitLS57vZOEPN1F64+42E4=pPfb24bqoL2RoQXtHsvxFA@mail.gmail.com>
+References: <CAF42j21HCR3sRy429agTkPw6x94iGPYRH9suMPwXyJy3SuMj+A@mail.gmail.com>
+	<CA+uNOzitLS57vZOEPN1F64+42E4=pPfb24bqoL2RoQXtHsvxFA@mail.gmail.com>
+Message-ID: <CAF42j22+kDim1dm0Oa9ajw10spASR5cazvDQrDtdTMYCqwn+0A@mail.gmail.com>
+
+Hi Laurent,
+
+
+
+On Tue, Aug 6, 2013 at 3:42 PM, Laurent Gatto <lg390 at cam.ac.uk> wrote:
+> On 6 August 2013 23:25, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:
+>> Bioconductors,
+>>
+>> We've received requests for more customizable notification to package
+>> maintainers (and other interested parties) when a package has build
+>> issues.
+>>
+>> So we are now generating and updating RSS feeds which report all build
+>> issues (errors, warnings, timeouts) with a package in both release and
+>> devel.
+>>
+>> Package maintainers are encouraged to subscribe to the feeds for the
+>> package(s) they maintain.
+>>
+>> The feeds are updated after every build (daily about 10:30 AM Seattle
+>> time) if the build has issues. If a package had no issues, its feed
+>> will not be updated.
+>>
+>> Each package has its own RSS URL which takes the form:
+>>
+>> http://bioconductor.org/rss/build/packages/PACKAGENAME.rss
+>>
+>> Replace PACKAGENAME with the name of your package.
+>>
+>> You can also arrange for RSS feeds to be emailed to you.
+>>
+>> Please see this web page for more information:
+>>
+>> http://www.bioconductor.org/developers/rss-feeds/
+>
+> Thanks Dan, that's really great! Any plans to provide feeds for
+> experiment data packages?
+>
+
+The web page at
+
+http://www.bioconductor.org/developers/rss-feeds/
+
+has been updated with instructions for retrieving the RSS URLs of
+experiment data packages.
+
+Thanks,
+Dan
+
+
+> Laurent
+>
+>> Thanks,
+>> Dan
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From dstr7320 at uni.sydney.edu.au  Wed Aug  7 05:00:15 2013
+From: dstr7320 at uni.sydney.edu.au (Dario Strbenac)
+Date: Wed, 7 Aug 2013 03:00:15 +0000
+Subject: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+In-Reply-To: <51FB96FA.9060809@fhcrc.org>
+References: <A4D0AD48C137224D9E532742F418928A1CFB8D42@BL2PRD0111MB520.prod.exchangelabs.com>,
+	<1881665518.1447208.1375075786170.JavaMail.root@fhcrc.org>
+	<A4D0AD48C137224D9E532742F418928A1CFB8D7B@BL2PRD0111MB520.prod.exchangelabs.com>,
+	<51F6A697.7070909@fhcrc.org>
+	<A4D0AD48C137224D9E532742F418928A1CFB92AC@BL2PRD0111MB520.prod.exchangelabs.com>
+	<51F99823.3050104@fhcrc.org>,<51FB96FA.9060809@fhcrc.org>
+Message-ID: <A4D0AD48C137224D9E532742F418928A1CFC2B12@BL2PRD0111MB520.prod.exchangelabs.com>
+
+Thanks. There is an improvement with those options. Not as much as the character creation example, but it does help.
+
+   user  system elapsed 
+1048.42   71.16 1120.75 
+
+________________________________________
+From: Martin Morgan [mtmorgan at fhcrc.org]
+Sent: Friday, 2 August 2013 9:24 PM
+To: Herv? Pag?s
+Cc: Dario Strbenac; bioc-devel at r-project.org
+Subject: Re: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+
+On 07/31/2013 04:05 PM, Herv? Pag?s wrote:
+> Hi Dario,
+>
+> Thanks for providing the file.
+>
+> The file has 55780092 records in it and yes it only contains primary
+> alignments so this is the best situation for the pairing algorithm.
+>
+> Here are the timings I get for the readBamGappedAlignmentPairs()
+> function (renamed readGAlignmentPairsFromBam() in devel) on a 64-bit
+> Ubuntu server with 384 Gb of RAM:
+>
+> ## With BioC release (Rsamtools 1.12.3)
+> ## ------------------------------------
+> ## Timings:
+> ##   - readBamGappedAlignments: 10 min 30 s (A=A1+A2)
+> ##     - scanBam:                6 min      (A1)
+
+I haven't looked at Dario's data directly, but a surprising bottleneck is the
+creation of large character vectors
+
+$ R --vanilla
+[...]
+ >  i = seq_len(55780092/2)
+ > system.time(as.character(i))
+    user  system elapsed
+  74.880   0.408  75.451
+
+This can be alleviated by telling R that that you're likely to need lots of
+memory up front; I alias R so that
+
+$ R --min-vsize=2048M --min-nsize=20M --vanilla
+[...]
+ > i = seq_len(55780092/2)
+ > system.time(as.character(i))
+    user  system elapsed
+  25.269   0.472  25.796
+
+or
+
+$ R_GC_MEM_GROW=3 R --min-vsize=2048M --min-nsize=20M --vanilla
+[...]
+ > i = seq_len(55780092/2)
+ > system.time(as.character(i))
+    user  system elapsed
+  12.196   0.464  12.687
+
+These are documented on ?Memory and with
+
+ > R.version.string
+[1] "R version 3.0.1 Patched (2013-06-05 r62876)"
+
+
+Martin
+
+> ##     - other:                  4 min 30 s (A2)
+> ##   - makeGappedAlignmentPairs: 5 min 30 s (B=B1+B2)
+> ##     - findMateAlignment:      1 min 30 s (B1)
+> ##     - other:                  4 min      (B2)
+> ##   Total time:                16 min      (A+B)
+> ## Memory usage: 13 Gb
+>
+> ## With BioC devel (Rsamtools 1.13.19)
+> ## -----------------------------------
+> ## Timings:
+> ##   - readGAlignmentsFromBam: 11 min      (A=A1+A2)
+> ##     - scanBam:               6 min      (A1)
+> ##     - other:                 5 min      (A2)
+> ##   - makeGAlignmentPairs:     4 min      (B=B1+B2)
+> ##     - findMateAlignment:     1 min      (B1)
+> ##     - other:                 3 min      (B2)
+> ##   Total time:               15 min      (A+B)
+> ## Memory usage: 13 Gb
+>
+> Indeed, not much difference between release and devel :-/
+>
+> I didn't have the opportunity to do this kind of detailed timing of
+> the readGAlignmentPairsFromBam() function on such a big file before,
+> but I find it pretty interesting (I only benchmarked findMateAlignment()
+> and it was on simulated data).
+>
+> In particular I'm quite surprised to discover that the pairing algo
+> (implemented in findMateAlignment) is actually not the bottleneck
+> (and it being optimized in BioC devel explains the small difference
+> between total time in release and total time in devel).
+>
+> Just a note on the timings you sent earlier (I'm copying them here
+> again):
+>
+>    > system.time(RNAreads <- readBamGappedAlignmentPairs(file))
+>          user  system elapsed
+>       1852.16   59.00 1939.11
+>    > system.time(RNAreads <- readBamGappedAlignments(file))
+>          user  system elapsed
+>        192.80    8.12  214.97
+>
+> Subtracting the 2 times above to infer the time spent for the pairing
+> is a shortcut that overlooks the following: when
+> readBamGappedAlignmentPairs() calls readBamGappedAlignments()
+> internally, it calls it with 'use.names=TRUE', and also with a 'param'
+> arg that specifies the extra BAM fields, and also with a specific flag
+> filter. All those things are required for the pairing algo. So a more
+> sensible comparison is to compare:
+>
+>    RNAreads <- readBamGappedAlignmentPairs(file)
+>
+> versus:
+>
+>    flag0 <- scanBamFlag(isPaired=TRUE, isUnmappedQuery=FALSE,
+> hasUnmappedMate=FALSE)
+>    what0 <- c("rname", "strand", "pos", "cigar", "flag", "mrnm", "mpos")
+>    param0 <- ScanBamParam(flag=flag0, what=what0)
+>    RNAreads <- readBamGappedAlignments(file, use.names=TRUE, param=param0)
+>
+> This internal call to readBamGappedAlignments() takes more than 70%
+> of the total time of readBamGappedAlignmentPairs() (11 min / 15 min
+> with BioC devel on my Linux server). This is a little bit surprising
+> to me and that's something I'd like to investigate.
+>
+> Cheers,
+> H.
+>
+>
+> On 07/30/2013 05:00 PM, Dario Strbenac wrote:
+>> Hi.
+>>
+>> The files are
+>>
+>> http://www.maths.usyd.edu.au/u/dario/RNAAlignedSorted.bam
+>> http://www.maths.usyd.edu.au/u/dario/RNAAlignedSorted.bam.bai
+>>
+>> While you have them, could you also investigate the granges coercion function
+>> ? It also took half an hour.
+>>
+>> ________________________________________
+>> From: Herv? Pag?s [hpages at fhcrc.org]
+>> Sent: Tuesday, 30 July 2013 3:29 AM
+>> To: Dario Strbenac
+>> Cc: bioc-devel at r-project.org
+>> Subject: Re: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+>>
+>> On 07/29/2013 12:00 AM, Dario Strbenac wrote:
+>>> Because I only allowed unique mappings, the ratio is 2. After installing the
+>>> development package versions, I only got a 10% improvement.
+>>
+>> Mmmh that's disappointing. Can you put the file somewhere so I can have
+>> a look? Thanks.
+>>
+>> H.
+>>
+>>>
+>>>      user  system elapsed
+>>> 1681.36   65.79 1752.10
+>>>
+>>> ________________________________________
+>>> From: Pages, Herve [hpages at fhcrc.org]
+>>> Sent: Monday, 29 July 2013 3:29 PM
+>>> To: Dario Strbenac
+>>> Cc: bioc-devel at r-project.org
+>>> Subject: Re: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+>>>
+>>> Hi Dario,
+>>>
+>>> The function was optimized in Bioc-devel. Depending on the number
+>>> of records in your BAM file (which is more relevant than its size),
+>>> it should now be between 2x and 5x faster. Please give it a try and
+>>> let us know.
+>>>
+>>> Also keep in mind that the pairing algo will slow down if
+>>> the "average nb of records per unique QNAME" is 3 or more.
+>>> This was discussed here last month:
+>>>     https://stat.ethz.ch/pipermail/bioconductor/2013-June/053390.html
+>>>
+>>> Cheers,
+>>> H.
+>>>
+>>>
+>>> ----- Original Message -----
+>>> From: "Dario Strbenac" <dstr7320 at uni.sydney.edu.au>
+>>> To: bioc-devel at r-project.org
+>>> Sent: Sunday, July 28, 2013 9:00:30 PM
+>>> Subject: [Bioc-devel] Running Time of readBamGappedAlignmentPairs
+>>>
+>>> Hello,
+>>>
+>>> Could readBamGappedAlignmentPairs be optimised ? It's surprising that it
+>>> takes an extra 29 minutes to calculate the pairing information, for the
+>>> example below. The BAM file is 4 GB in size.
+>>>
+>>>> system.time(RNAreads <- readBamGappedAlignmentPairs(file))
+>>>      user  system elapsed
+>>> 1852.16   59.00 1939.11
+>>>> system.time(RNAreads <- readBamGappedAlignments(file))
+>>>      user  system elapsed
+>>>    192.80    8.12  214.97
+>>>
+>>> --------------------------------------
+>>> Dario Strbenac
+>>> PhD Student
+>>> University of Sydney
+>>> Camperdown NSW 2050
+>>> Australia
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>> --
+>> Herv? Pag?s
+>>
+>> Program in Computational Biology
+>> Division of Public Health Sciences
+>> Fred Hutchinson Cancer Research Center
+>> 1100 Fairview Ave. N, M1-B514
+>> P.O. Box 19024
+>> Seattle, WA 98109-1024
+>>
+>> E-mail: hpages at fhcrc.org
+>> Phone:  (206) 667-5791
+>> Fax:    (206) 667-1319
+>>
+>>
+>
+
+
+--
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+
+From lg390 at cam.ac.uk  Wed Aug  7 09:44:27 2013
+From: lg390 at cam.ac.uk (Laurent Gatto)
+Date: Wed, 7 Aug 2013 08:44:27 +0100
+Subject: [Bioc-devel] Package Build RSS feeds now available
+In-Reply-To: <CAF42j22+kDim1dm0Oa9ajw10spASR5cazvDQrDtdTMYCqwn+0A@mail.gmail.com>
+References: <CAF42j21HCR3sRy429agTkPw6x94iGPYRH9suMPwXyJy3SuMj+A@mail.gmail.com>
+	<CA+uNOzitLS57vZOEPN1F64+42E4=pPfb24bqoL2RoQXtHsvxFA@mail.gmail.com>
+	<CAF42j22+kDim1dm0Oa9ajw10spASR5cazvDQrDtdTMYCqwn+0A@mail.gmail.com>
+Message-ID: <CA+uNOzgZrNGbXGtjiA8akoc4mTLSqQYnXdrA1VDt86msbedU3Q@mail.gmail.com>
+
+On 7 August 2013 01:20, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:
+>
+> The web page at
+>
+> http://www.bioconductor.org/developers/rss-feeds/
+>
+> has been updated with instructions for retrieving the RSS URLs of
+> experiment data packages.
+
+Excellent, thanks!
+
+Laurent
+
+> Thanks,
+> Dan
+>
+
+
+From j.hettling at vu.nl  Wed Aug  7 13:11:40 2013
+From: j.hettling at vu.nl (hettling)
+Date: Wed, 7 Aug 2013 13:11:40 +0200
+Subject: [Bioc-devel] read SBML file from BiGG database,
+ unit consistency check
+In-Reply-To: <CAOQ5Nyd5q3Qig5UgSaKqq=7yJYPWy=iOWs4RDOY4didTTXrbRQ@mail.gmail.com>
+References: <1375708993.2905.13.camel@meerschwein>
+	<CAOQ5Nyd5q3Qig5UgSaKqq=7yJYPWy=iOWs4RDOY4didTTXrbRQ@mail.gmail.com>
+Message-ID: <1375873900.2762.4.camel@meerschwein>
+
+I contacted the BiGG maintainers and it turns out that the units they
+have in the SBML document are technically correct for the reconstruction
+databases, although the validator complains. Since we don't need the
+units in our package, I found a workaround by just parsing them out:
+
+     file <- "SBML_export.xml" #file from BiGG
+     string <- paste(readLines(file),collapse="\n")
+     ##Parse out units to avoid validation error
+     string <- gsub("units=\".+?\"", "", string)
+     H.sapiens_Recon_1 <- rsbml_read(text=string) 
+
+This works fine for importing all files.
+
+Many thanks,
+
+Hannes
+
+
+
+
+On Tue, 2013-08-06 at 11:03 -0700, Michael Lawrence wrote:
+> In terms of reproducibility, if you still have the SBML files, you
+> could keep an archive of those, along with their download date (or
+> version of BiGG if it has one). 
+> 
+> Of course, it would be a good idea to tell the BiGG people about their
+> invalid SBML.
+> 
+> 
+> 
+> 
+> On Mon, Aug 5, 2013 at 6:23 AM, hettling <j.hettling at vu.nl> wrote:
+>         Dear all,
+>         
+>         We are developing a package (BiGGR) which includes rsbml
+>         objects
+>         generated from SBML exports of the BiGG database. For the
+>         Bioconductor
+>         revisions I was asked to describe for each dataset how it was
+>         made in
+>         the .Rd file.
+>         
+>         Datasets were made a few months ago by downloading the SBML
+>         files (for
+>         example the metabolic reconstruction H.Pylori) from
+>         http://bigg.ucsd.edu/bigg/exportSelect.pl and then we used the
+>         rsbml_read function to parse the SBML and store the
+>         reconstruction as a
+>         rsbml dataset.
+>         
+>         This worked fine when we were creating the datasets. Now,
+>         however, maybe
+>         due to an update in BiGG, I get an error reading the SBML
+>         files from
+>         BiGG that there is an inconsistency in the units.
+>         
+>         Indeed, if I check the validity of the documents at
+>         http://sbml.org/validator/ and include a unit check, it gives
+>         me errors
+>         which are correctly identified by rsbml.
+>         
+>         How can I describe how my datasets were made now? My rsbml
+>         objects work
+>         fine, the problem is that it would be difficult for the user
+>         to
+>         reproduce how the datasets were made.
+>         
+>         I hope someone can help me,
+>         
+>         many thanks in advance
+>         
+>         Hannes Hettling
+>         
+>         _______________________________________________
+>         Bioc-devel at r-project.org mailing list
+>         https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+>
+
+
+From mtmorgan at fhcrc.org  Wed Aug  7 14:14:35 2013
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 07 Aug 2013 05:14:35 -0700
+Subject: [Bioc-devel]
+ =?windows-1252?q?=22R_CMD_check=22_and_par=28mfrow?=
+ =?windows-1252?q?=3D=85=29_in_vignettes?=
+In-Reply-To: <AA0EB66C-7FAB-43E0-92EF-0599A1136192@embl.de>
+References: <AA0EB66C-7FAB-43E0-92EF-0599A1136192@embl.de>
+Message-ID: <52023A2B.4080001@fhcrc.org>
+
+On 08/06/2013 05:25 AM, Wolfgang Huber wrote:
+> Hi
+>
+> one of my packages [1] has several places in its vignette where multi-panel figures are generated via the likes of "par(mfrow=c(4,2))" within <<fig=TRUE>> code chunks. The package builds fine with 'R CMD build', and the vignette builds fine when calling Sweave manually. However, 'R CMD check' fails with
+> * checking running R code from vignettes ...
+>     ?Hiiragi2013.Rnw? ... failed
+>   ERROR
+> Errors in running code in vignettes:
+> [..snip..]
+>    When sourcing ?Hiiragi2013.R?:
+> Error: figure margins too large
+>
+> I believe this is because R CMD check calls Stangle on the .Rnw and then sources the .R file disregarding any device size settings. I can think of several ways to work around this, but this seems like a rather basic deficiency of the current system that asks for a more generic answer. Does anybody have any insight here?
+>
+
+I guess these qualify as work-arounds
+
+1. From ?RweaveLatex, \setkeys{Gin}{width=\textwidth} though this doesn't 
+actually help much
+
+2. par(mfrow=c(7,5), mar=par("mar")/2)
+
+3. output to pdf and then include separately
+
+   <<fig=FALSE>>=
+   pdf("foo.pdf", ...)
+   ...
+   dev.off()
+   @
+
+   \includgegraphics{foo}
+
+Not sure what you had in mind for a generic solution?
+
+Martin
+
+> 	Best wishes
+> 	Wolfgang
+>
+> PS I am sorry if this has been discussed elsewhere, but digging in the R-exts manual and in Google did not turn up a solution for me.
+>
+> [1] https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/pkg/Hiiragi2013
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+-- 
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From kasperdanielhansen at gmail.com  Wed Aug  7 14:58:01 2013
+From: kasperdanielhansen at gmail.com (Kasper Daniel Hansen)
+Date: Wed, 7 Aug 2013 08:58:01 -0400
+Subject: [Bioc-devel] Package Build RSS feeds now available
+In-Reply-To: <CA+uNOzgZrNGbXGtjiA8akoc4mTLSqQYnXdrA1VDt86msbedU3Q@mail.gmail.com>
+References: <CAF42j21HCR3sRy429agTkPw6x94iGPYRH9suMPwXyJy3SuMj+A@mail.gmail.com>
+	<CA+uNOzitLS57vZOEPN1F64+42E4=pPfb24bqoL2RoQXtHsvxFA@mail.gmail.com>
+	<CAF42j22+kDim1dm0Oa9ajw10spASR5cazvDQrDtdTMYCqwn+0A@mail.gmail.com>
+	<CA+uNOzgZrNGbXGtjiA8akoc4mTLSqQYnXdrA1VDt86msbedU3Q@mail.gmail.com>
+Message-ID: <CAC2h7usUAY0HnENAooLsVcqoGQwi2atHFVg=YvOSWdnz99o6Fg@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130807/9c949a4d/attachment.pl>
+
+From hb at biostat.ucsf.edu  Wed Aug  7 15:44:45 2013
+From: hb at biostat.ucsf.edu (Henrik Bengtsson)
+Date: Wed, 7 Aug 2013 09:44:45 -0400
+Subject: [Bioc-devel] Package Build RSS feeds now available
+In-Reply-To: <CAC2h7usUAY0HnENAooLsVcqoGQwi2atHFVg=YvOSWdnz99o6Fg@mail.gmail.com>
+References: <CAF42j21HCR3sRy429agTkPw6x94iGPYRH9suMPwXyJy3SuMj+A@mail.gmail.com>
+	<CA+uNOzitLS57vZOEPN1F64+42E4=pPfb24bqoL2RoQXtHsvxFA@mail.gmail.com>
+	<CAF42j22+kDim1dm0Oa9ajw10spASR5cazvDQrDtdTMYCqwn+0A@mail.gmail.com>
+	<CA+uNOzgZrNGbXGtjiA8akoc4mTLSqQYnXdrA1VDt86msbedU3Q@mail.gmail.com>
+	<CAC2h7usUAY0HnENAooLsVcqoGQwi2atHFVg=YvOSWdnz99o6Fg@mail.gmail.com>
+Message-ID: <CAFDcVCTMAvHEFFiJTQ1L7gbLsTwnL0sFPnM09rU67N8EVgY6mQ@mail.gmail.com>
+
+FYI, it appears that packages with periods in their names doesn't work, e.g.
+
+http://bioconductor.org/rss/build/packages/aroma.light.rss
+http://bioconductor.org/rss/build/packages/cn.farms.rss
+
+vs
+
+http://bioconductor.org/rss/build/packages/illuminaio.rss
+
+Thanks,
+
+Henrik
+
+On Wed, Aug 7, 2013 at 8:58 AM, Kasper Daniel Hansen
+<kasperdanielhansen at gmail.com> wrote:
+> This is awesome, thanks a lot.
+>
+>
+> On Wed, Aug 7, 2013 at 3:44 AM, Laurent Gatto <lg390 at cam.ac.uk> wrote:
+>
+>> On 7 August 2013 01:20, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:
+>> >
+>> > The web page at
+>> >
+>> > http://www.bioconductor.org/developers/rss-feeds/
+>> >
+>> > has been updated with instructions for retrieving the RSS URLs of
+>> > experiment data packages.
+>>
+>> Excellent, thanks!
+>>
+>> Laurent
+>>
+>> > Thanks,
+>> > Dan
+>> >
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From dtenenba at fhcrc.org  Wed Aug  7 15:53:32 2013
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Wed, 7 Aug 2013 06:53:32 -0700
+Subject: [Bioc-devel] Package Build RSS feeds now available
+In-Reply-To: <CAFDcVCTMAvHEFFiJTQ1L7gbLsTwnL0sFPnM09rU67N8EVgY6mQ@mail.gmail.com>
+References: <CAF42j21HCR3sRy429agTkPw6x94iGPYRH9suMPwXyJy3SuMj+A@mail.gmail.com>
+	<CA+uNOzitLS57vZOEPN1F64+42E4=pPfb24bqoL2RoQXtHsvxFA@mail.gmail.com>
+	<CAF42j22+kDim1dm0Oa9ajw10spASR5cazvDQrDtdTMYCqwn+0A@mail.gmail.com>
+	<CA+uNOzgZrNGbXGtjiA8akoc4mTLSqQYnXdrA1VDt86msbedU3Q@mail.gmail.com>
+	<CAC2h7usUAY0HnENAooLsVcqoGQwi2atHFVg=YvOSWdnz99o6Fg@mail.gmail.com>
+	<CAFDcVCTMAvHEFFiJTQ1L7gbLsTwnL0sFPnM09rU67N8EVgY6mQ@mail.gmail.com>
+Message-ID: <CAF42j20BTMw5vEr+dsNWMnTER4UaGgEmhKfgYztPH4zy=d7b7g@mail.gmail.com>
+
+On Wed, Aug 7, 2013 at 6:44 AM, Henrik Bengtsson <hb at biostat.ucsf.edu> wrote:
+> FYI, it appears that packages with periods in their names doesn't work, e.g.
+>
+> http://bioconductor.org/rss/build/packages/aroma.light.rss
+> http://bioconductor.org/rss/build/packages/cn.farms.rss
+>
+> vs
+>
+> http://bioconductor.org/rss/build/packages/illuminaio.rss
+>
+
+Thanks for the bug report. This has been fixed and the missing files
+will be produced the next time the files are generated (10:30 today
+Seattle time).
+
+Dan
+
+
+> Thanks,
+>
+> Henrik
+>
+> On Wed, Aug 7, 2013 at 8:58 AM, Kasper Daniel Hansen
+> <kasperdanielhansen at gmail.com> wrote:
+>> This is awesome, thanks a lot.
+>>
+>>
+>> On Wed, Aug 7, 2013 at 3:44 AM, Laurent Gatto <lg390 at cam.ac.uk> wrote:
+>>
+>>> On 7 August 2013 01:20, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:
+>>> >
+>>> > The web page at
+>>> >
+>>> > http://www.bioconductor.org/developers/rss-feeds/
+>>> >
+>>> > has been updated with instructions for retrieving the RSS URLs of
+>>> > experiment data packages.
+>>>
+>>> Excellent, thanks!
+>>>
+>>> Laurent
+>>>
+>>> > Thanks,
+>>> > Dan
+>>> >
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>>         [[alternative HTML version deleted]]
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From maechler at stat.math.ethz.ch  Wed Aug  7 16:59:18 2013
+From: maechler at stat.math.ethz.ch (Martin Maechler)
+Date: Wed, 7 Aug 2013 16:59:18 +0200
+Subject: [Bioc-devel] =?utf-8?q?=22R_CMD_check=22_and_par=28mfrow=3D?=
+ =?utf-8?b?4oCmKSBpbiB2aWduZXR0ZXM=?=
+In-Reply-To: <52023A2B.4080001@fhcrc.org>
+References: <AA0EB66C-7FAB-43E0-92EF-0599A1136192@embl.de>
+	<52023A2B.4080001@fhcrc.org>
+Message-ID: <20994.24774.794994.37986@stat.math.ethz.ch>
+
+>>>>> Martin Morgan <mtmorgan at fhcrc.org>
+>>>>>     on Wed, 7 Aug 2013 05:14:35 -0700 writes:
+
+    > On 08/06/2013 05:25 AM, Wolfgang Huber wrote:
+    >> Hi
+    >> 
+    >> one of my packages [1] has several places in its vignette where multi-panel figures are generated via the likes of "par(mfrow=c(4,2))" within <<fig=TRUE>> code chunks. The package builds fine with 'R CMD build', and the vignette builds fine when calling Sweave manually. However, 'R CMD check' fails with
+    >> * checking running R code from vignettes ...
+    >> ?Hiiragi2013.Rnw? ... failed
+    >> ERROR
+    >> Errors in running code in vignettes:
+    >> [..snip..]
+    >> When sourcing ?Hiiragi2013.R?:
+    >> Error: figure margins too large
+    >> 
+    >> I believe this is because R CMD check calls Stangle on the .Rnw and then sources the .R file disregarding any device size settings. I can think of several ways to work around this, but this seems like a rather basic deficiency of the current system that asks for a more generic answer. Does anybody have any insight here?
+    >> 
+
+    > I guess these qualify as work-arounds
+
+    > 1. From ?RweaveLatex, \setkeys{Gin}{width=\textwidth} though this doesn't 
+    > actually help much
+
+    > 2. par(mfrow=c(7,5), mar=par("mar")/2)
+
+    > 3. output to pdf and then include separately
+
+    > <<fig=FALSE>>=
+    > pdf("foo.pdf", ...)
+    > ...
+    > dev.off()
+    > @
+    > \includgegraphics{foo}
+
+Ok.... though
+I'd find '3.' extremely ugly;  '1.' is what I'd use anyway, but
+as you say, it may not be sufficient.
+
+I'm indirectly using a better version of '2.', namely
+I extensively use  
+    sfsmisc::mult.fig()
+instead of any par(mfrow= .) or par(mfcol= .)
+but than I'm the author of that utility function...
+
+What I really recommend is taking this to R-devel,
+in spite of *some* people there, and their vitriolic way of
+e-talking..
+
+Martin Maechler
+
+
+    > Not sure what you had in mind for a generic solution?
+    > Martin
+
+    >> Best wishes
+    >> Wolfgang
+    >> 
+    >> PS I am sorry if this has been discussed elsewhere, but digging in the R-exts manual and in Google did not turn up a solution for me.
+    >> 
+    >> [1] https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/pkg/Hiiragi2013
+    >> _______________________________________________
+    >> Bioc-devel at r-project.org mailing list
+    >> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+    >> 
+
+
+    > -- 
+    > Computational Biology / Fred Hutchinson Cancer Research Center
+    > 1100 Fairview Ave. N.
+    > PO Box 19024 Seattle, WA 98109
+
+    > Location: Arnold Building M1 B861
+    > Phone: (206) 667-2793
+
+    > _______________________________________________
+    > Bioc-devel at r-project.org mailing list
+    > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From j.hettling at vu.nl  Wed Aug  7 20:11:14 2013
+From: j.hettling at vu.nl (hettling)
+Date: Wed, 7 Aug 2013 20:11:14 +0200
+Subject: [Bioc-devel] session info of Single Package Builder Machines
+Message-ID: <1375899074.2762.23.camel@meerschwein>
+
+Dear all,
+
+I try to resubmit my package in the file submit tracker after completing
+the package revisions. I tested my package on various machines with R
+3.0.1 and Bioc 2.13, build and check proceed without any errors or
+warnings. 
+
+However, the built with the "Single Package Builder fails" on the
+machines parceval and zin1 on upload. I checked all versions etc. and
+cannot see what the problem is, I even run the same ubuntu version as on
+zin1. 
+
+It makes it almost impossible for me to debug since on my machines
+everything works fine. I only spam the submission system when
+re-uploading and thinking I got it fixed each time. 
+
+My question is: Is it possible to get the sessionInfo() of the machines
+after the build fails? I want to make sure that any loaded and attached
+packages on my machines conform with the versions installed on the
+Single Package Builder computers.
+
+Many thanks in advance,
+
+Hannes
+
+
+From dtenenba at fhcrc.org  Wed Aug  7 20:43:33 2013
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Wed, 7 Aug 2013 11:43:33 -0700
+Subject: [Bioc-devel] session info of Single Package Builder Machines
+In-Reply-To: <24214_1375899093_52028DD4_24214_2808_1_1375899074.2762.23.camel@meerschwein>
+References: <24214_1375899093_52028DD4_24214_2808_1_1375899074.2762.23.camel@meerschwein>
+Message-ID: <CAF42j20mMk56RVhYyLPkouKF=-PQSSpn9bs6tY-xNJFKnothzw@mail.gmail.com>
+
+On Wed, Aug 7, 2013 at 11:11 AM, hettling <j.hettling at vu.nl> wrote:
+> Dear all,
+>
+> I try to resubmit my package in the file submit tracker after completing
+> the package revisions. I tested my package on various machines with R
+> 3.0.1 and Bioc 2.13, build and check proceed without any errors or
+> warnings.
+>
+> However, the built with the "Single Package Builder fails" on the
+> machines parceval and zin1 on upload. I checked all versions etc. and
+> cannot see what the problem is, I even run the same ubuntu version as on
+> zin1.
+>
+> It makes it almost impossible for me to debug since on my machines
+> everything works fine. I only spam the submission system when
+> re-uploading and thinking I got it fixed each time.
+>
+> My question is: Is it possible to get the sessionInfo() of the machines
+> after the build fails? I want to make sure that any loaded and attached
+> packages on my machines conform with the versions installed on the
+> Single Package Builder computers.
+>
+
+Here is the sessionInfo() on zin1:
+
+[...]
+Error in edgeNodeDir[[end]] : subscript out of bounds
+> traceback()
+4: stop(msg, err, call. = FALSE)
+3: RweaveTryStop(err, options)
+2: driver$runcode(drobj, chunk, chunkopts)
+1: Sweave("BiGGR.Rnw")
+> sessionInfo()
+R version 3.0.1 (2013-05-16)
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8
+ [7] LC_PAPER=C                 LC_NAME=C
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] grid      parallel  stats     graphics  grDevices utils     datasets
+[8] methods   base
+
+other attached packages:
+ [1] BiGGR_0.99.0       LIM_1.4.4          diagram_1.6.1      shape_1.4.0
+ [5] limSolve_1.5.5     hyperdraw_1.13.1   Rgraphviz_2.5.4    hypergraph_1.33.0
+ [9] graph_1.39.3       rsbml_2.19.1       BiocGenerics_0.7.3
+
+loaded via a namespace (and not attached):
+[1] lpSolve_5.6.7  MASS_7.3-28    quadprog_1.5-5 stats4_3.0.1   tools_3.0.1
+
+I'll try to figure out what is going on here.
+Dan
+
+
+> Many thanks in advance,
+>
+> Hannes
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From j.hettling at vu.nl  Wed Aug  7 23:43:24 2013
+From: j.hettling at vu.nl (Hettling, J.)
+Date: Wed, 7 Aug 2013 21:43:24 +0000
+Subject: [Bioc-devel] session info of Single Package Builder Machines
+In-Reply-To: <CAF42j212H-axOzSYqoTMH1a0+WQ8Bwywf6NVHaQ_Cd_sg2VC2A@mail.gmail.com>
+References: <24214_1375899093_52028DD4_24214_2808_1_1375899074.2762.23.camel@meerschwein>
+	<CAF42j20mMk56RVhYyLPkouKF=-PQSSpn9bs6tY-xNJFKnothzw@mail.gmail.com>,
+	<CAF42j212H-axOzSYqoTMH1a0+WQ8Bwywf6NVHaQ_Cd_sg2VC2A@mail.gmail.com>
+Message-ID: <08C2818BFC786D419DD90B11201A88B8A2BB66F0@PEXMB001B.vu.local>
+
+Hi,
+
+My sessionInfo() gave the same versions for all packages compared to the ones on zin1.
+I still do not know why it build without problems on my machines and threw an error on zin.
+
+However, since you indicated where things went wrong:
+
+> So it's a problem in the plot method of the hyperdraw package.
+> Specifically in drawHyperEdge() in draw.R line 258, it tries to access
+> edgeNodeDir[[end]]. end is set to "R_HEX1" and edgeNodeDir is
+> R_HEX1:0.4  R_PGI:0.4  R_PFK:0.4  R_FBA:0.4  R_TPI:0.4 R_GAPD:0.8 R_PGK:-0.8
+> -1.5707963 -1.5707963 -1.5707963 -2.0031933 -0.8577054 -1.5707963 -1.5707963
+> R_PGM:-0.8  R_ENO:0.8  R_PYK:0.8
+> -1.5707963 -1.5707963 -1.5707963
+
+I was able to fix the problem: Originally I changed edge labels in a hyperdraw graph after creating the object, and did not
+update "end".  Now I found a way to assign all edge labels beforehand which is much cleaner.
+I uploaded the package and just got the email that everything build without errors. 
+
+Thanks a lot for your help!
+
+Hannes
+
+
+________________________________________
+From: dandante at gmail.com [dandante at gmail.com] on behalf of Dan Tenenbaum [dtenenba at fhcrc.org]
+Sent: 07 August 2013 20:55
+To: Hettling, J.
+Subject: Re: [Bioc-devel] session info of Single Package Builder Machines
+
+On Wed, Aug 7, 2013 at 11:43 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:
+> On Wed, Aug 7, 2013 at 11:11 AM, hettling <j.hettling at vu.nl> wrote:
+>> Dear all,
+>>
+>> I try to resubmit my package in the file submit tracker after completing
+>> the package revisions. I tested my package on various machines with R
+>> 3.0.1 and Bioc 2.13, build and check proceed without any errors or
+>> warnings.
+>>
+>> However, the built with the "Single Package Builder fails" on the
+>> machines parceval and zin1 on upload. I checked all versions etc. and
+>> cannot see what the problem is, I even run the same ubuntu version as on
+>> zin1.
+>>
+>> It makes it almost impossible for me to debug since on my machines
+>> everything works fine. I only spam the submission system when
+>> re-uploading and thinking I got it fixed each time.
+>>
+>> My question is: Is it possible to get the sessionInfo() of the machines
+>> after the build fails? I want to make sure that any loaded and attached
+>> packages on my machines conform with the versions installed on the
+>> Single Package Builder computers.
+>>
+>
+> Here is the sessionInfo() on zin1:
+>
+> [...]
+> Error in edgeNodeDir[[end]] : subscript out of bounds
+>> traceback()
+> 4: stop(msg, err, call. = FALSE)
+> 3: RweaveTryStop(err, options)
+> 2: driver$runcode(drobj, chunk, chunkopts)
+> 1: Sweave("BiGGR.Rnw")
+>> sessionInfo()
+> R version 3.0.1 (2013-05-16)
+> Platform: x86_64-unknown-linux-gnu (64-bit)
+>
+> locale:
+>  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+>  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+>  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8
+>  [7] LC_PAPER=C                 LC_NAME=C
+>  [9] LC_ADDRESS=C               LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+>
+> attached base packages:
+> [1] grid      parallel  stats     graphics  grDevices utils     datasets
+> [8] methods   base
+>
+> other attached packages:
+>  [1] BiGGR_0.99.0       LIM_1.4.4          diagram_1.6.1      shape_1.4.0
+>  [5] limSolve_1.5.5     hyperdraw_1.13.1   Rgraphviz_2.5.4    hypergraph_1.33.0
+>  [9] graph_1.39.3       rsbml_2.19.1       BiocGenerics_0.7.3
+>
+> loaded via a namespace (and not attached):
+> [1] lpSolve_5.6.7  MASS_7.3-28    quadprog_1.5-5 stats4_3.0.1   tools_3.0.1
+>
+> I'll try to figure out what is going on here.
+
+
+More specifically, the error is at this line in the vignette in the
+'figure1' chunk:
+
+plot(hd)
+
+So it's a problem in the plot method of the hyperdraw package.
+Specifically in drawHyperEdge() in draw.R line 258, it tries to access
+edgeNodeDir[[end]]. end is set to "R_HEX1" and edgeNodeDir is
+R_HEX1:0.4  R_PGI:0.4  R_PFK:0.4  R_FBA:0.4  R_TPI:0.4 R_GAPD:0.8 R_PGK:-0.8
+-1.5707963 -1.5707963 -1.5707963 -2.0031933 -0.8577054 -1.5707963 -1.5707963
+R_PGM:-0.8  R_ENO:0.8  R_PYK:0.8
+-1.5707963 -1.5707963 -1.5707963
+
+HTH
+Dan
+
+
+
+
+> Dan
+>
+>
+>> Many thanks in advance,
+>>
+>> Hannes
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+From yhu at mail.nih.gov  Thu Aug  8 18:39:26 2013
+From: yhu at mail.nih.gov (Hu, Ying (NIH/NCI) [E])
+Date: Thu, 8 Aug 2013 16:39:26 +0000
+Subject: [Bioc-devel] new OmicCircos released
+Message-ID: <C2C3FCBA281D5E43A59A45D0AC0EAFEA0451A6CD@MLBXV10.nih.gov>
+
+Dear All,
+
+Bioconductor have recently released a new package OmicCircos about generating high-quality circular maps for omic data.
+
+I hope that some of you dealing with Omic-visualization using Circos would find this small/simple package useful: http://www.bioconductor.org/packages/devel/bioc/html/OmicCircos.html
+
+Your comments and suggestions are welcome and will assist us in continuously improving the package.
+
+Thanks,
+Ying
+
+From lianoglou.steve at gene.com  Thu Aug  8 19:00:42 2013
+From: lianoglou.steve at gene.com (Steve Lianoglou)
+Date: Thu, 8 Aug 2013 10:00:42 -0700
+Subject: [Bioc-devel] new OmicCircos released
+In-Reply-To: <C2C3FCBA281D5E43A59A45D0AC0EAFEA0451A6CD@MLBXV10.nih.gov>
+References: <C2C3FCBA281D5E43A59A45D0AC0EAFEA0451A6CD@MLBXV10.nih.gov>
+Message-ID: <CAHA9McPzi9CdN7-HWgTUnGfftFNy4gFpeOuQvG-QFosKYy+feA@mail.gmail.com>
+
+Hi,
+
+Just skimmed through your vignette and wanted to say that this looks
+really awesome.
+
+Thanks for the contribution! I look forward to finding an excuse to
+have to use it ;-)
+
+Cheers,
+-steve
+
+On Thu, Aug 8, 2013 at 9:39 AM, Hu, Ying (NIH/NCI) [E] <yhu at mail.nih.gov> wrote:
+> Dear All,
+>
+> Bioconductor have recently released a new package OmicCircos about generating high-quality circular maps for omic data.
+>
+> I hope that some of you dealing with Omic-visualization using Circos would find this small/simple package useful: http://www.bioconductor.org/packages/devel/bioc/html/OmicCircos.html
+>
+> Your comments and suggestions are welcome and will assist us in continuously improving the package.
+>
+> Thanks,
+> Ying
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+
+-- 
+Steve Lianoglou
+Computational Biologist
+Bioinformatics and Computational Biology
+Genentech
+
+
+From lawrence.michael at gene.com  Fri Aug  9 01:24:44 2013
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Thu, 8 Aug 2013 16:24:44 -0700
+Subject: [Bioc-devel] *Ranges paper published
+Message-ID: <CAOQ5NyckeD_hm53p2uHcuuQpPi3Y2rTLgGcXHZEowCthZDqvOA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130808/260d718c/attachment.pl>
+
+From dstr7320 at uni.sydney.edu.au  Fri Aug  9 04:00:17 2013
+From: dstr7320 at uni.sydney.edu.au (Dario Strbenac)
+Date: Fri, 9 Aug 2013 02:00:17 +0000
+Subject: [Bioc-devel] GenomicFeatures LoadDb Path
+Message-ID: <A4D0AD48C137224D9E532742F418928A1CFC324B@BL2PRD0111MB520.prod.exchangelabs.com>
+
+It's not documented by ?loadDb, but providing an absolute path doesn't work, and shows an unusual error message.
+
+> genes17 <- loadDb("/nb/dario/genes/gencode17.db")
+Error in loadDb(file, dbType, dbPackage, ...) : 
+  error in evaluating the argument 'dbType' in selecting a method for function 'loadDb': Error: argument "dbType" is missing, with no default     # Help file says this is optional.
+> genes17 <- loadDb("gencode17.db")
+>
+
+AnnotationDbi_1.22.6
+
+--------------------------------------
+Dario Strbenac
+PhD Student
+University of Sydney
+Camperdown NSW 2050
+Australia
+
+
+From sdavis2 at mail.nih.gov  Fri Aug  9 12:34:48 2013
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Fri, 9 Aug 2013 06:34:48 -0400
+Subject: [Bioc-devel] FYI--"Input on Development and Analysis Methods and
+	Software for Big Data"
+Message-ID: <CANeAVB=jMxPXT96Z7CcEH4ZgNjp+HgXXNb2Xkw+66WX_ok0uJg@mail.gmail.com>
+
+A little off-topic, I know....
+
+NHGRI has released a new RFI.  There are a number of folks on this
+list that may have input they want to share, so I am forwarding along
+the Notice:
+
+http://grants.nih.gov/grants/guide/notice-files/NOT-HG-13-014.html
+
+Sean
+
+
+From cristobalfresno at gmail.com  Fri Aug  9 14:39:46 2013
+From: cristobalfresno at gmail.com (=?ISO-8859-1?Q?Cristobal_Fresno_Rodr=EDguez?=)
+Date: Fri, 9 Aug 2013 09:39:46 -0300
+Subject: [Bioc-devel] RDAVIDWebService: Set Enrichment Analysis in DAVID
+	through R
+Message-ID: <CAM3P7ks8fX8Oq=njX6O22vwJyy1Vy2F8o-eHex92_mW_23aOCA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130809/eee5820e/attachment.pl>
+
+From cristobalfresno at gmail.com  Fri Aug  9 14:42:47 2013
+From: cristobalfresno at gmail.com (=?ISO-8859-1?Q?Cristobal_Fresno_Rodr=EDguez?=)
+Date: Fri, 9 Aug 2013 09:42:47 -0300
+Subject: [Bioc-devel] lmdme: Linear Models for Designed Multivariate
+	Experiments
+Message-ID: <CAM3P7ktH6u=9RRqPCSN9iMajYqJOU5ONQpvaSt+tSeYnirA-Tw@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130809/28bc963e/attachment.pl>
+
+From tim.triche at gmail.com  Fri Aug  9 21:33:10 2013
+From: tim.triche at gmail.com (Tim Triche, Jr.)
+Date: Fri, 9 Aug 2013 12:33:10 -0700
+Subject: [Bioc-devel] *Ranges paper published
+In-Reply-To: <CAOQ5NyckeD_hm53p2uHcuuQpPi3Y2rTLgGcXHZEowCthZDqvOA@mail.gmail.com>
+References: <CAOQ5NyckeD_hm53p2uHcuuQpPi3Y2rTLgGcXHZEowCthZDqvOA@mail.gmail.com>
+Message-ID: <CAC+N9BW=uta=JATbuvRz=azsB9_fiX_BiJpO2sJX3J+2_AbeAw@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130809/27829b08/attachment.pl>
+
+From mcarlson at fhcrc.org  Sat Aug 10 01:23:30 2013
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Fri, 09 Aug 2013 16:23:30 -0700
+Subject: [Bioc-devel] GenomicFeatures LoadDb Path
+In-Reply-To: <A4D0AD48C137224D9E532742F418928A1CFC324B@BL2PRD0111MB520.prod.exchangelabs.com>
+References: <A4D0AD48C137224D9E532742F418928A1CFC324B@BL2PRD0111MB520.prod.exchangelabs.com>
+Message-ID: <520579F2.1000001@fhcrc.org>
+
+On 08/08/2013 07:00 PM, Dario Strbenac wrote:
+> It's not documented by ?loadDb, but providing an absolute path doesn't work, and shows an unusual error message.
+>
+>> genes17 <- loadDb("/nb/dario/genes/gencode17.db")
+> Error in loadDb(file, dbType, dbPackage, ...) :
+>    error in evaluating the argument 'dbType' in selecting a method for function 'loadDb': Error: argument "dbType" is missing, with no default     # Help file says this is optional.
+>> genes17 <- loadDb("gencode17.db")
+>>
+
+Hi Dario,
+
+I can't reproduce this problem.
+
+Can you please give me your sessionInfo()?
+
+
+  Marc
+
+
+> AnnotationDbi_1.22.6
+>
+> --------------------------------------
+> Dario Strbenac
+> PhD Student
+> University of Sydney
+> Camperdown NSW 2050
+> Australia
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From dstr7320 at uni.sydney.edu.au  Sat Aug 10 09:00:17 2013
+From: dstr7320 at uni.sydney.edu.au (Dario Strbenac)
+Date: Sat, 10 Aug 2013 07:00:17 +0000
+Subject: [Bioc-devel] Parsing Error for UCSC Table
+In-Reply-To: <A4D0AD48C137224D9E532742F418928A1CFB6C02@BL2PRD0111MB520.prod.exchangelabs.com>
+References: <A4D0AD48C137224D9E532742F418928A1CFB6C02@BL2PRD0111MB520.prod.exchangelabs.com>
+Message-ID: <A4D0AD48C137224D9E532742F418928A1CFC33B6@BL2PRD0111MB520.prod.exchangelabs.com>
+
+The cause of this was determined to be a bug in an outdated Apache server.
+
+From dtenenba at fhcrc.org  Mon Aug 12 17:39:31 2013
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Mon, 12 Aug 2013 08:39:31 -0700
+Subject: [Bioc-devel] [BioC] cummeRbund installation Error
+In-Reply-To: <CAE5FLRUP96N0Qeqf+AFeusi5ZZ2uLua25quckh5dpn2kJ4xFKg@mail.gmail.com>
+References: <CAE5FLRUP96N0Qeqf+AFeusi5ZZ2uLua25quckh5dpn2kJ4xFKg@mail.gmail.com>
+Message-ID: <CAF42j21haPJB-2q1UE=+NcMHT+22z6zMp1N7MH_khDJau3u9+Q@mail.gmail.com>
+
+Hi,
+
+On Sun, Aug 11, 2013 at 11:44 PM, Sridhar Srinivasan
+<sridhar2bioinfo at gmail.com> wrote:
+> Dear R Developers,
+>
+> I am trying to install cummeRbund library in my R latest version 3
+>
+> i tried giving
+>
+> source("http://bioconductor.org/biocLite.R")
+>     biocLite("cummeRbund")
+>
+
+
+Can you send the FULL output of this biocLite() command?
+My guess is that a clue is buried in there. Probably a missing system
+dependency like xml2 or libcurl.
+On ubuntu you can fix this with
+sudo apt-get install libxml2-dev libcurl-dev
+
+Dan
+
+
+> After installing some package it returned with the Warning as
+>
+> Warning messages:
+> 1: In install.packages(pkgs = pkgs, lib = lib, repos = repos, ...) :
+>   installation of package ?RCurl? had non-zero exit status
+> 2: In install.packages(pkgs = pkgs, lib = lib, repos = repos, ...) :
+>   installation of package ?biomaRt? had non-zero exit status
+> 3: In install.packages(pkgs = pkgs, lib = lib, repos = repos, ...) :
+>   installation of package ?rtracklayer? had non-zero exit status
+> 4: In install.packages(pkgs = pkgs, lib = lib, repos = repos, ...) :
+>   installation of package ?GenomicFeatures? had non-zero exit status
+> 5: In install.packages(pkgs = pkgs, lib = lib, repos = repos, ...) :
+>   installation of package ?biovizBase? had non-zero exit status
+> 6: In install.packages(pkgs = pkgs, lib = lib, repos = repos, ...) :
+>   installation of package ?Gviz? had non-zero exit status
+> 7: In install.packages(pkgs = pkgs, lib = lib, repos = repos, ...) :
+>   installation of package ?cummeRbund? had non-zero exit status
+>
+> I searched in net regarding the issue.
+>
+> I am sending the Out of  following commands
+> "
+>
+> sessionInfo()
+> biocinstallRepos()
+>
+> "
+>
+> sessionInfo()
+> R version 3.0.1 (2013-05-16)
+> Platform: x86_64-redhat-linux-gnu (64-bit)
+>
+> locale:
+>  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+>  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+>  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8
+>  [7] LC_PAPER=C                 LC_NAME=C
+>  [9] LC_ADDRESS=C               LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> other attached packages:
+> [1] BiocInstaller_1.10.3
+>
+> loaded via a namespace (and not attached):
+> [1] tools_3.0.1
+>
+>>biocinstallRepos()
+>                                                BioCsoft
+>            "http://bioconductor.org/packages/2.12/bioc"
+>                                                 BioCann
+> "http://bioconductor.org/packages/2.12/data/annotation"
+>                                                 BioCexp
+> "http://bioconductor.org/packages/2.12/data/experiment"
+>                                               BioCextra
+>           "http://bioconductor.org/packages/2.12/extra"
+>                                                    CRAN
+>                                 "http://cran.fhcrc.org"
+>
+>
+> Could you please suggest on the same.
+>
+> Thanks and Regards
+> Sridhar
+>
+>         [[alternative HTML version deleted]]
+>
+>
+> _______________________________________________
+> Bioconductor mailing list
+> Bioconductor at r-project.org
+> https://stat.ethz.ch/mailman/listinfo/bioconductor
+> Search the archives: http://news.gmane.org/gmane.science.biology.informatics.conductor
+
+
+From mtmorgan at fhcrc.org  Mon Aug 19 04:53:56 2013
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Sun, 18 Aug 2013 19:53:56 -0700
+Subject: [Bioc-devel] Rsamtools Unable to Compile on FreeBSD 9.1
+In-Reply-To: <86zjsemnj4.fsf@freeenv.ad.medctr.ucla.edu>
+References: <86zjsemnj4.fsf@freeenv.ad.medctr.ucla.edu>
+Message-ID: <521188C4.3070102@fhcrc.org>
+
+On 08/18/2013 07:18 PM, Aric Gregson wrote:
+> Hello,
+>
+> I am trying to install Rsamtools but am having difficulty on
+> R version 3.0.1 Patched (2013-05-26 r62815)
+> Platform: amd64-portbld-freebsd9.1 (64-bit)
+>
+> I receive the following error when installing from within R. I suspect
+> it is a PATH issue, it seems to be in FreeBSD when trying to compile
+> Bioconductor packages.
+>
+> [snip]
+> gcc46 -std=gnu99 -I/usr/local/lib/R/include -DNDEBUG  -I/usr/local/include -I"/usr/local/lib/R/library/Biostrings/include" -I"/usr/local/lib/R/library/IRanges/include"  -fopenmp  -D_USE_KNETFILE -D_FILE_OFFSET_BITS=64  -U_FORTIFY_SOURCE  -Dfprintf=_samtools_fprintf  -Dexit=_samtools_exit  -Dabort=_samtools_abort -I./samtools -I./samtools/bcftools -I./tabix -fpic  -O2 -pipe -Wl,-rpath=/usr/local/lib/gcc46 -fno-strict-aliasing  -c samtools/bcftools/bcfutils.c -o samtools/bcftools/bcfutils.o
+> samtools/bcftools/bcfutils.c:3:37: fatal error: alloca.h: No such file or directory
+> compilation terminated.
+> *** [samtools/bcftools/bcfutils.o] Error code 1
+>
+> Stop in /tmp/Rtmp6FWVKA/R.INSTALL1352730cb1960/Rsamtools/src.
+> ERROR: compilation failed for package 'Rsamtools'
+> * removing '/usr/local/lib/R/library/Rsamtools'
+>
+> Can I provide you with more information to help diagnose the problem? I
+> have searched google and not found any suggestions. Any help would be
+> greatly appreciated.
+
+Hi Aric --
+
+I'm cc'ing the Bioc-devel mailing list, since this has been reported and fixed 
+earlier, but not publicly.
+
+This is fixed (I hope; please let me know if otherwise!!) in devel with
+
+------------------------------------------------------------------------
+r79268 | mtmorgan at fhcrc.org | 2013-08-06 11:48:27 -0700 (Tue, 06 Aug 2013) | 2 lines
+Changed paths:
+    M /trunk/madman/Rpacks/Rsamtools/DESCRIPTION
+    M /trunk/madman/Rpacks/Rsamtools/src/samtools/bcftools/bcfutils.c
+    M /trunk/madman/Rpacks/Rsamtools/src/samtools/bcftools/prob1.c
+
+alloca() in stdlib.h for FreeBSD
+
+so library(BiocInstaller); useDevel(); biocLite(ask=FALSE) with R-3.0.1 should 
+get you a fix (and perhaps additional grief associated with using devel, so only 
+do this if an important deadline is imminent).
+
+Martin
+
+>
+> Thanks, Aric
+>
+
+
+-- 
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From lawrence.michael at gene.com  Mon Aug 19 23:21:29 2013
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Mon, 19 Aug 2013 14:21:29 -0700
+Subject: [Bioc-devel] IRanges code
+In-Reply-To: <52124063.702@duke.edu>
+References: <52124063.702@duke.edu>
+Message-ID: <CAOQ5Nyc=OqU6uB6=15BNb44-Kjyg7BNOEWiaK6TXW1iaovirng@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130819/ad0db4ea/attachment.pl>
+
+From dtenenba at fhcrc.org  Tue Aug 20 21:18:35 2013
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Tue, 20 Aug 2013 12:18:35 -0700
+Subject: [Bioc-devel] Bioconductor 2.13 release schedule
+Message-ID: <CAF42j23+CgzMmw7RoNJMKRJD+C_7B2-aUn1k4rhwAUJJZS6MDA@mail.gmail.com>
+
+Hello Bioconductors,
+
+The release schedule of Bioconductor 2.13 is up on our website:
+
+http://www.bioconductor.org/developers/release-schedule/
+
+...and is as follows:
+
+## Tentative schedule
+
+### September 17, 2013
+
+* Packages for deprecation identified.
+
+### September 24
+
+* All packages conform to Bioconductor [guidelines][guidelines].
+
+* Deadline for .db0 packages to be available for developers.
+
+[guidelines]: /developers/package-guidelines
+
+
+### September 26
+
+* Deadline for new package submissions.
+
+
+### September 30
+
+* Release candidate of annotation packages built and posted to devel
+  annotation data repository.
+
+
+### October 2
+
+* Deadline for packages passing ''R CMD build'' and ''R CMD check''
+  without error.
+
+### October 7
+
+* Grand Feature Freeze (alpha):  no new packages added to BioC
+  release roster.
+
+### October 9
+
+* Bioconductor Feature Freeze (beta): no API changes to BioC.
+
+* Deadline for packages passing R CMD build and check without warning.
+   Some warnings will be accepted, clarification on the bioc-devel mailing
+   list.
+
+* Stop release (BioC 2.12) builds. Commits to this branch will be disabled.
+
+* Deadline for annotation package contributors to upload updated packages.
+
+
+### October 11
+
+* Bioconductor release candidate.  Package maintainers should limit
+   changes to "show-stopper" bugs and documentation improvements.
+
+* Annotation data packages finalized.
+
+* Package NEWS files updated. Latest NEWS will be collated and included
+  in release announcement.
+
+### October 14
+
+* Creation of the BioC 2.13 release branch. Development can resume on
+   trunk, but changes will not be part of the release.
+
+* Build final release repositories.
+
+* Test install scripts, GUI installation.
+
+### October 15
+
+* Bioconductor release.
+
+
+From mtmorgan at fhcrc.org  Wed Aug 21 03:21:44 2013
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Tue, 20 Aug 2013 18:21:44 -0700
+Subject: [Bioc-devel] Bioconductor Job Opportunities
+Message-ID: <52141628.2040405@fhcrc.org>
+
+Bioconductors --
+
+The Bioconductor project has two exciting positions available.
+
+   http://bioconductor.org/about/careers/
+
+Both positions involve R / Bioconductor software development, primarily related 
+to annotation and analysis of high-throughput sequence data. We're seeking a 
+Systems Analyst Programmer II (http://bit.ly/19EzOTj), especially those familiar 
+with modern web services implementations, helping us to develop cloud-based data 
+management solutions that integrate with the R environment. We're also seeking a 
+Systems Analyst Programmer IV (http://bit.ly/16ufoHO) to write robust and 
+performant R and C / C++ code for efficiently organizing and processing large 
+volumes of sequence data.
+
+Please do not hesitate to contact me with any questions.
+
+Best wishes,
+
+Martin Morgan
+-- 
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From Jianhong.Ou at umassmed.edu  Wed Aug 21 17:30:02 2013
+From: Jianhong.Ou at umassmed.edu (Ou, Jianhong)
+Date: Wed, 21 Aug 2013 15:30:02 +0000
+Subject: [Bioc-devel] Very slow when operate GRangesList
+Message-ID: <137FABF871DA9A49B1AAEA1BE854F6E5B192E4EA@ummscsmbx01.ad.umassmed.edu>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130821/ceb1245b/attachment.pl>
+
+From lawrence.michael at gene.com  Fri Aug 23 04:34:59 2013
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Thu, 22 Aug 2013 19:34:59 -0700
+Subject: [Bioc-devel] Very slow when operate GRangesList
+In-Reply-To: <137FABF871DA9A49B1AAEA1BE854F6E5B192E4EA@ummscsmbx01.ad.umassmed.edu>
+References: <137FABF871DA9A49B1AAEA1BE854F6E5B192E4EA@ummscsmbx01.ad.umassmed.edu>
+Message-ID: <CAOQ5Nycx_NKz2kA3CNza5DZZwjdxhFLQhx7Er+L1e9VvkPnM2A@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130822/da232e4c/attachment.pl>
+
+From vobencha at fhcrc.org  Fri Aug 23 17:41:30 2013
+From: vobencha at fhcrc.org (Valerie Obenchain)
+Date: Fri, 23 Aug 2013 08:41:30 -0700
+Subject: [Bioc-devel] [devteam-bioc] Very slow when operate GRangesList
+In-Reply-To: <CAOQ5Nycx_NKz2kA3CNza5DZZwjdxhFLQhx7Er+L1e9VvkPnM2A@mail.gmail.com>
+References: <137FABF871DA9A49B1AAEA1BE854F6E5B192E4EA@ummscsmbx01.ad.umassmed.edu>
+	<CAOQ5Nycx_NKz2kA3CNza5DZZwjdxhFLQhx7Er+L1e9VvkPnM2A@mail.gmail.com>
+Message-ID: <521782AA.4030301@fhcrc.org>
+
+Hi Michael,
+
+Martin and I have been discussing this. In addition to the fix you 
+suggest, what do you think of changing the default to compressed=TRUE 
+for the RleList constructor? Rle is the only one of the AtomicLists with 
+default FALSE. Was there a reason for this when it was first implemented?
+
+Val
+
+
+
+On 08/22/2013 07:34 PM, Maintainer wrote:
+> Hi,
+>
+> SimpleLists are slow in this situation, basically because the underlying
+> seqselect is slow, due to this loop:
+>
+>              x <- do.call(c, lapply(seq_len(length(ir)), function(i)
+> window(x,
+>                  start = start(ir)[i], width = width(ir)[i])))
+>
+> Am I missing something or could this become a simple x[as.integer(ir)]?
+>
+> In the meantime, using CompressedLists is the way to go. So for an
+> RleList, you need to pass compress=TRUE to the constructor.
+>
+>
+> On Wed, Aug 21, 2013 at 8:30 AM, Ou, Jianhong <Jianhong.Ou at umassmed.edu
+> <mailto:Jianhong.Ou at umassmed.edu>> wrote:
+>
+>     Hi,
+>
+>     When I use big set of GrangesList, I found it become very slow when
+>     metadata contain AtomicList. e.g.
+>
+>      > grll <- GRanges(seqnames="chr1", ranges=IRanges(start=1:500,
+>     width=2), someInfo=rep(RleList("*"), 500))
+>      > grr <- split(grll, 1:500)
+>      > grl <- as.list(grr)
+>      > system.time(grl<- grl[500:1])
+>         user  system elapsed
+>            0       0       0
+>      > system.time(grr<- grr[500:1])
+>         user  system elapsed
+>        1.622   0.013   1.635
+>      > grll <- GRanges(seqnames="chr1", ranges=IRanges(start=1:500,
+>     width=2))
+>      > grr <- split(grll, 1:500)
+>      > grl <- as.list(grr)
+>      > system.time(grl<- grl[500:1])
+>         user  system elapsed
+>            0       0       0
+>      > system.time(grr<- grr[500:1])
+>         user  system elapsed
+>        0.029   0.001   0.030
+>      > sessionInfo()
+>     R Under development (unstable) (2013-07-23 r63392)
+>     Platform: x86_64-apple-darwin12.4.0 (64-bit)
+>
+>     locale:
+>     [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+>
+>     attached base packages:
+>     [1] parallel  stats     graphics  grDevices utils     datasets
+>       methods   base
+>
+>     other attached packages:
+>     [1] GenomicRanges_1.13.36 XVector_0.1.0         IRanges_1.19.24
+>        BiocGenerics_0.7.3
+>
+>     loaded via a namespace (and not attached):
+>     [1] stats4_3.1.0 tools_3.1.0
+>
+>     Is there any method to improve this?
+>
+>     Yours sincerely,
+>
+>     Jianhong Ou
+>
+>     LRB 670A
+>     Program in Gene Function and Expression
+>     364 Plantation Street Worcester,
+>     MA 01605
+>
+>              [[alternative HTML version deleted]]
+>
+>     _______________________________________________
+>     Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org> mailing list
+>     https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+>
+>
+> ________________________________________________________________________
+> devteam-bioc mailing list
+> To unsubscribe from this mailing list send a blank email to
+> devteam-bioc-leave at lists.fhcrc.org
+> You can also unsubscribe or change your personal options at
+> https://lists.fhcrc.org/mailman/listinfo/devteam-bioc
+>
+
+
+From lawrence.michael at gene.com  Fri Aug 23 20:17:40 2013
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Fri, 23 Aug 2013 11:17:40 -0700
+Subject: [Bioc-devel] [devteam-bioc] Very slow when operate GRangesList
+In-Reply-To: <521782AA.4030301@fhcrc.org>
+References: <137FABF871DA9A49B1AAEA1BE854F6E5B192E4EA@ummscsmbx01.ad.umassmed.edu>
+	<CAOQ5Nycx_NKz2kA3CNza5DZZwjdxhFLQhx7Er+L1e9VvkPnM2A@mail.gmail.com>
+	<521782AA.4030301@fhcrc.org>
+Message-ID: <CAOQ5NyfMeU3O1_oOedm3UZJvkm2f+jrc5EYv9y+g6iXoMJjQsA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130823/0059138c/attachment.pl>
+
+From james at Veracyte.com  Sat Aug 24 01:48:49 2013
+From: james at Veracyte.com (James Diggans)
+Date: Fri, 23 Aug 2013 16:48:49 -0700
+Subject: [Bioc-devel] Error installing GenomicRanges
+Message-ID: <89FC8DE4ACDB1245A00FCAA3298F262CD34936D2@MBX3.hostedexchange.local>
+
+All - trying to install GenomicRanges on a RHEL 5.7 machine today and ran into the following error from line 78 in SummarizedExperiment-rowData-methods.R:
+
+
+R> biocLite("GenomicRanges")
+BioC_mirror: http://bioconductor.org
+Using Bioconductor version 2.12 (BiocInstaller 1.10.3), R version 3.0.1.
+Installing package(s) 'GenomicRanges'
+trying URL 'http://bioconductor.org/packages/2.12/bioc/src/contrib/GenomicRanges_1.12.4.tar.gz'
+Content type 'application/x-gzip' length 2576074 bytes (2.5 Mb)
+opened URL
+==================================================
+downloaded 2.5 Mb
+
+* installing *source* package 'GenomicRanges' ...
+** libs
+gcc -std=gnu99 -I/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/include -DNDEBUG  -I/usr/local/include -I"/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/IRanges/include"   -fpic  -g -O2  -c IRanges_stubs.c -o IRanges_stubs.o
+gcc -std=gnu99 -I/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/include -DNDEBUG  -I/usr/local/include -I"/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/IRanges/include"   -fpic  -g -O2  -c R_init_GenomicRanges.c -o R_init_GenomicRanges.o
+gcc -std=gnu99 -I/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/include -DNDEBUG  -I/usr/local/include -I"/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/IRanges/include"   -fpic  -g -O2  -c cigar_utils.c -o cigar_utils.o
+gcc -std=gnu99 -I/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/include -DNDEBUG  -I/usr/local/include -I"/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/IRanges/include"   -fpic  -g -O2  -c transcript_utils.c -o transcript_utils.o
+gcc -std=gnu99 -shared -L/usr/local/lib64 -o GenomicRanges.so IRanges_stubs.o R_init_GenomicRanges.o cigar_utils.o transcript_utils.o -L/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/lib -lR
+installing to /nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/GenomicRanges/libs
+** R
+** inst
+** preparing package for lazy loading
+Error in fmls[[generic at signature]] <- quote(rowData(x)) :
+  object of type 'symbol' is not subsettable
+Error : unable to load R code in package 'GenomicRanges'
+ERROR: lazy loading failed for package 'GenomicRanges'
+* removing '/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/GenomicRanges'
+
+The downloaded source packages are in
+        '/tmp/Rtmp8JSjBM/downloaded_packages'
+Updating HTML index of packages in '.Library'
+Making 'packages.html' ... done
+Warning message:
+In install.packages(pkgs = pkgs, lib = lib, repos = repos, ...) :
+  installation of package 'GenomicRanges' had non-zero exit status
+Calls: biocLite -> biocLiteInstall -> install.packages
+
+
+Any help on possible causation greatly appreciated. 
+-j
+
+
+From mtmorgan at fhcrc.org  Sat Aug 24 02:06:33 2013
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Fri, 23 Aug 2013 17:06:33 -0700
+Subject: [Bioc-devel] Error installing GenomicRanges
+In-Reply-To: <89FC8DE4ACDB1245A00FCAA3298F262CD34936D2@MBX3.hostedexchange.local>
+References: <89FC8DE4ACDB1245A00FCAA3298F262CD34936D2@MBX3.hostedexchange.local>
+Message-ID: <5217F909.7010401@fhcrc.org>
+
+On 08/23/2013 04:48 PM, James Diggans wrote:
+> All - trying to install GenomicRanges on a RHEL 5.7 machine today and ran into the following error from line 78 in SummarizedExperiment-rowData-methods.R:
+>
+>
+> R> biocLite("GenomicRanges")
+> BioC_mirror: http://bioconductor.org
+> Using Bioconductor version 2.12 (BiocInstaller 1.10.3), R version 3.0.1.
+> Installing package(s) 'GenomicRanges'
+> trying URL 'http://bioconductor.org/packages/2.12/bioc/src/contrib/GenomicRanges_1.12.4.tar.gz'
+> Content type 'application/x-gzip' length 2576074 bytes (2.5 Mb)
+> opened URL
+> ==================================================
+> downloaded 2.5 Mb
+>
+> * installing *source* package 'GenomicRanges' ...
+> ** libs
+> gcc -std=gnu99 -I/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/include -DNDEBUG  -I/usr/local/include -I"/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/IRanges/include"   -fpic  -g -O2  -c IRanges_stubs.c -o IRanges_stubs.o
+> gcc -std=gnu99 -I/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/include -DNDEBUG  -I/usr/local/include -I"/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/IRanges/include"   -fpic  -g -O2  -c R_init_GenomicRanges.c -o R_init_GenomicRanges.o
+> gcc -std=gnu99 -I/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/include -DNDEBUG  -I/usr/local/include -I"/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/IRanges/include"   -fpic  -g -O2  -c cigar_utils.c -o cigar_utils.o
+> gcc -std=gnu99 -I/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/include -DNDEBUG  -I/usr/local/include -I"/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/IRanges/include"   -fpic  -g -O2  -c transcript_utils.c -o transcript_utils.o
+> gcc -std=gnu99 -shared -L/usr/local/lib64 -o GenomicRanges.so IRanges_stubs.o R_init_GenomicRanges.o cigar_utils.o transcript_utils.o -L/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/lib -lR
+> installing to /nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/GenomicRanges/libs
+> ** R
+> ** inst
+> ** preparing package for lazy loading
+> Error in fmls[[generic at signature]] <- quote(rowData(x)) :
+>    object of type 'symbol' is not subsettable
+> Error : unable to load R code in package 'GenomicRanges'
+> ERROR: lazy loading failed for package 'GenomicRanges'
+
+It's a weird error and I'd guess that one or more of your packages are out of 
+date or is too new (e.g., installed from the devel branch, or built with R-devel 
+rather than R-3.0.1). Maybe
+
+   library(BiocInstaller)
+   biocValid()
+
+points to something?
+
+Martin
+
+> * removing '/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/GenomicRanges'
+>
+> The downloaded source packages are in
+>          '/tmp/Rtmp8JSjBM/downloaded_packages'
+> Updating HTML index of packages in '.Library'
+> Making 'packages.html' ... done
+> Warning message:
+> In install.packages(pkgs = pkgs, lib = lib, repos = repos, ...) :
+>    installation of package 'GenomicRanges' had non-zero exit status
+> Calls: biocLite -> biocLiteInstall -> install.packages
+>
+>
+> Any help on possible causation greatly appreciated.
+> -j
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+-- 
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From chernandez at creal.cat  Sun Aug 25 21:55:53 2013
+From: chernandez at creal.cat (Hernandez Ferrer, Carles)
+Date: Sun, 25 Aug 2013 21:55:53 +0200 (CEST)
+Subject: [Bioc-devel] More than 4Mb
+In-Reply-To: <242786383.59287.1377460530929.JavaMail.zimbra@creal.cat>
+Message-ID: <186991069.59291.1377460553281.JavaMail.zimbra@creal.cat>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130825/3b3d2d3e/attachment.pl>
+
+From james at Veracyte.com  Sun Aug 25 23:09:05 2013
+From: james at Veracyte.com (James Diggans)
+Date: Sun, 25 Aug 2013 14:09:05 -0700
+Subject: [Bioc-devel] Error installing GenomicRanges
+In-Reply-To: <5217F909.7010401@fhcrc.org>
+References: <89FC8DE4ACDB1245A00FCAA3298F262CD34936D2@MBX3.hostedexchange.local>
+	<5217F909.7010401@fhcrc.org>
+Message-ID: <89FC8DE4ACDB1245A00FCAA3298F262CD349376D@MBX3.hostedexchange.local>
+
+Thanks Martin - biocValid() returned true and updated.packages() saw nothing else from CRAN to update. In desperation, I pulled the:
+
+	source("http://bioconductor.org/biocLite.R")
+	pkgs <- rownames(installed.packages())
+	biocLite(pkgs)
+
+and then re-tried biocLite("GenomicRanges") which then worked fine. No idea what end up being fixed.
+-j
+
+-----Original Message-----
+From: Martin Morgan [mailto:mtmorgan at fhcrc.org] 
+Sent: Friday, August 23, 2013 5:07 PM
+To: James Diggans
+Cc: bioc-devel at r-project.org
+Subject: Re: [Bioc-devel] Error installing GenomicRanges
+
+On 08/23/2013 04:48 PM, James Diggans wrote:
+> All - trying to install GenomicRanges on a RHEL 5.7 machine today and ran into the following error from line 78 in SummarizedExperiment-rowData-methods.R:
+>
+>
+> R> biocLite("GenomicRanges")
+> BioC_mirror: http://bioconductor.org
+> Using Bioconductor version 2.12 (BiocInstaller 1.10.3), R version 3.0.1.
+> Installing package(s) 'GenomicRanges'
+> trying URL 'http://bioconductor.org/packages/2.12/bioc/src/contrib/GenomicRanges_1.12.4.tar.gz'
+> Content type 'application/x-gzip' length 2576074 bytes (2.5 Mb) opened 
+> URL ==================================================
+> downloaded 2.5 Mb
+>
+> * installing *source* package 'GenomicRanges' ...
+> ** libs
+> gcc -std=gnu99 -I/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/include -DNDEBUG  -I/usr/local/include -I"/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/IRanges/include"   -fpic  -g -O2  -c IRanges_stubs.c -o IRanges_stubs.o
+> gcc -std=gnu99 -I/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/include -DNDEBUG  -I/usr/local/include -I"/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/IRanges/include"   -fpic  -g -O2  -c R_init_GenomicRanges.c -o R_init_GenomicRanges.o
+> gcc -std=gnu99 -I/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/include -DNDEBUG  -I/usr/local/include -I"/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/IRanges/include"   -fpic  -g -O2  -c cigar_utils.c -o cigar_utils.o
+> gcc -std=gnu99 -I/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/include -DNDEBUG  -I/usr/local/include -I"/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/IRanges/include"   -fpic  -g -O2  -c transcript_utils.c -o transcript_utils.o
+> gcc -std=gnu99 -shared -L/usr/local/lib64 -o GenomicRanges.so 
+> IRanges_stubs.o R_init_GenomicRanges.o cigar_utils.o 
+> transcript_utils.o 
+> -L/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/lib -lR installing 
+> to 
+> /nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/GenomicRanges/
+> libs
+> ** R
+> ** inst
+> ** preparing package for lazy loading
+> Error in fmls[[generic at signature]] <- quote(rowData(x)) :
+>    object of type 'symbol' is not subsettable Error : unable to load R 
+> code in package 'GenomicRanges'
+> ERROR: lazy loading failed for package 'GenomicRanges'
+
+It's a weird error and I'd guess that one or more of your packages are out of date or is too new (e.g., installed from the devel branch, or built with R-devel rather than R-3.0.1). Maybe
+
+   library(BiocInstaller)
+   biocValid()
+
+points to something?
+
+Martin
+
+> * removing '/nfs/RD/DataAnalysis/software/R/R-3.0.1/lib64/R/library/GenomicRanges'
+>
+> The downloaded source packages are in
+>          '/tmp/Rtmp8JSjBM/downloaded_packages'
+> Updating HTML index of packages in '.Library'
+> Making 'packages.html' ... done
+> Warning message:
+> In install.packages(pkgs = pkgs, lib = lib, repos = repos, ...) :
+>    installation of package 'GenomicRanges' had non-zero exit status
+> Calls: biocLite -> biocLiteInstall -> install.packages
+>
+>
+> Any help on possible causation greatly appreciated.
+> -j
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+--
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From mtmorgan at fhcrc.org  Mon Aug 26 00:52:54 2013
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Sun, 25 Aug 2013 15:52:54 -0700
+Subject: [Bioc-devel] More than 4Mb
+In-Reply-To: <186991069.59291.1377460553281.JavaMail.zimbra@creal.cat>
+References: <186991069.59291.1377460553281.JavaMail.zimbra@creal.cat>
+Message-ID: <521A8AC6.20405@fhcrc.org>
+
+On 08/25/2013 12:55 PM, Hernandez Ferrer, Carles wrote:
+> Dear All,
+>
+> I have developed a package that uses 3 binary files (Affymetrix Power Tools).
+> I thought to include them into the package but the executables size is more
+> than the 4Mb allow by Biocondutor. Mus I create some type of experimental
+> package to include this executables or I have to inform to the user it must
+> download the APT to be able to use it in the developed package?
+
+In this case, and given the size and complexity of APT, I think the user should 
+be required to download and install these binaries separately; the only real 
+alternative is to include the source code and adapt the APT compilation process 
+to work with the compilers used by R (this later may be trivial or otherwise, I 
+have not looked).
+
+Your package should check that an appropriate version of APT is installed 
+correctly, in a way that works across the major platforms (Windows, Mac, Linux).
+
+Requiring APT will introduce a significant obstacle to your users, so you should 
+be very sure that the functionality provided by APT is not already available in 
+the many packages already handling microarrays in Bioconductor.
+
+Martin
+
+>
+> Thanks in advance.
+>
+> C.
+>
+>
+>
+> [[alternative HTML version deleted]]
+>
+> _______________________________________________ Bioc-devel at r-project.org
+> mailing list https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+-- 
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From mtmorgan at fhcrc.org  Mon Aug 26 01:40:57 2013
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Sun, 25 Aug 2013 16:40:57 -0700
+Subject: [Bioc-devel] Course: Understanding R / Bioconductor, Sept 30-Oct 1,
+	Seattle
+Message-ID: <521A9609.3090209@fhcrc.org>
+
+Bioconductors --
+
+Please join us for an intermediate course on Understanding R / Bioconductor, to 
+be held in Seattle on Sept 30 / Oct 1.
+
+   https://secure.bioconductor.org/UnderstandingRBioc/
+
+This intermediate course is directed at R / Bioconductor users who, in an effort 
+to get the most out of high-throughput sequence and other analyses, want to 
+understand more about how R and Bioconductor work. (1) The course begins by 
+reviewing R data types, memory management, and other aspects of internal 
+computation. We use this as a basis for understanding how to writing, debug, and 
+assess the performance of efficient R code, including straight-forward 
+approaches to iteration, vectorization, and parallel evaluation. (2) We then 
+explore R objects, especially the S4 object system. We learn about how to 
+specify simple and more complicated S4 objects, and how to implement essential 
+methods for single and multiple dispatch. We use insights from performance and 
+the S4 class system to explore strategies for efficient representation of large 
+structured data, especially the classes in the IRanges, GenomicRanges, 
+VariantAnnotation, and Biostrings packages. (3) Availability of programming 
+libraries (such as samtools) or performance needs may sometimes point to use of 
+C or C++ code integrated into R. We develop some simple C functions, and explore 
+use of Rcpp as a relatively painless way to incorporate C code. We take a brief 
+look at R's internal data representations, and explore how to debug and profile 
+C code. (4) Finally, we investigate how R can be used to interact with other 
+important resources: data bases; web sites; and visualization facilities like 
+shiny. Use of some of these facilities is illustrated by packages such as 
+AnnotationDbi and biomaRt.
+
+Martin Morgan
+Bioconductor
+-- 
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From vobencha at fhcrc.org  Tue Aug 27 22:49:29 2013
+From: vobencha at fhcrc.org (Valerie Obenchain)
+Date: Tue, 27 Aug 2013 13:49:29 -0700
+Subject: [Bioc-devel] [devteam-bioc] Very slow when operate GRangesList
+In-Reply-To: <CAOQ5NyfMeU3O1_oOedm3UZJvkm2f+jrc5EYv9y+g6iXoMJjQsA@mail.gmail.com>
+References: <137FABF871DA9A49B1AAEA1BE854F6E5B192E4EA@ummscsmbx01.ad.umassmed.edu>
+	<CAOQ5Nycx_NKz2kA3CNza5DZZwjdxhFLQhx7Er+L1e9VvkPnM2A@mail.gmail.com>
+	<521782AA.4030301@fhcrc.org>
+	<CAOQ5NyfMeU3O1_oOedm3UZJvkm2f+jrc5EYv9y+g6iXoMJjQsA@mail.gmail.com>
+Message-ID: <521D10D9.20205@fhcrc.org>
+
+Thanks Jianhong for reporting this.
+
+Changes implemented in IRanges 1.19.27:
+- RleList() constructor now has default 'compress=TRUE'.
+- seqselect,Vector-method lapply() loop was replaced with direct subset.
+
+New timings:
+
+## generic subset function
+fun0 <- function(x) x[500:1]
+
+## GRangesList with RleList as metadata col
+grll <- GRanges(seqnames="chr1",
+                 IRanges(start=1:500, width=2),
+                 someInfo=rep(RleList("*"), 500))
+grr <- split(grll, 1:500)
+ > microbenchmark(fun0(grr), times=10)
+Unit: milliseconds
+       expr      min       lq   median      uq      max neval
+  fun0(grr) 28.88062 29.31157 30.58494 31.4393 32.26367    10
+
+Median is now 0.031 seconds compared to the previous 1.635.
+
+>>               > system.time(grr<- grr[500:1])
+>>                  user  system elapsed
+>>                 1.622   0.013   1.635
+
+
+
+Valerie
+
+
+On 08/23/2013 11:17 AM, Michael Lawrence wrote:
+>
+>
+>
+> On Fri, Aug 23, 2013 at 8:41 AM, Valerie Obenchain <vobencha at fhcrc.org
+> <mailto:vobencha at fhcrc.org>> wrote:
+>
+>     Hi Michael,
+>
+>     Martin and I have been discussing this. In addition to the fix you
+>     suggest, what do you think of changing the default to
+>     compressed=TRUE for the RleList constructor? Rle is the only one of
+>     the AtomicLists with default FALSE. Was there a reason for this when
+>     it was first implemented?
+>
+>
+> I'm guessing Patrick did that because we always used Rles for coverage,
+> and RleList for per-chromosome coverage. Also, there might be some
+> overhead in that Rle runs in the unlistData can cross list elements.
+>
+> About my fix, the only downside would be if the range widths were much
+> larger than the size of the vector, e.g., a highly compressed Rle,
+> selected with chromosome-size ranges. Then the as.integer(ir) is big
+> compared to the data. Otherwise, it's way faster.
+>
+>
+>     Val
+>
+>
+>
+>
+>     On 08/22/2013 07:34 PM, Maintainer wrote:
+>
+>         Hi,
+>
+>         SimpleLists are slow in this situation, basically because the
+>         underlying
+>         seqselect is slow, due to this loop:
+>
+>                       x <- do.call(c, lapply(seq_len(length(ir)),
+>         function(i)
+>         window(x,
+>                           start = start(ir)[i], width = width(ir)[i])))
+>
+>         Am I missing something or could this become a simple
+>         x[as.integer(ir)]?
+>
+>         In the meantime, using CompressedLists is the way to go. So for an
+>         RleList, you need to pass compress=TRUE to the constructor.
+>
+>
+>         On Wed, Aug 21, 2013 at 8:30 AM, Ou, Jianhong
+>         <Jianhong.Ou at umassmed.edu <mailto:Jianhong.Ou at umassmed.edu>
+>         <mailto:Jianhong.Ou at umassmed.__edu
+>         <mailto:Jianhong.Ou at umassmed.edu>>> wrote:
+>
+>              Hi,
+>
+>              When I use big set of GrangesList, I found it become very
+>         slow when
+>              metadata contain AtomicList. e.g.
+>
+>               > grll <- GRanges(seqnames="chr1", ranges=IRanges(start=1:500,
+>              width=2), someInfo=rep(RleList("*"), 500))
+>               > grr <- split(grll, 1:500)
+>               > grl <- as.list(grr)
+>               > system.time(grl<- grl[500:1])
+>                  user  system elapsed
+>                     0       0       0
+>               > system.time(grr<- grr[500:1])
+>                  user  system elapsed
+>                 1.622   0.013   1.635
+>               > grll <- GRanges(seqnames="chr1", ranges=IRanges(start=1:500,
+>              width=2))
+>               > grr <- split(grll, 1:500)
+>               > grl <- as.list(grr)
+>               > system.time(grl<- grl[500:1])
+>                  user  system elapsed
+>                     0       0       0
+>               > system.time(grr<- grr[500:1])
+>                  user  system elapsed
+>                 0.029   0.001   0.030
+>               > sessionInfo()
+>              R Under development (unstable) (2013-07-23 r63392)
+>              Platform: x86_64-apple-darwin12.4.0 (64-bit)
+>
+>              locale:
+>              [1]
+>         en_US.UTF-8/en_US.UTF-8/en_US.__UTF-8/C/en_US.UTF-8/en_US.UTF-__8
+>
+>              attached base packages:
+>              [1] parallel  stats     graphics  grDevices utils     datasets
+>                methods   base
+>
+>              other attached packages:
+>              [1] GenomicRanges_1.13.36 XVector_0.1.0         IRanges_1.19.24
+>                 BiocGenerics_0.7.3
+>
+>              loaded via a namespace (and not attached):
+>              [1] stats4_3.1.0 tools_3.1.0
+>
+>              Is there any method to improve this?
+>
+>              Yours sincerely,
+>
+>              Jianhong Ou
+>
+>              LRB 670A
+>              Program in Gene Function and Expression
+>              364 Plantation Street Worcester,
+>              MA 01605
+>
+>                       [[alternative HTML version deleted]]
+>
+>              _________________________________________________
+>         Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>
+>         <mailto:Bioc-devel at r-project.__org
+>         <mailto:Bioc-devel at r-project.org>> mailing list
+>         https://stat.ethz.ch/mailman/__listinfo/bioc-devel
+>         <https://stat.ethz.ch/mailman/listinfo/bioc-devel>
+>
+>
+>
+>
+>         ____________________________________________________________________________
+>         devteam-bioc mailing list
+>         To unsubscribe from this mailing list send a blank email to
+>         devteam-bioc-leave at lists.__fhcrc.org
+>         <mailto:devteam-bioc-leave at lists.fhcrc.org>
+>         You can also unsubscribe or change your personal options at
+>         https://lists.fhcrc.org/__mailman/listinfo/devteam-bioc
+>         <https://lists.fhcrc.org/mailman/listinfo/devteam-bioc>
+>
+>
+>
+
+
+From Jianhong.Ou at umassmed.edu  Tue Aug 27 22:55:35 2013
+From: Jianhong.Ou at umassmed.edu (Ou, Jianhong)
+Date: Tue, 27 Aug 2013 20:55:35 +0000
+Subject: [Bioc-devel] [devteam-bioc] Very slow when operate GRangesList
+In-Reply-To: <521D10D9.20205@fhcrc.org>
+Message-ID: <137FABF871DA9A49B1AAEA1BE854F6E5B192F0B4@ummscsmbx01.ad.umassmed.edu>
+
+Dear Valerie,
+
+Great improvement. Thanks a lot for your work. I am greatly appreciated
+for this.
+
+Yours sincerely,
+
+Jianhong Ou
+
+LRB 670A
+Program in Gene Function and Expression
+364 Plantation Street Worcester,
+MA 01605
+
+
+
+
+On 8/27/13 4:49 PM, "Valerie Obenchain" <vobencha at fhcrc.org> wrote:
+
+>Thanks Jianhong for reporting this.
+>
+>Changes implemented in IRanges 1.19.27:
+>- RleList() constructor now has default 'compress=TRUE'.
+>- seqselect,Vector-method lapply() loop was replaced with direct subset.
+>
+>New timings:
+>
+>## generic subset function
+>fun0 <- function(x) x[500:1]
+>
+>## GRangesList with RleList as metadata col
+>grll <- GRanges(seqnames="chr1",
+>                 IRanges(start=1:500, width=2),
+>                 someInfo=rep(RleList("*"), 500))
+>grr <- split(grll, 1:500)
+> > microbenchmark(fun0(grr), times=10)
+>Unit: milliseconds
+>       expr      min       lq   median      uq      max neval
+>  fun0(grr) 28.88062 29.31157 30.58494 31.4393 32.26367    10
+>
+>Median is now 0.031 seconds compared to the previous 1.635.
+>
+>>>               > system.time(grr<- grr[500:1])
+>>>                  user  system elapsed
+>>>                 1.622   0.013   1.635
+>
+>
+>
+>Valerie
+>
+>
+>On 08/23/2013 11:17 AM, Michael Lawrence wrote:
+>>
+>>
+>>
+>> On Fri, Aug 23, 2013 at 8:41 AM, Valerie Obenchain <vobencha at fhcrc.org
+>> <mailto:vobencha at fhcrc.org>> wrote:
+>>
+>>     Hi Michael,
+>>
+>>     Martin and I have been discussing this. In addition to the fix you
+>>     suggest, what do you think of changing the default to
+>>     compressed=TRUE for the RleList constructor? Rle is the only one of
+>>     the AtomicLists with default FALSE. Was there a reason for this when
+>>     it was first implemented?
+>>
+>>
+>> I'm guessing Patrick did that because we always used Rles for coverage,
+>> and RleList for per-chromosome coverage. Also, there might be some
+>> overhead in that Rle runs in the unlistData can cross list elements.
+>>
+>> About my fix, the only downside would be if the range widths were much
+>> larger than the size of the vector, e.g., a highly compressed Rle,
+>> selected with chromosome-size ranges. Then the as.integer(ir) is big
+>> compared to the data. Otherwise, it's way faster.
+>>
+>>
+>>     Val
+>>
+>>
+>>
+>>
+>>     On 08/22/2013 07:34 PM, Maintainer wrote:
+>>
+>>         Hi,
+>>
+>>         SimpleLists are slow in this situation, basically because the
+>>         underlying
+>>         seqselect is slow, due to this loop:
+>>
+>>                       x <- do.call(c, lapply(seq_len(length(ir)),
+>>         function(i)
+>>         window(x,
+>>                           start = start(ir)[i], width = width(ir)[i])))
+>>
+>>         Am I missing something or could this become a simple
+>>         x[as.integer(ir)]?
+>>
+>>         In the meantime, using CompressedLists is the way to go. So for
+>>an
+>>         RleList, you need to pass compress=TRUE to the constructor.
+>>
+>>
+>>         On Wed, Aug 21, 2013 at 8:30 AM, Ou, Jianhong
+>>         <Jianhong.Ou at umassmed.edu <mailto:Jianhong.Ou at umassmed.edu>
+>>         <mailto:Jianhong.Ou at umassmed.__edu
+>>         <mailto:Jianhong.Ou at umassmed.edu>>> wrote:
+>>
+>>              Hi,
+>>
+>>              When I use big set of GrangesList, I found it become very
+>>         slow when
+>>              metadata contain AtomicList. e.g.
+>>
+>>               > grll <- GRanges(seqnames="chr1",
+>>ranges=IRanges(start=1:500,
+>>              width=2), someInfo=rep(RleList("*"), 500))
+>>               > grr <- split(grll, 1:500)
+>>               > grl <- as.list(grr)
+>>               > system.time(grl<- grl[500:1])
+>>                  user  system elapsed
+>>                     0       0       0
+>>               > system.time(grr<- grr[500:1])
+>>                  user  system elapsed
+>>                 1.622   0.013   1.635
+>>               > grll <- GRanges(seqnames="chr1",
+>>ranges=IRanges(start=1:500,
+>>              width=2))
+>>               > grr <- split(grll, 1:500)
+>>               > grl <- as.list(grr)
+>>               > system.time(grl<- grl[500:1])
+>>                  user  system elapsed
+>>                     0       0       0
+>>               > system.time(grr<- grr[500:1])
+>>                  user  system elapsed
+>>                 0.029   0.001   0.030
+>>               > sessionInfo()
+>>              R Under development (unstable) (2013-07-23 r63392)
+>>              Platform: x86_64-apple-darwin12.4.0 (64-bit)
+>>
+>>              locale:
+>>              [1]
+>>         
+>>en_US.UTF-8/en_US.UTF-8/en_US.__UTF-8/C/en_US.UTF-8/en_US.UTF-__8
+>>
+>>              attached base packages:
+>>              [1] parallel  stats     graphics  grDevices utils
+>>datasets
+>>                methods   base
+>>
+>>              other attached packages:
+>>              [1] GenomicRanges_1.13.36 XVector_0.1.0
+>>IRanges_1.19.24
+>>                 BiocGenerics_0.7.3
+>>
+>>              loaded via a namespace (and not attached):
+>>              [1] stats4_3.1.0 tools_3.1.0
+>>
+>>              Is there any method to improve this?
+>>
+>>              Yours sincerely,
+>>
+>>              Jianhong Ou
+>>
+>>              LRB 670A
+>>              Program in Gene Function and Expression
+>>              364 Plantation Street Worcester,
+>>              MA 01605
+>>
+>>                       [[alternative HTML version deleted]]
+>>
+>>              _________________________________________________
+>>         Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>
+>>         <mailto:Bioc-devel at r-project.__org
+>>         <mailto:Bioc-devel at r-project.org>> mailing list
+>>         https://stat.ethz.ch/mailman/__listinfo/bioc-devel
+>>         <https://stat.ethz.ch/mailman/listinfo/bioc-devel>
+>>
+>>
+>>
+>>
+>>         
+>>_________________________________________________________________________
+>>___
+>>         devteam-bioc mailing list
+>>         To unsubscribe from this mailing list send a blank email to
+>>         devteam-bioc-leave at lists.__fhcrc.org
+>>         <mailto:devteam-bioc-leave at lists.fhcrc.org>
+>>         You can also unsubscribe or change your personal options at
+>>         https://lists.fhcrc.org/__mailman/listinfo/devteam-bioc
+>>         <https://lists.fhcrc.org/mailman/listinfo/devteam-bioc>
+>>
+>>
+>>
+>
+
+
+From whuber at embl.de  Wed Aug 28 11:50:49 2013
+From: whuber at embl.de (Wolfgang Huber)
+Date: Wed, 28 Aug 2013 11:50:49 +0200
+Subject: [Bioc-devel] org-mode vignettes
+Message-ID: <F69E1C71-BBBB-4ACF-AD69-AE1A2463DE13@embl.de>
+
+
+Hi
+
+is there already a best practice (example?) for how to deliver vignettes written in org-mode (http://orgmode.org) in Bioconductor packages?
+
+(This would also require that emacs and its ESS and org modes are installed on the build servers.)
+
+	Best wishes
+	Wolfgang
+
+From sdavis2 at mail.nih.gov  Wed Aug 28 13:14:53 2013
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Wed, 28 Aug 2013 07:14:53 -0400
+Subject: [Bioc-devel] org-mode vignettes
+In-Reply-To: <F69E1C71-BBBB-4ACF-AD69-AE1A2463DE13@embl.de>
+References: <F69E1C71-BBBB-4ACF-AD69-AE1A2463DE13@embl.de>
+Message-ID: <CANeAVB=DbxtVDO4k8xv9TLKwzzpnUYttQP7fsG8vQtgwAwX9hg@mail.gmail.com>
+
+This isn't a direct answer to the question, but I recently learned of
+this project:
+
+http://www.dexy.it/
+
+Basically, it is a giant set of filters that runs on text-based files
+(MANY formats, including org) to produce outputs (MANY formats).
+These filters include programming languages (including R) for literate
+programming practices.  Dexy might be worth investigating as a general
+solution that could be included into Makefiles for vignette
+generation.
+
+Sean
+
+
+On Wed, Aug 28, 2013 at 5:50 AM, Wolfgang Huber <whuber at embl.de> wrote:
+>
+> Hi
+>
+> is there already a best practice (example?) for how to deliver vignettes written in org-mode (http://orgmode.org) in Bioconductor packages?
+>
+> (This would also require that emacs and its ESS and org modes are installed on the build servers.)
+>
+>         Best wishes
+>         Wolfgang
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From mtmorgan at fhcrc.org  Wed Aug 28 14:28:57 2013
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 28 Aug 2013 05:28:57 -0700
+Subject: [Bioc-devel] org-mode vignettes
+In-Reply-To: <F69E1C71-BBBB-4ACF-AD69-AE1A2463DE13@embl.de>
+References: <F69E1C71-BBBB-4ACF-AD69-AE1A2463DE13@embl.de>
+Message-ID: <521DED09.70308@fhcrc.org>
+
+On 08/28/2013 02:50 AM, Wolfgang Huber wrote:
+>
+> Hi
+>
+> is there already a best practice (example?) for how to deliver vignettes
+> written in org-mode (http://orgmode.org) in Bioconductor packages?
+
+Three possibilities come to mind.
+
+Implement the equivalent of the knitr package, preferably without external 
+dependencies (sounds like a fun exercise ;)) and simply add the package to the 
+VignetteBuilder: tag to the DESCRIPTION file (as in Writing R Extensions).
+
+Do the two-step of transforming org-mode to an intermediate form, e.g., 
+markdown, then using standard tools. The transformation would be the 
+maintainer's responsibility, prior to svn commit. This is essentially how 
+roxygen2 is being used for man pages.
+
+(Even as an emacs user I find it weird to tie documentation to an application.)
+
+Martin
+
+>
+> (This would also require that emacs and its ESS and org modes are installed
+> on the build servers.)
+>
+> Best wishes Wolfgang _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+-- 
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From whuber at embl.de  Wed Aug 28 16:38:19 2013
+From: whuber at embl.de (Wolfgang Huber)
+Date: Wed, 28 Aug 2013 16:38:19 +0200
+Subject: [Bioc-devel] org-mode vignettes
+In-Reply-To: <521DED09.70308@fhcrc.org>
+References: <F69E1C71-BBBB-4ACF-AD69-AE1A2463DE13@embl.de>
+	<521DED09.70308@fhcrc.org>
+Message-ID: <7E02F13A-28F8-417E-986E-9C4BA862E4A5@embl.de>
+
+Hi Martin,
+thanks! Both of these sound doable, we'll explore. What was the third one?
+	Best wishes, Wolfgang
+
+On 28 Aug 2013, at 14:28, Martin Morgan <mtmorgan at fhcrc.org> wrote:
+
+> On 08/28/2013 02:50 AM, Wolfgang Huber wrote:
+>> 
+>> Hi
+>> 
+>> is there already a best practice (example?) for how to deliver vignettes
+>> written in org-mode (http://orgmode.org) in Bioconductor packages?
+> 
+> Three possibilities come to mind.
+> 
+> Implement the equivalent of the knitr package, preferably without external dependencies (sounds like a fun exercise ;)) and simply add the package to the VignetteBuilder: tag to the DESCRIPTION file (as in Writing R Extensions).
+> 
+> Do the two-step of transforming org-mode to an intermediate form, e.g., markdown, then using standard tools. The transformation would be the maintainer's responsibility, prior to svn commit. This is essentially how roxygen2 is being used for man pages.
+> 
+> (Even as an emacs user I find it weird to tie documentation to an application.)
+> 
+> Martin
+> 
+>> 
+>> (This would also require that emacs and its ESS and org modes are installed
+>> on the build servers.)
+>> 
+>> Best wishes Wolfgang _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>> 
+> 
+> 
+> -- 
+> Computational Biology / Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N.
+> PO Box 19024 Seattle, WA 98109
+> 
+> Location: Arnold Building M1 B861
+> Phone: (206) 667-2793
+
+
+From mtmorgan at fhcrc.org  Wed Aug 28 17:25:30 2013
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 28 Aug 2013 08:25:30 -0700
+Subject: [Bioc-devel] org-mode vignettes
+In-Reply-To: <7E02F13A-28F8-417E-986E-9C4BA862E4A5@embl.de>
+References: <F69E1C71-BBBB-4ACF-AD69-AE1A2463DE13@embl.de>
+	<521DED09.70308@fhcrc.org>
+	<7E02F13A-28F8-417E-986E-9C4BA862E4A5@embl.de>
+Message-ID: <521E166A.5060204@fhcrc.org>
+
+On 08/28/2013 07:38 AM, Wolfgang Huber wrote:
+> Hi Martin,
+> thanks! Both of these sound doable, we'll explore. What was the third one?
+
+To clarify, the intermediate form in option 2 should ideally still contain 
+executable code chunks -- Rmd or Rnw, rather than md or tex. One drawback of 
+this option (and of using roxygen2)  is that others (e.g., Bioc maintainers 
+trying to help out with routine maintenance, or the hit-by-a-bus replacement 
+maintainer) trip over the intended work flow, e.g., updating the intermediate 
+file rather than the org file, or spend time learning org mode (and emacs!).
+
+The parenthetical comment came from passing some festive commentary through a 
+civility filter -- option three is "don't do it!".
+
+Martin
+
+
+> 	Best wishes, Wolfgang
+>
+> On 28 Aug 2013, at 14:28, Martin Morgan <mtmorgan at fhcrc.org> wrote:
+>
+>> On 08/28/2013 02:50 AM, Wolfgang Huber wrote:
+>>>
+>>> Hi
+>>>
+>>> is there already a best practice (example?) for how to deliver vignettes
+>>> written in org-mode (http://orgmode.org) in Bioconductor packages?
+>>
+>> Three possibilities come to mind.
+>>
+>> Implement the equivalent of the knitr package, preferably without external dependencies (sounds like a fun exercise ;)) and simply add the package to the VignetteBuilder: tag to the DESCRIPTION file (as in Writing R Extensions).
+>>
+>> Do the two-step of transforming org-mode to an intermediate form, e.g., markdown, then using standard tools. The transformation would be the maintainer's responsibility, prior to svn commit. This is essentially how roxygen2 is being used for man pages.
+>>
+>> (Even as an emacs user I find it weird to tie documentation to an application.)
+>>
+>> Martin
+>>
+>>>
+>>> (This would also require that emacs and its ESS and org modes are installed
+>>> on the build servers.)
+>>>
+>>> Best wishes Wolfgang _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>>
+>> --
+>> Computational Biology / Fred Hutchinson Cancer Research Center
+>> 1100 Fairview Ave. N.
+>> PO Box 19024 Seattle, WA 98109
+>>
+>> Location: Arnold Building M1 B861
+>> Phone: (206) 667-2793
+>
+
+
+-- 
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From dtenenba at fhcrc.org  Wed Aug 28 17:35:49 2013
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Wed, 28 Aug 2013 08:35:49 -0700
+Subject: [Bioc-devel] org-mode vignettes
+In-Reply-To: <521E166A.5060204@fhcrc.org>
+References: <F69E1C71-BBBB-4ACF-AD69-AE1A2463DE13@embl.de>
+	<521DED09.70308@fhcrc.org>
+	<7E02F13A-28F8-417E-986E-9C4BA862E4A5@embl.de>
+	<521E166A.5060204@fhcrc.org>
+Message-ID: <CAF42j20-LkiXfrYnSpG9bXePxxJasC3vjYeBzQ02gaAKNArs-A@mail.gmail.com>
+
+On Wed, Aug 28, 2013 at 8:25 AM, Martin Morgan <mtmorgan at fhcrc.org> wrote:
+> On 08/28/2013 07:38 AM, Wolfgang Huber wrote:
+>>
+>> Hi Martin,
+>> thanks! Both of these sound doable, we'll explore. What was the third one?
+>
+>
+> To clarify, the intermediate form in option 2 should ideally still contain
+> executable code chunks -- Rmd or Rnw, rather than md or tex. One drawback of
+> this option (and of using roxygen2)  is that others (e.g., Bioc maintainers
+> trying to help out with routine maintenance, or the hit-by-a-bus replacement
+> maintainer) trip over the intended work flow, e.g., updating the
+> intermediate file rather than the org file, or spend time learning org mode
+> (and emacs!).
+>
+> The parenthetical comment came from passing some festive commentary through
+> a civility filter -- option three is "don't do it!".
+>
+
+See also http://yihui.name/knitr/demo/org/
+Dan
+
+
+> Martin
+>
+>
+>
+>>         Best wishes, Wolfgang
+>>
+>> On 28 Aug 2013, at 14:28, Martin Morgan <mtmorgan at fhcrc.org> wrote:
+>>
+>>> On 08/28/2013 02:50 AM, Wolfgang Huber wrote:
+>>>>
+>>>>
+>>>> Hi
+>>>>
+>>>> is there already a best practice (example?) for how to deliver vignettes
+>>>> written in org-mode (http://orgmode.org) in Bioconductor packages?
+>>>
+>>>
+>>> Three possibilities come to mind.
+>>>
+>>> Implement the equivalent of the knitr package, preferably without
+>>> external dependencies (sounds like a fun exercise ;)) and simply add the
+>>> package to the VignetteBuilder: tag to the DESCRIPTION file (as in Writing R
+>>> Extensions).
+>>>
+>>> Do the two-step of transforming org-mode to an intermediate form, e.g.,
+>>> markdown, then using standard tools. The transformation would be the
+>>> maintainer's responsibility, prior to svn commit. This is essentially how
+>>> roxygen2 is being used for man pages.
+>>>
+>>> (Even as an emacs user I find it weird to tie documentation to an
+>>> application.)
+>>>
+>>> Martin
+>>>
+>>>>
+>>>> (This would also require that emacs and its ESS and org modes are
+>>>> installed
+>>>> on the build servers.)
+>>>>
+>>>> Best wishes Wolfgang _______________________________________________
+>>>> Bioc-devel at r-project.org mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>>
+>>>
+>>> --
+>>> Computational Biology / Fred Hutchinson Cancer Research Center
+>>> 1100 Fairview Ave. N.
+>>> PO Box 19024 Seattle, WA 98109
+>>>
+>>> Location: Arnold Building M1 B861
+>>> Phone: (206) 667-2793
+>>
+>>
+>
+>
+> --
+> Computational Biology / Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N.
+> PO Box 19024 Seattle, WA 98109
+>
+> Location: Arnold Building M1 B861
+> Phone: (206) 667-2793
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From ccberry at ucsd.edu  Wed Aug 28 17:34:43 2013
+From: ccberry at ucsd.edu (Charles Berry)
+Date: Wed, 28 Aug 2013 15:34:43 +0000 (UTC)
+Subject: [Bioc-devel] org-mode vignettes
+References: <F69E1C71-BBBB-4ACF-AD69-AE1A2463DE13@embl.de>
+Message-ID: <loom.20130828T173328-967@post.gmane.org>
+
+Wolfgang Huber <whuber <at> embl.de> writes:
+
+> 
+> 
+> Hi
+> 
+> is there already a best practice (example?) for how to deliver vignettes
+written in org-mode
+> (http://orgmode.org) in Bioconductor packages?
+> 
+> (This would also require that emacs and its ESS and org modes are
+installed on the build servers.)
+
+
+Wolfgang, 
+
+ravel will translate org-mode to Sweave, knitr, or similar formats. See
+
+https://github.com/chasberry/orgmode-accessories
+
+As currently implemented, it usually requires that the chunk options 
+be manually added to the org-mode source blocks in a header line.
+
+That is, the org-mode header arguments are not translated to Sweave/knitr
+chunk options. This can be automated, but I've not had a reason to do so 
+yet.
+
+You can see the 'example-1.Rnw' from the Sweave manual rendered as org-mode
+that ravel can translate back to Sweave at:
+
+https://raw.github.com/chasberry/orgmode-accessories/master/example-1-Rnw.org
+
+The part that gets turned into Sweave starts at the line 
+
+'* Sweave Example 1'.
+
+HTH,
+
+Chuck
+==
+
+
+From lawrence.michael at gene.com  Wed Aug 28 20:00:41 2013
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Wed, 28 Aug 2013 11:00:41 -0700
+Subject: [Bioc-devel] org-mode vignettes
+In-Reply-To: <521DED09.70308@fhcrc.org>
+References: <F69E1C71-BBBB-4ACF-AD69-AE1A2463DE13@embl.de>
+	<521DED09.70308@fhcrc.org>
+Message-ID: <CAOQ5NydZReXc2COLB+enO4vMR9+v89D37TcZZ-UpOCmt1q-QXA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130828/9df2afaa/attachment.pl>
+
+From michael.stadler at fmi.ch  Thu Aug 29 17:48:26 2013
+From: michael.stadler at fmi.ch (Michael Stadler)
+Date: Thu, 29 Aug 2013 17:48:26 +0200
+Subject: [Bioc-devel] setdiff error (GenomicRanges)
+Message-ID: <521F6D4A.1010402@fmi.ch>
+
+Dear masters of genomic ranges,
+
+Since a few days, I am getting an error in Bioc 2.13 when comparing two
+GRanges objects by setdiff():
+
+chrs <- c(chr1=20, chr2=20)
+grA <- GRanges("chr1", IRanges(1,10), strand="*", seqlengths=chrs)
+grB <- GRanges("chr2", IRanges(11,15), strand="*", seqlengths=chrs)
+setdiff(grA, grB)
+
+Warning messages:
+1: In ans[] <- x :
+  number of items to replace is not a multiple of replacement length
+2: In ans[] <- x :
+  number of items to replace is not a multiple of replacement length
+Error in gaps(union(gaps(x, end = seqlengths), y), end = seqlengths) :
+  error in evaluating the argument 'x' in selecting a method for
+function 'gaps': Error in union(gaps(x, end = seqlengths), y) :
+  error in evaluating the argument 'x' in selecting a method for
+function 'union': Error in Rle(strand(listNameMatrix[2L, ]), k) :
+  error in evaluating the argument 'values' in selecting a method for
+function 'Rle': Error in .local(x, ...) : strand values must be in '+'
+'-' '*'
+
+This is in:
+sessionInfo()
+R version 3.0.1 (2013-05-16)
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+locale:
+[1] C
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices utils     datasets  methods
+[8] base
+
+other attached packages:
+[1] GenomicRanges_1.13.38 XVector_0.1.0         IRanges_1.19.27
+[4] BiocGenerics_0.7.4    RColorBrewer_1.0-5
+
+loaded via a namespace (and not attached):
+[1] stats4_3.0.1
+
+
+The same code runs fine for Bioc 2.12:
+chrs <- c(chr1=20, chr2=20)
+grA <- GRanges("chr1", IRanges(1,10), strand="*", seqlengths=chrs)
+grB <- GRanges("chr2", IRanges(11,15), strand="*", seqlengths=chrs)
+setdiff(grA, grB)
+
+GRanges with 1 range and 0 metadata columns:
+      seqnames    ranges strand
+         <Rle> <IRanges>  <Rle>
+  [1]     chr1   [1, 10]      *
+  ---
+  seqlengths:
+   chr1 chr2
+     20   20
+
+for:
+sessionInfo()
+R version 3.0.1 (2013-05-16)
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+locale:
+[1] C
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices utils     datasets  methods
+[8] base
+
+other attached packages:
+[1] GenomicRanges_1.12.4 IRanges_1.18.2       BiocGenerics_0.7.0
+[4] RColorBrewer_1.0-5
+
+loaded via a namespace (and not attached):
+[1] stats4_3.0.1
+
+
+Would anybody have an idea what could be wrong?
+
+Kind regards,
+Michael
+
+
+From rct at thompsonclan.org  Thu Aug 29 23:16:15 2013
+From: rct at thompsonclan.org (Ryan C. Thompson)
+Date: Thu, 29 Aug 2013 14:16:15 -0700
+Subject: [Bioc-devel] Splitting design matrix contrast pivoting logic into a
+	separate function?
+Message-ID: <521FBA1F.5010801@thompsonclan.org>
+
+Hi Gordon,
+
+I am currently working on some code that would benefit from having 
+direct access to the code in edgeR::glmLRT that handles reparametrizing 
+the design matrix so that the N linearly independent components of the 
+specified contrasts are represented in the first N columns of the design 
+matrix (i.e. the part of glmLRT that does all the QR decomposition 
+stuff). Would you consider splitting this logic into a separate function 
+that takes a design matrix and contrast matrix and returns the 
+equivalent reparametrized design matrix and vector of coefficients?
+
+Thanks,
+
+-Ryan Thompson
+
+
+From ywhzau at gmail.com  Fri Aug 30 03:49:48 2013
+From: ywhzau at gmail.com (Wen Yao)
+Date: Fri, 30 Aug 2013 09:49:48 +0800
+Subject: [Bioc-devel] New Bioconductor package: intansv
+Message-ID: <028c01cea523$38756860$a9603920$@com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130830/11a1cd85/attachment.pl>
+
+From xie at yihui.name  Fri Aug 30 05:18:44 2013
+From: xie at yihui.name (Yihui Xie)
+Date: Thu, 29 Aug 2013 22:18:44 -0500
+Subject: [Bioc-devel] org-mode vignettes
+In-Reply-To: <CAF42j20qkDh2RASD7C9RbsddvqM8boAqdmKbpipG60+xQk-nKg@mail.gmail.com>
+References: <11433_1377683488_521DC820_11433_126_1_F69E1C71-BBBB-4ACF-AD69-AE1A2463DE13@embl.de>
+	<CAF42j20qkDh2RASD7C9RbsddvqM8boAqdmKbpipG60+xQk-nKg@mail.gmail.com>
+Message-ID: <CANROs4f71no+2t6O+DwEmP1pMi-VzLtGLcWP3Ro_kU5q7gYvjA@mail.gmail.com>
+
+My impression is that org-mode was designed for very general purposes,
+and it might be too general for R package vignettes, so is Dexy. For
+vignettes, we use only one language (R) and one document format
+(historically LaTeX, and nowadays also Markdown/HTML) in most cases.
+Multiple input/output formats sounds fantastic, but in practice it is
+not necessarily a big plus (as Michael mentioned, knitr also supports
+that and is extensible; you may even play with the new cool kid Julia
+http://rpubs.com/yihui/julia-knitr but I'm not sure how many people
+will really do that). This is off-topic somehow...
+
+Personally I think the better approach is to translate *.org to
+*.Rnw/*.Rmd, etc, and hand it over to Sweave or knitr, which has been
+well-supported by R 3.0. You only need to specify the VignetteBuilder
+in DESCRIPTION and \VignetteEngine{} in vignettes. R will build
+vignettes using your vignette engine.
+
+If we stick to .org, that will require server support to install
+additional software packages, or you just play with it locally. Given
+Emacs + org-mode are available on the build server, you can write
+custom vignette engines to process .org files; since the custom
+engines are essentially R functions, you can do whatever you want; see
+the R-exts manual.
+
+Regards,
+Yihui
+--
+Yihui Xie <xieyihui at gmail.com>
+Web: http://yihui.name
+Department of Statistics, Iowa State University
+2215 Snedecor Hall, Ames, IA
+
+
+> From: "Wolfgang Huber" <whuber at embl.de>
+> Date: Aug 28, 2013 2:51 AM
+> Subject: [Bioc-devel] org-mode vignettes
+> To: "bioc-devel at r-project.org" <bioc-devel at r-project.org>
+> Cc: "Paul Theodor Pyl" <pyl at embl.de>
+>
+>
+> Hi
+>
+> is there already a best practice (example?) for how to deliver vignettes
+> written in org-mode (http://orgmode.org) in Bioconductor packages?
+>
+> (This would also require that emacs and its ESS and org modes are installed
+> on the build servers.)
+>
+>         Best wishes
+>         Wolfgang
+
+
+From sdavis2 at mail.nih.gov  Fri Aug 30 11:47:55 2013
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Fri, 30 Aug 2013 05:47:55 -0400
+Subject: [Bioc-devel] org-mode vignettes
+In-Reply-To: <F69E1C71-BBBB-4ACF-AD69-AE1A2463DE13@embl.de>
+References: <F69E1C71-BBBB-4ACF-AD69-AE1A2463DE13@embl.de>
+Message-ID: <CANeAVBk0VVSXajaOgzyL=7DObsRz=S0z7+jNB0UZQcXu-P0n=w@mail.gmail.com>
+
+On Wed, Aug 28, 2013 at 5:50 AM, Wolfgang Huber <whuber at embl.de> wrote:
+>
+> Hi
+>
+> is there already a best practice (example?) for how to deliver vignettes written in org-mode (http://orgmode.org) in Bioconductor packages?
+>
+> (This would also require that emacs and its ESS and org modes are installed on the build servers.
+
+I have used the ascii package available on CRAN and described here:
+
+http://eusebe.github.io/ascii/
+
+for org files before.  While not providing org-babel integration, it
+allows a subset of the org (or asciidoc, textile, restructuredText,
+...) markup to be used instead of latex by supplying sweave handlers
+for those markups.
+
+Sean
+
+
+From xie at yihui.name  Sat Aug 31 04:28:26 2013
+From: xie at yihui.name (Yihui Xie)
+Date: Fri, 30 Aug 2013 21:28:26 -0500
+Subject: [Bioc-devel] org-mode vignettes
+In-Reply-To: <CANeAVBk0VVSXajaOgzyL=7DObsRz=S0z7+jNB0UZQcXu-P0n=w@mail.gmail.com>
+References: <F69E1C71-BBBB-4ACF-AD69-AE1A2463DE13@embl.de>
+	<CANeAVBk0VVSXajaOgzyL=7DObsRz=S0z7+jNB0UZQcXu-P0n=w@mail.gmail.com>
+Message-ID: <CANROs4dx5HgT8CrA79V+Qz0LL_=-cMxw5=3JbW+JW3-kxdJB4w@mail.gmail.com>
+
+IMHO, Sweave handlers (drivers) were a bad design in the sense that
+extensions based on Sweave have to copy a large amount of source code
+from the utils package. You can compare
+https://github.com/eusebe/ascii/blob/master/R/RweaveAscii.r to
+https://github.com/wch/r-source/blob/trunk/src/library/utils/R/SweaveDrivers.R
+That is probably why most Sweave extensions (ascii, cacheSweave,
+pgfSweave, ...) have been struggling to survive but eventually could
+not catch up with the constant changes in Sweave.
+
+The real value of the ascii package in my eyes lies in its wide
+support to the conversion of R objects to different markup languages.
+To use that in knitr, all you need is the chunk option results='asis'.
+No custom drivers required. In the future you may not even need
+results='asis' (that is on the knitr agenda).
+
+Regards,
+Yihui
+--
+Yihui Xie <xieyihui at gmail.com>
+Web: http://yihui.name
+Department of Statistics, Iowa State University
+2215 Snedecor Hall, Ames, IA
+
+
+On Fri, Aug 30, 2013 at 4:47 AM, Sean Davis <sdavis2 at mail.nih.gov> wrote:
+> On Wed, Aug 28, 2013 at 5:50 AM, Wolfgang Huber <whuber at embl.de> wrote:
+>>
+>> Hi
+>>
+>> is there already a best practice (example?) for how to deliver vignettes written in org-mode (http://orgmode.org) in Bioconductor packages?
+>>
+>> (This would also require that emacs and its ESS and org modes are installed on the build servers.
+>
+> I have used the ascii package available on CRAN and described here:
+>
+> http://eusebe.github.io/ascii/
+>
+> for org files before.  While not providing org-babel integration, it
+> allows a subset of the org (or asciidoc, textile, restructuredText,
+> ...) markup to be used instead of latex by supplying sweave handlers
+> for those markups.
+>
+> Sean
+
+

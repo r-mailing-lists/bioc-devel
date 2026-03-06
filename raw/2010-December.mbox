@@ -1,0 +1,1516 @@
+From mailinglist.honeypot at gmail.com  Fri Dec 10 20:25:21 2010
+From: mailinglist.honeypot at gmail.com (Steve Lianoglou)
+Date: Fri, 10 Dec 2010 14:25:21 -0500
+Subject: [Bioc-devel] The ShortRead::chromosome function
+Message-ID: <AANLkTi=mjyP9vmHTWfGHx8+fYDa3MS+MAUqoPHQUemQD@mail.gmail.com>
+
+Howdy,
+
+I'm developing a package that defines a `chromosome` function. Since
+the `setGeneric("chromosome")` is already defined in ShortRead, my
+package lists ShortRead in the Imports of the DESCRIPTION, and also
+has an importFrom(ShortRead, chromosome) in my NAMESPACE.
+
+I also have an exportMethods(..., chromosome, ...) in my NAMESPACE so
+that people can use this function when loading my library, but this
+function isn't actually being exported into "the works."
+
+I looked back at the ShortRead package, and realize that the
+`chromosome` function is not listed in the `exportMethods` clause of
+its NAMESPACE. Is this why that's happening? Shouldn't `chromosome` be
+listed in the ShortRead NAMESPACE file, anyway?
+
+Thanks,
+
+-steve
+
+-- 
+Steve Lianoglou
+Graduate Student: Computational Systems Biology
+?| Memorial Sloan-Kettering Cancer Center
+?| Weill Medical College of Cornell University
+Contact Info: http://cbio.mskcc.org/~lianos/contact
+
+
+From mtmorgan at fhcrc.org  Fri Dec 10 22:58:16 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Fri, 10 Dec 2010 13:58:16 -0800
+Subject: [Bioc-devel] The ShortRead::chromosome function
+In-Reply-To: <AANLkTi=mjyP9vmHTWfGHx8+fYDa3MS+MAUqoPHQUemQD@mail.gmail.com>
+References: <AANLkTi=mjyP9vmHTWfGHx8+fYDa3MS+MAUqoPHQUemQD@mail.gmail.com>
+Message-ID: <4D02A278.4000201@fhcrc.org>
+
+On 12/10/2010 11:25 AM, Steve Lianoglou wrote:
+> Howdy,
+> 
+> I'm developing a package that defines a `chromosome` function. Since
+> the `setGeneric("chromosome")` is already defined in ShortRead, my
+> package lists ShortRead in the Imports of the DESCRIPTION, and also
+> has an importFrom(ShortRead, chromosome) in my NAMESPACE.
+> 
+> I also have an exportMethods(..., chromosome, ...) in my NAMESPACE so
+> that people can use this function when loading my library, but this
+> function isn't actually being exported into "the works."
+> 
+> I looked back at the ShortRead package, and realize that the
+> `chromosome` function is not listed in the `exportMethods` clause of
+> its NAMESPACE. Is this why that's happening? Shouldn't `chromosome` be
+> listed in the ShortRead NAMESPACE file, anyway?
+
+Hi Steve --
+
+I think what is going on is that exportMethod adds your method to the
+'chromosome' generic. While the 'chromosome' generic is visible inside
+your package, it is not, unfortunately, available to the user. E.g., if
+the user were to then library(ShortRead), my guess is they'd see your
+chromosome method.
+
+You'll want  to either re-export the generic export(chromosome) or make
+the chromosome generic visible to the user by having your package
+Depend: on ShortRead.
+
+A consequence of exporting the chromosome generic is that R CMD check
+will warn that you need to document it; it's not really clear what your
+documentation would be -- see ShortRead::chromosome ?
+
+Martin
+
+> 
+> Thanks,
+> 
+> -steve
+> 
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From dtenenba at fhcrc.org  Mon Dec 13 20:34:14 2010
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Mon, 13 Dec 2010 11:34:14 -0800
+Subject: [Bioc-devel] [BioC] arrayQualityMetrics bug
+In-Reply-To: <4CE623E6.5090708@mcri.edu.au>
+References: <4CE6107A.7030502@mcri.edu.au>
+	<AANLkTikBHLutkXKcDvrVSDB6ydCo=GXz_KQRp3QTrmMb@mail.gmail.com>
+	<4CE614F2.7090501@mcri.edu.au> <4CE623E6.5090708@mcri.edu.au>
+Message-ID: <AANLkTi==p3a-E3fXg8b9d13EPMTJNpEne-FwA_=vR5K=@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20101213/47c76a0b/attachment.pl>
+
+From whuber at embl.de  Tue Dec 14 15:25:28 2010
+From: whuber at embl.de (Wolfgang Huber)
+Date: Tue, 14 Dec 2010 15:25:28 +0100
+Subject: [Bioc-devel] [BioC] arrayQualityMetrics bug
+In-Reply-To: <AANLkTi==p3a-E3fXg8b9d13EPMTJNpEne-FwA_=vR5K=@mail.gmail.com>
+References: <4CE6107A.7030502@mcri.edu.au>	<AANLkTikBHLutkXKcDvrVSDB6ydCo=GXz_KQRp3QTrmMb@mail.gmail.com>	<4CE614F2.7090501@mcri.edu.au>
+	<4CE623E6.5090708@mcri.edu.au>
+	<AANLkTi==p3a-E3fXg8b9d13EPMTJNpEne-FwA_=vR5K=@mail.gmail.com>
+Message-ID: <4D077E58.7000005@embl.de>
+
+Hi Dan, Lavinia
+
+there are three solutions, in order of preference:
+
+1. upgrade your R so that it contains the 'svg' graphics device (you can 
+test this with 'capabilities()'). AfaIu, this requires that you install 
+the libcairo system library (more specific instructions from a Windows 
+user are welcome - I currently lack the resources to check this.).
+
+2. use an older version of arrayQualityMetrics,
+http://www.bioconductor.org/packages/2.6/bioc/html/arrayQualityMetrics.html 
+which works fine with R 2.12 and does not use the svg device.
+
+3. wait until I have fixed the devel version of arrayQualityMetrics (I 
+hope this will be over the Christmas break) and then use that. This will 
+run on Rs with and without svg, although with inferior functionality in 
+the latter case.
+
+	Best wishes
+	Wolfgang
+
+
+
+Dan Tenenbaum scripsit 13/12/10 20:34:
+> Hi all,
+>
+> I am having the same problem as Lavinia (below), namely, the
+> arrayQualityMetrics() function failing on Windows. I'm using code directly
+> from the vignette:
+>
+>> library("ALLMLL")
+>> data("MLL.A")
+>> library("arrayQualityMetrics")
+>> arrayQualityMetrics(expressionset = MLL.A,
+> + outdir = "MLL",
+> + force = TRUE,
+> + do.logtransform = TRUE)
+>
+> The result is:
+>
+> The report will be written into directory 'MLL'.
+> KernSmooth 2.23 loaded
+> Copyright M. P. Wand 1997-2009
+> (loaded the KernSmooth namespace)
+> [[1]]
+>
+> [[2]]
+>
+> [[3]]
+>
+> Error in aqm.report.qm(p, obj[[i]], i, names(obj)[i]) :
+>    could not find function "svg"
+>
+>> traceback()
+> 4: aqm.report.qm(p, obj[[i]], i, names(obj)[i])
+> 3: aqm.writereport(reporttitle, expressionset, obj)
+> 2: arrayQualityMetrics(expressionset = MLL.A, outdir = "MLL", force = TRUE,
+>         do.logtransform = TRUE)
+> 1: arrayQualityMetrics(expressionset = MLL.A, outdir = "MLL", force = TRUE,
+>         do.logtransform = TRUE)
+>
+>
+>> sessionInfo()
+> R version 2.12.0 (2010-10-15)
+> Platform: i386-pc-mingw32/i386 (32-bit)
+>
+> locale:
+> [1] LC_COLLATE=English_United States.1252  LC_CTYPE=English_United
+> States.1252
+> [3] LC_MONETARY=English_United States.1252 LC_NUMERIC=C
+>
+> [5] LC_TIME=English_United States.1252
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> other attached packages:
+> [1] hgu133acdf_2.7.0          ALLMLL_1.2.8
+>   arrayQualityMetrics_3.2.3
+> [4] vsn_3.18.0                affyPLM_1.26.0
+>   preprocessCore_1.12.0
+> [7] gcrma_2.22.0              affy_1.28.0               Biobase_2.10.0
+>
+>
+> loaded via a namespace (and not attached):
+>   [1] affyio_1.18.0        annotate_1.28.0      AnnotationDbi_1.12.0
+> beadarray_2.0.2
+>   [5] Biostrings_2.18.2    DBI_0.2-5            genefilter_1.32.0
+>   grid_2.12.0
+>   [9] hwriter_1.3          IRanges_1.8.6        KernSmooth_2.23-4
+>   lattice_0.19-13
+> [13] latticeExtra_0.6-14  limma_3.6.9          marray_1.28.0
+>   RColorBrewer_1.0-2
+> [17] RSQLite_0.9-4        simpleaffy_2.26.1    splines_2.12.0
+> stats4_2.12.0
+> [21] survival_2.35-8      SVGAnnotation_0.7-2  tools_2.12.0
+> XML_3.2-0.2
+> [25] xtable_1.5-6
+>
+> Thanks,
+> Dan
+>
+>
+> On Thu, Nov 18, 2010 at 11:14 PM, Lavinia Gordon<lavinia.gordon at mcri.edu.au
+>> wrote:
+>
+>>   Hi Dan,
+>> hmm, tried this, no luck:
+>>> arrayQualityMetrics(expressionset = methylumi.eset,outdir =
+>> "arrayQualityMetrics_patients", force = TRUE)
+>> The report will be written into directory 'arrayQualityMetrics_patients'.
+>> [[1]]
+>>
+>> [[2]]
+>>
+>>
+>> Error in aqm.report.qm(p, obj[[i]], i, names(obj)[i]) :
+>>    could not find function "svg"
+>>>
+>>> sessionInfo()
+>> R version 2.12.0 (2010-10-15)
+>> Platform: i386-pc-mingw32/i386 (32-bit)
+>>
+>> locale:
+>> [1] LC_COLLATE=English_Australia.1252  LC_CTYPE=English_Australia.1252
+>> LC_MONETARY=English_Australia.1252
+>> [4] LC_NUMERIC=C                       LC_TIME=English_Australia.1252
+>>
+>> attached base packages:
+>> [1] stats     graphics  grDevices utils     datasets  methods   base
+>>
+>> other attached packages:
+>>   [1] arrayQualityMetrics_3.2.3 vsn_3.18.0
+>> affyPLM_1.26.0            preprocessCore_1.12.0
+>>   [5] gcrma_2.22.0              affy_1.28.0
+>> SVGAnnotation_0.7-2       XML_3.2-0.1
+>>   [9] Cairo_1.4-5               methylumi_1.4.0
+>> lumi_2.2.0                Biobase_2.10.0
+>>
+>> loaded via a namespace (and not attached):
+>>   [1] affyio_1.18.0        annotate_1.28.0      AnnotationDbi_1.12.0
+>> beadarray_2.0.1      Biostrings_2.18.0
+>>   [6] DBI_0.2-5            genefilter_1.32.0    grid_2.12.0
+>> hdrcde_2.15          hwriter_1.2
+>> [11] IRanges_1.8.2        KernSmooth_2.23-4    lattice_0.19-13
+>> latticeExtra_0.6-14  limma_3.6.4
+>> [16] marray_1.28.0        MASS_7.3-8           Matrix_0.999375-45
+>> mgcv_1.7-2           nlme_3.1-97
+>> [21] RColorBrewer_1.0-2   RSQLite_0.9-3        simpleaffy_2.26.0
+>> splines_2.12.0       stats4_2.12.0
+>> [26] survival_2.36-1      xtable_1.5-6
+>>>
+>>
+>>
+>> Any ideas?
+>> thanks
+>> Lavinia.
+>>
+>>
+>> On 19/11/2010 5:10 PM, Lavinia Gordon wrote:
+>>
+>> Thanks Dan, sorry I had missed the previous posts.
+>>
+>> On 19/11/2010 5:03 PM, Dan Tenenbaum wrote:
+>>
+>>
+>>
+>> On Thu, Nov 18, 2010 at 9:51 PM, Lavinia Gordon<
+>> lavinia.gordon at mcri.edu.au>  wrote:
+>>
+>>> Hi,
+>>> I think there is a problem with the 2.7 version of arrayQualityMetrics.
+>>> Following the example (in the script
+>>> \R\R-2.12.0\library\arrayQualityMetrics\scripts\arrayQualityMetrics.R)
+>>>
+>>>> library("arrayQualityMetrics")
+>>> Loading required package: affyPLM
+>>> Loading required package: gcrma
+>>> Loading required package: preprocessCore
+>>>
+>>> Attaching package: 'affyPLM'
+>>>
+>>> The following object(s) are masked from 'package:stats':
+>>>
+>>>     resid, residuals, weights
+>>>
+>>> Loading required package: vsn
+>>>> arrayQualityMetrics(expressionset = MLL.A,
+>>> +                     outdir = "MLL",
+>>> +                     force = TRUE,
+>>> +                     do.logtransform = TRUE)
+>>> The directory 'MLL' has been created.
+>>> Error : cannot allocate vector of size 77.4 Mb
+>>> KernSmooth 2.23 loaded
+>>> Copyright M. P. Wand 1997-2009
+>>> (loaded the KernSmooth namespace)
+>>> [[1]]
+>>>
+>>> [[2]]
+>>>
+>>> [[3]]
+>>>
+>>> Error in aqm.report.qm(p, obj[[i]], i, names(obj)[i]) :
+>>>   could not find function "svg"
+>>> In addition: Warning message:
+>>> In arrayQualityMetrics(expressionset = MLL.A, outdir = "MLL", force =
+>>> TRUE,  :
+>>>   Could not draw spatial distribution of intensities
+>>>
+>>>> traceback()
+>>> 4: aqm.report.qm(p, obj[[i]], i, names(obj)[i])
+>>> 3: aqm.writereport(reporttitle, expressionset, obj)
+>>> 2: arrayQualityMetrics(expressionset = MLL.A, outdir = "MLL", force =
+>>> TRUE,
+>>>        do.logtransform = TRUE)
+>>> 1: arrayQualityMetrics(expressionset = MLL.A, outdir = "MLL", force =
+>>> TRUE,
+>>>        do.logtransform = TRUE)
+>>>
+>>>> sessionInfo()
+>>> R version 2.12.0 (2010-10-15)
+>>> Platform: i386-pc-mingw32/i386 (32-bit)
+>>>
+>>> locale:
+>>> [1] LC_COLLATE=English_Australia.1252  LC_CTYPE=English_Australia.1252
+>>>   LC_MONETARY=English_Australia.1252
+>>> [4] LC_NUMERIC=C                       LC_TIME=English_Australia.1252
+>>>
+>>> attached base packages:
+>>> [1] stats     graphics  grDevices utils     datasets  methods   base
+>>>
+>>> other attached packages:
+>>> [1] hgu133acdf_2.7.0          arrayQualityMetrics_3.2.0 vsn_3.18.0
+>>>         affyPLM_1.26.0
+>>> [5] preprocessCore_1.12.0     gcrma_2.22.0              ALLMLL_1.2.8
+>>>         affy_1.28.0
+>>> [9] Biobase_2.10.0
+>>>
+>>> loaded via a namespace (and not attached):
+>>>   [1] affyio_1.18.0        annotate_1.28.0      AnnotationDbi_1.12.0
+>>> beadarray_2.0.1      Biostrings_2.18.0
+>>>   [6] DBI_0.2-5            genefilter_1.32.0    grid_2.12.0
+>>>   hwriter_1.2          IRanges_1.8.2
+>>> [11] KernSmooth_2.23-4    lattice_0.19-13      latticeExtra_0.6-14
+>>>   limma_3.6.4          marray_1.28.0
+>>> [16] RColorBrewer_1.0-2   RSQLite_0.9-3        simpleaffy_2.26.0
+>>>   splines_2.12.0       stats4_2.12.0
+>>> [21] survival_2.36-1      SVGAnnotation_0.6-0  tools_2.12.0
+>>> XML_3.2-0.1          xtable_1.5-6
+>>>
+>>> with regards
+>>>
+>>> Lavinia Gordon
+>>>
+>>>   Hi Lavinia,
+>>
+>>   This is a known issue that has come up with this package before on this
+>> list. You need the current versions of arrayQualityMetrics (3.2.3) and
+>> SVGAnnotation (0.7-2).
+>> Try:
+>> biocLite(c("arrayQualityMetrics","SVGAnnotation"))
+>>
+>>   Dan
+>>
+>>
+>>
+>> --
+>> Senior Bioinformatics Officer
+>> Murdoch Childrens Research Institute
+>> Royal Children's Hospital
+>> Flemington Road
+>> Parkville
+>> Victoria 3052
+>> Australiawww.mcri.edu.au
+>>
+>>
+>>
+>> --
+>> Senior Bioinformatics Officer
+>> Murdoch Childrens Research Institute
+>> Royal Children's Hospital
+>> Flemington Road
+>> Parkville
+>> Victoria 3052
+>> Australiawww.mcri.edu.au
+>>
+>>
+>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+
+
+Wolfgang Huber
+EMBL
+http://www.embl.de/research/units/genome_biology/huber
+
+
+From anders at embl.de  Thu Dec 16 18:47:49 2010
+From: anders at embl.de (Simon Anders)
+Date: Thu, 16 Dec 2010 18:47:49 +0100
+Subject: [Bioc-devel] Error handling in AnnotatedDataFrames
+Message-ID: <4D0A50C5.2020406@embl.de>
+
+Hi,
+
+These AnnotatedDataFrames are driving me nuts. Somehow, I always stumble 
+over unexpected behaviour.
+
+Here is a test case, resulting in an error mesage, that just managed to 
+severely confuse me:
+
+Let's make an AnnotatedDataFrame with two columns, called 'a' and 'b'.
+
+ > adf <- new("AnnotatedDataFrame",
++   data=data.frame( a = 1:10, b = 11:20 ) )
+
+Document the first column:
+
+ > varMetadata( adf )[ "a", "labelDescription" ] <- "a column named 'a'"
+
+Now, I try to document the second column, but misspell its name as 'c' 
+instead of 'b'. Let's see how this error is reported:
+
+ > varMetadata( adf )[ "c", "labelDescription" ] <-
++    "a column that does not exist"
+Error in `row.names<-.data.frame`(`*tmp*`, value = c("a", "b")) :
+   invalid 'row.names' length
+
+ From this error message, it is quite hard to guess the cause of the 
+error. Could somebody who is more familiar with the internals of Biobase 
+maybe have a look whether this error condition could be caught earlier 
+to give a more helpful error?
+
+Cheers
+   Simon
+
+
+
+ > sessionInfo()
+R version 2.12.0 (2010-10-15)
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+locale:
+  [1] LC_CTYPE=en_US.utf8       LC_NUMERIC=C
+  [3] LC_TIME=en_US.utf8        LC_COLLATE=en_US.utf8
+  [5] LC_MONETARY=C             LC_MESSAGES=en_US.utf8
+  [7] LC_PAPER=en_US.utf8       LC_NAME=C
+  [9] LC_ADDRESS=C              LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.utf8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] ExonSeq_0.1.0  MASS_7.3-8     Biobase_2.10.0
+
+loaded via a namespace (and not attached):
+[1] hwriter_1.3  tools_2.12.0
+
+
+
++---
+| Dr. Simon Anders, Dipl.-Phys.
+| European Molecular Biology Laboratory (EMBL), Heidelberg
+| office phone +49-6221-387-8632
+| preferred (permanent) e-mail: sanders at fs.tum.de
+
+
+From mtmorgan at fhcrc.org  Thu Dec 16 18:54:07 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 16 Dec 2010 09:54:07 -0800
+Subject: [Bioc-devel] Rsamtools quitting ungracefully when indexing
+	unsorted BAM file
+In-Reply-To: <OF5922B728.573E2FAD-ONC12577FB.00388A3E-C12577FB.003A7143@domino.novartis.com>
+References: <OF5922B728.573E2FAD-ONC12577FB.00388A3E-C12577FB.003A7143@domino.novartis.com>
+Message-ID: <4D0A523F.7000208@fhcrc.org>
+
+On 12/16/2010 02:38 AM, florian.hahne at novartis.com wrote:
+> Hi List, Martin,
+> when trying to index an unsorted BAM file, R crashes pretty violently:
+>> indexBam("21_Unique_Hit_Alignment.bam")
+> [bam_index_core] the alignment is not sorted
+> (HWUSI-EAS1513_0004:3:92:7980:8996#0/1): 66179515 > 66178275 in 4-th chr
+> hahnefl1 at chbslx1151
+> /usr/people/ts/hahnefl1/projects/isilon_itox/genomatix/DNS/output/s_3_sequence.txt/genome\
+> 
+> 
+>> sessionInfo()
+> R version 2.13.0 Under development (unstable) (2010-12-09 r53820)
+> Platform: x86_64-unknown-linux-gnu (64-bit)
+> 
+> locale:
+>  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+>  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+>  [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8  
+>  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                
+>  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C      
+> 
+> attached base packages:
+> [1] stats     graphics  grDevices datasets  utils     methods   base    
+> 
+> other attached packages:
+> [1] Rsamtools_1.3.11     Biostrings_2.19.0    GenomicRanges_1.1.38
+> [4] IRanges_1.9.17      
+> 
+> loaded via a namespace (and not attached):
+> [1] Biobase_2.11.0
+>>
+> 
+> A friendly reminder to sort the file would probably do... Or maybe the
+> file could be sorted somewhere in the background and then indexed?
+> 
+> Another suggestion: wouldn't it be super cool to expose parts of the
+> samtools view functionality to convert between SAM and BAM files? It
+> seem a bit odd that you can sort and index BAM files but can't convert
+> them from SAM files, which still seem to be the preferred file type for
+> many applications.
+
+Hi Florian --
+
+I checked code in to the devel branch (1.3.13) that instead throws a
+warning (that the file isn't sorted) and then an error (when samtools
+tries to exit() from its C code), and in principle one can continue in
+R. So things are being handled more gracefully.
+
+The solution isn't 100% good -- the samtools library is expecting to
+exit, and could be leaving things in a confused state (probably just
+memory leaks).
+
+I'll add SAM -> BAM functionality; it'll suffer from the same type of issue.
+
+Martin
+
+> Best regards, Mit freundlichen Gr?ssen, Meilleures salutations,
+> 
+> *Florian Hahne
+> Novartis Institute For Biomedical Research**
+> Translational Sciences / PreClinical Safety / investigativeToxicology
+> (iTOX)*
+> Expert Data Integration and Modeling Bioinformatics
+> CHBS, WKL-135.1.67
+> Novartis Institute For Biomedical Research, Werk Klybeck
+> Klybeckstrasse 141
+> CH-4057 Basel
+> Switzerland
+> Phone: +41 61 6967127
+> Email : _florian.hahne at novartis.com_ <mailto:florian.hahne at novartis.com>
+> 
+> 
+> 
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From cwon2 at fhcrc.org  Thu Dec 16 19:27:51 2010
+From: cwon2 at fhcrc.org (Wong, Chao-Jen)
+Date: Thu, 16 Dec 2010 10:27:51 -0800 (PST)
+Subject: [Bioc-devel] methylumi - using M-value for quantifing methylation
+	levels?
+Message-ID: <430798191.10512.1292524071440.JavaMail.root@zimbra4.fhcrc.org>
+
+Hi, Sean and all,
+
+I have a couple question. Recently some of the researchers that I are working with are showing interests in using M-value (log ratio of methylation and unmethylation intensities - -log2[(Cy5+1)/(Cy3+1)]) for quantifying methylation levels. A recent paper also indicates that it is a good idea to use M-value methods. Here is the link of the paper:
+
+http://www.biomedcentral.com/1471-2105/11/587/abstract
+
+I am wondering if you can add the M-value method to the  normalizeMethyLumiSet function. Below is the patch that I did to modify MethyLimiSet-class.R in your methylumi package.
+
+My second question is that the normalization scheme in the methylumi package is not optimal for Illumina Infinium methylation assay.  Does anyone knows what normalization method is suitable for infinium data? 
+
+--------- patch ---------
+cwon2 at alpaca:~/proj/Rpacks/methylumi/R> diff MethyLumiSet-class.R MethyLumiSet-class_new.R
+391c391
+< normalizeMethyLumiSet <- function(x,beta.cuts=c(0.2,0.8),mapfun=c('atan','ratio'))
+---
+> normalizeMethyLumiSet <- function(x,beta.cuts=c(0.2,0.8),mapfun=c('atan','log','ratio'))
+432c432
+<   if(mapfun=='atan') {
+---
+>   if(mapfun=='atan')
+434c434,438
+<   } else {
+---
+>
+>   if(mapfun=='log')
+>     newbeta <- log2((cy5+1)/(cy3+1))
+>
+>   if(mapfun=='ratio')
+436c440
+<   }
+---
+
+
+-- 
+Chao-Jen Wong 
+Program in Computational Biology 
+Division of Public Health Sciences 
+Fred Hutchinson Cancer Research Center 
+1100 Fairview Avenue N., M1-B514 
+PO Box 19024 
+Seattle, WA 98109 
+206.667.4485 
+cwon2 at fhcrc.org
+
+
+From sdavis2 at mail.nih.gov  Thu Dec 16 19:43:27 2010
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Thu, 16 Dec 2010 13:43:27 -0500
+Subject: [Bioc-devel] methylumi - using M-value for quantifing
+	methylation levels?
+In-Reply-To: <430798191.10512.1292524071440.JavaMail.root@zimbra4.fhcrc.org>
+References: <430798191.10512.1292524071440.JavaMail.root@zimbra4.fhcrc.org>
+Message-ID: <AANLkTi=Rh-QziMm7nQwZAzKRuCFD=Lv_r2jzDv=ZZB5d@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20101216/b6e18c76/attachment.pl>
+
+From mtmorgan at fhcrc.org  Thu Dec 16 20:21:31 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 16 Dec 2010 11:21:31 -0800
+Subject: [Bioc-devel] Error handling in AnnotatedDataFrames
+In-Reply-To: <4D0A50C5.2020406@embl.de>
+References: <4D0A50C5.2020406@embl.de>
+Message-ID: <4D0A66BB.70309@fhcrc.org>
+
+On 12/16/2010 09:47 AM, Simon Anders wrote:
+> Hi,
+> 
+> These AnnotatedDataFrames are driving me nuts. Somehow, I always stumble
+
+I checked in code to devel (Biobase 2.11.7) that says
+
+> adf <- new("AnnotatedDataFrame", data.frame(a=1:5))
+> varMetadata(adf)["a", "labelDescription"] <- "foo"
+> varMetadata(adf)["b", "labelDescription"] <- "foo"
+Error in `varMetadata<-`(`*tmp*`, value = list(labelDescription =
+c("foo",  :
+  'b' not in 'varLabels(<AnnotatedDataFrame>)'
+
+Martin
+
+> over unexpected behaviour.
+> 
+> Here is a test case, resulting in an error mesage, that just managed to
+> severely confuse me:
+> 
+> Let's make an AnnotatedDataFrame with two columns, called 'a' and 'b'.
+> 
+>> adf <- new("AnnotatedDataFrame",
+> +   data=data.frame( a = 1:10, b = 11:20 ) )
+> 
+> Document the first column:
+> 
+>> varMetadata( adf )[ "a", "labelDescription" ] <- "a column named 'a'"
+> 
+> Now, I try to document the second column, but misspell its name as 'c'
+> instead of 'b'. Let's see how this error is reported:
+> 
+>> varMetadata( adf )[ "c", "labelDescription" ] <-
+> +    "a column that does not exist"
+> Error in `row.names<-.data.frame`(`*tmp*`, value = c("a", "b")) :
+>   invalid 'row.names' length
+> 
+> From this error message, it is quite hard to guess the cause of the
+> error. Could somebody who is more familiar with the internals of Biobase
+> maybe have a look whether this error condition could be caught earlier
+> to give a more helpful error?
+> 
+> Cheers
+>   Simon
+> 
+> 
+> 
+>> sessionInfo()
+> R version 2.12.0 (2010-10-15)
+> Platform: x86_64-unknown-linux-gnu (64-bit)
+> 
+> locale:
+>  [1] LC_CTYPE=en_US.utf8       LC_NUMERIC=C
+>  [3] LC_TIME=en_US.utf8        LC_COLLATE=en_US.utf8
+>  [5] LC_MONETARY=C             LC_MESSAGES=en_US.utf8
+>  [7] LC_PAPER=en_US.utf8       LC_NAME=C
+>  [9] LC_ADDRESS=C              LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_US.utf8 LC_IDENTIFICATION=C
+> 
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+> 
+> other attached packages:
+> [1] ExonSeq_0.1.0  MASS_7.3-8     Biobase_2.10.0
+> 
+> loaded via a namespace (and not attached):
+> [1] hwriter_1.3  tools_2.12.0
+> 
+> 
+> 
+> +---
+> | Dr. Simon Anders, Dipl.-Phys.
+> | European Molecular Biology Laboratory (EMBL), Heidelberg
+> | office phone +49-6221-387-8632
+> | preferred (permanent) e-mail: sanders at fs.tum.de
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From antti.honkela at tkk.fi  Fri Dec 17 10:06:55 2010
+From: antti.honkela at tkk.fi (Antti Honkela)
+Date: Fri, 17 Dec 2010 11:06:55 +0200
+Subject: [Bioc-devel] lumi annotations
+Message-ID: <A8C5841E-4FCF-43CE-9FB0-EA3DB2E17A8C@tkk.fi>
+
+Hi all,
+
+I am developing a package with intention to use data from several  
+microarray platforms and the related annotations in a portable manner.
+
+Given an ExpressionSet "eset", I have been using constructs like
+ > library(annotate)
+ > m <- getAnnMap('SYMBOL', annotation(eset))
+ > s <- get(featureNames(eset)[1], m)
+which seems portable and works fine on Affymetrix data I have used so  
+far.
+
+Turning to Illumina and lumi package the same does not work anymore:
+------------------------------------------------------------
+ > library(lumi)
+ > data(example.lumi)
+ > m <- getAnnMap('SYMBOL', annotation(example.lumi))
+Error: getAnnMap: package lumiHumanV1 not available
+ > biocLite('lumiHumanV1.db')
+Using R version 2.12.0, biocinstall version 2.7.4.
+Installing Bioconductor version 2.7 packages:
+[1] "lumiHumanV1.db"
+Please wait...
+
+Warning message:
+In getDependencies(pkgs, dependencies, available, lib) :
+   package ?lumiHumanV1.db? is not available
+------------------------------------------------------------
+
+Is this just a bug in the example.lumi object, or is it simply wrong  
+to assume that the same mechanism should work with lumi at all?
+
+
+Antti
+
+-- 
+Antti Honkela
+Antti.Honkela at tkk.fi   -   http://users.ics.tkk.fi/ahonkela/
+
+
+From mtmorgan at fhcrc.org  Fri Dec 17 14:16:18 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Fri, 17 Dec 2010 05:16:18 -0800
+Subject: [Bioc-devel] lumi annotations
+In-Reply-To: <A8C5841E-4FCF-43CE-9FB0-EA3DB2E17A8C@tkk.fi>
+References: <A8C5841E-4FCF-43CE-9FB0-EA3DB2E17A8C@tkk.fi>
+Message-ID: <4D0B62A2.7040709@fhcrc.org>
+
+On 12/17/2010 01:06 AM, Antti Honkela wrote:
+> Hi all,
+> 
+> I am developing a package with intention to use data from several
+> microarray platforms and the related annotations in a portable manner.
+> 
+> Given an ExpressionSet "eset", I have been using constructs like
+>> library(annotate)
+>> m <- getAnnMap('SYMBOL', annotation(eset))
+>> s <- get(featureNames(eset)[1], m)
+> which seems portable and works fine on Affymetrix data I have used so far.
+> 
+> Turning to Illumina and lumi package the same does not work anymore:
+> ------------------------------------------------------------
+>> library(lumi)
+>> data(example.lumi)
+>> m <- getAnnMap('SYMBOL', annotation(example.lumi))
+> Error: getAnnMap: package lumiHumanV1 not available
+>> biocLite('lumiHumanV1.db')
+> Using R version 2.12.0, biocinstall version 2.7.4.
+> Installing Bioconductor version 2.7 packages:
+> [1] "lumiHumanV1.db"
+> Please wait...
+> 
+> Warning message:
+> In getDependencies(pkgs, dependencies, available, lib) :
+>   package ?lumiHumanV1.db? is not available
+> ------------------------------------------------------------
+> 
+> Is this just a bug in the example.lumi object, or is it simply wrong to
+> assume that the same mechanism should work with lumi at all?
+
+Hi Antti --
+
+This is the right approach; both the annotation package and 'map' have
+to exist; from
+
+http://bioconductor.org/help/bioc-views/release/data/annotation/
+
+I think the correct annotation package name is 'illuminaHumanv1.db'.
+Most maps are common across chip / organism, but for instance there are
+'ORF' maps in yeast-centric packages such as yeast2.db but not elsewhere.
+
+Martin
+
+> 
+> 
+> Antti
+> 
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From g-feng at northwestern.edu  Fri Dec 17 16:56:44 2010
+From: g-feng at northwestern.edu (Gang Feng)
+Date: Fri, 17 Dec 2010 09:56:44 -0600 (CST)
+Subject: [Bioc-devel] lumi annotations
+In-Reply-To: <A8C5841E-4FCF-43CE-9FB0-EA3DB2E17A8C@tkk.fi>
+References: <A8C5841E-4FCF-43CE-9FB0-EA3DB2E17A8C@tkk.fi>
+Message-ID: <1561.70.8.38.249.1292601404.squirrel@casbah.it.northwestern.edu>
+
+Hi, Antti
+
+example.lumi is an object of lumi.batch. For annotation, you can use lumiHumanAll.db
+to get the mapping.
+
+Best
+
+Gilbert
+
+
+
+> Hi all,
+>
+> I am developing a package with intention to use data from several
+> microarray platforms and the related annotations in a portable manner.
+>
+> Given an ExpressionSet "eset", I have been using constructs like
+>  > library(annotate)
+>  > m <- getAnnMap('SYMBOL', annotation(eset))
+>  > s <- get(featureNames(eset)[1], m)
+> which seems portable and works fine on Affymetrix data I have used so
+> far.
+>
+> Turning to Illumina and lumi package the same does not work anymore:
+> ------------------------------------------------------------
+>  > library(lumi)
+>  > data(example.lumi)
+>  > m <- getAnnMap('SYMBOL', annotation(example.lumi))
+> Error: getAnnMap: package lumiHumanV1 not available
+>  > biocLite('lumiHumanV1.db')
+> Using R version 2.12.0, biocinstall version 2.7.4.
+> Installing Bioconductor version 2.7 packages:
+> [1] "lumiHumanV1.db"
+> Please wait...
+>
+> Warning message:
+> In getDependencies(pkgs, dependencies, available, lib) :
+>    package ?lumiHumanV1.db? is not available
+> ------------------------------------------------------------
+>
+> Is this just a bug in the example.lumi object, or is it simply wrong
+> to assume that the same mechanism should work with lumi at all?
+>
+>
+> Antti
+>
+> --
+> Antti Honkela
+> Antti.Honkela at tkk.fi   -   http://users.ics.tkk.fi/ahonkela/
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+-- 
+-----------------------------------------------------------------
+Gang (Gilbert) Feng, PhD
+Biomedical Informatics Center
+Robert H. Lurie Comprehensive Cancer Center
+Northwestern University
+750 N. Lake Shore Drive, 11th Floor(11-175e)
+Chicago, IL  60611
+Phone:312-503-2358
+Email g-feng at northwestern.edu
+
+
+From dupan at northwestern.edu  Fri Dec 17 14:04:15 2010
+From: dupan at northwestern.edu (Pan Du)
+Date: Fri, 17 Dec 2010 07:04:15 -0600
+Subject: [Bioc-devel] lumi annotations
+In-Reply-To: <mailman.21.1292583606.9796.bioc-devel@r-project.org>
+Message-ID: <C930BBEF.EDD5%dupan@northwestern.edu>
+
+Hi Antti 
+
+"lumiHumanV1.db" is the old annotation package for Illumina Human V1 chip,
+which was used when creating the example.lumi dataset. It is not supported
+now. The current nuID indexed Illumina annotation package for Human is
+"lumiHumanAll.db", which pools all versions of Illumina Human Beadchip.
+It works fine if you use "lumiHumanAll.db" annotation package.
+ biocLite("lumiHumanAll.db")
+ m <- getAnnMap('SYMBOL', "lumiHumanAll.db")
+ get(featureNames(example.lumi)[1], m)
+
+Also, I will update the annotation information of example.lumi dataset
+later.
+
+
+Pan
+
+On 12/17/10 5:00 AM, "bioc-devel-request at r-project.org"
+<bioc-devel-request at r-project.org> wrote:
+
+> Date: Fri, 17 Dec 2010 11:06:55 +0200
+> From: Antti Honkela <antti.honkela at tkk.fi>
+> To: bioc-devel at r-project.org
+> Subject: [Bioc-devel] lumi annotations
+> Message-ID: <A8C5841E-4FCF-43CE-9FB0-EA3DB2E17A8C at tkk.fi>
+> Content-Type: text/plain; charset=WINDOWS-1252; format=flowed;
+> delsp=yes
+> 
+> Hi all,
+> 
+> I am developing a package with intention to use data from several
+> microarray platforms and the related annotations in a portable manner.
+> 
+> Given an ExpressionSet "eset", I have been using constructs like
+>> library(annotate)
+>> m <- getAnnMap('SYMBOL', annotation(eset))
+>> s <- get(featureNames(eset)[1], m)
+> which seems portable and works fine on Affymetrix data I have used so
+> far.
+> 
+> Turning to Illumina and lumi package the same does not work anymore:
+> ------------------------------------------------------------
+>> library(lumi)
+>> data(example.lumi)
+>> m <- getAnnMap('SYMBOL', annotation(example.lumi))
+> Error: getAnnMap: package lumiHumanV1 not available
+>> biocLite('lumiHumanV1.db')
+> Using R version 2.12.0, biocinstall version 2.7.4.
+> Installing Bioconductor version 2.7 packages:
+> [1] "lumiHumanV1.db"
+> Please wait...
+> 
+> Warning message:
+> In getDependencies(pkgs, dependencies, available, lib) :
+>    package ?lumiHumanV1.db? is not available
+> ------------------------------------------------------------
+> 
+> Is this just a bug in the example.lumi object, or is it simply wrong
+> to assume that the same mechanism should work with lumi at all?
+> 
+> 
+> Antti
+> 
+> -- 
+> Antti Honkela
+> Antti.Honkela at tkk.fi   -   http://users.ics.tkk.fi/ahonkela/
+> 
+> 
+
+
+--
+Pan Du, PhD
+Research Assistant Professor
+Northwestern University Biomedical Informatics Center
+750 N. Lake Shore Drive, 11-176
+Chicago, IL  60611
+Office (312) 503-2360; Fax: (312) 503-5388
+dupan (at) northwestern.edu
+
+
+From tim.triche at gmail.com  Fri Dec 17 19:33:55 2010
+From: tim.triche at gmail.com (Tim Triche)
+Date: Fri, 17 Dec 2010 10:33:55 -0800
+Subject: [Bioc-devel] lumi annotations
+In-Reply-To: <1561.70.8.38.249.1292601404.squirrel@casbah.it.northwestern.edu>
+References: <A8C5841E-4FCF-43CE-9FB0-EA3DB2E17A8C@tkk.fi>
+	<1561.70.8.38.249.1292601404.squirrel@casbah.it.northwestern.edu>
+Message-ID: <AANLkTikJAaJUKEsbdSE3+iMb2YBCWQ-qEu2GS_3OJw9k@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20101217/fd221f88/attachment.pl>
+
+From dupan at northwestern.edu  Sat Dec 18 16:23:29 2010
+From: dupan at northwestern.edu (Pan Du)
+Date: Sat, 18 Dec 2010 09:23:29 -0600
+Subject: [Bioc-devel] Illumina Methylation annotations
+In-Reply-To: <AANLkTikJAaJUKEsbdSE3+iMb2YBCWQ-qEu2GS_3OJw9k@mail.gmail.com>
+Message-ID: <C9322E11.EE06%dupan@northwestern.edu>
+
+Hi Tim
+
+Thanks for your long and good comments! It took me a while to finish reading
+your email. :) Following are my comments.
+ 
+> Speaking of annotations...
+> 
+> The 450k methylation chips have arrived and many of the probes map to
+> multiple accessions.  I have modified the 27k annotations from Sean to
+> handle bead mapping IDs (thanks Sean!) and started building probe sequence
+> packages in the style of matchprobes/beadarray, but I was wondering how
+> people would like to handle multiple-accession mappings and/or NuID encoding
+> of the 450k probes.  As I'm sure many of you are aware, the denser platform
+> contains many more probes with multiple CpG sites, which affects both
+> preprocessing and the manner in which it makes sense to apply NuID
+> translations. There are other 'interesting' aspects of the 450k arrays,
+> along with consequences arising from the design of the platform, but a good
+> first step would be to get the data playing nicely with methylumi and lumi,
+> hence some agreement upon the annotations.
+
+As you know, the benefit of nuID is that we can directly know the probe
+sequence without checking any table. But Illumina Probe ID, as the
+manufacturer ID, is the most widely used in public. So I think one
+alternative way is just to add an additional Bimap table of IlluminaID and
+nuID in the current Infinium methylation library. As an option, I will add a
+mapping function to convert data between Illumina ID and nuID. But by
+default, data will be IlluminaID identified.
+
+As for multiple mappings, I am not sure how Illumina 450k reports them. For
+easier maintenance in the long run, we can just keep the same way as
+Illumina do. Illumina has improved their annotation maintenance. They make
+regular updates of their annotations now.
+
+
+> Also, given the large number of controls on the platform, a means of keeping
+> track of (e.g.) bisulfite conversion controls and non-polymorphic probes, as
+> well as the 600 or so negative controls, belongs in MethyLumiM.  How this
+> should best be accomplished is less clear to me -- it's trivial to pull the
+> control probe intensities from the .IDAT files that are always emitted from
+> every scan of a 27k or 450k chip, but the representation within the object
+> is more troublesome.  One of the things that made combining and subsetting
+> MethyLumiSet objects quirky on occasion was the eSet-within-an-eSet
+> representation for control probes, so I understand your (plural) reluctance
+> to continue that model.  However, the only other thing I can come up with is
+> to use an additional couple of data.frame() objects to hold the Cy5 and Cy3
+> control intensities.  That would be fine too.
+> 
+> This raises the question of how to store information about the control (and
+> analytic!) probes.
+
+Can you send me some example control probe data? One option is keeping the
+same way as LumiBatch-class to store control data information.
+
+> Two package types make sense:
+> 
+> 1) IlluminaHumanMethylationXXk.db -- probe annotations like Sean has built
+> for the 27k and GG arrays (small and compact)
+> 2) illuminaHumanMethylationXXkProbe.db -- addresses and probe sequences for
+> the analytic and control probes (larger .db)
+
+This sounds good. The probe sequences can be kept as nuID format to save
+storage space. But again, long term maintenance is a issue.
+
+> 
+> Thoughts?  I mostly work from .IDAT files these days, and the Cambridge guys
+> have expressed interest in making bead-level tools play nicely with
+> methylumi/lumi.  Regardless of where the data comes from, it would be nice
+> to standardize on representations, and leave room for using low-level data
+> as appropriate.  (I've seen referees ask paper authors whether they looked
+> at bisulfite control probes, for example -- not an unreasonable question,
+> but the current MethyLumiM can't answer it.)
+> 
+> I've been impressed with the cleanliness of the Lumi methylation codebase,
+> and it would be great if a consensus arose about data representations and
+> annotation, so that this cleanliness is not disrupted.  For example, I have
+> built 27k and 450k probe packages, and the 450k annotation package can be
+> built without much trouble if a consensus can be reached as far as mapping
+> multiple accessions to probes (or perhaps using a GRanges object or
+> GenomicFeatures?!?).
+
+Thanks for your comments of lumi methylation codebase. Lots of improvement
+work still needs to be done. In the long rong, using GenomicFeatures object
+definitely will be helpful to integration with other data, like NGS sequence
+data, but it is not compatible with other microarray data at current stage.
+So maybe it can be a long term plan for the future.
+
+> Patching the current  MethyLumiM object to handle
+> subsetting of a couple additional data.frames is no problem either.  But I'd
+> like to get your thoughts on the matter before I go off and hack up your
+> code.  :-)
+> 
+If you can send me some example control data, I can play with it and update
+the MethyLumiM class at the end of this year. If possible, please also send
+me one or two samples of 450K data with annotation information.
+
+Thanks for all the comments and support!
+
+Happy holidays!
+
+
+Pan
+
+
+From ttriche at usc.edu  Sun Dec 19 20:46:17 2010
+From: ttriche at usc.edu (Tim Triche, Jr.)
+Date: Sun, 19 Dec 2010 11:46:17 -0800
+Subject: [Bioc-devel] Illumina Methylation annotations
+In-Reply-To: <C9322E11.EE06%dupan@northwestern.edu>
+References: <AANLkTikJAaJUKEsbdSE3+iMb2YBCWQ-qEu2GS_3OJw9k@mail.gmail.com>
+	<C9322E11.EE06%dupan@northwestern.edu>
+Message-ID: <AANLkTik6944_gAAHRJpxXjT2nkasg0vD7qu_Ps1jD2QK@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20101219/8c411d8f/attachment.pl>
+
+From Daniel.Berner at unibas.ch  Mon Dec 20 14:27:04 2010
+From: Daniel.Berner at unibas.ch (Daniel.Berner at unibas.ch)
+Date: Mon, 20 Dec 2010 14:27:04 +0100
+Subject: [Bioc-devel] accessing gapped alignment
+Message-ID: <20101220142704.34515wb2r69i2h7s@webmail.unibas.ch>
+
+dear developers
+I have performed a gapped alignment of my illumina reads. I now want  
+to analyze the output by accessing the CHROMOSOME and POSITION  
+information contained in the BAM file. I therefore uploaded the BAM  
+using readAligned(), but found that
+all those reads aligning to the reference genome with a GAP are  
+missing. However, when using readGappedAlignments(), I loose  
+information crucial to my analysis (i.e., chromosome, position). Is  
+there any way to upload into R GAPPED
+alignments while preserving read ID, chromosome, position etc?
+thanks,
+Daniel Berner
+
+
+From mtmorgan at fhcrc.org  Mon Dec 20 14:34:01 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 20 Dec 2010 05:34:01 -0800
+Subject: [Bioc-devel] accessing gapped alignment
+In-Reply-To: <20101220142704.34515wb2r69i2h7s@webmail.unibas.ch>
+References: <20101220142704.34515wb2r69i2h7s@webmail.unibas.ch>
+Message-ID: <4D0F5B49.8000407@fhcrc.org>
+
+On 12/20/2010 05:27 AM, Daniel.Berner at unibas.ch wrote:
+> dear developers
+> I have performed a gapped alignment of my illumina reads. I now want to
+> analyze the output by accessing the CHROMOSOME and POSITION information
+> contained in the BAM file. I therefore uploaded the BAM using
+> readAligned(), but found that
+> all those reads aligning to the reference genome with a GAP are missing.
+> However, when using readGappedAlignments(), I loose information crucial
+> to my analysis (i.e., chromosome, position). Is there any way to upload
+> into R GAPPED
+> alignments while preserving read ID, chromosome, position etc?
+
+Rsamtools::scanBam lets you read whatever you want, returning a list
+with the corresponding data.
+
+  library(Rsamtools)
+  example(scanBam)
+
+What is that you want to do with the data once in R?
+
+Martin
+
+
+> thanks,
+> Daniel Berner
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From lists at jdadesign.net  Mon Dec 20 17:24:25 2010
+From: lists at jdadesign.net (Jeff Allen)
+Date: Mon, 20 Dec 2010 10:24:25 -0600
+Subject: [Bioc-devel] User-Specified Parameter to Package
+Message-ID: <4D0F8339.5000705@jdadesign.net>
+
+Hello.
+
+I'm looking to create an R package which requires a user-specific 
+parameter in order to work. To be more descriptive: I'm making a 
+database API available via an R package, but I want to control access to 
+this API by using keys so that I can monitor activity at the user-level 
+and make sure no one is abusing the database. So the R package is 
+complete, but I need a way for users to specify their key so that it can 
+be included in each call to the API. I'm looking for a way to avoid 
+having the include the API key in every function call, but instead be 
+able to include the key when you first attach the package.
+
+The functionality I'm looking for would essentially be to be able to 
+pass a parameter to a package through the library call. That doesn't 
+seem to be possible, so I'm looking for alternatives that would be 
+user-friendly.
+
+I'd appreciate any thoughts!
+
+Best regards,
+Jeff
+
+
+From sdavis2 at mail.nih.gov  Mon Dec 20 17:35:59 2010
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Mon, 20 Dec 2010 11:35:59 -0500
+Subject: [Bioc-devel] User-Specified Parameter to Package
+In-Reply-To: <4D0F8339.5000705@jdadesign.net>
+References: <4D0F8339.5000705@jdadesign.net>
+Message-ID: <AANLkTi=7Ywu=Tzz3UYDNA5VTs8Yv6z0mtZYrgPpsbumU@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20101220/fdddde08/attachment.pl>
+
+From tim.triche at gmail.com  Mon Dec 20 17:50:51 2010
+From: tim.triche at gmail.com (Tim Triche)
+Date: Mon, 20 Dec 2010 08:50:51 -0800
+Subject: [Bioc-devel] User-Specified Parameter to Package
+In-Reply-To: <AANLkTi=7Ywu=Tzz3UYDNA5VTs8Yv6z0mtZYrgPpsbumU@mail.gmail.com>
+References: <4D0F8339.5000705@jdadesign.net>
+	<AANLkTi=7Ywu=Tzz3UYDNA5VTs8Yv6z0mtZYrgPpsbumU@mail.gmail.com>
+Message-ID: <AANLkTi=7bofmocL8pZTZqTJfHqVFPZkK=Xv9VJyKtNG9@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20101220/9627b519/attachment.pl>
+
+From dupan at northwestern.edu  Mon Dec 20 23:15:05 2010
+From: dupan at northwestern.edu (Pan Du)
+Date: Mon, 20 Dec 2010 16:15:05 -0600
+Subject: [Bioc-devel] Illumina Methylation annotations
+In-Reply-To: <AANLkTik6944_gAAHRJpxXjT2nkasg0vD7qu_Ps1jD2QK@mail.gmail.com>
+Message-ID: <C9353189.EE53%dupan@northwestern.edu>
+
+Hi Tim
+
+Thanks for your reply! Following is some thoughts of mine.
+
+> Thank *you* for your thoughtful replies.  I'd forgotten how control probe
+> data is stored in LumiBatch objects.  That seems like the most consistent
+> way to handle it for MethyLumiM objects, now that you mention it; using
+> addControlData2lumi(), but with both channels represented, such as in a list
+> with $Red and $Grn data.frames.  Using getControlData with a "MethyLumiSet"
+> type would do the trick; I can easily write this, in fact.  I'll send a
+> patch.
+
+Considering there are $Red and $Grn channels of the control data, I may use
+AssayData-class instead of simple data.frame to keep the control data.
+Anyway, I need to see how the real control data looks like. Our Genomomic
+core only provides only the summary information of the control data.
+
+> 
+>> As for multiple mappings, I am not sure how Illumina 450k reports them. For
+>> easier maintenance in the long run, we can just keep the same way as
+>> Illumina do. Illumina has improved their annotation maintenance. They make
+>> regular updates of their annotations now.
+>> 
+> 
+> The most recent manifest is available via iCom, but partly because Sean had
+> to do all the heavy lifting last time around, I'm planning to push out at
+> least a SQLite package of probe NuID/channel/chemistry annotations as
+> illuminaHumanMethylation450kProbes.db.  In the Illumina annotations, the
+> accession numbers are concatenated with semicolons, with as many as 6
+> separate accession numbers provided per probe.  I don't think anyone had
+> this scenario in mind when the AnnotationDbi package and its mappings were
+> designed :-)
+
+I've downloaded the manifest file of 450K Infinium chip. It does have lots
+of multiple mappings from probe to genes. I remember the current
+AnnotationDbi package can handle multiple mappings from probe to genes. But
+multiple mappings will make the following up analysis, like GO analysis,
+more challenging.
+
+
+> Will do.  I've been working on a package so that Infinium methylation chips
+> can be handled the way expression or SNP chips are (in 'beadarray'/'lumi' or
+> in 'crlmm').   I plan to put up a vignette showing a mixture experiment on
+> the 450k arrays and the 27k arrays, comparing the various preprocessing
+> options and their effects on each platform, but if there are no objections
+> from the investigators, I'll see if I can't just post the control probe data
+> this week.
+
+What package are you developing? I cannot find any similar one on
+Bioconductor developing website.
+
+>> If you can send me some example control data, I can play with it and update
+>> the MethyLumiM class at the end of this year. If possible, please also send
+>> me one or two samples of 450K data with annotation information.
+>> 
+> 
+> I'll see if I can't get it turned around this week.  A typical 450k array is
+> (as you might imagine) rather larger than the corresponding 27k array (~15MB
+> vs ~1.5MB of IDAT files) but the controls are just a few K (and no mapping
+> or normalization is required for them).  So I don't imagine it would be much
+> trouble to post some examples on GitHub.
+> 
+> 
+Just send me the control data is fine if the entire data file is too big.
+
+Thanks!
+
+
+Pan
+
+
+From setia.pramana at uhasselt.be  Wed Dec 22 16:30:04 2010
+From: setia.pramana at uhasselt.be (=?windows-1252?Q?Setia_PRAMANA?=)
+Date: Wed, 22 Dec 2010 16:30:04 +0100
+Subject: [Bioc-devel] Error for 'R CMD build' on liverpool
+Message-ID: <vmime.4d12197c.6899.8ba4905de101c9ab@uhzarafa.uhasselt.be>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20101222/3e306bfb/attachment.pl>
+
+From dtenenba at fhcrc.org  Wed Dec 22 16:45:38 2010
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Wed, 22 Dec 2010 07:45:38 -0800
+Subject: [Bioc-devel] Error for 'R CMD build' on liverpool
+In-Reply-To: <vmime.4d12197c.6899.8ba4905de101c9ab@uhzarafa.uhasselt.be>
+References: <vmime.4d12197c.6899.8ba4905de101c9ab@uhzarafa.uhasselt.be>
+Message-ID: <AANLkTi=6=8QiczGKEh3q+RAwCqz2CQrjrQNj1+HA8GhY@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20101222/a29bd334/attachment.pl>
+
+From aradwen at gmail.com  Sat Dec 25 20:25:47 2010
+From: aradwen at gmail.com (Radhouane Aniba)
+Date: Sat, 25 Dec 2010 14:25:47 -0500
+Subject: [Bioc-devel] coders collaborative platform
+Message-ID: <AANLkTimrqs2fDrwsjjjwMZ9R4nQb6WyLaCwwQAvo=RW-@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20101225/df8366aa/attachment.pl>
+
+From wk.huber at gmail.com  Sun Dec 26 12:40:15 2010
+From: wk.huber at gmail.com (Wolfgang Huber)
+Date: Sun, 26 Dec 2010 12:40:15 +0100
+Subject: [Bioc-devel] affy vignette - refers to dead URL
+Message-ID: <4D17299F.80900@embl.de>
+
+Hi,
+
+I noted that in Section 7 of the main vignette of the affy package 
+(affy.pdf: 1. Primer) a URL is mentioned that no longer exists: "For 
+each CDF file there is package, available from 
+http://www.bioconductor.org/data/metaData.html, that contains exactly 
+one of these environments."
+
+Maybe someone more familiar with the website maintenance can update 
+this. There are also a number of other URLs that might merit a poke they 
+see whether they're still alive.
+
+ > sessionInfo()
+R version 2.13.0 Under development (unstable) (2010-12-21 r53879)
+Platform: x86_64-apple-darwin10.5.0/x86_64 (64-bit)
+
+locale:
+[1] C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] affy_1.29.1    Biobase_2.11.7 fortunes_1.4-0
+
+loaded via a namespace (and not attached):
+[1] affyio_1.19.2         preprocessCore_1.13.3
+
+
+Wolfgang Huber
+EMBL
+http://www.embl.de/research/units/genome_biology/huber
+
+
+From mtmorgan at fhcrc.org  Sun Dec 26 13:49:31 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Sun, 26 Dec 2010 04:49:31 -0800 (PST)
+Subject: [Bioc-devel] affy vignette - refers to dead URL
+In-Reply-To: <4D17299F.80900@embl.de>
+Message-ID: <290396336.1492.1293367771760.JavaMail.root@zimbra4.fhcrc.org>
+
+Thanks Wolfgang this has been corrected in 'devel'. Martin
+
+----- Original Message -----
+> Hi,
+> 
+> I noted that in Section 7 of the main vignette of the affy package
+> (affy.pdf: 1. Primer) a URL is mentioned that no longer exists: "For
+> each CDF file there is package, available from
+> http://www.bioconductor.org/data/metaData.html, that contains exactly
+> one of these environments."
+> 
+> Maybe someone more familiar with the website maintenance can update
+> this. There are also a number of other URLs that might merit a poke
+> they
+> see whether they're still alive.
+> 
+> > sessionInfo()
+> R version 2.13.0 Under development (unstable) (2010-12-21 r53879)
+> Platform: x86_64-apple-darwin10.5.0/x86_64 (64-bit)
+> 
+> locale:
+> [1] C
+> 
+> attached base packages:
+> [1] stats graphics grDevices utils datasets methods base
+> 
+> other attached packages:
+> [1] affy_1.29.1 Biobase_2.11.7 fortunes_1.4-0
+> 
+> loaded via a namespace (and not attached):
+> [1] affyio_1.19.2 preprocessCore_1.13.3
+> 
+> 
+> Wolfgang Huber
+> EMBL
+> http://www.embl.de/research/units/genome_biology/huber
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From manuela.hummel at crg.es  Wed Dec 29 18:05:08 2010
+From: manuela.hummel at crg.es (Manuela Hummel)
+Date: Wed, 29 Dec 2010 18:05:08 +0100
+Subject: [Bioc-devel] new package TEQC
+Message-ID: <3F8B5EDF0C64AF4ABDE9FE83AA710B42EB66E0AE9D@KLUG.crg.es>
+
+Dear developers,
+
+we would like to announce the new package TEQC for quality assessment in target capture experiments.
+
+Targeted sequencing of genomic regions of interest (e.g. the exome) is now widely used. Besides ensuring good quality of the sequencing itself, it is also important to check the quality of the target enrichment process. TEQC addresses this issue and provides functions for assessing and visualizing enrichment quality measures, like specificity and sensitivity of the capture, per-target read coverage and so on.  
+
+The package is available at
+
+http://bioconductor.org/packages/2.8/bioc/
+
+Any comments or suggestions are very welcome.
+
+Best regards
+Manuela
+
+
+
+Manuela Hummel
+Core Facilities - Microarrays Unit
+Center for Genomic Regulation (CRG)
+Dr. Aiguader 88, 4th flour, Office 439.01
+08003 Barcelona
+Phone: +34 93 316 0373
+e-mail: manuela.hummel at crg.es
+? 
+
+

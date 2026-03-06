@@ -1,0 +1,2086 @@
+From sneumann at ipb-halle.de  Fri Feb  1 13:42:38 2008
+From: sneumann at ipb-halle.de (sneumann)
+Date: Fri, 01 Feb 2008 13:42:38 +0100
+Subject: [Bioc-devel] BioC 2.2 (Devel): Rdisop build on leopard [was:
+	xcms package	update for Mac OS X 10.5.1 (Re: netCDF on pelham)
+In-Reply-To: <4798F17F.5030406@fhcrc.org>
+References: <1198786157.8298.27.camel@localhost>
+	<1201106421.20098.459.camel@lathan.ipb-sub.ipb-halle.de>
+	<1201113160.4797884827740@webmail.fhcrc.org>
+	<4798F17F.5030406@fhcrc.org>
+Message-ID: <1201869759.16091.91.camel@lathan.ipb-sub.ipb-halle.de>
+
+On Do, 2008-01-24 at 12:13 -0800, Patrick Aboyoun wrote: 
+> Steffen,
+> I installed universal binaries (i386, x86_64, ppc) for the NetCDF 
+Many thanks!
+
+> Keep in mind that the xcms package is not passing check on any of OS for 
+Until yesterday they were not even passing the build stage,
+so once we're sober from celebrating successful builds,
+we'll go after the check/warnings ;-)
+
+> the BioC 2.2 (Devel) builds, so you may want to use the BioC 2.1 
+> (Release) build of xcms with R 2.6.1 (Release) until that has been 
+> rectified.
+We're maintainers of xcms, just waiting won't help ;-)
+
+Thanks for your efforts,
+I might approach you later for some help with Rdisop.
+Rdisop is shipping a library in Rdisop/src/imslib
+which is successfully built using libtool: 
+
+	g++ -dynamiclib -single_module  -o src/.libs/libims.0.0.0.dylib  src/ims/.libs/element.o ... src/ims/.libs/nitrogenrulefilter.o   -install_name  /usr/local/lib/libims.0.dylib -Wl,-compatibility_version -Wl,1 -Wl,-current_version -Wl,1.0
+	(cd src/.libs && rm -f libims.0.dylib && ln -s libims.0.0.0.dylib libims.0.dylib)
+	(cd src/.libs && rm -f libims.dylib && ln -s libims.0.0.0.dylib libims.dylib)
+
+Then it is successfully building Rdisop.so using the 
+newly built -L./imslib/src/.libs/ -lims:
+
+	g++-4.0 -arch i386 -dynamiclib -Wl,-headerpad_max_install_names  -undefined dynamic_lookup -single_module -multiply_defined suppress -L/usr/local/lib -o Rdisop.so disop.o -L../RcppSrc -lRcpp -L./imslib/src/.libs/ -lims   -F/Library/Frameworks/R.framework/.. -framework R -lintl -liconv -lc -Wl,-framework -Wl,CoreFoundation
+
+and copied to the Rdisop/src/ directory:
+
+	ls -l ./imslib/src/.libs/
+	total 6448
+	-rwxr-xr-x  1 biocbuild  staff   318092 Jan 31 03:27 libims.0.0.0.dylib
+	lrwxr-xr-x  1 biocbuild  staff       18 Jan 31 03:27 libims.0.dylib -> libims.0.0.0.dylib
+	-rw-r--r--  1 biocbuild  staff  2963884 Jan 31 03:27 libims.a
+	lrwxr-xr-x  1 biocbuild  staff       18 Jan 31 03:27 libims.dylib -> libims.0.0.0.dylib
+	lrwxr-xr-x  1 biocbuild  staff       12 Jan 31 03:27 libims.la -> ../libims.la
+	-rw-r--r--  1 biocbuild  staff      813 Jan 31 03:27 libims.lai
+	cp -rv ./imslib/src/.libs/libims*.dylib* .
+	./imslib/src/.libs/libims.dylib -> ./libims.dylib
+	./imslib/src/.libs/libims.0.dylib -> ./libims.0.dylib
+	./imslib/src/.libs/libims.0.0.0.dylib -> ./libims.0.0.0.dylib
+
+It is, however, _not_ copied into the installed package as on linux:
+or not found under the name "libims":
+
+	* creating vignettes ... ERROR
+	Error in library.dynam(lib, package, package.lib) : 
+	  shared library 'libims' not found
+
+I suspect that either the libims*dylib* are not copied 
+into the package, or that library.dynam() resolving has a problem.
+
+On Windows I needed to copy the DLLs explicitely in configure.win:
+	mkdir ${DPKG}/libs
+	cp src/win/libims*.dll ${DPKG}/libs/
+do I have to do that on leopard as well ?
+
+Since I don't have leopard access, I'd appreciate any hints.
+
+Yours,
+Steffen
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From khansen at stat.Berkeley.EDU  Fri Feb  1 16:47:13 2008
+From: khansen at stat.Berkeley.EDU (Kasper Daniel Hansen)
+Date: Fri, 1 Feb 2008 07:47:13 -0800
+Subject: [Bioc-devel] BioC 2.2 (Devel): Rdisop build on leopard [was:
+	xcms package	update for Mac OS X 10.5.1 (Re: netCDF on pelham)
+In-Reply-To: <1201869759.16091.91.camel@lathan.ipb-sub.ipb-halle.de>
+References: <1198786157.8298.27.camel@localhost>
+	<1201106421.20098.459.camel@lathan.ipb-sub.ipb-halle.de>
+	<1201113160.4797884827740@webmail.fhcrc.org>
+	<4798F17F.5030406@fhcrc.org>
+	<1201869759.16091.91.camel@lathan.ipb-sub.ipb-halle.de>
+Message-ID: <F2912742-C403-4E9D-81D2-43AB632D1938@stat.berkeley.edu>
+
+
+On Feb 1, 2008, at 4:42 AM, sneumann wrote:
+
+> On Do, 2008-01-24 at 12:13 -0800, Patrick Aboyoun wrote:
+>> Steffen,
+>> I installed universal binaries (i386, x86_64, ppc) for the NetCDF
+> Many thanks!
+>
+>> Keep in mind that the xcms package is not passing check on any of  
+>> OS for
+> Until yesterday they were not even passing the build stage,
+> so once we're sober from celebrating successful builds,
+> we'll go after the check/warnings ;-)
+>
+>> the BioC 2.2 (Devel) builds, so you may want to use the BioC 2.1
+>> (Release) build of xcms with R 2.6.1 (Release) until that has been
+>> rectified.
+> We're maintainers of xcms, just waiting won't help ;-)
+>
+> Thanks for your efforts,
+> I might approach you later for some help with Rdisop.
+> Rdisop is shipping a library in Rdisop/src/imslib
+> which is successfully built using libtool:
+>
+> 	g++ -dynamiclib -single_module  -o src/.libs/libims.0.0.0.dylib   
+> src/ims/.libs/element.o ... src/ims/.libs/nitrogenrulefilter.o   - 
+> install_name  /usr/local/lib/libims.0.dylib -Wl,- 
+> compatibility_version -Wl,1 -Wl,-current_version -Wl,1.0
+> 	(cd src/.libs && rm -f libims.0.dylib && ln -s libims.0.0.0.dylib  
+> libims.0.dylib)
+> 	(cd src/.libs && rm -f libims.dylib && ln -s libims.0.0.0.dylib  
+> libims.dylib)
+>
+> Then it is successfully building Rdisop.so using the
+> newly built -L./imslib/src/.libs/ -lims:
+>
+> 	g++-4.0 -arch i386 -dynamiclib -Wl,-headerpad_max_install_names  - 
+> undefined dynamic_lookup -single_module -multiply_defined suppress - 
+> L/usr/local/lib -o Rdisop.so disop.o -L../RcppSrc -lRcpp -L./imslib/ 
+> src/.libs/ -lims   -F/Library/Frameworks/R.framework/.. -framework  
+> R -lintl -liconv -lc -Wl,-framework -Wl,CoreFoundation
+>
+> and copied to the Rdisop/src/ directory:
+>
+> 	ls -l ./imslib/src/.libs/
+> 	total 6448
+> 	-rwxr-xr-x  1 biocbuild  staff   318092 Jan 31 03:27 libims. 
+> 0.0.0.dylib
+> 	lrwxr-xr-x  1 biocbuild  staff       18 Jan 31 03:27 libims. 
+> 0.dylib -> libims.0.0.0.dylib
+> 	-rw-r--r--  1 biocbuild  staff  2963884 Jan 31 03:27 libims.a
+> 	lrwxr-xr-x  1 biocbuild  staff       18 Jan 31 03:27 libims.dylib - 
+> > libims.0.0.0.dylib
+> 	lrwxr-xr-x  1 biocbuild  staff       12 Jan 31 03:27 libims.la - 
+> > ../libims.la
+> 	-rw-r--r--  1 biocbuild  staff      813 Jan 31 03:27 libims.lai
+> 	cp -rv ./imslib/src/.libs/libims*.dylib* .
+> 	./imslib/src/.libs/libims.dylib -> ./libims.dylib
+> 	./imslib/src/.libs/libims.0.dylib -> ./libims.0.dylib
+> 	./imslib/src/.libs/libims.0.0.0.dylib -> ./libims.0.0.0.dylib
+>
+> It is, however, _not_ copied into the installed package as on linux:
+> or not found under the name "libims":
+>
+> 	* creating vignettes ... ERROR
+> 	Error in library.dynam(lib, package, package.lib) :
+> 	  shared library 'libims' not found
+>
+> I suspect that either the libims*dylib* are not copied
+> into the package, or that library.dynam() resolving has a problem.
+>
+> On Windows I needed to copy the DLLs explicitely in configure.win:
+> 	mkdir ${DPKG}/libs
+> 	cp src/win/libims*.dll ${DPKG}/libs/
+> do I have to do that on leopard as well ?
+>
+> Since I don't have leopard access, I'd appreciate any hints.
+
+On the Mac you need to be able to build universal binaries (ie. you  
+need to compile for several architectures). The suffix for a library  
+can both be .a and .dylib. What you seem to be doing above is  
+probably extremely non-portable.
+
+Kasper
+
+
+> Yours,
+> Steffen
+>
+> -- 
+> IPB Halle                    AG Massenspektrometrie & Bioinformatik
+> Dr. Steffen Neumann          http://www.IPB-Halle.DE
+> Weinberg 3                   http://msbi.bic-gh.de
+> 06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+>                                   +49 (0) 345 5582 - 0
+> sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From sneumann at ipb-halle.de  Fri Feb  1 21:28:19 2008
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Fri, 01 Feb 2008 21:28:19 +0100
+Subject: [Bioc-devel] BioC 2.2 (Devel): Rdisop build on leopard
+ [was:	xcms package	update for Mac OS X 10.5.1 (Re: netCDF on pelham)
+In-Reply-To: <F2912742-C403-4E9D-81D2-43AB632D1938@stat.berkeley.edu>
+References: <1198786157.8298.27.camel@localhost>
+	<1201106421.20098.459.camel@lathan.ipb-sub.ipb-halle.de>
+	<1201113160.4797884827740@webmail.fhcrc.org>
+	<4798F17F.5030406@fhcrc.org>
+	<1201869759.16091.91.camel@lathan.ipb-sub.ipb-halle.de>
+	<F2912742-C403-4E9D-81D2-43AB632D1938@stat.berkeley.edu>
+Message-ID: <1201897699.6221.6.camel@samson>
+
+On Fri, 2008-02-01 at 07:47 -0800, Kasper Daniel Hansen wrote:
+> On Feb 1, 2008, at 4:42 AM, sneumann wrote:
+...
+> On the Mac you need to be able to build universal binaries (ie. you  
+> need to compile for several architectures). The suffix for a library  
+> can both be .a and .dylib. What you seem to be doing above is  
+> probably extremely non-portable.
+
+I am open for anz suggestions to improve the BioC 
+experience for Mac Users. 
+
+Is there a way to build the universal binaries with configure/make ?
+
+Are there other packages in BioC that build complex libraries 
+which I could use as example ? Or some Mac specific 
+documentation links ?
+
+Actually I have in src/Makevars
+
+  cp -r ./imslib/src/.libs/libims*$(DYLIB_EXT)*
+
+so I use whatever extension R has configured.
+
+Yours,
+Steffen
+
+
+From jmacdon at med.umich.edu  Fri Feb  1 22:15:52 2008
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Fri, 01 Feb 2008 16:15:52 -0500
+Subject: [Bioc-devel] BioC 2.2 (Devel): Rdisop build on leopard [was:
+ xcms package	update for Mac OS X 10.5.1 (Re: netCDF on pelham)
+In-Reply-To: <1201897699.6221.6.camel@samson>
+References: <1198786157.8298.27.camel@localhost>	<1201106421.20098.459.camel@lathan.ipb-sub.ipb-halle.de>	<1201113160.4797884827740@webmail.fhcrc.org>	<4798F17F.5030406@fhcrc.org>	<1201869759.16091.91.camel@lathan.ipb-sub.ipb-halle.de>	<F2912742-C403-4E9D-81D2-43AB632D1938@stat.berkeley.edu>
+	<1201897699.6221.6.camel@samson>
+Message-ID: <47A38C08.8070006@med.umich.edu>
+
+
+
+Steffen Neumann wrote:
+> On Fri, 2008-02-01 at 07:47 -0800, Kasper Daniel Hansen wrote:
+>> On Feb 1, 2008, at 4:42 AM, sneumann wrote:
+> ...
+>> On the Mac you need to be able to build universal binaries (ie. you  
+>> need to compile for several architectures). The suffix for a library  
+>> can both be .a and .dylib. What you seem to be doing above is  
+>> probably extremely non-portable.
+> 
+> I am open for anz suggestions to improve the BioC 
+> experience for Mac Users. 
+> 
+> Is there a way to build the universal binaries with configure/make ?
+> 
+> Are there other packages in BioC that build complex libraries 
+> which I could use as example ? Or some Mac specific 
+> documentation links ?
+
+http://r.research.att.com/
+
+Best,
+
+Jim
+
+
+> 
+> Actually I have in src/Makevars
+> 
+>   cp -r ./imslib/src/.libs/libims*$(DYLIB_EXT)*
+> 
+> so I use whatever extension R has configured.
+> 
+> Yours,
+> Steffen
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Affymetrix and cDNA Microarray Core
+University of Michigan Cancer Center
+1500 E. Medical Center Drive
+7410 CCGC
+Ann Arbor MI 48109
+734-647-5623
+
+
+From john.lande77 at gmail.com  Thu Feb  7 15:20:57 2008
+From: john.lande77 at gmail.com (John Lande)
+Date: Thu, 7 Feb 2008 15:20:57 +0100
+Subject: [Bioc-devel] data package
+Message-ID: <c2ebc3880802070620j6737f013l4721b25417237c7f@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+Url: https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080207/3585a668/attachment.pl 
+
+From sdavis2 at mail.nih.gov  Thu Feb  7 15:32:25 2008
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Thu, 7 Feb 2008 09:32:25 -0500
+Subject: [Bioc-devel] data package
+In-Reply-To: <c2ebc3880802070620j6737f013l4721b25417237c7f@mail.gmail.com>
+References: <c2ebc3880802070620j6737f013l4721b25417237c7f@mail.gmail.com>
+Message-ID: <264855a00802070632l73864ce9tf51446b5916ee517@mail.gmail.com>
+
+On Feb 7, 2008 9:20 AM, John Lande <john.lande77 at gmail.com> wrote:
+> Dear Bioc,
+>
+> I am creating an R package for Bioconductor.
+> I am supplying sample data with the package.
+>
+> Please tell me which is the best way to supply this data to those who will
+> then use my package ?
+>
+> I see two alternatives:
+>
+> 1. Put the sample data tables (in .csv format) in the package's "data"
+> subdirectory.
+>    In the documentation I supply with my package, put an R statement which
+> imports
+>    those .csv files from the above "data" subdirectory.
+>
+>    But how do I find out where (it may be different on different platforms)
+> the user has installed my
+>    package ?
+>    I need this information in order to tell my data import command, from
+> which directory to
+>    load the above sample data files.
+
+You probably want to read up on using system.file() for the above, but
+I'm not sure that is what you are looking for as a final solution.
+
+>
+> 2. Put the sample tables in a .Rdata workspace.
+>    In my documentation, put an R statement that loads the above .Rdata file.
+
+You probably want to use the "data" subdirectory to store your
+files/objects.  Then, you can load them using the data() command.  The
+"Writing R Extensions Manual" has some details:
+
+http://cran.r-project.org/doc/manuals/R-exts.html#Package-subdirectories
+
+Hope that helps.
+
+Sean
+
+
+From paboyoun at fhcrc.org  Tue Feb 12 22:09:28 2008
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Tue, 12 Feb 2008 13:09:28 -0800
+Subject: [Bioc-devel] Build error message false alarm: Please ignore last
+ night's (2008-02-11) BioC 2.1 package build error e-mail messages
+Message-ID: <47B20B08.7000109@fhcrc.org>
+
+To all BioC 2.1 package developers / maintainers,
+The BioC 2.1 package building system that was completed at 2008-02-11 
+23:49:34 -0800 suffered numerous failures due to a problem in the 
+internal build system. This failure coincided with our weekly 
+notification for package build failures and as a result, many of you 
+received e-mails today notifying you of package build issues. Please 
+ignore this e-mail.
+
+The BioConductor build team is taking steps to prevent this type of 
+build failure from happening again. Please accept our apologies for any 
+inconvenience the e-mail notification has caused you.
+
+
+Sincerely,
+Patrick Aboyoun
+
+
+From lgautier at altern.org  Wed Feb 13 09:23:35 2008
+From: lgautier at altern.org (lgautier at altern.org)
+Date: Wed, 13 Feb 2008 09:23:35 +0100 (CET)
+Subject: [Bioc-devel] Build error message false alarm: Please ignore
+ last night's (2008-02-11) BioC 2.1 package build error e-mail messages
+In-Reply-To: <47B20B08.7000109@fhcrc.org>
+References: <47B20B08.7000109@fhcrc.org>
+Message-ID: <35042.90.41.138.33.1202891015.squirrel@www.altern.org>
+
+(...)
+>
+> The BioConductor build team is taking steps to prevent this type of
+> build failure from happening again. Please accept our apologies for any
+> inconvenience the e-mail notification has caused you.
+
+Don't worry, it is understood that the automated e-mail notification
+associated with the build system is relatively new... and the benefit of
+having it exceeds that kind of possible minor inconvenience (IMHO).
+
+Since we are about it, I could not find an entry about that automated
+mailing (frequency, features) on the bioconductor site ? (on the wiki
+presumably, since information for developpers is there). Did I miss it ?
+
+
+L.
+
+
+From hpages at fhcrc.org  Wed Feb 13 09:00:56 2008
+From: hpages at fhcrc.org (hpages at fhcrc.org)
+Date: Wed, 13 Feb 2008 00:00:56 -0800
+Subject: [Bioc-devel] Build error message false alarm: Please ignore
+	last night's (2008-02-11) BioC 2.1 package build error e-mail
+	messages
+In-Reply-To: <35042.90.41.138.33.1202891015.squirrel@www.altern.org>
+References: <47B20B08.7000109@fhcrc.org>
+	<35042.90.41.138.33.1202891015.squirrel@www.altern.org>
+Message-ID: <1202889656.47b2a3b8024dd@webmail.fhcrc.org>
+
+Hi Laurent,
+
+Quoting lgautier at altern.org:
+
+> (...)
+> 
+> Since we are about it, I could not find an entry about that automated
+> mailing (frequency, features) on the bioconductor site ? (on the wiki
+> presumably, since information for developpers is there). Did I miss it ?
+
+It was announced 3 months ago here on the list:
+
+  https://stat.ethz.ch/pipermail/bioc-devel/2007-November/001426.html
+
+I'll add a note on the developer wiki.
+
+Cheers,
+H.
+
+
+From lgautier at altern.org  Wed Feb 13 11:50:34 2008
+From: lgautier at altern.org (lgautier at altern.org)
+Date: Wed, 13 Feb 2008 11:50:34 +0100 (CET)
+Subject: [Bioc-devel] Build error message false alarm: Please ignore
+ last night's (2008-02-11) BioC 2.1 package build error e-mail messages
+In-Reply-To: <1202889656.47b2a3b8024dd@webmail.fhcrc.org>
+References: <47B20B08.7000109@fhcrc.org>
+	<35042.90.41.138.33.1202891015.squirrel@www.altern.org>
+	<1202889656.47b2a3b8024dd@webmail.fhcrc.org>
+Message-ID: <52179.213.41.232.7.1202899834.squirrel@www.altern.org>
+
+> Hi Laurent,
+>
+> Quoting lgautier at altern.org:
+>
+>> (...)
+>>
+>> Since we are about it, I could not find an entry about that automated
+>> mailing (frequency, features) on the bioconductor site ? (on the wiki
+>> presumably, since information for developpers is there). Did I miss it ?
+>
+> It was announced 3 months ago here on the list:
+>
+>   https://stat.ethz.ch/pipermail/bioc-devel/2007-November/001426.html
+
+That was a clear and good announce. I remember about it.
+
+Sorry if I was not clear, the suggestion was more a thought that it would
+be nice to have a centralized place with documentation for newcomers,
+a kind of must-read bundle for new developers.
+Moreover, should there be updates or modifications in the automated
+mailing scheme such a page can be pointed as the always-up-to-date source
+of information to anyone with questions.
+
+
+Cheers,
+
+
+Laurent
+
+
+> I'll add a note on the developer wiki.
+>
+> Cheers,
+> H.
+>
+>
+>
+>
+
+
+From john.lande77 at gmail.com  Wed Feb 13 15:44:45 2008
+From: john.lande77 at gmail.com (John Lande)
+Date: Wed, 13 Feb 2008 15:44:45 +0100
+Subject: [Bioc-devel] class declaration
+Message-ID: <c2ebc3880802130644v29cfaf6en2787f12e2f26bb70@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+Url: https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080213/4b833da3/attachment.pl 
+
+From sdavis2 at mail.nih.gov  Wed Feb 13 15:50:21 2008
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Wed, 13 Feb 2008 09:50:21 -0500
+Subject: [Bioc-devel] class declaration
+In-Reply-To: <c2ebc3880802130644v29cfaf6en2787f12e2f26bb70@mail.gmail.com>
+References: <c2ebc3880802130644v29cfaf6en2787f12e2f26bb70@mail.gmail.com>
+Message-ID: <264855a00802130650j9984943gc6a17320bbc03e37@mail.gmail.com>
+
+On Feb 13, 2008 9:44 AM, John Lande <john.lande77 at gmail.com> wrote:
+> Dear all,
+>
+> I am creating a class for my function composed by two expression set:
+>
+> let say
+>
+> >setClass("my class",  representation(a="ExpressionSet", b="ExpressionSet")
+>
+> when I lunch it I retrieve this warning.
+>
+> [1] "my class"
+> Warning message:
+> In .completeClassSlots(ClassDef, where) :
+>   undefined slot classes in definition of "my class": a(class
+> "ExpressionSet"), b(class "ExpressionSet")
+>
+> how can  solve this problem?
+
+Hi, John.  You need to load Biobase first, as "ExpressionSet" is not
+defined.  That should solve the problem.
+
+Sean
+
+
+From jmacdon at med.umich.edu  Wed Feb 13 15:56:50 2008
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Wed, 13 Feb 2008 09:56:50 -0500
+Subject: [Bioc-devel] class declaration
+In-Reply-To: <c2ebc3880802130644v29cfaf6en2787f12e2f26bb70@mail.gmail.com>
+References: <c2ebc3880802130644v29cfaf6en2787f12e2f26bb70@mail.gmail.com>
+Message-ID: <47B30532.2010403@med.umich.edu>
+
+Hi John,
+
+ > setClass("my class",representation(a="ExpressionSet", b="ExpressionSet"))
+[1] "my class"
+Warning message:
+In .completeClassSlots(ClassDef, where) :
+   undefined slot classes in definition of "my class": a(class 
+"ExpressionSet"), b(class "ExpressionSet")
+
+
+ > library(Biobase)
+Loading required package: tools
+
+Welcome to Bioconductor
+
+   Vignettes contain introductory material. To view, type
+   'openVignette()'. To cite Bioconductor, see
+   'citation("Biobase")' and for packages 'citation(pkgname)'.
+
+Warning message:
+package 'Biobase' was built under R version 2.6.1
+ > setClass("my class",  representation(a="ExpressionSet", 
+b="ExpressionSet"))
+[1] "my class"
+
+Best,
+
+Jim
+
+
+
+John Lande wrote:
+> Dear all,
+> 
+> I am creating a class for my function composed by two expression set:
+> 
+> let say
+> 
+>> setClass("my class",  representation(a="ExpressionSet", b="ExpressionSet")
+> 
+> when I lunch it I retrieve this warning.
+> 
+> [1] "my class"
+> Warning message:
+> In .completeClassSlots(ClassDef, where) :
+>   undefined slot classes in definition of "my class": a(class
+> "ExpressionSet"), b(class "ExpressionSet")
+> 
+> how can  solve this problem?
+> 
+> --
+> john
+> 
+> 	[[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Affymetrix and cDNA Microarray Core
+University of Michigan Cancer Center
+1500 E. Medical Center Drive
+7410 CCGC
+Ann Arbor MI 48109
+734-647-5623
+
+
+From lgautier at gmail.com  Wed Feb 13 15:56:22 2008
+From: lgautier at gmail.com (Laurent Gautier)
+Date: Wed, 13 Feb 2008 15:56:22 +0100
+Subject: [Bioc-devel] class declaration
+In-Reply-To: <c2ebc3880802130644v29cfaf6en2787f12e2f26bb70@mail.gmail.com>
+References: <c2ebc3880802130644v29cfaf6en2787f12e2f26bb70@mail.gmail.com>
+Message-ID: <27d1e6020802130656r6d97cf33vee211b4dc43c3db6@mail.gmail.com>
+
+2008/2/13, John Lande <john.lande77 at gmail.com>:
+> Dear all,
+>
+> I am creating a class for my function composed by two expression set:
+>
+> let say
+>
+> >setClass("my class",  representation(a="ExpressionSet", b="ExpressionSet")
+>
+> when I lunch it I retrieve this warning.
+>
+> [1] "my class"
+> Warning message:
+> In .completeClassSlots(ClassDef, where) :
+>   undefined slot classes in definition of "my class": a(class
+> "ExpressionSet"), b(class "ExpressionSet")
+>
+> how can  solve this problem?
+
+
+Define the classes, may be ?
+library(Biobase)
+is one simple way to do so.
+
+
+Hoping this helps,
+
+
+L.
+
+
+
+> --
+> john
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From john.lande77 at gmail.com  Wed Feb 13 15:56:40 2008
+From: john.lande77 at gmail.com (John Lande)
+Date: Wed, 13 Feb 2008 15:56:40 +0100
+Subject: [Bioc-devel] class declaration
+In-Reply-To: <264855a00802130650j9984943gc6a17320bbc03e37@mail.gmail.com>
+References: <c2ebc3880802130644v29cfaf6en2787f12e2f26bb70@mail.gmail.com>
+	<264855a00802130650j9984943gc6a17320bbc03e37@mail.gmail.com>
+Message-ID: <c2ebc3880802130656l452dfc55s13a11084d70ef7b9@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+Url: https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080213/280dc7c1/attachment.pl 
+
+From osklyar at ebi.ac.uk  Wed Feb 13 16:07:07 2008
+From: osklyar at ebi.ac.uk (Oleg Sklyar)
+Date: Wed, 13 Feb 2008 15:07:07 +0000
+Subject: [Bioc-devel] class declaration
+In-Reply-To: <c2ebc3880802130644v29cfaf6en2787f12e2f26bb70@mail.gmail.com>
+References: <c2ebc3880802130644v29cfaf6en2787f12e2f26bb70@mail.gmail.com>
+Message-ID: <47B3079B.2080409@ebi.ac.uk>
+
+You are not doing anything wrong (almost), but you need to have the 
+definitions of ExpressionSet before you can use those: library(Biobase)
+
+However, I do not think it is a very good idea to declare a class with a 
+space in its name -- even if R allows that you never know where you are 
+going to use this definition and a space is a very particular character 
+in most programming languages -- it separates keywords, definitions, 
+concepts etc
+
+* ~: R
+:: R version 2.6.1 (2007-11-26)
+ > library(Biobase)
+Loading required package: tools
+
+ > setClass("my class",  representation(a="ExpressionSet", 
+b="ExpressionSet"))
+[1] "my class"
+ >
+
+Best,
+Oleg
+
+John Lande wrote:
+> Dear all,
+> 
+> I am creating a class for my function composed by two expression set:
+> 
+> let say
+> 
+>> setClass("my class",  representation(a="ExpressionSet", b="ExpressionSet")
+> 
+> when I lunch it I retrieve this warning.
+> 
+> [1] "my class"
+> Warning message:
+> In .completeClassSlots(ClassDef, where) :
+>   undefined slot classes in definition of "my class": a(class
+> "ExpressionSet"), b(class "ExpressionSet")
+> 
+> how can  solve this problem?
+> 
+> --
+> john
+> 
+> 	[[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Dr Oleg Sklyar * EBI-EMBL, Cambridge CB10 1SD, UK * +44-1223-494466
+
+
+From hb at stat.berkeley.edu  Wed Feb 13 18:09:36 2008
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Wed, 13 Feb 2008 09:09:36 -0800
+Subject: [Bioc-devel] class declaration
+In-Reply-To: <c2ebc3880802130656l452dfc55s13a11084d70ef7b9@mail.gmail.com>
+References: <c2ebc3880802130644v29cfaf6en2787f12e2f26bb70@mail.gmail.com>
+	<264855a00802130650j9984943gc6a17320bbc03e37@mail.gmail.com>
+	<c2ebc3880802130656l452dfc55s13a11084d70ef7b9@mail.gmail.com>
+Message-ID: <59d7961d0802130909w3507c2e3o122733e021cdfbf8@mail.gmail.com>
+
+Ok, now when that works I would like to ask a more general question:
+
+Is it completely safe to have spaces in class declarations?  ...or
+function definitions, e.g.
+
+> "foo bar" <- function(x) x
+> "foo bar"(3)
+[1] 3
+
+I can definitely see how this increases the risk for
+mistakes/misunderstandings.  Is this something that should be
+discouraged?
+
+/Henrik
+
+On Feb 13, 2008 6:56 AM, John Lande <john.lande77 at gmail.com> wrote:
+> yep worked! tnx
+>
+> On Feb 13, 2008 3:50 PM, Sean Davis <sdavis2 at mail.nih.gov> wrote:
+>
+> > On Feb 13, 2008 9:44 AM, John Lande <john.lande77 at gmail.com> wrote:
+> > > Dear all,
+> > >
+> > > I am creating a class for my function composed by two expression set:
+> > >
+> > > let say
+> > >
+> > > >setClass("my class",  representation(a="ExpressionSet",
+> > b="ExpressionSet")
+> > >
+> > > when I lunch it I retrieve this warning.
+> > >
+> > > [1] "my class"
+> > > Warning message:
+> > > In .completeClassSlots(ClassDef, where) :
+> > >   undefined slot classes in definition of "my class": a(class
+> > > "ExpressionSet"), b(class "ExpressionSet")
+> > >
+> > > how can  solve this problem?
+> >
+> > Hi, John.  You need to load Biobase first, as "ExpressionSet" is not
+> > defined.  That should solve the problem.
+> >
+> > Sean
+> >
+>
+>         [[alternative HTML version deleted]]
+>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From hpages at fhcrc.org  Wed Feb 13 18:15:07 2008
+From: hpages at fhcrc.org (hpages at fhcrc.org)
+Date: Wed, 13 Feb 2008 09:15:07 -0800
+Subject: [Bioc-devel] Build error message false alarm: Please ignore
+	last night's (2008-02-11) BioC 2.1 package build error e-mail
+	messages
+In-Reply-To: <52179.213.41.232.7.1202899834.squirrel@www.altern.org>
+References: <47B20B08.7000109@fhcrc.org>
+	<35042.90.41.138.33.1202891015.squirrel@www.altern.org>
+	<1202889656.47b2a3b8024dd@webmail.fhcrc.org>
+	<52179.213.41.232.7.1202899834.squirrel@www.altern.org>
+Message-ID: <1202922907.47b3259b7d6e2@webmail.fhcrc.org>
+
+Quoting lgautier at altern.org:
+
+> > Hi Laurent,
+> >
+> > Quoting lgautier at altern.org:
+> >
+> >> (...)
+> >>
+> >> Since we are about it, I could not find an entry about that automated
+> >> mailing (frequency, features) on the bioconductor site ? (on the wiki
+> >> presumably, since information for developpers is there). Did I miss it ?
+> >
+> > It was announced 3 months ago here on the list:
+> >
+> >   https://stat.ethz.ch/pipermail/bioc-devel/2007-November/001426.html
+> 
+> That was a clear and good announce. I remember about it.
+> 
+> Sorry if I was not clear, the suggestion was more a thought that it would
+> be nice to have a centralized place with documentation for newcomers,
+> a kind of must-read bundle for new developers.
+> Moreover, should there be updates or modifications in the automated
+> mailing scheme such a page can be pointed as the always-up-to-date source
+> of information to anyone with questions.
+
+Understood Laurent. We will do that. I have some sort of standard email
+that I send to every new package maintainer with details about the build
+system, the "replace only on version bump" feature and so on. I'll put
+it on the wiki with some additional notes about the automated build
+failure notifications.
+
+Cheers,
+H.
+
+> 
+> 
+> Cheers,
+> 
+> 
+> Laurent
+> 
+> 
+> > I'll add a note on the developer wiki.
+> >
+> > Cheers,
+> > H.
+> >
+> >
+> >
+> >
+> 
+> 
+>
+
+
+From lgautier at gmail.com  Wed Feb 13 20:11:43 2008
+From: lgautier at gmail.com (Laurent Gautier)
+Date: Thu, 14 Feb 2008 03:11:43 +0800
+Subject: [Bioc-devel] class declaration
+In-Reply-To: <59d7961d0802130909w3507c2e3o122733e021cdfbf8@mail.gmail.com>
+References: <c2ebc3880802130644v29cfaf6en2787f12e2f26bb70@mail.gmail.com>
+	<264855a00802130650j9984943gc6a17320bbc03e37@mail.gmail.com>
+	<c2ebc3880802130656l452dfc55s13a11084d70ef7b9@mail.gmail.com>
+	<59d7961d0802130909w3507c2e3o122733e021cdfbf8@mail.gmail.com>
+Message-ID: <27d1e6020802131111q3ff0aa67t14302a38635e6906@mail.gmail.com>
+
+It can certainly be strongly discouraged, just like variable names
+should make sense is encouraged.
+The R documentation does not seem to make a special case of it
+help("'") will tell more about it.
+
+Out of curiosity, I checked and there does not seem to be default
+starting packages with spaces in variable names
+
+unlist(lapply(loadedNamespaces(),
+                    function(x) grep(" ", ls(getNamespace(x)))))
+returns integer(0) here.
+
+There is more to that than spaces, and the following might give
+an idea of what is possible (don't try that at home ;-))
+
+> assign("+", function(x, y) 42)
+> 2+3
+[1] 42
+
+
+2008/2/14, Henrik Bengtsson <hb at stat.berkeley.edu>:
+> Ok, now when that works I would like to ask a more general question:
+>
+> Is it completely safe to have spaces in class declarations?  ...or
+> function definitions, e.g.
+>
+> > "foo bar" <- function(x) x
+> > "foo bar"(3)
+> [1] 3
+>
+> I can definitely see how this increases the risk for
+> mistakes/misunderstandings.  Is this something that should be
+> discouraged?
+>
+> /Henrik
+>
+> On Feb 13, 2008 6:56 AM, John Lande <john.lande77 at gmail.com> wrote:
+> > yep worked! tnx
+> >
+> > On Feb 13, 2008 3:50 PM, Sean Davis <sdavis2 at mail.nih.gov> wrote:
+> >
+> > > On Feb 13, 2008 9:44 AM, John Lande <john.lande77 at gmail.com> wrote:
+> > > > Dear all,
+> > > >
+> > > > I am creating a class for my function composed by two expression set:
+> > > >
+> > > > let say
+> > > >
+> > > > >setClass("my class",  representation(a="ExpressionSet",
+> > > b="ExpressionSet")
+> > > >
+> > > > when I lunch it I retrieve this warning.
+> > > >
+> > > > [1] "my class"
+> > > > Warning message:
+> > > > In .completeClassSlots(ClassDef, where) :
+> > > >   undefined slot classes in definition of "my class": a(class
+> > > > "ExpressionSet"), b(class "ExpressionSet")
+> > > >
+> > > > how can  solve this problem?
+> > >
+> > > Hi, John.  You need to load Biobase first, as "ExpressionSet" is not
+> > > defined.  That should solve the problem.
+> > >
+> > > Sean
+> > >
+> >
+> >         [[alternative HTML version deleted]]
+> >
+> >
+> > _______________________________________________
+> > Bioc-devel at stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+-- 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iEYEARECAAYFAkYgwJ4ACgkQB/w/MLoyRDeQlgCeMp8v69/Wy24Q4IaBVhoG1M5R
+2h4AoIOTvKbrFpTklRDjV7u8tEOeSQqt
+=JPph
+-----END PGP SIGNATURE-----
+
+
+From Darlene.Goldstein at epfl.ch  Fri Feb 15 14:38:36 2008
+From: Darlene.Goldstein at epfl.ch (Darlene Goldstein)
+Date: Fri, 15 Feb 2008 14:38:36 +0100
+Subject: [Bioc-devel] BioConductor Developer Workshop Lausanne 2008 Info
+Message-ID: <1203082716.47b595dc570ba@webmail.epfl.ch>
+
+
+Hi,
+
+Here is an update of information on the BioConductor Developer Workshop, to be
+held in Lausanne, Switzerland on 24-25 April 2008.  If you have already
+registered, you should receive an email with this information, please let me
+know if you did not get it.  The most up to date information is on the wiki page
+http://wiki.fhcrc.org/bioc/Lausanne_Dev_Meeting_2008
+And there are still places available, please send me an email if you are
+interested in registering.
+
+Best regards,
+
+Darlene
+
+--------------------------------------------------------------------
+
+BioConductor Developer Workshop 2008
+------------------------------------
+
+24 - 25 April 2008, Lausanne, Switzerland.
+
+This meeting is aimed at active developers as well as prospective developers
+interested in improving package writing skills and contributing to the
+BioConductor project.
+
+Details
+-------
+
+The meeting will take place at the University of Lausanne, in room Amphimax 414
+(Quartier Sorge), with English as the working language. The closest metro stop
+is Unil-Sorge (NOT Unil-Dorigny). Detailed directions to the University (in
+English) are available at http://www.unil.ch/acces/page36432_en.html
+
+Travel and registration
+-----------------------
+
+The meeting will start on the morning of Thursday 24 April, so you should plan
+to arrive by the evening before. The closest airport is in Geneva.
+Accommodation information is provided below.
+
+Please indicate your interest in attending by sending an email to darlene dot
+goldstein at epfl dot ch (dot = . ; at = @). Registration is free, but the
+number of participants is limited to 50. It will be helpful for scheduling if
+you indicate topics of interest, including additional suggestions if you don't
+see them listed here.
+
+Programme topics
+----------------
+
+    * Exploitation of existing libraries I: ImageMagick for image processing and
+analysis - Wolfgang Huber
+    * Exploitation of existing libraries II: String matching for fext generation
+sequencing data - Martin Morgan
+    * Exploitation of existing libraries III: Affymetrix File Parsing SDK -
+Henrik Bengtsson/Kasper Daniel Hansen
+    * Working with large datasets I: Affymetrix SNP array 6.0 - Benilton
+Carvalho
+    * Working with large datasets II: Exon arrays - Crispin Miller
+    * Working with large datasets III: - Henrik Bengtsson (TBC)
+    * Parallel processing in R - Richard Pearson
+    * Database interactions are intrinsically useful, and provide a strategy for
+dealing with some types of large data: the annaffy package and its use of SQLite
+database functionality - Sean Davis
+    * Object relational managers and R - Sean Davis
+    * Plans for a new tool to replace AnnBuilder - Martin Morgan
+    * org.species and homology annotation packages as infrastructure for package
+developers - James McDonald
+    * Accessing web-based resources, Biomart and XML - Steffen Durinck (TBC)
+    * R Webservices - Misha Kapushesky, Karim Chine
+    * Representation and data structures for new (non-microarray) data I - Vince
+Carey, Martin Morgan
+    * Representation and data structures for new (non-microarray) data II:
+cell-based assays and the cellHTS2 package - Wolfgang Huber
+
+Flashlight Session
+------------------
+
+Each attendee (especially those not speaking above) is encouraged to give a
+5-10min (<=3 slides) intro to (one of) the packages they're working on.
+
+Lodging
+-------
+
+The University can obtain a discount rate from some of the local hotels:
+
+    Hotel des Voyageurs (http://www.holidaycityeurope.com/comfort-lausanne/),
+approx 127.50CHF, is in downtown Lausanne on a pedestrian street
+
+    Hotel du Parc (http://www.leparc.ch/), approx 145 CHF, is in Ecublens a few
+metro stops from the University.
+
+To obtain the discount we must book the room for you. If you want to book one of
+these, then please send an email as soon as possible to Muriel.Metrailler AT
+unil DOT ch, letting her know which hotel you prefer, what days you need and
+how many in the room (single or double). If booking a double room, only 1 email
+with both names is necessary. Alternatively, you are free to make your own
+lodging arrangements; if you do so, please email Darlene.Goldstein AT epfl DOT
+ch so that we know you are already taken care of.
+
+Getting to Lausanne
+-------------------
+
+The closest airport is in Geneva. There is a train station at the airport
+(Geneva Airport, NOT Geneva), with 3-5 trains per hour to Renens VD and
+Lausanne. You can plan your train journey (in English) at
+http://www.sbb.ch/en/index.htm You can also change the language to German,
+French or Italian.
+
+The currency in Switzerland is the Swiss Franc (CHF), equivalent to
+approximately 0.90 US dollar, 0.60 Euro, or 0.45 British pounds sterling.
+Exchanging money is very easy in Switzerland, you can change money at major
+train stations (including at the airport) and banks, or at cash machines using
+debit or credit cards.
+
+About Lausanne
+--------------
+
+Lausanne, the capital of the Swiss canton Vaud, is a hilly city located on the
+shore of Lake Geneva (Lac Leman) in the French-speaking part of Switzerland. It
+is the headquarters of the International Olympic Committee, and home to several
+museums, parks and other attractions.
+
+Local information is available from the following web sites (the main page is in
+French, but you can change the language by clicking on one of the flags at the
+top of the page):
+
+        * http://www.lausanne.ch/ Official site of the city of Lausanne
+        * http://www.lausanne-tourisme.ch/ Lausanne Tourist Office
+
+Other Questions?
+----------------
+
+If you have any other questions, please email Darlene.Goldstein AT epfl DOT ch.
+
+We look forward to your participation!
+
+Program Committee: Wolfgang Huber, Robert Gentleman, Rafael Irizarry, Jim
+McDonald, Sean Davis, Vince Carey, Martin Morgan, Li Long
+
+Local Organizer: Darlene Goldstein
+
+-- 
+Darlene Goldstein
+?cole Polytechnique F?d?rale de Lausanne (EPFL)
+Institut de math?matiques
+B?timent MA, Station 8        Tel: +41 21 693 0528
+CH-1015 Lausanne              Fax: +41 21 693 4303
+SWITZERLAND
+
+
+From schmidb at ibe.med.uni-muenchen.de  Fri Feb 15 15:53:03 2008
+From: schmidb at ibe.med.uni-muenchen.de (Markus Schmidberger)
+Date: Fri, 15 Feb 2008 15:53:03 +0100
+Subject: [Bioc-devel] Namespace and function 'open'
+Message-ID: <47B5A74F.3020503@ibe.med.uni-muenchen.de>
+
+Hello,
+
+I built a package, everything was working very well. Now I included a 
+NAMESPACE to export only some variables. (export(f, g, ...) )
+Everything is working fine, except one function. There I get an error:
+
+Fehler in UseMethod("open") : keine anwendbare Methode f?r "open"
+
+In this function I use the function "open" to generate an output bar.
+
+  if (verbose) {
+     pbt <- new("ProgressBarText", length(ids), barsteps = as.integer(20))
+     open(pbt)
+   }
+     for (i in seq(along=ids)) {
+       if (verbose) {
+       update(pbt)
+     }
+
+How I have to change my NAMESPACE file to fix this problem?
+
+Thanks
+Markus Schmidberger
+
+
+From sdavis2 at mail.nih.gov  Fri Feb 15 16:04:05 2008
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Fri, 15 Feb 2008 10:04:05 -0500
+Subject: [Bioc-devel] Namespace and function 'open'
+In-Reply-To: <47B5A74F.3020503@ibe.med.uni-muenchen.de>
+References: <47B5A74F.3020503@ibe.med.uni-muenchen.de>
+Message-ID: <264855a00802150704h74fd970x7bcbbd5b2cd0831f@mail.gmail.com>
+
+On Fri, Feb 15, 2008 at 9:53 AM, Markus Schmidberger
+<schmidb at ibe.med.uni-muenchen.de> wrote:
+> Hello,
+>
+>  I built a package, everything was working very well. Now I included a
+>  NAMESPACE to export only some variables. (export(f, g, ...) )
+>  Everything is working fine, except one function. There I get an error:
+>
+>  Fehler in UseMethod("open") : keine anwendbare Methode f?r "open"
+>
+>  In this function I use the function "open" to generate an output bar.
+>
+>   if (verbose) {
+>      pbt <- new("ProgressBarText", length(ids), barsteps = as.integer(20))
+>      open(pbt)
+>    }
+>      for (i in seq(along=ids)) {
+>        if (verbose) {
+>        update(pbt)
+>      }
+>
+>  How I have to change my NAMESPACE file to fix this problem?
+
+Hi, Markus.  You will probably need to specify an import, perhaps from
+the affy package?
+
+http://cran.r-project.org/doc/manuals/R-exts.html#Package-name-spaces
+
+Hope that helps,
+Sean
+
+From schmidb at ibe.med.uni-muenchen.de  Fri Feb 15 16:10:49 2008
+From: schmidb at ibe.med.uni-muenchen.de (Markus Schmidberger)
+Date: Fri, 15 Feb 2008 16:10:49 +0100
+Subject: [Bioc-devel] Namespace and function 'open'
+In-Reply-To: <264855a00802150704h74fd970x7bcbbd5b2cd0831f@mail.gmail.com>
+References: <47B5A74F.3020503@ibe.med.uni-muenchen.de>
+	<264855a00802150704h74fd970x7bcbbd5b2cd0831f@mail.gmail.com>
+Message-ID: <47B5AB79.1030306@ibe.med.uni-muenchen.de>
+
+The function "open" is located in the "base" package. This should be 
+imported automatically.
+
+importFrom(base, open)
+Fails with an error:
+
+Error in asNamespace(ns, base.OK = FALSE) :
+  operation not allowed on base name space
+
+Best,
+Markus
+
+Sean Davis schrieb:
+> On Fri, Feb 15, 2008 at 9:53 AM, Markus Schmidberger
+> <schmidb at ibe.med.uni-muenchen.de> wrote:
+>   
+>> Hello,
+>>
+>>  I built a package, everything was working very well. Now I included a
+>>  NAMESPACE to export only some variables. (export(f, g, ...) )
+>>  Everything is working fine, except one function. There I get an error:
+>>
+>>  Fehler in UseMethod("open") : keine anwendbare Methode f?r "open"
+>>
+>>  In this function I use the function "open" to generate an output bar.
+>>
+>>   if (verbose) {
+>>      pbt <- new("ProgressBarText", length(ids), barsteps = as.integer(20))
+>>      open(pbt)
+>>    }
+>>      for (i in seq(along=ids)) {
+>>        if (verbose) {
+>>        update(pbt)
+>>      }
+>>
+>>  How I have to change my NAMESPACE file to fix this problem?
+>>     
+>
+> Hi, Markus.  You will probably need to specify an import, perhaps from
+> the affy package?
+>
+> http://cran.r-project.org/doc/manuals/R-exts.html#Package-name-spaces
+>
+> Hope that helps,
+> Sean
+>
+
+
+From stvjc at channing.harvard.edu  Fri Feb 15 16:37:35 2008
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Fri, 15 Feb 2008 10:37:35 -0500 (EST)
+Subject: [Bioc-devel] Namespace and function 'open'
+In-Reply-To: <47B5AB79.1030306@ibe.med.uni-muenchen.de>
+References: <47B5A74F.3020503@ibe.med.uni-muenchen.de>
+	<264855a00802150704h74fd970x7bcbbd5b2cd0831f@mail.gmail.com>
+	<47B5AB79.1030306@ibe.med.uni-muenchen.de>
+Message-ID: <Pine.GSO.4.58.0802151034260.11083@capecod.bwh.harvard.edu>
+
+On Fri, 15 Feb 2008, Markus Schmidberger wrote:
+
+>The function "open" is located in the "base" package. This should be
+>imported automatically.
+>
+>importFrom(base, open)
+>Fails with an error:
+>
+>Error in asNamespace(ns, base.OK = FALSE) :
+>  operation not allowed on base name space
+>
+>Best,
+>Markus
+
+There is an S3 method called 'open' in base.
+
+There is an S4 method called 'open' in affy.
+
+to learn about the latter
+
+library(affy)
+example("ProgressBarText-class")
+
+
+The information transmitted in this electronic communica...{{dropped:10}}
+
+
+From stvjc at channing.harvard.edu  Fri Feb 15 16:40:28 2008
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Fri, 15 Feb 2008 10:40:28 -0500 (EST)
+Subject: [Bioc-devel] Namespace and function 'open'
+In-Reply-To: <47B5AB79.1030306@ibe.med.uni-muenchen.de>
+References: <47B5A74F.3020503@ibe.med.uni-muenchen.de>
+	<264855a00802150704h74fd970x7bcbbd5b2cd0831f@mail.gmail.com>
+	<47B5AB79.1030306@ibe.med.uni-muenchen.de>
+Message-ID: <Pine.GSO.4.58.0802151038210.11083@capecod.bwh.harvard.edu>
+
+>>
+>>  How I have to change my NAMESPACE file to fix this problem?
+
+i think importClassesFrom and importMethodsFrom will need to be used
+relative to affy.
+
+
+The information transmitted in this electronic communica...{{dropped:10}}
+
+
+From schmidb at ibe.med.uni-muenchen.de  Fri Feb 15 17:25:59 2008
+From: schmidb at ibe.med.uni-muenchen.de (Markus Schmidberger)
+Date: Fri, 15 Feb 2008 17:25:59 +0100
+Subject: [Bioc-devel] Namespace and function 'open'
+In-Reply-To: <Pine.GSO.4.58.0802151038210.11083@capecod.bwh.harvard.edu>
+References: <47B5A74F.3020503@ibe.med.uni-muenchen.de>
+	<264855a00802150704h74fd970x7bcbbd5b2cd0831f@mail.gmail.com>
+	<47B5AB79.1030306@ibe.med.uni-muenchen.de>
+	<Pine.GSO.4.58.0802151038210.11083@capecod.bwh.harvard.edu>
+Message-ID: <47B5BD17.2090506@ibe.med.uni-muenchen.de>
+
+But there is no NAMESPACE in the package "affy". Therefore I can not 
+import the variables.
+
+importClassesFrom(affy, ProgressBarText)
+
+Error: package 'affy' does not have a name space
+
+Best
+Markus
+
+Vincent Carey 525-2265 schrieb:
+>>>  How I have to change my NAMESPACE file to fix this problem?
+>>>       
+>
+> i think importClassesFrom and importMethodsFrom will need to be used
+> relative to affy.
+>
+>
+> The information transmitted in this electronic communi...{{dropped:12}}
+
+
+From sdavis2 at mail.nih.gov  Fri Feb 15 17:30:51 2008
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Fri, 15 Feb 2008 11:30:51 -0500
+Subject: [Bioc-devel] Namespace and function 'open'
+In-Reply-To: <47B5BD17.2090506@ibe.med.uni-muenchen.de>
+References: <47B5A74F.3020503@ibe.med.uni-muenchen.de>
+	<264855a00802150704h74fd970x7bcbbd5b2cd0831f@mail.gmail.com>
+	<47B5AB79.1030306@ibe.med.uni-muenchen.de>
+	<Pine.GSO.4.58.0802151038210.11083@capecod.bwh.harvard.edu>
+	<47B5BD17.2090506@ibe.med.uni-muenchen.de>
+Message-ID: <264855a00802150830j15e0e7e5ufc6eef3c24d9f8ff@mail.gmail.com>
+
+On Fri, Feb 15, 2008 at 11:25 AM, Markus Schmidberger
+<schmidb at ibe.med.uni-muenchen.de> wrote:
+> But there is no NAMESPACE in the package "affy". Therefore I can not
+>  import the variables.
+>
+>  importClassesFrom(affy, ProgressBarText)
+>
+>  Error: package 'affy' does not have a name space
+
+How about:
+
+import(affy)
+
+Does that do it?
+
+Sean
+
+
+From schmidb at ibe.med.uni-muenchen.de  Fri Feb 15 17:36:35 2008
+From: schmidb at ibe.med.uni-muenchen.de (Markus Schmidberger)
+Date: Fri, 15 Feb 2008 17:36:35 +0100
+Subject: [Bioc-devel] Namespace and function 'open'
+In-Reply-To: <264855a00802150830j15e0e7e5ufc6eef3c24d9f8ff@mail.gmail.com>
+References: <47B5A74F.3020503@ibe.med.uni-muenchen.de>	
+	<264855a00802150704h74fd970x7bcbbd5b2cd0831f@mail.gmail.com>	
+	<47B5AB79.1030306@ibe.med.uni-muenchen.de>	
+	<Pine.GSO.4.58.0802151038210.11083@capecod.bwh.harvard.edu>	
+	<47B5BD17.2090506@ibe.med.uni-muenchen.de>
+	<264855a00802150830j15e0e7e5ufc6eef3c24d9f8ff@mail.gmail.com>
+Message-ID: <47B5BF93.8090600@ibe.med.uni-muenchen.de>
+
+Error: package 'affy' does not have a name space
+
+With
+importMethod(affy, open)
+I can build and install the package. But I still have the error
+
+Fehler in UseMethod("open") : keine anwendbare Methode f??r "open"
+
+Best
+Markus
+
+Sean Davis schrieb:
+> On Fri, Feb 15, 2008 at 11:25 AM, Markus Schmidberger
+> <schmidb at ibe.med.uni-muenchen.de> wrote:
+>   
+>> But there is no NAMESPACE in the package "affy". Therefore I can not
+>>  import the variables.
+>>
+>>  importClassesFrom(affy, ProgressBarText)
+>>
+>>  Error: package 'affy' does not have a name space
+>>     
+>
+> How about:
+>
+> import(affy)
+>
+> Does that do it?
+>
+> Sean
+>
+
+
+From lgautier at gmail.com  Fri Feb 15 17:49:10 2008
+From: lgautier at gmail.com (Laurent Gautier)
+Date: Fri, 15 Feb 2008 17:49:10 +0100
+Subject: [Bioc-devel] Namespace and function 'open'
+In-Reply-To: <264855a00802150830j15e0e7e5ufc6eef3c24d9f8ff@mail.gmail.com>
+References: <47B5A74F.3020503@ibe.med.uni-muenchen.de>
+	<264855a00802150704h74fd970x7bcbbd5b2cd0831f@mail.gmail.com>
+	<47B5AB79.1030306@ibe.med.uni-muenchen.de>
+	<Pine.GSO.4.58.0802151038210.11083@capecod.bwh.harvard.edu>
+	<47B5BD17.2090506@ibe.med.uni-muenchen.de>
+	<264855a00802150830j15e0e7e5ufc6eef3c24d9f8ff@mail.gmail.com>
+Message-ID: <27d1e6020802150849g3b0202ccic2fdc2ac2b91dc89@mail.gmail.com>
+
+2008/2/15, Sean Davis <sdavis2 at mail.nih.gov>:
+> On Fri, Feb 15, 2008 at 11:25 AM, Markus Schmidberger
+>
+> <schmidb at ibe.med.uni-muenchen.de> wrote:
+>
+> > But there is no NAMESPACE in the package "affy". Therefore I can not
+>  >  import the variables.
+>  >
+>  >  importClassesFrom(affy, ProgressBarText)
+>  >
+>  >  Error: package 'affy' does not have a name space
+>
+>
+> How about:
+>
+>  import(affy)
+>
+>  Does that do it?
+>
+
+Wouldn't it be nicer to have "affy" in the field "Depends" of the file
+DESCRIPTION ?
+
+
+
+>  Sean
+>
+>
+>  _______________________________________________
+>  Bioc-devel at stat.math.ethz.ch mailing list
+>  https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From schmidb at ibe.med.uni-muenchen.de  Fri Feb 15 17:51:05 2008
+From: schmidb at ibe.med.uni-muenchen.de (Markus Schmidberger)
+Date: Fri, 15 Feb 2008 17:51:05 +0100
+Subject: [Bioc-devel] Namespace and function 'open'
+In-Reply-To: <27d1e6020802150849g3b0202ccic2fdc2ac2b91dc89@mail.gmail.com>
+References: <47B5A74F.3020503@ibe.med.uni-muenchen.de>	
+	<264855a00802150704h74fd970x7bcbbd5b2cd0831f@mail.gmail.com>	
+	<47B5AB79.1030306@ibe.med.uni-muenchen.de>	
+	<Pine.GSO.4.58.0802151038210.11083@capecod.bwh.harvard.edu>	
+	<47B5BD17.2090506@ibe.med.uni-muenchen.de>	
+	<264855a00802150830j15e0e7e5ufc6eef3c24d9f8ff@mail.gmail.com>
+	<27d1e6020802150849g3b0202ccic2fdc2ac2b91dc89@mail.gmail.com>
+Message-ID: <47B5C2F9.50401@ibe.med.uni-muenchen.de>
+
+Laurent Gautier schrieb:
+> 2008/2/15, Sean Davis <sdavis2 at mail.nih.gov>:
+>   
+>> On Fri, Feb 15, 2008 at 11:25 AM, Markus Schmidberger
+>>
+>> <schmidb at ibe.med.uni-muenchen.de> wrote:
+>>
+>>     
+>>> But there is no NAMESPACE in the package "affy". Therefore I can not
+>>>       
+>>  >  import the variables.
+>>  >
+>>  >  importClassesFrom(affy, ProgressBarText)
+>>  >
+>>  >  Error: package 'affy' does not have a name space
+>>
+>>
+>> How about:
+>>
+>>  import(affy)
+>>
+>>  Does that do it?
+>>
+>>     
+>
+> Wouldn't it be nicer to have "affy" in the field "Depends" of the file
+> DESCRIPTION ?
+>   
+
+There it still is:
+Depends: R (>= 2.5.0), affy (>= 1.14.0), snow (>= 0.2-3)
+>
+>
+>   
+>>  Sean
+>>
+>>
+>>  _______________________________________________
+>>  Bioc-devel at stat.math.ethz.ch mailing list
+>>  https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>
+
+
+From rgentlem at fhcrc.org  Fri Feb 15 19:30:27 2008
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Fri, 15 Feb 2008 10:30:27 -0800
+Subject: [Bioc-devel] Namespace and function 'open'
+In-Reply-To: <47B5BF93.8090600@ibe.med.uni-muenchen.de>
+References: <47B5A74F.3020503@ibe.med.uni-muenchen.de>		<264855a00802150704h74fd970x7bcbbd5b2cd0831f@mail.gmail.com>		<47B5AB79.1030306@ibe.med.uni-muenchen.de>		<Pine.GSO.4.58.0802151038210.11083@capecod.bwh.harvard.edu>		<47B5BD17.2090506@ibe.med.uni-muenchen.de>	<264855a00802150830j15e0e7e5ufc6eef3c24d9f8ff@mail.gmail.com>
+	<47B5BF93.8090600@ibe.med.uni-muenchen.de>
+Message-ID: <47B5DA43.30409@fhcrc.org>
+
+Hi,
+   It might help if folks read Luke Tierney's description of name spaces 
+in R News, in the hopes of removing some of the confusion here.  In 
+particular pay attention to the discussion of how resolution of symbols 
+is done during evaluation (and the fact that base plays a special role).
+
+The problem is indeed that Markus (and please do not post the same 
+question to two lists, or cross post, that is not viewed as appropriate 
+behavior, reporting sessionInfo is helpful) wants open from Affy, not 
+from base, and that by putting a name space on his package he makes it 
+hard to do that, since the point of name spaces is essentially to give 
+some priority to functions in base.
+
+Until affy has a namespace then importing won't work (anyone care to put 
+one on it?).  I suspect that using get is going to be the easiest solution.
+
+best wishes
+   Robert
+
+
+Markus Schmidberger wrote:
+> Error: package 'affy' does not have a name space
+> 
+> With
+> importMethod(affy, open)
+> I can build and install the package. But I still have the error
+> 
+> Fehler in UseMethod("open") : keine anwendbare Methode f??r "open"
+> 
+> Best
+> Markus
+> 
+> Sean Davis schrieb:
+>> On Fri, Feb 15, 2008 at 11:25 AM, Markus Schmidberger
+>> <schmidb at ibe.med.uni-muenchen.de> wrote:
+>>   
+>>> But there is no NAMESPACE in the package "affy". Therefore I can not
+>>>  import the variables.
+>>>
+>>>  importClassesFrom(affy, ProgressBarText)
+>>>
+>>>  Error: package 'affy' does not have a name space
+>>>     
+>> How about:
+>>
+>> import(affy)
+>>
+>> Does that do it?
+>>
+>> Sean
+>>
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From colin at colinsmith.org  Tue Feb 19 05:31:02 2008
+From: colin at colinsmith.org (Colin A. Smith)
+Date: Mon, 18 Feb 2008 20:31:02 -0800
+Subject: [Bioc-devel] Version Number Promotion
+Message-ID: <894D2E4F-A102-466D-9071-EDF298EC43EC@colinsmith.org>
+
+Packages with 0.99.z version numbers (where z is an integer)  
+automatically get promoted to 1.0 for release, according to the  
+standard:
+
+http://wiki.fhcrc.org/bioc/Version_Numbering_Standards
+
+Is this a generic standard? For instance, will a 1.99.z package  
+version get updated to version 2.0 for the release. Thanks!
+
+-Colin
+
+
+From john.lande77 at gmail.com  Thu Feb 21 19:22:44 2008
+From: john.lande77 at gmail.com (John Lande)
+Date: Thu, 21 Feb 2008 10:22:44 -0800
+Subject: [Bioc-devel] creating win package from linux
+Message-ID: <c2ebc3880802211022p1e492046gebf8ebaec608ab48@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+Url: https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080221/b87359d5/attachment.pl 
+
+From mtmorgan at fhcrc.org  Thu Feb 21 20:16:51 2008
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 21 Feb 2008 11:16:51 -0800
+Subject: [Bioc-devel] creating win package from linux
+In-Reply-To: <c2ebc3880802211022p1e492046gebf8ebaec608ab48@mail.gmail.com>
+	(John Lande's message of "Thu, 21 Feb 2008 10:22:44 -0800")
+References: <c2ebc3880802211022p1e492046gebf8ebaec608ab48@mail.gmail.com>
+Message-ID: <6phd4qqxgpo.fsf@gopher4.fhcrc.org>
+
+Hi John --
+
+Have you tried http://win-builder.r-project.org/ to build your
+package?
+
+You have installed package ixe.zip but are calling
+library(myfun). Also the error message -- ' alid package' -- is not
+copied directly from the R console. So things are going on that you
+have not told us about.
+
+Please provide more specific information about how ixe.zip is created.
+
+Martin
+
+"John Lande" <john.lande77 at gmail.com> writes:
+
+> dear all,
+>
+> I am creating a package for my function in linux for both windows and linux.
+> with linux I have no problems,
+> but when I try to install the package under win I retrive this error
+>
+>
+>> install.packages("ixe.zip", repos=NULL)
+> updating HTML package descriptions
+>> library(myfun)
+> Error in library(myfun) :
+>   'myfun' is not a alid packager -- installed < 2.0.0?
+>
+>
+> I followed this guide:
+> http://www.maths.bris.ac.uk/~maman/computerstuff/Rhelp/Rpackages.html
+>
+>> sessionInfo()
+> R version 2.6.2 (2008-02-08)
+> i386-pc-mingw32
+>
+> locale:
+> LC_COLLATE=Italian_Italy.1252;LC_CTYPE=Italian_Italy.1252;LC_MONETARY=Italian_Italy.1252;LC_NUMERIC=C;LC_TIME=Italian_Italy.1252
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> loaded via a namespace (and not attached):
+> [1] rcompgen_0.1-17 tools_2.6.2
+>
+> bye
+> john
+>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M2 B169
+Phone: (206) 667-2793
+
+
+From jmacdon at med.umich.edu  Thu Feb 21 23:09:16 2008
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Thu, 21 Feb 2008 17:09:16 -0500
+Subject: [Bioc-devel] creating win package from linux
+In-Reply-To: <c2ebc3880802211022p1e492046gebf8ebaec608ab48@mail.gmail.com>
+References: <c2ebc3880802211022p1e492046gebf8ebaec608ab48@mail.gmail.com>
+Message-ID: <47BDF68C.1010303@med.umich.edu>
+
+Hi John,
+
+Yeah. You can't just zip packages up and then use the installer to 
+install. You have to actually build the packages, even on Windows. That 
+website must not have been updated for years now. First go here:
+
+http://cran.r-project.org/doc/manuals/R-admin.html#The-Windows-toolset
+
+All you need to do is get the Rtools.exe from Duncan Murdoch's site, run 
+it, allow it to set your PATH and then you should be able to install the 
+package similarly to how you did on Linux.
+
+rcmd build <path_to_package_with_no_spaces_and_forward_slashes>
+
+e.g. rcmd build c:/docume~1/john/desktop/ixe
+if the package is on your desktop and your username is 'john'
+
+rcmd check ixe.tar.gz
+rcmd install ixe.tar.gz
+
+Having things like the HTML help workshop and LaTeX are nice but not 
+necessary. Having the Inno Setup Installer is only necessary if you want 
+to build R from source and create an installer.
+
+Best,
+
+Jim
+
+
+
+
+John Lande wrote:
+> dear all,
+> 
+> I am creating a package for my function in linux for both windows and linux.
+> with linux I have no problems,
+> but when I try to install the package under win I retrive this error
+> 
+> 
+>> install.packages("ixe.zip", repos=NULL)
+> updating HTML package descriptions
+>> library(myfun)
+> Error in library(myfun) :
+>   'myfun' is not a alid packager -- installed < 2.0.0?
+> 
+> 
+> I followed this guide:
+> http://www.maths.bris.ac.uk/~maman/computerstuff/Rhelp/Rpackages.html
+> 
+>> sessionInfo()
+> R version 2.6.2 (2008-02-08)
+> i386-pc-mingw32
+> 
+> locale:
+> LC_COLLATE=Italian_Italy.1252;LC_CTYPE=Italian_Italy.1252;LC_MONETARY=Italian_Italy.1252;LC_NUMERIC=C;LC_TIME=Italian_Italy.1252
+> 
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+> 
+> loaded via a namespace (and not attached):
+> [1] rcompgen_0.1-17 tools_2.6.2
+> 
+> bye
+> john
+> 
+> 	[[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Affymetrix and cDNA Microarray Core
+University of Michigan Cancer Center
+1500 E. Medical Center Drive
+7410 CCGC
+Ann Arbor MI 48109
+734-647-5623
+
+
+From john.lande77 at gmail.com  Thu Feb 21 23:21:54 2008
+From: john.lande77 at gmail.com (John Lande)
+Date: Thu, 21 Feb 2008 14:21:54 -0800
+Subject: [Bioc-devel] creating win package from linux
+In-Reply-To: <47BDF68C.1010303@med.umich.edu>
+References: <c2ebc3880802211022p1e492046gebf8ebaec608ab48@mail.gmail.com>
+	<47BDF68C.1010303@med.umich.edu>
+Message-ID: <c2ebc3880802211421k3abc062bscf65c47bf9a90369@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+Url: https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080221/6f7e0429/attachment.pl 
+
+From jmacdon at med.umich.edu  Fri Feb 22 01:54:07 2008
+From: jmacdon at med.umich.edu (James MacDonald)
+Date: Thu, 21 Feb 2008 19:54:07 -0500
+Subject: [Bioc-devel] creating win package from linux
+In-Reply-To: <c2ebc3880802211421k3abc062bscf65c47bf9a90369@mail.gmail.com>
+References: <c2ebc3880802211022p1e492046gebf8ebaec608ab48@mail.gmail.com>	
+	<47BDF68C.1010303@med.umich.edu>
+	<c2ebc3880802211421k3abc062bscf65c47bf9a90369@mail.gmail.com>
+Message-ID: <47BE1D2F.4040104@med.umich.edu>
+
+That part is irrelevant. The problem is still that you haven't installed 
+the package correctly. Follow the prescription I outlined below and it 
+should load fine.
+
+Best,
+
+Jim
+
+
+
+John Lande wrote:
+> forget it I made a mistake,
+> 
+>  > install.packages("myfun.zip", repos=NULL)
+> updating HTML package descriptions
+>  > library(myfun)
+> Error in library(myfun) :
+>   'myfun' is not a alid packager -- installed < 2.0.0? the correct script is
+> 
+> 
+> 
+> On Thu, Feb 21, 2008 at 2:09 PM, James W. MacDonald 
+> <jmacdon at med.umich.edu <mailto:jmacdon at med.umich.edu>> wrote:
+> 
+>     Hi John,
+> 
+>     Yeah. You can't just zip packages up and then use the installer to
+>     install. You have to actually build the packages, even on Windows. That
+>     website must not have been updated for years now. First go here:
+> 
+>     http://cran.r-project.org/doc/manuals/R-admin.html#The-Windows-toolset
+> 
+>     All you need to do is get the Rtools.exe from Duncan Murdoch's site, run
+>     it, allow it to set your PATH and then you should be able to install the
+>     package similarly to how you did on Linux.
+> 
+>     rcmd build <path_to_package_with_no_spaces_and_forward_slashes>
+> 
+>     e.g. rcmd build c:/docume~1/john/desktop/ixe
+>     if the package is on your desktop and your username is 'john'
+> 
+>     rcmd check ixe.tar.gz
+>     rcmd install ixe.tar.gz
+> 
+>     Having things like the HTML help workshop and LaTeX are nice but not
+>     necessary. Having the Inno Setup Installer is only necessary if you want
+>     to build R from source and create an installer.
+> 
+>     Best,
+> 
+>     Jim
+> 
+> 
+> 
+> 
+>     John Lande wrote:
+>      > dear all,
+>      >
+>      > I am creating a package for my function in linux for both windows
+>     and linux.
+>      > with linux I have no problems,
+>      > but when I try to install the package under win I retrive this error
+>      >
+>      >
+>      >> install.packages("ixe.zip", repos=NULL)
+>      > updating HTML package descriptions
+>      >> library(myfun)
+>      > Error in library(myfun) :
+>      >   'myfun' is not a alid packager -- installed < 2.0.0?
+>      >
+>      >
+>      > I followed this guide:
+>      >
+>     http://www.maths.bris.ac.uk/~maman/computerstuff/Rhelp/Rpackages.html
+>     <http://www.maths.bris.ac.uk/%7Emaman/computerstuff/Rhelp/Rpackages.html>
+>      >
+>      >> sessionInfo()
+>      > R version 2.6.2 (2008-02-08)
+>      > i386-pc-mingw32
+>      >
+>      > locale:
+>      >
+>     LC_COLLATE=Italian_Italy.1252;LC_CTYPE=Italian_Italy.1252;LC_MONETARY=Italian_Italy.1252;LC_NUMERIC=C;LC_TIME=Italian_Italy.1252
+>      >
+>      > attached base packages:
+>      > [1] stats     graphics  grDevices utils     datasets  methods   base
+>      >
+>      > loaded via a namespace (and not attached):
+>      > [1] rcompgen_0.1-17 tools_2.6.2
+>      >
+>      > bye
+>      > john
+>      >
+>      >       [[alternative HTML version deleted]]
+>      >
+>      > _______________________________________________
+>      > Bioc-devel at stat.math.ethz.ch
+>     <mailto:Bioc-devel at stat.math.ethz.ch> mailing list
+>      > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+>     --
+>     James W. MacDonald, M.S.
+>     Biostatistician
+>     Affymetrix and cDNA Microarray Core
+>     University of Michigan Cancer Center
+>     1500 E. Medical Center Drive
+>     7410 CCGC
+>     Ann Arbor MI 48109
+>     734-647-5623
+> 
+> 
+
+-- 
+James W. MacDonald, MS
+Biostatistician
+UMCCC cDNA and Affymetrix Core
+University of Michigan
+1500 E Medical Center Drive
+7410 CCGC
+Ann Arbor MI 48109
+734-647-5623
+
+
+From hpages at fhcrc.org  Sat Feb 23 05:19:06 2008
+From: hpages at fhcrc.org (Herve Pages)
+Date: Fri, 22 Feb 2008 20:19:06 -0800
+Subject: [Bioc-devel] Version Number Promotion
+In-Reply-To: <894D2E4F-A102-466D-9071-EDF298EC43EC@colinsmith.org>
+References: <894D2E4F-A102-466D-9071-EDF298EC43EC@colinsmith.org>
+Message-ID: <47BF9EBA.7060307@fhcrc.org>
+
+Hi Colin,
+
+Colin A. Smith wrote:
+> Packages with 0.99.z version numbers (where z is an integer)  
+> automatically get promoted to 1.0 for release, according to the  
+> standard:
+> 
+> http://wiki.fhcrc.org/bioc/Version_Numbering_Standards
+> 
+> Is this a generic standard? For instance, will a 1.99.z package  
+> version get updated to version 2.0 for the release. Thanks!
+
+Yes it will.
+
+H.
+
+> 
+> -Colin
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From esteban.2 at osu.edu  Mon Feb 25 17:52:10 2008
+From: esteban.2 at osu.edu (Luis Esteban)
+Date: Mon, 25 Feb 2008 11:52:10 -0500
+Subject: [Bioc-devel] chip-solexa pipeline
+Message-ID: <1181da1173ae.1173ae1181da@osu.edu>
+
+Hi everyone,
+Mi name is Luis Esteban.In working in pipeline to analize chip-454 seq and chip -solexa sequences. I'm new with R and I particularly interested in one offer that Jose M Muino made to share something  of what he wrote for the same purpose.
+Luis Esteban PhD
+Schoolar Vistitor 
+Plant Biotechnology lab
+OHIO STATE UNIVERSITY
+
+
+From Darlene.Goldstein at epfl.ch  Tue Feb 26 16:44:30 2008
+From: Darlene.Goldstein at epfl.ch (Darlene Goldstein)
+Date: Tue, 26 Feb 2008 16:44:30 +0100
+Subject: [Bioc-devel] BioConductor Developer Workshop Lausanne 2008 -
+	waiting list started
+Message-ID: <1204040670.47c433de6ae15@webmail.epfl.ch>
+
+Hi,
+
+the BioConductor Developer Workshop, to be held in Lausanne, Switzerland on
+24-25 April 2008, is currently FULL.  I have started a waiting list in case
+additional slots open up.
+
+You can find workshop information at
+http://wiki.fhcrc.org/bioc/Lausanne_Dev_Meeting_2008
+
+Best regards,
+
+Darlene
+-- 
+Darlene Goldstein
+?cole Polytechnique F?d?rale de Lausanne (EPFL)
+Institut de math?matiques
+B?timent MA, Station 8        Tel: +41 21 693 0528
+CH-1015 Lausanne              Fax: +41 21 693 4303
+SWITZERLAND
+
+
+From mcarlson at fhcrc.org  Thu Feb 28 23:00:30 2008
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Thu, 28 Feb 2008 14:00:30 -0800
+Subject: [Bioc-devel] New package announcements. XDE, GraphAlignment and mdqc
+Message-ID: <47C72EFE.7060808@fhcrc.org>
+
+I would like to announce that we now have three new packages that have
+been accepted into the 2.2 branch of bioconductor.  The new packages
+have now been added to the devel branch after passing through our review
+process.
+
+In the package authors own words here is what these are about:
+
+XDE: a Bayesian hierarchical model for cross-study analysis of
+differential gene expression
+
+GraphAlignment: Graph alignment is an extension package for the R
+programming environment which provides functions for finding an
+alignment between two networks based on link and node similarity scores.
+(J. Berg and M. Laessig, "Cross-species analysis of biological networks
+by Bayesian alignment", PNAS 103 (29), 10967-10972 (2006))
+
+mdqc: MDQC is a multivariate quality assessment method for microarrays
+based on quality control (QC) reports. The Mahalanobis distance of an
+array's quality attributes is used to measure the similarity of the
+quality of that array against the quality of the other arrays. Then,
+arrays with unusually high distances can be flagged as potentially
+low-quality.
+
+
+There are many more packages in the review pipeline.  So there should be
+more announcements forthcoming.
+
+
+
+    Marc
+
+
+From mtmorgan at fhcrc.org  Fri Feb 29 04:45:06 2008
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 28 Feb 2008 19:45:06 -0800
+Subject: [Bioc-devel] bioc-sig-sequencing: new list for Bioconductor
+ high-throughput sequencing analysis
+Message-ID: <6phskzc8lz1.fsf@gopher4.fhcrc.org>
+
+Bioconductors --
+
+High-throughput sequencing technologies (Solexa, 454, etc) offer
+exciting prospects for biological insight coupled with challenging
+statistical and computational issues. If you're interested in
+developing Bioconductor packages for these technologies, or if you're
+a user hoping to contribute to the direction in which package
+development might proceed, then please consider joining the new
+bioc-sig-sequencing mailing list.
+
+  https://stat.ethz.ch/mailman/listinfo/bioc-sig-sequencing
+
+The coveted spot of 'first post' is still available! 
+
+Best,
+-- 
+Martin Morgan
+Bioconductor
+
+

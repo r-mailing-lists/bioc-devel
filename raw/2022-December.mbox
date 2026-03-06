@@ -1,0 +1,2656 @@
+From hp@ge@@on@g|thub @end|ng |rom gm@||@com  Thu Dec  1 21:26:28 2022
+From: hp@ge@@on@g|thub @end|ng |rom gm@||@com (=?UTF-8?B?SGVydsOpIFBhZ8Oocw==?=)
+Date: Thu, 1 Dec 2022 12:26:28 -0800
+Subject: [Bioc-devel] 
+ S4 Methods Documentation Convention Triggers Warnings
+In-Reply-To: <CADfFDC41okSBFKKa6qKbmE1MPEz3sb8mkrcTMwskySbap7SA8Q@mail.gmail.com>
+References: <SY2PR01MB30037705A39AEAF0CD35BF8DCD109@SY2PR01MB3003.ausprd01.prod.outlook.com>
+ <CADfFDC4E9Ni7GCBLFJ9PRdmOQbnXY2BqGcvDW4iXBvoqzWnDoQ@mail.gmail.com>
+ <CAOQ5Nyess21GnUpXMkjwuTGthTZ+GAdoPF8DPzm_+ZijT-itdA@mail.gmail.com>
+ <25479.15944.115539.192073@stat.math.ethz.ch>
+ <BY5PR04MB6627C0059DF9EB80FC9E08F3F9159@BY5PR04MB6627.namprd04.prod.outlook.com>
+ <CADfFDC41okSBFKKa6qKbmE1MPEz3sb8mkrcTMwskySbap7SA8Q@mail.gmail.com>
+Message-ID: <71be4d53-6952-0d1e-be6a-627d009d2b10@gmail.com>
+
+Itemizing brings semantics and structure. Plus, the \preformatted 
+solution doesn't look good either IMO. FWIW I mostly care about what I 
+see when I open the man page in a terminal with ?<foo>. I don't care so 
+much about the PDF manual, never look at it.
+
+So I'm going to switch from
+
+   \item{}{\code{show(x)}:
+     ...
+   }
+
+to
+
+   \item{\code{show(x)}:}{
+     ...
+   }
+
+as suggested by Henrik.
+
+I actually tried the latter many years ago and compared with the former 
+and for some reason decided to go for the former. But now I like the 
+rendering of the latter better. Don't know if it has changed or if my 
+taste has changed ;-)
+
+Anyways, that's hundreds of \items that I need to fix in a dozen of 
+packages. Not fun! Also the thing with the exact location of the colon 
+is very error prone. As Michael said, it would be nice to be able to 
+achieve this with a simpler/more natural syntax.
+
+H.
+
+On 30/11/2022 10:47, Deepayan Sarkar wrote:
+> On Wed, Nov 30, 2022 at 9:51 PM Martin Morgan <mtmorgan.bioc at gmail.com>
+> wrote:
+>
+>> I recently made the change Henrik suggests in the ?devel? but not
+>> ?release? branch of BiocParallel, so the manuals can be compared. Take a
+>> look at the ?Constructor? and ?Accessors: Logging and results? sections of
+>> the ?SnowParam-class.Rd? man page, starting on p. 53 of the PDF.
+>>
+>>
+>> https://bioconductor.org/packages/release/bioc/manuals/BiocParallel/man/BiocParallel.pdf
+>>
+>>
+>> https://bioconductor.org/packages/devel/bioc/manuals/BiocParallel/man/BiocParallel.pdf
+>>
+>> I think in \item{<foo>}{bar} the <foo> is not wrapped, so runs off the
+>> margin in the devel ?Constructor? section.
+>
+> This should ideally use \preformatted{}, but R-exts says that "Due to
+> limitations in LaTeX as of this writing, this macro may not be nested
+> within other markup macros other than \dQuote and \sQuote, as errors or bad
+> formatting may result."
+>
+> Still, in this particular case, and possibly others like it, free-format
+> text (instead of itemizing) might work better:
+>
+> \section{Constructor}{
+>
+>      \preformatted{SnowParam(workers = snowWorkers(), type=c("SOCK", "MPI"),
+>            tasks = 0L, stop.on.error = FALSE,
+>            progressbar = FALSE, RNGseed = NULL,
+>            timeout = Inf, exportglobals = TRUE,
+>            exportvariables = TRUE,
+>            log = FALSE, threshold = "INFO", logdir = NA_character_,
+>            resultdir = NA_character_, jobname = "BPJOB",
+>            manager.hostname = NA_character_,
+>            manager.port = NA_integer_,
+>            ...)}
+>      Returns an object representing a SNOW cluster. The cluster is not
+>      created until \code{bpstart} is called. Named arguments in \code{...}
+>      are passed to \code{makeCluster}.
+>
+> }
+>
+> Even if we retain the status quo, the \item{}{\code{...}{}} version of this
+> (as in the release branch) is by no means nice-looking.
+>
+> Best,
+> -Deepayan
+>
+> The shorter items in the ?Accessors: Logging and results? section look
+>> almost identical, with a little extra (unnecessary) indentation under the
+>> original formatting.
+>>
+>> I changed the ?Accessors: Back-end control? to an itemized list, since
+>> there was no description associated with each item. This adds bullets.
+>>
+>> The commit is at
+>>
+>>
+>> https://code.bioconductor.org/browse/BiocParallel/commit/4e85b38b92f2adb68fe04ffb0476cbc47c1241a8
+>>
+>> (as well as https://github.com/Bioconductor/BiocParallel...)
+>>
+>> Martin
+>>
+>> From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Martin
+>> Maechler <maechler at stat.math.ethz.ch>
+>> Date: Wednesday, November 30, 2022 at 6:28 AM
+>> To: Michael Lawrence (MICHAFLA) <lawrence.michael at gene.com>
+>> Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>, Kurt Hornik <
+>> Kurt.Hornik at wu.ac.at>
+>> Subject: Re: [Bioc-devel] S4 Methods Documentation Convention Triggers
+>> Warnings
+>>>>>>> Michael Lawrence \(MICHAFLA\) via Bioc-devel
+>>>>>>>      on Mon, 28 Nov 2022 12:11:00 -0800 writes:
+>>      > It may be worth revisiting why we arrived at this convention in the
+>> first
+>>      > place and see whether the Rd system can be enhanced somehow so that
+>> we can
+>>      > achieve the same effect with a more natural syntax.
+>>
+>>      > Michael
+>>
+>>
+>> Yes, I agree.
+>>
+>> It may be that in the distant past, Henrik's suggestion
+>> (a version of which I am using myself a lot in *.Rd -- mostly
+>>   *not* related to S4)
+>> did not work correctly, but I know it has worked for years now,
+>> as I use it "all the time".
+>> and not just I.
+>>
+>> If I grep in R's *base* package alone,
+>>
+>> inside ...../R/src/library/base/man/
+>>
+>> grep --color -nH --null -e '\\item{\\code{<file:///item%7b/code%7b>' *.Rd
+>>
+>> starts with
+>>
+>> agrep.Rd
+>>
+>>          [[alternative HTML version deleted]]
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Herv? Pag?s
+
+Bioconductor Core Team
+hpages.on.github at gmail.com
+
+
+From henr|k@bengt@@on @end|ng |rom gm@||@com  Thu Dec  1 22:03:39 2022
+From: henr|k@bengt@@on @end|ng |rom gm@||@com (Henrik Bengtsson)
+Date: Thu, 1 Dec 2022 13:03:39 -0800
+Subject: [Bioc-devel] 
+ S4 Methods Documentation Convention Triggers Warnings
+In-Reply-To: <71be4d53-6952-0d1e-be6a-627d009d2b10@gmail.com>
+References: <SY2PR01MB30037705A39AEAF0CD35BF8DCD109@SY2PR01MB3003.ausprd01.prod.outlook.com>
+ <CADfFDC4E9Ni7GCBLFJ9PRdmOQbnXY2BqGcvDW4iXBvoqzWnDoQ@mail.gmail.com>
+ <CAOQ5Nyess21GnUpXMkjwuTGthTZ+GAdoPF8DPzm_+ZijT-itdA@mail.gmail.com>
+ <25479.15944.115539.192073@stat.math.ethz.ch>
+ <BY5PR04MB6627C0059DF9EB80FC9E08F3F9159@BY5PR04MB6627.namprd04.prod.outlook.com>
+ <CADfFDC41okSBFKKa6qKbmE1MPEz3sb8mkrcTMwskySbap7SA8Q@mail.gmail.com>
+ <71be4d53-6952-0d1e-be6a-627d009d2b10@gmail.com>
+Message-ID: <CAFDcVCQFuoWFj=nqUh__qmw1Bf0gPk6FneMRu4_UxEjA1znUNQ@mail.gmail.com>
+
+> Anyways, that's hundreds of \items that I need to fix in a dozen of packages. Not fun!
+
+A great opportunity to freshen up your 'sed' skills. (I think it's
+possible to use 'sed' here, but 100% sure)
+
+/Henrik
+
+On Thu, Dec 1, 2022 at 12:27 PM Herv? Pag?s <hpages.on.github at gmail.com> wrote:
+>
+> Itemizing brings semantics and structure. Plus, the \preformatted
+> solution doesn't look good either IMO. FWIW I mostly care about what I
+> see when I open the man page in a terminal with ?<foo>. I don't care so
+> much about the PDF manual, never look at it.
+>
+> So I'm going to switch from
+>
+>    \item{}{\code{show(x)}:
+>      ...
+>    }
+>
+> to
+>
+>    \item{\code{show(x)}:}{
+>      ...
+>    }
+>
+> as suggested by Henrik.
+>
+> I actually tried the latter many years ago and compared with the former
+> and for some reason decided to go for the former. But now I like the
+> rendering of the latter better. Don't know if it has changed or if my
+> taste has changed ;-)
+>
+> Anyways, that's hundreds of \items that I need to fix in a dozen of
+> packages. Not fun! Also the thing with the exact location of the colon
+> is very error prone. As Michael said, it would be nice to be able to
+> achieve this with a simpler/more natural syntax.
+>
+> H.
+>
+> On 30/11/2022 10:47, Deepayan Sarkar wrote:
+> > On Wed, Nov 30, 2022 at 9:51 PM Martin Morgan <mtmorgan.bioc at gmail.com>
+> > wrote:
+> >
+> >> I recently made the change Henrik suggests in the ?devel? but not
+> >> ?release? branch of BiocParallel, so the manuals can be compared. Take a
+> >> look at the ?Constructor? and ?Accessors: Logging and results? sections of
+> >> the ?SnowParam-class.Rd? man page, starting on p. 53 of the PDF.
+> >>
+> >>
+> >> https://bioconductor.org/packages/release/bioc/manuals/BiocParallel/man/BiocParallel.pdf
+> >>
+> >>
+> >> https://bioconductor.org/packages/devel/bioc/manuals/BiocParallel/man/BiocParallel.pdf
+> >>
+> >> I think in \item{<foo>}{bar} the <foo> is not wrapped, so runs off the
+> >> margin in the devel ?Constructor? section.
+> >
+> > This should ideally use \preformatted{}, but R-exts says that "Due to
+> > limitations in LaTeX as of this writing, this macro may not be nested
+> > within other markup macros other than \dQuote and \sQuote, as errors or bad
+> > formatting may result."
+> >
+> > Still, in this particular case, and possibly others like it, free-format
+> > text (instead of itemizing) might work better:
+> >
+> > \section{Constructor}{
+> >
+> >      \preformatted{SnowParam(workers = snowWorkers(), type=c("SOCK", "MPI"),
+> >            tasks = 0L, stop.on.error = FALSE,
+> >            progressbar = FALSE, RNGseed = NULL,
+> >            timeout = Inf, exportglobals = TRUE,
+> >            exportvariables = TRUE,
+> >            log = FALSE, threshold = "INFO", logdir = NA_character_,
+> >            resultdir = NA_character_, jobname = "BPJOB",
+> >            manager.hostname = NA_character_,
+> >            manager.port = NA_integer_,
+> >            ...)}
+> >      Returns an object representing a SNOW cluster. The cluster is not
+> >      created until \code{bpstart} is called. Named arguments in \code{...}
+> >      are passed to \code{makeCluster}.
+> >
+> > }
+> >
+> > Even if we retain the status quo, the \item{}{\code{...}{}} version of this
+> > (as in the release branch) is by no means nice-looking.
+> >
+> > Best,
+> > -Deepayan
+> >
+> > The shorter items in the ?Accessors: Logging and results? section look
+> >> almost identical, with a little extra (unnecessary) indentation under the
+> >> original formatting.
+> >>
+> >> I changed the ?Accessors: Back-end control? to an itemized list, since
+> >> there was no description associated with each item. This adds bullets.
+> >>
+> >> The commit is at
+> >>
+> >>
+> >> https://code.bioconductor.org/browse/BiocParallel/commit/4e85b38b92f2adb68fe04ffb0476cbc47c1241a8
+> >>
+> >> (as well as https://github.com/Bioconductor/BiocParallel...)
+> >>
+> >> Martin
+> >>
+> >> From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Martin
+> >> Maechler <maechler at stat.math.ethz.ch>
+> >> Date: Wednesday, November 30, 2022 at 6:28 AM
+> >> To: Michael Lawrence (MICHAFLA) <lawrence.michael at gene.com>
+> >> Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>, Kurt Hornik <
+> >> Kurt.Hornik at wu.ac.at>
+> >> Subject: Re: [Bioc-devel] S4 Methods Documentation Convention Triggers
+> >> Warnings
+> >>>>>>> Michael Lawrence \(MICHAFLA\) via Bioc-devel
+> >>>>>>>      on Mon, 28 Nov 2022 12:11:00 -0800 writes:
+> >>      > It may be worth revisiting why we arrived at this convention in the
+> >> first
+> >>      > place and see whether the Rd system can be enhanced somehow so that
+> >> we can
+> >>      > achieve the same effect with a more natural syntax.
+> >>
+> >>      > Michael
+> >>
+> >>
+> >> Yes, I agree.
+> >>
+> >> It may be that in the distant past, Henrik's suggestion
+> >> (a version of which I am using myself a lot in *.Rd -- mostly
+> >>   *not* related to S4)
+> >> did not work correctly, but I know it has worked for years now,
+> >> as I use it "all the time".
+> >> and not just I.
+> >>
+> >> If I grep in R's *base* package alone,
+> >>
+> >> inside ...../R/src/library/base/man/
+> >>
+> >> grep --color -nH --null -e '\\item{\\code{<file:///item%7b/code%7b>' *.Rd
+> >>
+> >> starts with
+> >>
+> >> agrep.Rd
+> >>
+> >>          [[alternative HTML version deleted]]
+> >>
+> >> _______________________________________________
+> >> Bioc-devel at r-project.org mailing list
+> >> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >>
+> >       [[alternative HTML version deleted]]
+> >
+> > _______________________________________________
+> > Bioc-devel at r-project.org mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> --
+> Herv? Pag?s
+>
+> Bioconductor Core Team
+> hpages.on.github at gmail.com
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From |zg2151 @end|ng |rom gm@||@com  Wed Dec  7 06:01:59 2022
+From: |zg2151 @end|ng |rom gm@||@com (Zhigang Li)
+Date: Wed, 7 Dec 2022 00:01:59 -0500
+Subject: [Bioc-devel] error on R CMD check
+In-Reply-To: <CAC7wyYtWiE_MuLex5Zvaicx4xanBxPYG3WeLFncNM26SU9Cugg@mail.gmail.com>
+References: <BL1PR12MB530188CB9B04FAF9CF760FCEF93E9@BL1PR12MB5301.namprd12.prod.outlook.com>
+ <25451.55942.284192.175896@hornik.net> <25454.14152.172760.476695@hornik.net>
+ <BL1PR12MB5301582FF819870315D17532F9059@BL1PR12MB5301.namprd12.prod.outlook.com>
+ <CAC7wyYsWHVH=gDcy=aKdx6zbb0+8Gb72-YR9qDwOHarCtDQO8w@mail.gmail.com>
+ <CAC7wyYtWiE_MuLex5Zvaicx4xanBxPYG3WeLFncNM26SU9Cugg@mail.gmail.com>
+Message-ID: <CAC7wyYsKUgN7-5+4LHRZbaNpRLxDcNywXxkyLpyLqTX1Hcicqg@mail.gmail.com>
+
+Dear Bioconductor Developers,
+
+Can you please help with an error message from R CMD check for the package IFAA?
+
+The BioConductor platform produced the following error message when
+running R CMD check
+(http://bioconductor.org/checkResults/devel/bioc-LATEST/IFAA/nebbiolo1-checksrc.html):
+  "
+  BiocGenerics:::testPackage("IFAA")
+  Error in BiocGenerics:::testPackage("IFAA") :
+    unable to find unit tests, no subdir 'unitTests'
+  Execution halted
+  "
+
+  However, the error is very strange because the subdirectory
+ "unitTests" is there in the folder "inst". And we have previously
+ passed the test of the package thru the github webpage
+ (https://github.com/Bioconductor/Contributions/issues/2651). We have
+ also tested it on our own computer and it did not have this error.
+Below is the output from our personal computer.
+
+(base) quranwu at MacBook-Pro-4 test % R CMD check --library=./
+--no-vignettes --timings IFAA_0.99.9.tar.gz
+* using log directory ?/Users/quranwu/Desktop/test/IFAA.Rcheck?
+* using R version 4.2.1 (2022-06-23)
+* using platform: x86_64-apple-darwin17.0 (64-bit)
+* using session charset: UTF-8
+* using option ?--no-vignettes?
+* checking for file ?IFAA/DESCRIPTION? ... OK
+* this is package ?IFAA? version ?0.99.9?
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ?IFAA? can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking ?build? directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... OK
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking sizes of PDF files under ?inst/doc? ... OK
+* checking installed files from ?inst/doc? ... OK
+* checking files in ?vignettes? ... OK
+* checking examples ... OK
+Examples with CPU (user + system) or elapsed time > 5s
+        user system elapsed
+IFAA  12.723  0.146  72.684
+MZILN  0.944  0.020  15.038
+* checking for unstated dependencies in ?tests? ... OK
+* checking tests ...
+  Running ?runTests.R?
+ OK
+* checking for unstated dependencies in vignettes ... OK
+* checking package vignettes in ?inst/doc? ... OK
+* checking running R code from vignettes ... SKIPPED
+* checking re-building of vignette outputs ... SKIPPED
+* checking PDF version of manual ... OK
+* DONE
+Status: OK
+
+By any chance could it be because the IFAA package on CRAN got called
+when running BiocGenerics:::testPackage("IFAA") on the BioConductor
+platform? The IFAA package on CRAN indeed does not have the
+subdirectory of "unitTests".
+
+Thanks,
+ Zhigang
+ https://sites.google.com/view/zlab
+
+
+From hp@ge@@on@g|thub @end|ng |rom gm@||@com  Wed Dec  7 07:10:27 2022
+From: hp@ge@@on@g|thub @end|ng |rom gm@||@com (=?UTF-8?B?SGVydsOpIFBhZ8Oocw==?=)
+Date: Tue, 6 Dec 2022 22:10:27 -0800
+Subject: [Bioc-devel] error on R CMD check
+In-Reply-To: <CAC7wyYsKUgN7-5+4LHRZbaNpRLxDcNywXxkyLpyLqTX1Hcicqg@mail.gmail.com>
+References: <BL1PR12MB530188CB9B04FAF9CF760FCEF93E9@BL1PR12MB5301.namprd12.prod.outlook.com>
+ <25451.55942.284192.175896@hornik.net> <25454.14152.172760.476695@hornik.net>
+ <BL1PR12MB5301582FF819870315D17532F9059@BL1PR12MB5301.namprd12.prod.outlook.com>
+ <CAC7wyYsWHVH=gDcy=aKdx6zbb0+8Gb72-YR9qDwOHarCtDQO8w@mail.gmail.com>
+ <CAC7wyYtWiE_MuLex5Zvaicx4xanBxPYG3WeLFncNM26SU9Cugg@mail.gmail.com>
+ <CAC7wyYsKUgN7-5+4LHRZbaNpRLxDcNywXxkyLpyLqTX1Hcicqg@mail.gmail.com>
+Message-ID: <9f8bc7d4-2557-5c20-12ab-58a56d61a4b8@gmail.com>
+
+Hi,
+
+On 06/12/2022 21:01, Zhigang Li wrote:
+> Dear Bioconductor Developers,
+>
+> Can you please help with an error message from R CMD check for the package IFAA?
+>
+> The BioConductor platform produced the following error message when
+> running R CMD check
+> (http://bioconductor.org/checkResults/devel/bioc-LATEST/IFAA/nebbiolo1-checksrc.html):
+>    "
+>    BiocGenerics:::testPackage("IFAA")
+>    Error in BiocGenerics:::testPackage("IFAA") :
+>      unable to find unit tests, no subdir 'unitTests'
+>    Execution halted
+>    "
+>
+>    However, the error is very strange because the subdirectory
+>   "unitTests" is there in the folder "inst". And we have previously
+>   passed the test of the package thru the github webpage
+>   (https://github.com/Bioconductor/Contributions/issues/2651). We have
+>   also tested it on our own computer and it did not have this error.
+> Below is the output from our personal computer.
+>
+> (base) quranwu at MacBook-Pro-4 test % R CMD check --library=./
+> --no-vignettes --timings IFAA_0.99.9.tar.gz
+> * using log directory ?/Users/quranwu/Desktop/test/IFAA.Rcheck?
+> * using R version 4.2.1 (2022-06-23)
+> * using platform: x86_64-apple-darwin17.0 (64-bit)
+> * using session charset: UTF-8
+> * using option ?--no-vignettes?
+> * checking for file ?IFAA/DESCRIPTION? ... OK
+> * this is package ?IFAA? version ?0.99.9?
+> * package encoding: UTF-8
+> * checking package namespace information ... OK
+> * checking package dependencies ... OK
+> * checking if this is a source package ... OK
+> * checking if there is a namespace ... OK
+> * checking for executable files ... OK
+> * checking for hidden files and directories ... OK
+> * checking for portable file names ... OK
+> * checking for sufficient/correct file permissions ... OK
+> * checking whether package ?IFAA? can be installed ... OK
+> * checking installed package size ... OK
+> * checking package directory ... OK
+> * checking ?build? directory ... OK
+> * checking DESCRIPTION meta-information ... OK
+> * checking top-level files ... OK
+> * checking for left-over files ... OK
+> * checking index information ... OK
+> * checking package subdirectories ... OK
+> * checking R files for non-ASCII characters ... OK
+> * checking R files for syntax errors ... OK
+> * checking whether the package can be loaded ... OK
+> * checking whether the package can be loaded with stated dependencies ... OK
+> * checking whether the package can be unloaded cleanly ... OK
+> * checking whether the namespace can be loaded with stated dependencies ... OK
+> * checking whether the namespace can be unloaded cleanly ... OK
+> * checking loading without being on the library search path ... OK
+> * checking dependencies in R code ... OK
+> * checking S3 generic/method consistency ... OK
+> * checking replacement functions ... OK
+> * checking foreign function calls ... OK
+> * checking R code for possible problems ... OK
+> * checking Rd files ... OK
+> * checking Rd metadata ... OK
+> * checking Rd cross-references ... OK
+> * checking for missing documentation entries ... OK
+> * checking for code/documentation mismatches ... OK
+> * checking Rd \usage sections ... OK
+> * checking Rd contents ... OK
+> * checking for unstated dependencies in examples ... OK
+> * checking sizes of PDF files under ?inst/doc? ... OK
+> * checking installed files from ?inst/doc? ... OK
+> * checking files in ?vignettes? ... OK
+> * checking examples ... OK
+> Examples with CPU (user + system) or elapsed time > 5s
+>          user system elapsed
+> IFAA  12.723  0.146  72.684
+> MZILN  0.944  0.020  15.038
+> * checking for unstated dependencies in ?tests? ... OK
+> * checking tests ...
+>    Running ?runTests.R?
+>   OK
+> * checking for unstated dependencies in vignettes ... OK
+> * checking package vignettes in ?inst/doc? ... OK
+> * checking running R code from vignettes ... SKIPPED
+> * checking re-building of vignette outputs ... SKIPPED
+> * checking PDF version of manual ... OK
+> * DONE
+> Status: OK
+>
+> By any chance could it be because the IFAA package on CRAN got called
+> when running BiocGenerics:::testPackage("IFAA") on the BioConductor
+> platform? The IFAA package on CRAN indeed does not have the
+> subdirectory of "unitTests".
+
+Probably. At the root of the problem is the fact that the IFAA package 
+on CRAN is at version 1.1.0 but was submitted to Bioconductor with 
+version 0.99.z. When a CRAN package is submitted to Bioconductor, it 
+doesn't make sense to reset the version to 0.99.z. More generally 
+speaking, package versions should **never** go down because this 
+introduces all kinds of problems.
+
+For example, even if the IFAA package in Bioconductor somehow managed to 
+pass 'R CMD check' and propagate to the Bioconductor repos, users would 
+be unable to install it because BiocManager::install("IFAA") would pick 
+up the higher version. And even if a user was somehow able to install 
+it, it would be very quickly replaced with the CRAN version the next 
+time the user updates their packages (something users and developers 
+should do on a regular basis by calling BiocManager::install() with no 
+arguments).
+
+What is happening exactly on the build machines with 
+BiocGenerics:::testPackage("IFAA") is a slightly more sophisticated 
+variant of that.
+
+Anyways, the version of the Bioconductor package would need to be bumped 
+to 1.1.1. However you won't be able to push this bump to 
+git.bioconductor.org because we don't allow this kind of version bump. 
+So we'll take care of it. We'll let you know when it's done.
+
+Best,
+
+H.
+
+
+> Thanks,
+>   Zhigang
+>   https://sites.google.com/view/zlab
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Herv? Pag?s
+
+Bioconductor Core Team
+hpages.on.github at gmail.com
+
+
+From w|@| @end|ng |rom @|um@m|t@edu  Sat Dec  3 22:16:26 2022
+From: w|@| @end|ng |rom @|um@m|t@edu (Weil Lai)
+Date: Sat, 3 Dec 2022 21:16:26 +0000
+Subject: [Bioc-devel] Package "sigPathway" failing on Bioconductor devel
+In-Reply-To: <a64bba2d-7cde-8e7b-0a44-7301d5685c08@eurac.edu>
+References: <a64bba2d-7cde-8e7b-0a44-7301d5685c08@eurac.edu>
+Message-ID: <DM6PR12MB2955A4FF4C09E065B655470CF8169@DM6PR12MB2955.namprd12.prod.outlook.com>
+
+To whom it may concern:
+
+I am writing to request the sigPathway package to be deprecated at this time.  It has been 16 years since I last made any significant changes to its codebase.  I have changed careers and currently lack the knowledgebase or time to properly fix the build failure.
+
+Of note, for those who may be interested in fixing the package for future internal use, I suspect it is failing to compile on Bioconductor devel (3.17) because of changes made in R 4.2.x codebase:
+
+"USE_FC_LEN_T will become the default: this uses the correct prototypes for Fortran BLAS/LAPACK routines called from C/C++, and requires adjustment of most such calls ? see ?Writing R Extensions? ?6.6.1. (This has been supported since R 3.6.2.)" (excerpt from https://cran.r-project.org/doc/manuals/r-release/NEWS.html)
+
+
+Best Regards,
+Weil Lai, MD
+
+________________________________
+From: Johannes Rainer <johannes.rainer at eurac.edu>
+Sent: Friday, December 2, 2022 4:13 AM
+To: Weil Lai <wlai at alum.mit.edu>
+Cc: bioconductorcoreteam at gmail.com <bioconductorcoreteam at gmail.com>
+Subject: Package "sigPathway" failing on Bioconductor devel
+
+Dear Package Maintainer,
+
+this is a reminder to fix your package "sigPathway" that is still
+failing on Bioconductor devel (3.17). Please fix your package to R CMD
+build and R CMD check cleanly to avoid deprecation of your package.
+
+While devel is a place to experiment with new features, we expect
+packages to build and check cleanly in a reasonable time period and not
+stay broken for any extended period of time.
+
+If you are having trouble or have any further questions please do not
+hesitate to reach out to the developers mailing list at
+bioc-devel at r-project.org
+
+We appreciate your attention to this matter.
+
+Best Regards,
+Johannes
+
+--
+Johannes Rainer, PhD
+
+Eurac Research
+Institute for Biomedicine
+Via A.-Volta 21, I-39100 Bolzano, Italy
+
+email: johannes.rainer at eurac.edu
+github: jorainer
+twitter: jo_rainer
+
+	[[alternative HTML version deleted]]
+
+
+From hp@ge@@on@g|thub @end|ng |rom gm@||@com  Thu Dec  8 06:54:51 2022
+From: hp@ge@@on@g|thub @end|ng |rom gm@||@com (=?UTF-8?B?SGVydsOpIFBhZ8Oocw==?=)
+Date: Wed, 7 Dec 2022 21:54:51 -0800
+Subject: [Bioc-devel] error on R CMD check
+In-Reply-To: <9f8bc7d4-2557-5c20-12ab-58a56d61a4b8@gmail.com>
+References: <BL1PR12MB530188CB9B04FAF9CF760FCEF93E9@BL1PR12MB5301.namprd12.prod.outlook.com>
+ <25451.55942.284192.175896@hornik.net> <25454.14152.172760.476695@hornik.net>
+ <BL1PR12MB5301582FF819870315D17532F9059@BL1PR12MB5301.namprd12.prod.outlook.com>
+ <CAC7wyYsWHVH=gDcy=aKdx6zbb0+8Gb72-YR9qDwOHarCtDQO8w@mail.gmail.com>
+ <CAC7wyYtWiE_MuLex5Zvaicx4xanBxPYG3WeLFncNM26SU9Cugg@mail.gmail.com>
+ <CAC7wyYsKUgN7-5+4LHRZbaNpRLxDcNywXxkyLpyLqTX1Hcicqg@mail.gmail.com>
+ <9f8bc7d4-2557-5c20-12ab-58a56d61a4b8@gmail.com>
+Message-ID: <c20fe20c-1da4-b85e-5fe3-af5de6e468b6@gmail.com>
+
+Hi,
+
+On 06/12/2022 22:10, Herv? Pag?s wrote:
+...
+> Anyways, the version of the Bioconductor package would need to be 
+> bumped to 1.1.1. However you won't be able to push this bump to 
+> git.bioconductor.org because we don't allow this kind of version bump. 
+> So we'll take care of it. We'll let you know when it's done.
+
+This is done. Version 1.1.1 should show up on Friday's build report. 
+Hopefully without the BiocGenerics:::testPackage("IFAA") error.
+
+Remember to resync the IFAA repo on GitHub with IFAA's repo on 
+git.bioconductor.org
+
+Best,
+
+H.
+
+>
+> Best,
+>
+> H.
+>
+>
+>> Thanks,
+>> ? Zhigang
+>> ? https://sites.google.com/view/zlab
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+-- 
+Herv? Pag?s
+
+Bioconductor Core Team
+hpages.on.github at gmail.com
+
+
+From j@cque@@co||nge @end|ng |rom umontpe|||er@|r  Thu Dec  8 14:44:24 2022
+From: j@cque@@co||nge @end|ng |rom umontpe|||er@|r (Jacques Colinge)
+Date: Thu, 8 Dec 2022 14:44:24 +0100
+Subject: [Bioc-devel] Fwd: Package "SingleCellSignalR" failing on
+ Bioconductor devel
+In-Reply-To: <CAANT7+UiD=0cXECYi2+mGyx9BvZpzVtWtH2DWQu0BSL5eerjoQ@mail.gmail.com>
+References: <292d360bc9ab43f5b534dcd192ba6955@PAR6-SRV-EX06.adn.inserm.fr>
+ <c3440501-ba90-ec0a-181d-3d1ba164d015@umontpellier.fr>
+ <CAANT7+UiD=0cXECYi2+mGyx9BvZpzVtWtH2DWQu0BSL5eerjoQ@mail.gmail.com>
+Message-ID: <dfd91e59-3eaa-89da-0e79-ba9ecb5e51fe@umontpellier.fr>
+
+Dear Vincent,
+
+Thank you very much for this information. The problem should be fixed 
+now, build and check are successful in R develeopment version. I have 
+just pushed my fixes onto bioconductor github.
+
+Best regards,
+Jacques
+
+On 26.11.2022 12:35, Vincent Carey wrote:
+> When testing on the devel branch at this time, you must use R-devel (R 
+> 4.3).? ?See 
+> https://contributions.bioconductor.org/use-devel.html#use-devel
+>
+> For SingleCellSignalR, the dependence on SIMLR seems problematic.? 
+> SIMLR is in an error state on the devel branch. One
+> could see that even in the release branch, SIMLR includes some code 
+> that is risky:
+>
+> * installing to library ?/home/biocbuild/bbs-3.16-bioc/R/library?
+> * installing *source* package ?SIMLR? ...
+> ** using staged installation
+> ** libs
+> g++ -std=gnu++14 -I"/home/biocbuild/bbs-3.16-bioc/R/include" -DNDEBUG  -I'/home/biocbuild/bbs-3.16-bioc/R/library/Rcpp/include' -I/usr/local/include   -fpic  -g -O2  -Wall -c RcppExports.cpp -o RcppExports.o
+> g++ -std=gnu++14 -I"/home/biocbuild/bbs-3.16-bioc/R/include" -DNDEBUG  -I'/home/biocbuild/bbs-3.16-bioc/R/library/Rcpp/include' -I/usr/local/include   -fpic  -g -O2  -Wall -c Rtsne.cpp -o Rtsne.o
+> gcc -I"/home/biocbuild/bbs-3.16-bioc/R/include" -DNDEBUG  -I'/home/biocbuild/bbs-3.16-bioc/R/library/Rcpp/include' -I/usr/local/include   -fpic  -g -O2  -Wall -c package_init.c -o package_init.o
+> gcc -I"/home/biocbuild/bbs-3.16-bioc/R/include" -DNDEBUG  -I'/home/biocbuild/bbs-3.16-bioc/R/library/Rcpp/include' -I/usr/local/include   -fpic  -g -O2  -Wall -c projsplx_R.c -o projsplx_R.o
+> g++ -std=gnu++14 -I"/home/biocbuild/bbs-3.16-bioc/R/include" -DNDEBUG  -I'/home/biocbuild/bbs-3.16-bioc/R/library/Rcpp/include' -I/usr/local/include   -fpic  -g -O2  -Wall -c sptree.cpp -o sptree.o
+> g++ -std=gnu++14 -I"/home/biocbuild/bbs-3.16-bioc/R/include" -DNDEBUG  -I'/home/biocbuild/bbs-3.16-bioc/R/library/Rcpp/include' -I/usr/local/include   -fpic  -g -O2  -Wall -c tsne.cpp -o tsne.o
+> tsne.cpp: In member function ?bool TSNE::load_data(double**, int*, int*, int*, double*, double*, int*)?:
+> tsne.cpp:967:48: warning: comparison of integer expressions of different signedness: ?size_t? {aka ?long unsigned int?} and ?int? [-Wsign-compare]
+>    967 |   if (fread(*data, sizeof(double), *n * *d, h) != *n * *d) {
+>        |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~
+> but it passed on the release branch.  On the devel branch SIMLR fails.  The sources for
+> SIMLR don't appear to have changed since 2017 (reading git log).  So this seems like a situation
+> in which a package that has not changed since release fails in devel because
+> the tolerance of the build system for compiler-flagged warning events has been reduced.
+> The developers of SIMLR will need to fix this, or you will have to eliminate the dependence on
+> SIMLR from your package.  Your favorable results for CMD check arise from a) not working
+> in the devel branch and b) having a version of SIMLR that built under out-of-date warning
+> tolerance compiler settings.  Let us know if there are further questions.
+>
+> On Sat, Nov 26, 2022 at 6:15 AM Jacques Colinge 
+> <jacques.colinge at umontpellier.fr> wrote:
+>
+>     Dear Johannes,
+>     Dear Bioc Developers,
+>
+>     I am not sure I get the problem. I am currently running R 4.2.1
+>     and if I
+>     do a devtools::check() and a devtools::build() I have no error
+>     (just one
+>     warning), see below both outputs.
+>
+>     Do you need me to install R development version and redo those tests
+>     because with this new versions some errors occur?
+>
+>     Thanks for your answer.
+>     Best regards,
+>     Jacques
+>
+>     ------- check() output -------------------------
+>
+>     jcolinge at osboxes:~/SingleCellSignalR$ R
+>
+>     R version 4.2.1 (2022-06-23) -- "Funny-Looking Kid"
+>     Copyright (C) 2022 The R Foundation for Statistical Computing
+>     Platform: x86_64-pc-linux-gnu (64-bit)
+>
+>     R is free software and comes with ABSOLUTELY NO WARRANTY.
+>     You are welcome to redistribute it under certain conditions.
+>     Type 'license()' or 'licence()' for distribution details.
+>
+>     ?? Natural language support but running in an English locale
+>
+>     R is a collaborative project with many contributors.
+>     Type 'contributors()' for more information and
+>     'citation()' on how to cite R or R packages in publications.
+>
+>     Type 'demo()' for some demos, 'help()' for on-line help, or
+>     'help.start()' for an HTML browser interface to help.
+>     Type 'q()' to quit R.
+>
+>     ?> library(devtools)
+>     Loading required package: usethis
+>     ?> devtools::check()
+>     ?? Documenting
+>     ?????????????????????????????????????????????????????????????????????????????????????????????????????????
+>     ? Installed roxygen2 version (7.2.1) doesn't match required (7.0.2)
+>     ? `check()` will not re-document this package
+>     ?? Building
+>     ????????????????????????????????????????????????????????????????????????????????????????????????????????????
+>     Setting env vars:
+>     ? CFLAGS??? : -Wall -pedantic -fdiagnostics-color=always
+>     ? CXXFLAGS? : -Wall -pedantic -fdiagnostics-color=always
+>     ? CXX11FLAGS: -Wall -pedantic -fdiagnostics-color=always
+>     ? CXX14FLAGS: -Wall -pedantic -fdiagnostics-color=always
+>     ? CXX17FLAGS: -Wall -pedantic -fdiagnostics-color=always
+>     ? CXX20FLAGS: -Wall -pedantic -fdiagnostics-color=always
+>     ?? checking for file
+>     ?/home/jcolinge/SingleCellSignalR/DESCRIPTION? ...
+>     ?? preparing ?SingleCellSignalR?:
+>     ?? checking DESCRIPTION meta-information ...
+>     ?? installing the package to build vignettes
+>
+>     ?? creating vignettes (50.9s)
+>     ?? checking for LF line-endings in source and make files and shell
+>     scripts
+>     ?? checking for empty or unneeded directories
+>     ?? building ?SingleCellSignalR_0.99.24.tar.gz?
+>
+>     ?? Checking
+>     ????????????????????????????????????????????????????????????????????????????????????????????????????????????
+>     Setting env vars:
+>     ? _R_CHECK_CRAN_INCOMING_USE_ASPELL_: TRUE
+>     ? _R_CHECK_CRAN_INCOMING_REMOTE_??? : FALSE
+>     ? _R_CHECK_CRAN_INCOMING_?????????? : FALSE
+>     ? _R_CHECK_FORCE_SUGGESTS_????????? : FALSE
+>     ? NOT_CRAN????????????????????????? : true
+>     ?? R CMD check
+>     ?????????????????????????????????????????????????????????????????????????????????????????????????????????
+>     ?? using log directory ?/tmp/RtmpJDbnZF/SingleCellSignalR.Rcheck?
+>     ?? using R version 4.2.1 (2022-06-23)
+>     ?? using platform: x86_64-pc-linux-gnu (64-bit)
+>     ?? using session charset: UTF-8
+>     ?? using options ?--no-manual --as-cran?
+>     ?? checking for file ?SingleCellSignalR/DESCRIPTION?
+>     ?? this is package ?SingleCellSignalR? version ?0.99.24?
+>     ?? package encoding: UTF-8
+>     ?? checking package namespace information
+>     ?? checking package dependencies (3s)
+>     ?? checking if this is a source package
+>     ?? checking if there is a namespace
+>     ?? checking for executable files ...
+>     ?? checking for hidden files and directories
+>     ?? checking for portable file names
+>     ?? checking for sufficient/correct file permissions
+>     ?? checking whether package ?SingleCellSignalR? can be installed
+>     (23.8s)
+>     N? checking installed package size ...
+>     ????? installed size is? 6.6Mb
+>     ????? sub-directories of 1Mb or more:
+>     ??????? data?? 5.9Mb
+>     ?? checking package directory
+>     ?? checking for future file timestamps ...
+>     ?? checking ?build? directory
+>     ?? checking DESCRIPTION meta-information ...
+>     ?? checking top-level files ...
+>     ?? checking for left-over files
+>     ?? checking index information ...
+>     ?? checking package subdirectories ...
+>     ?? checking R files for non-ASCII characters ...
+>     ?? checking R files for syntax errors ...
+>     ?? checking whether the package can be loaded (5.7s)
+>     ?? checking whether the package can be loaded with stated
+>     dependencies
+>     (5.3s)
+>     ?? checking whether the package can be unloaded cleanly (5.3s)
+>     ?? checking whether the namespace can be loaded with stated
+>     dependencies
+>     (5.4s)
+>     ?? checking whether the namespace can be unloaded cleanly (5.6s)
+>     ?? checking dependencies in R code (5.4s)
+>     ?? checking S3 generic/method consistency (7.5s)
+>     ?? checking replacement functions (5.4s)
+>     ?? checking foreign function calls (5.4s)
+>     ?? checking R code for possible problems (25.6s)
+>     ?? checking Rd files ... OK
+>     ?? checking Rd metadata ...
+>     ?? checking Rd line widths ...
+>     ?? checking Rd cross-references ... OK
+>     ?? checking for missing documentation entries (6.5s)
+>     ?? checking for code/documentation mismatches (18.5s)
+>     ?? checking Rd \usage sections (7.3s)
+>     ?? checking Rd contents ... OK
+>     ?? checking for unstated dependencies in examples ... OK
+>     ?? checking contents of ?data? directory (2.3s)
+>     ?? checking data for non-ASCII characters (2.7s)
+>     W? checking LazyData
+>     ????? LazyData DB of 5.9 MB without LazyDataCompression set
+>     ????? See ?1.1.6 of 'Writing R Extensions'
+>     ?? checking data for ASCII and uncompressed saves ...
+>     ?? checking installed files from ?inst/doc? ...
+>     ?? checking files in ?vignettes? ... OK
+>     ?? checking examples (15s)
+>     ?? checking for unstated dependencies in vignettes ...
+>     ?? checking package vignettes in ?inst/doc? ... OK
+>     ?? checking re-building of vignette outputs (22.9s)
+>     N? checking for non-standard things in the check directory
+>     ??? Found the following files/directories:
+>     ????? ?cell-classification? ?cluster-analysis? ?data? ?images?
+>     ?networks?
+>     ?? checking for detritus in the temp directory
+>
+>     ??? See
+>     ????? ?/tmp/RtmpJDbnZF/SingleCellSignalR.Rcheck/00check.log?
+>     ??? for details.
+>
+>
+>     ?? R CMD check results
+>     ??????????????????????????????????????????????????????????????????
+>     SingleCellSignalR 0.99.24 ????
+>     Duration: 3m 1.1s
+>
+>     ? checking LazyData ... WARNING
+>     ???? LazyData DB of 5.9 MB without LazyDataCompression set
+>     ???? See ?1.1.6 of 'Writing R Extensions'
+>
+>     ? checking installed package size ... NOTE
+>     ???? installed size is? 6.6Mb
+>     ???? sub-directories of 1Mb or more:
+>     ?????? data?? 5.9Mb
+>
+>     ? checking for non-standard things in the check directory ... NOTE
+>     ?? Found the following files/directories:
+>     ???? ?cell-classification? ?cluster-analysis? ?data? ?images?
+>     ?networks?
+>
+>     0 errors ? | 1 warning ? | 2 notes ?
+>
+>
+>     --------------- build() output
+>     --------------------------------------------------
+>
+>     ?> devtools::build()
+>     ?? checking for file
+>     ?/home/jcolinge/SingleCellSignalR/DESCRIPTION? ...
+>     ?? preparing ?SingleCellSignalR?:
+>     ?? checking DESCRIPTION meta-information ...
+>     ?? installing the package to build vignettes
+>     ?? creating vignettes (44.8s)
+>     ?? checking for LF line-endings in source and make files and shell
+>     scripts
+>     ?? checking for empty or unneeded directories
+>     ?? building ?SingleCellSignalR_0.99.24.tar.gz?
+>
+>     [1] "/home/jcolinge/SingleCellSignalR_0.99.24.tar.gz"
+>
+>
+>     -------- Forwarded Message --------
+>     Subject:? ? ? ? Package "SingleCellSignalR" failing on
+>     Bioconductor devel
+>     Resent-Date:? ? Thu, 17 Nov 2022 09:14:15 +0100
+>     Resent-From: jacques.colinge at inserm.fr
+>     Date:? ?Thu, 17 Nov 2022 08:14:12 +0000
+>     From:? ?Johannes Rainer <johannes.rainer at eurac.edu>
+>     To:? ? ?Jacques Colinge <jacques.colinge at inserm.fr>
+>     CC: bioconductorcoreteam at gmail.com <bioconductorcoreteam at gmail.com>
+>
+>
+>
+>     Hello Package Maintainer,
+>
+>     The Bioconductor Team would like to notify you that your package
+>     "SingleCellSignalR" is currently failing on the devel version of
+>     Bioconductor. Please fix your package to R CMD build and R CMD
+>     check to
+>     avoid deprecation of your package.
+>
+>     While devel is a place to experiment with new features, we expect
+>     packages to build and check cleanly in a reasonable time period
+>     and not
+>     stay broken for any extended period of time.
+>
+>     If you are having trouble or have any further questions please do not
+>     hesitate to reach out to the developers mailing list at
+>     bioc-devel at r-project.org
+>
+>     We appreciate your attention to this matter.
+>
+>     Best Regtards,
+>     Johannes
+>
+>     -- 
+>     Johannes Rainer, PhD
+>
+>     Eurac Research
+>     Institute for Biomedicine
+>     Via A.-Volta 21, I-39100 Bolzano, Italy
+>
+>     email:johannes.rainer at eurac.edu
+>     <mailto:email%3Ajohannes.rainer at eurac.edu>
+>     github: jorainer
+>     twitter: jo_rainer
+>
+>     ? ? ? ? [[alternative HTML version deleted]]
+>
+>     _______________________________________________
+>     Bioc-devel at r-project.org mailing list
+>     https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+> The information in this e-mail is intended only for th...{{dropped:30}}
+
+
+From hp@ge@@on@g|thub @end|ng |rom gm@||@com  Thu Dec  8 16:55:31 2022
+From: hp@ge@@on@g|thub @end|ng |rom gm@||@com (=?UTF-8?B?SGVydsOpIFBhZ8Oocw==?=)
+Date: Thu, 8 Dec 2022 07:55:31 -0800
+Subject: [Bioc-devel] Fwd: Package "SingleCellSignalR" failing on
+ Bioconductor devel
+In-Reply-To: <dfd91e59-3eaa-89da-0e79-ba9ecb5e51fe@umontpellier.fr>
+References: <292d360bc9ab43f5b534dcd192ba6955@PAR6-SRV-EX06.adn.inserm.fr>
+ <c3440501-ba90-ec0a-181d-3d1ba164d015@umontpellier.fr>
+ <CAANT7+UiD=0cXECYi2+mGyx9BvZpzVtWtH2DWQu0BSL5eerjoQ@mail.gmail.com>
+ <dfd91e59-3eaa-89da-0e79-ba9ecb5e51fe@umontpellier.fr>
+Message-ID: <ae621b69-4cce-3879-8adb-dfe3c20d16bb@gmail.com>
+
+FWIW the compilation error for SIMLR looks like a real error to me, not 
+a warning-induced one:
+
+ ? tsne.cpp:883:11: error: too few arguments to function ?void dgemm_(...
+
+It seems to be caused by a change in R-devel. We see it on all platforms 
+on the daily builds for BioC 3.17 and I also get it on my laptop. 
+Anybody using a recent R-devel should be able to reproduce it.
+
+Cheers,
+
+H.
+
+On 08/12/2022 05:44, Jacques Colinge wrote:
+> Dear Vincent,
+>
+> Thank you very much for this information. The problem should be fixed
+> now, build and check are successful in R develeopment version. I have
+> just pushed my fixes onto bioconductor github.
+>
+> Best regards,
+> Jacques
+>
+> On 26.11.2022 12:35, Vincent Carey wrote:
+>> When testing on the devel branch at this time, you must use R-devel (R
+>> 4.3).? ?See
+>> https://contributions.bioconductor.org/use-devel.html#use-devel
+>>
+>> For SingleCellSignalR, the dependence on SIMLR seems problematic.
+>> SIMLR is in an error state on the devel branch. One
+>> could see that even in the release branch, SIMLR includes some code
+>> that is risky:
+>>
+>> * installing to library ?/home/biocbuild/bbs-3.16-bioc/R/library?
+>> * installing *source* package ?SIMLR? ...
+>> ** using staged installation
+>> ** libs
+>> g++ -std=gnu++14 -I"/home/biocbuild/bbs-3.16-bioc/R/include" -DNDEBUG  -I'/home/biocbuild/bbs-3.16-bioc/R/library/Rcpp/include' -I/usr/local/include   -fpic  -g -O2  -Wall -c RcppExports.cpp -o RcppExports.o
+>> g++ -std=gnu++14 -I"/home/biocbuild/bbs-3.16-bioc/R/include" -DNDEBUG  -I'/home/biocbuild/bbs-3.16-bioc/R/library/Rcpp/include' -I/usr/local/include   -fpic  -g -O2  -Wall -c Rtsne.cpp -o Rtsne.o
+>> gcc -I"/home/biocbuild/bbs-3.16-bioc/R/include" -DNDEBUG  -I'/home/biocbuild/bbs-3.16-bioc/R/library/Rcpp/include' -I/usr/local/include   -fpic  -g -O2  -Wall -c package_init.c -o package_init.o
+>> gcc -I"/home/biocbuild/bbs-3.16-bioc/R/include" -DNDEBUG  -I'/home/biocbuild/bbs-3.16-bioc/R/library/Rcpp/include' -I/usr/local/include   -fpic  -g -O2  -Wall -c projsplx_R.c -o projsplx_R.o
+>> g++ -std=gnu++14 -I"/home/biocbuild/bbs-3.16-bioc/R/include" -DNDEBUG  -I'/home/biocbuild/bbs-3.16-bioc/R/library/Rcpp/include' -I/usr/local/include   -fpic  -g -O2  -Wall -c sptree.cpp -o sptree.o
+>> g++ -std=gnu++14 -I"/home/biocbuild/bbs-3.16-bioc/R/include" -DNDEBUG  -I'/home/biocbuild/bbs-3.16-bioc/R/library/Rcpp/include' -I/usr/local/include   -fpic  -g -O2  -Wall -c tsne.cpp -o tsne.o
+>> tsne.cpp: In member function ?bool TSNE::load_data(double**, int*, int*, int*, double*, double*, int*)?:
+>> tsne.cpp:967:48: warning: comparison of integer expressions of different signedness: ?size_t? {aka ?long unsigned int?} and ?int? [-Wsign-compare]
+>>     967 |   if (fread(*data, sizeof(double), *n * *d, h) != *n * *d) {
+>>         |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~
+>> but it passed on the release branch.  On the devel branch SIMLR fails.  The sources for
+>> SIMLR don't appear to have changed since 2017 (reading git log).  So this seems like a situation
+>> in which a package that has not changed since release fails in devel because
+>> the tolerance of the build system for compiler-flagged warning events has been reduced.
+>> The developers of SIMLR will need to fix this, or you will have to eliminate the dependence on
+>> SIMLR from your package.  Your favorable results for CMD check arise from a) not working
+>> in the devel branch and b) having a version of SIMLR that built under out-of-date warning
+>> tolerance compiler settings.  Let us know if there are further questions.
+>>
+>> On Sat, Nov 26, 2022 at 6:15 AM Jacques Colinge
+>> <jacques.colinge at umontpellier.fr> wrote:
+>>
+>>      Dear Johannes,
+>>      Dear Bioc Developers,
+>>
+>>      I am not sure I get the problem. I am currently running R 4.2.1
+>>      and if I
+>>      do a devtools::check() and a devtools::build() I have no error
+>>      (just one
+>>      warning), see below both outputs.
+>>
+>>      Do you need me to install R development version and redo those tests
+>>      because with this new versions some errors occur?
+>>
+>>      Thanks for your answer.
+>>      Best regards,
+>>      Jacques
+>>
+>>      ------- check() output -------------------------
+>>
+>>      jcolinge at osboxes:~/SingleCellSignalR$ R
+>>
+>>      R version 4.2.1 (2022-06-23) -- "Funny-Looking Kid"
+>>      Copyright (C) 2022 The R Foundation for Statistical Computing
+>>      Platform: x86_64-pc-linux-gnu (64-bit)
+>>
+>>      R is free software and comes with ABSOLUTELY NO WARRANTY.
+>>      You are welcome to redistribute it under certain conditions.
+>>      Type 'license()' or 'licence()' for distribution details.
+>>
+>>      ?? Natural language support but running in an English locale
+>>
+>>      R is a collaborative project with many contributors.
+>>      Type 'contributors()' for more information and
+>>      'citation()' on how to cite R or R packages in publications.
+>>
+>>      Type 'demo()' for some demos, 'help()' for on-line help, or
+>>      'help.start()' for an HTML browser interface to help.
+>>      Type 'q()' to quit R.
+>>
+>>      ?> library(devtools)
+>>      Loading required package: usethis
+>>      ?> devtools::check()
+>>      ?? Documenting
+>>      ?????????????????????????????????????????????????????????????????????????????????????????????????????????
+>>      ? Installed roxygen2 version (7.2.1) doesn't match required (7.0.2)
+>>      ? `check()` will not re-document this package
+>>      ?? Building
+>>      ????????????????????????????????????????????????????????????????????????????????????????????????????????????
+>>      Setting env vars:
+>>      ? CFLAGS??? : -Wall -pedantic -fdiagnostics-color=always
+>>      ? CXXFLAGS? : -Wall -pedantic -fdiagnostics-color=always
+>>      ? CXX11FLAGS: -Wall -pedantic -fdiagnostics-color=always
+>>      ? CXX14FLAGS: -Wall -pedantic -fdiagnostics-color=always
+>>      ? CXX17FLAGS: -Wall -pedantic -fdiagnostics-color=always
+>>      ? CXX20FLAGS: -Wall -pedantic -fdiagnostics-color=always
+>>      ?? checking for file
+>>      ?/home/jcolinge/SingleCellSignalR/DESCRIPTION? ...
+>>      ?? preparing ?SingleCellSignalR?:
+>>      ?? checking DESCRIPTION meta-information ...
+>>      ?? installing the package to build vignettes
+>>
+>>      ?? creating vignettes (50.9s)
+>>      ?? checking for LF line-endings in source and make files and shell
+>>      scripts
+>>      ?? checking for empty or unneeded directories
+>>      ?? building ?SingleCellSignalR_0.99.24.tar.gz?
+>>
+>>      ?? Checking
+>>      ????????????????????????????????????????????????????????????????????????????????????????????????????????????
+>>      Setting env vars:
+>>      ? _R_CHECK_CRAN_INCOMING_USE_ASPELL_: TRUE
+>>      ? _R_CHECK_CRAN_INCOMING_REMOTE_??? : FALSE
+>>      ? _R_CHECK_CRAN_INCOMING_?????????? : FALSE
+>>      ? _R_CHECK_FORCE_SUGGESTS_????????? : FALSE
+>>      ? NOT_CRAN????????????????????????? : true
+>>      ?? R CMD check
+>>      ?????????????????????????????????????????????????????????????????????????????????????????????????????????
+>>      ?? using log directory ?/tmp/RtmpJDbnZF/SingleCellSignalR.Rcheck?
+>>      ?? using R version 4.2.1 (2022-06-23)
+>>      ?? using platform: x86_64-pc-linux-gnu (64-bit)
+>>      ?? using session charset: UTF-8
+>>      ?? using options ?--no-manual --as-cran?
+>>      ?? checking for file ?SingleCellSignalR/DESCRIPTION?
+>>      ?? this is package ?SingleCellSignalR? version ?0.99.24?
+>>      ?? package encoding: UTF-8
+>>      ?? checking package namespace information
+>>      ?? checking package dependencies (3s)
+>>      ?? checking if this is a source package
+>>      ?? checking if there is a namespace
+>>      ?? checking for executable files ...
+>>      ?? checking for hidden files and directories
+>>      ?? checking for portable file names
+>>      ?? checking for sufficient/correct file permissions
+>>      ?? checking whether package ?SingleCellSignalR? can be installed
+>>      (23.8s)
+>>      N? checking installed package size ...
+>>      ????? installed size is? 6.6Mb
+>>      ????? sub-directories of 1Mb or more:
+>>      ??????? data?? 5.9Mb
+>>      ?? checking package directory
+>>      ?? checking for future file timestamps ...
+>>      ?? checking ?build? directory
+>>      ?? checking DESCRIPTION meta-information ...
+>>      ?? checking top-level files ...
+>>      ?? checking for left-over files
+>>      ?? checking index information ...
+>>      ?? checking package subdirectories ...
+>>      ?? checking R files for non-ASCII characters ...
+>>      ?? checking R files for syntax errors ...
+>>      ?? checking whether the package can be loaded (5.7s)
+>>      ?? checking whether the package can be loaded with stated
+>>      dependencies
+>>      (5.3s)
+>>      ?? checking whether the package can be unloaded cleanly (5.3s)
+>>      ?? checking whether the namespace can be loaded with stated
+>>      dependencies
+>>      (5.4s)
+>>      ?? checking whether the namespace can be unloaded cleanly (5.6s)
+>>      ?? checking dependencies in R code (5.4s)
+>>      ?? checking S3 generic/method consistency (7.5s)
+>>      ?? checking replacement functions (5.4s)
+>>      ?? checking foreign function calls (5.4s)
+>>      ?? checking R code for possible problems (25.6s)
+>>      ?? checking Rd files ... OK
+>>      ?? checking Rd metadata ...
+>>      ?? checking Rd line widths ...
+>>      ?? checking Rd cross-references ... OK
+>>      ?? checking for missing documentation entries (6.5s)
+>>      ?? checking for code/documentation mismatches (18.5s)
+>>      ?? checking Rd \usage sections (7.3s)
+>>      ?? checking Rd contents ... OK
+>>      ?? checking for unstated dependencies in examples ... OK
+>>      ?? checking contents of ?data? directory (2.3s)
+>>      ?? checking data for non-ASCII characters (2.7s)
+>>      W? checking LazyData
+>>      ????? LazyData DB of 5.9 MB without LazyDataCompression set
+>>      ????? See ?1.1.6 of 'Writing R Extensions'
+>>      ?? checking data for ASCII and uncompressed saves ...
+>>      ?? checking installed files from ?inst/doc? ...
+>>      ?? checking files in ?vignettes? ... OK
+>>      ?? checking examples (15s)
+>>      ?? checking for unstated dependencies in vignettes ...
+>>      ?? checking package vignettes in ?inst/doc? ... OK
+>>      ?? checking re-building of vignette outputs (22.9s)
+>>      N? checking for non-standard things in the check directory
+>>      ??? Found the following files/directories:
+>>      ????? ?cell-classification? ?cluster-analysis? ?data? ?images?
+>>      ?networks?
+>>      ?? checking for detritus in the temp directory
+>>
+>>      ??? See
+>>      ????? ?/tmp/RtmpJDbnZF/SingleCellSignalR.Rcheck/00check.log?
+>>      ??? for details.
+>>
+>>
+>>      ?? R CMD check results
+>>      ??????????????????????????????????????????????????????????????????
+>>      SingleCellSignalR 0.99.24 ????
+>>      Duration: 3m 1.1s
+>>
+>>      ? checking LazyData ... WARNING
+>>      ???? LazyData DB of 5.9 MB without LazyDataCompression set
+>>      ???? See ?1.1.6 of 'Writing R Extensions'
+>>
+>>      ? checking installed package size ... NOTE
+>>      ???? installed size is? 6.6Mb
+>>      ???? sub-directories of 1Mb or more:
+>>      ?????? data?? 5.9Mb
+>>
+>>      ? checking for non-standard things in the check directory ... NOTE
+>>      ?? Found the following files/directories:
+>>      ???? ?cell-classification? ?cluster-analysis? ?data? ?images?
+>>      ?networks?
+>>
+>>      0 errors ? | 1 warning ? | 2 notes ?
+>>
+>>
+>>      --------------- build() output
+>>      --------------------------------------------------
+>>
+>>      ?> devtools::build()
+>>      ?? checking for file
+>>      ?/home/jcolinge/SingleCellSignalR/DESCRIPTION? ...
+>>      ?? preparing ?SingleCellSignalR?:
+>>      ?? checking DESCRIPTION meta-information ...
+>>      ?? installing the package to build vignettes
+>>      ?? creating vignettes (44.8s)
+>>      ?? checking for LF line-endings in source and make files and shell
+>>      scripts
+>>      ?? checking for empty or unneeded directories
+>>      ?? building ?SingleCellSignalR_0.99.24.tar.gz?
+>>
+>>      [1] "/home/jcolinge/SingleCellSignalR_0.99.24.tar.gz"
+>>
+>>
+>>      -------- Forwarded Message --------
+>>      Subject:? ? ? ? Package "SingleCellSignalR" failing on
+>>      Bioconductor devel
+>>      Resent-Date:? ? Thu, 17 Nov 2022 09:14:15 +0100
+>>      Resent-From: jacques.colinge at inserm.fr
+>>      Date:? ?Thu, 17 Nov 2022 08:14:12 +0000
+>>      From:? ?Johannes Rainer <johannes.rainer at eurac.edu>
+>>      To:? ? ?Jacques Colinge <jacques.colinge at inserm.fr>
+>>      CC: bioconductorcoreteam at gmail.com <bioconductorcoreteam at gmail.com>
+>>
+>>
+>>
+>>      Hello Package Maintainer,
+>>
+>>      The Bioconductor Team would like to notify you that your package
+>>      "SingleCellSignalR" is currently failing on the devel version of
+>>      Bioconductor. Please fix your package to R CMD build and R CMD
+>>      check to
+>>      avoid deprecation of your package.
+>>
+>>      While devel is a place to experiment with new features, we expect
+>>      packages to build and check cleanly in a reasonable time period
+>>      and not
+>>      stay broken for any extended period of time.
+>>
+>>      If you are having trouble or have any further questions please do not
+>>      hesitate to reach out to the developers mailing list at
+>>      bioc-devel at r-project.org
+>>
+>>      We appreciate your attention to this matter.
+>>
+>>      Best Regtards,
+>>      Johannes
+>>
+>>      --
+>>      Johannes Rainer, PhD
+>>
+>>      Eurac Research
+>>      Institute for Biomedicine
+>>      Via A.-Volta 21, I-39100 Bolzano, Italy
+>>
+>>      email:johannes.rainer at eurac.edu
+>>      <mailto:email%3Ajohannes.rainer at eurac.edu>
+>>      github: jorainer
+>>      twitter: jo_rainer
+>>
+>>      ? ? ? ? [[alternative HTML version deleted]]
+>>
+>>      _______________________________________________
+>>      Bioc-devel at r-project.org mailing list
+>>      https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>
+>> The information in this e-mail is intended only for t...{{dropped:11}}
+
+
+From Rory@St@rk @end|ng |rom cruk@c@m@@c@uk  Fri Dec  9 16:01:03 2022
+From: Rory@St@rk @end|ng |rom cruk@c@m@@c@uk (Rory Stark)
+Date: Fri, 9 Dec 2022 15:01:03 +0000
+Subject: [Bioc-devel] Packages failing Development build due to LaTex
+ problem in .Rnw vignette
+Message-ID: <CWLP265MB0692C6D6B6C4F51DE4FD23B8EF1C9@CWLP265MB0692.GBRP265.PROD.OUTLOOK.COM>
+
+My packages are failing in the Development build due to something going wrong processing the .Rnw vignettes. Looking around I see a number of other packages with similar errors.
+
+They mostly include this error:
+
+LaTeX errors:
+! Missing $ inserted.
+<inserted text>
+                $
+l.4064   \item Time zone America/New_
+                                     York
+! LaTeX Error: Command \item invalid in math mode.
+
+
+although the details differ on each platform.
+
+Something has changed in the environment (headers?) that I can't quite track down (the source documents have not changed). Is this a known issue? Any suggestions on resolving it?
+
+Rory
+
+
+	[[alternative HTML version deleted]]
+
+
+From ||u|@@rev|||@ @end|ng |rom gm@||@com  Fri Dec  9 16:38:14 2022
+From: ||u|@@rev|||@ @end|ng |rom gm@||@com (=?UTF-8?Q?Llu=C3=ADs_Revilla?=)
+Date: Fri, 9 Dec 2022 16:38:14 +0100
+Subject: [Bioc-devel] Packages failing Development build due to LaTex
+ problem in .Rnw vignette
+In-Reply-To: <CWLP265MB0692C6D6B6C4F51DE4FD23B8EF1C9@CWLP265MB0692.GBRP265.PROD.OUTLOOK.COM>
+References: <CWLP265MB0692C6D6B6C4F51DE4FD23B8EF1C9@CWLP265MB0692.GBRP265.PROD.OUTLOOK.COM>
+Message-ID: <CAN+W6_th_N_OE2jGYxrrNK_P-OL=UGG_LCeEHMZEpOcaKLSc1w@mail.gmail.com>
+
+Hi Rory,
+
+There was a recent change in R devel (
+https://cran.r-project.org/doc/manuals/r-devel/NEWS.html):
+ - sessionInfo() records (and by default prints) the system time zone as
+part of the locale information.
+It was reported a couple of days ago in the R-devel mailing list by Henrik
+Bengtsson, that time zones with underscores caused problems which seems to
+be your case with the New_York time zone.
+This will probably be fixed at the R core level.
+
+The other option would be to set the local time to another timezone (you or
+the Bioconductor core team).
+
+Best,
+
+Llu?s
+
+On Fri, 9 Dec 2022 at 16:01, Rory Stark via Bioc-devel <
+bioc-devel at r-project.org> wrote:
+
+> My packages are failing in the Development build due to something going
+> wrong processing the .Rnw vignettes. Looking around I see a number of other
+> packages with similar errors.
+>
+> They mostly include this error:
+>
+> LaTeX errors:
+> ! Missing $ inserted.
+> <inserted text>
+>                 $
+> l.4064   \item Time zone America/New_
+>                                      York
+> ! LaTeX Error: Command \item invalid in math mode.
+>
+>
+> although the details differ on each platform.
+>
+> Something has changed in the environment (headers?) that I can't quite
+> track down (the source documents have not changed). Is this a known issue?
+> Any suggestions on resolving it?
+>
+> Rory
+>
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+	[[alternative HTML version deleted]]
+
+
+From henr|k@bengt@@on @end|ng |rom gm@||@com  Fri Dec  9 17:51:00 2022
+From: henr|k@bengt@@on @end|ng |rom gm@||@com (Henrik Bengtsson)
+Date: Fri, 9 Dec 2022 08:51:00 -0800
+Subject: [Bioc-devel] Packages failing Development build due to LaTex
+ problem in .Rnw vignette
+In-Reply-To: <CAN+W6_th_N_OE2jGYxrrNK_P-OL=UGG_LCeEHMZEpOcaKLSc1w@mail.gmail.com>
+References: <CWLP265MB0692C6D6B6C4F51DE4FD23B8EF1C9@CWLP265MB0692.GBRP265.PROD.OUTLOOK.COM>
+ <CAN+W6_th_N_OE2jGYxrrNK_P-OL=UGG_LCeEHMZEpOcaKLSc1w@mail.gmail.com>
+Message-ID: <CAFDcVCQw2HuR7RfdNrBHQkdtnBXYf1631vbP92b5MuDr=7L2gQ@mail.gmail.com>
+
+Yes, it was just fixed in R-devel, cf.
+https://bugs.r-project.org/show_bug.cgi?id=18443.
+
+/Henrik
+
+On Fri, Dec 9, 2022 at 7:38 AM Llu?s Revilla <lluis.revilla at gmail.com> wrote:
+>
+> Hi Rory,
+>
+> There was a recent change in R devel (
+> https://cran.r-project.org/doc/manuals/r-devel/NEWS.html):
+>  - sessionInfo() records (and by default prints) the system time zone as
+> part of the locale information.
+> It was reported a couple of days ago in the R-devel mailing list by Henrik
+> Bengtsson, that time zones with underscores caused problems which seems to
+> be your case with the New_York time zone.
+> This will probably be fixed at the R core level.
+>
+> The other option would be to set the local time to another timezone (you or
+> the Bioconductor core team).
+>
+> Best,
+>
+> Llu?s
+>
+> On Fri, 9 Dec 2022 at 16:01, Rory Stark via Bioc-devel <
+> bioc-devel at r-project.org> wrote:
+>
+> > My packages are failing in the Development build due to something going
+> > wrong processing the .Rnw vignettes. Looking around I see a number of other
+> > packages with similar errors.
+> >
+> > They mostly include this error:
+> >
+> > LaTeX errors:
+> > ! Missing $ inserted.
+> > <inserted text>
+> >                 $
+> > l.4064   \item Time zone America/New_
+> >                                      York
+> > ! LaTeX Error: Command \item invalid in math mode.
+> >
+> >
+> > although the details differ on each platform.
+> >
+> > Something has changed in the environment (headers?) that I can't quite
+> > track down (the source documents have not changed). Is this a known issue?
+> > Any suggestions on resolving it?
+> >
+> > Rory
+> >
+> >
+> >         [[alternative HTML version deleted]]
+> >
+> > _______________________________________________
+> > Bioc-devel at r-project.org mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From hp@ge@@on@g|thub @end|ng |rom gm@||@com  Fri Dec  9 23:47:40 2022
+From: hp@ge@@on@g|thub @end|ng |rom gm@||@com (=?UTF-8?B?SGVydsOpIFBhZ8Oocw==?=)
+Date: Fri, 9 Dec 2022 14:47:40 -0800
+Subject: [Bioc-devel] error on R CMD check
+In-Reply-To: <c20fe20c-1da4-b85e-5fe3-af5de6e468b6@gmail.com>
+References: <BL1PR12MB530188CB9B04FAF9CF760FCEF93E9@BL1PR12MB5301.namprd12.prod.outlook.com>
+ <25451.55942.284192.175896@hornik.net> <25454.14152.172760.476695@hornik.net>
+ <BL1PR12MB5301582FF819870315D17532F9059@BL1PR12MB5301.namprd12.prod.outlook.com>
+ <CAC7wyYsWHVH=gDcy=aKdx6zbb0+8Gb72-YR9qDwOHarCtDQO8w@mail.gmail.com>
+ <CAC7wyYtWiE_MuLex5Zvaicx4xanBxPYG3WeLFncNM26SU9Cugg@mail.gmail.com>
+ <CAC7wyYsKUgN7-5+4LHRZbaNpRLxDcNywXxkyLpyLqTX1Hcicqg@mail.gmail.com>
+ <9f8bc7d4-2557-5c20-12ab-58a56d61a4b8@gmail.com>
+ <c20fe20c-1da4-b85e-5fe3-af5de6e468b6@gmail.com>
+Message-ID: <51560448-4ab1-3fd2-8a54-ded62700785a@gmail.com>
+
+Hi,
+
+IFAA now passes BUILD and CHECK on all platforms on the BioC 3.17 build 
+report:
+
+ ? https://bioconductor.org/checkResults/3.17/bioc-LATEST/IFAA/
+
+The package is now available in BioC 3.17 via BiocManager::install():
+
+ ? https://bioconductor.org/packages/3.17/IFAA
+
+Except on Windows. But that's because of an issue with an upstream 
+package on this platform that will hopefully be resolved soon. (Note 
+that BioC 3.17 users can still install the package from source on Windows.)
+
+Cheers,
+
+H.
+
+On 07/12/2022 21:54, Herv? Pag?s wrote:
+> Hi,
+>
+> On 06/12/2022 22:10, Herv? Pag?s wrote:
+> ...
+>> Anyways, the version of the Bioconductor package would need to be 
+>> bumped to 1.1.1. However you won't be able to push this bump to 
+>> git.bioconductor.org because we don't allow this kind of version 
+>> bump. So we'll take care of it. We'll let you know when it's done.
+>
+> This is done. Version 1.1.1 should show up on Friday's build report. 
+> Hopefully without the BiocGenerics:::testPackage("IFAA") error.
+>
+> Remember to resync the IFAA repo on GitHub with IFAA's repo on 
+> git.bioconductor.org
+>
+> Best,
+>
+> H.
+>
+>>
+>> Best,
+>>
+>> H.
+>>
+>>
+>>> Thanks,
+>>> ? Zhigang
+>>> ? https://sites.google.com/view/zlab
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+-- 
+Herv? Pag?s
+
+Bioconductor Core Team
+hpages.on.github at gmail.com
+
+
+From hp@ge@@on@g|thub @end|ng |rom gm@||@com  Mon Dec 12 22:28:42 2022
+From: hp@ge@@on@g|thub @end|ng |rom gm@||@com (=?UTF-8?B?SGVydsOpIFBhZ8Oocw==?=)
+Date: Mon, 12 Dec 2022 13:28:42 -0800
+Subject: [Bioc-devel] error on R CMD check
+In-Reply-To: <51560448-4ab1-3fd2-8a54-ded62700785a@gmail.com>
+References: <BL1PR12MB530188CB9B04FAF9CF760FCEF93E9@BL1PR12MB5301.namprd12.prod.outlook.com>
+ <25451.55942.284192.175896@hornik.net> <25454.14152.172760.476695@hornik.net>
+ <BL1PR12MB5301582FF819870315D17532F9059@BL1PR12MB5301.namprd12.prod.outlook.com>
+ <CAC7wyYsWHVH=gDcy=aKdx6zbb0+8Gb72-YR9qDwOHarCtDQO8w@mail.gmail.com>
+ <CAC7wyYtWiE_MuLex5Zvaicx4xanBxPYG3WeLFncNM26SU9Cugg@mail.gmail.com>
+ <CAC7wyYsKUgN7-5+4LHRZbaNpRLxDcNywXxkyLpyLqTX1Hcicqg@mail.gmail.com>
+ <9f8bc7d4-2557-5c20-12ab-58a56d61a4b8@gmail.com>
+ <c20fe20c-1da4-b85e-5fe3-af5de6e468b6@gmail.com>
+ <51560448-4ab1-3fd2-8a54-ded62700785a@gmail.com>
+Message-ID: <62081baa-9158-7e80-5b96-40321aaa75dd@gmail.com>
+
+Hi Zhigang,
+
+We didn't hear back from you. We hope you're seeing those emails.
+
+Note that IFAA should now be removed from CRAN. Please request the 
+removal as soon as possible.
+
+Also, as mentioned earlier, don't forget to resync the IFAA repo on 
+GitHub with IFAA's repo on git.bioconductor.org.
+
+Thanks,
+
+H.
+
+On 09/12/2022 14:47, Herv? Pag?s wrote:
+> Hi,
+>
+> IFAA now passes BUILD and CHECK on all platforms on the BioC 3.17 
+> build report:
+>
+> ? https://bioconductor.org/checkResults/3.17/bioc-LATEST/IFAA/
+>
+> The package is now available in BioC 3.17 via BiocManager::install():
+>
+> ? https://bioconductor.org/packages/3.17/IFAA
+>
+> Except on Windows. But that's because of an issue with an upstream 
+> package on this platform that will hopefully be resolved soon. (Note 
+> that BioC 3.17 users can still install the package from source on 
+> Windows.)
+>
+> Cheers,
+>
+> H.
+>
+> On 07/12/2022 21:54, Herv? Pag?s wrote:
+>> Hi,
+>>
+>> On 06/12/2022 22:10, Herv? Pag?s wrote:
+>> ...
+>>> Anyways, the version of the Bioconductor package would need to be 
+>>> bumped to 1.1.1. However you won't be able to push this bump to 
+>>> git.bioconductor.org because we don't allow this kind of version 
+>>> bump. So we'll take care of it. We'll let you know when it's done.
+>>
+>> This is done. Version 1.1.1 should show up on Friday's build report. 
+>> Hopefully without the BiocGenerics:::testPackage("IFAA") error.
+>>
+>> Remember to resync the IFAA repo on GitHub with IFAA's repo on 
+>> git.bioconductor.org
+>>
+>> Best,
+>>
+>> H.
+>>
+>>>
+>>> Best,
+>>>
+>>> H.
+>>>
+>>>
+>>>> Thanks,
+>>>> ? Zhigang
+>>>> ? https://sites.google.com/view/zlab
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at r-project.org mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+-- 
+Herv? Pag?s
+
+Bioconductor Core Team
+hpages.on.github at gmail.com
+
+
+From dr|ghe||| @end|ng |rom gm@||@com  Mon Dec 12 11:11:20 2022
+From: dr|ghe||| @end|ng |rom gm@||@com (Dario Righelli)
+Date: Mon, 12 Dec 2022 11:11:20 +0100
+Subject: [Bioc-devel] SpatialExperiment checks fail on Windows platform
+Message-ID: <575f8f18-1036-9ae1-6673-9fda1310556a@gmail.com>
+
+Hi everyone,
+
+we are having an issue when running GithubActions on Windows platform 
+that we are not able to figure out.
+
+The error is about loading an image as a grob during the vignette 
+construction.
+It seems that it loads the image path twice, but this sounds weird 
+because the same vignette code is working on the other two platforms 
+(linux and osx).
+
+Does anyone have any ideas about this?
+
+Here it is the reported check error:
+
+Quitting from lines 110-111 (SpatialExperiment.Rmd) Error: processing 
+vignette 'SpatialExperiment.Rmd' failed with diagnostics: Rscript.exe: 
+UnableToOpenBlob 
+`F:\biocbuild\bbs-3.17-bioc\tmpdir\RtmpsN0lzb\Rbuild3f6c3ae24a46\SpatialExperiment\vignettes\file:\F:\biocbuild\bbs-3.17-bioc\tmpdir\RtmpsN0lzb\Rinst3f6c113c6bc2\SpatialExperiment\extdata\10xVisium\section1\outs\spatial\tissue_lowres_image.png': 
+Invalid argument @ error/blob.c/OpenBlob/2924 --- failed re-building 
+'SpatialExperiment.Rmd'
+
+Thanks, Dario
+
+	[[alternative HTML version deleted]]
+
+
+From hp@ge@@on@g|thub @end|ng |rom gm@||@com  Tue Dec 13 20:57:13 2022
+From: hp@ge@@on@g|thub @end|ng |rom gm@||@com (=?UTF-8?B?SGVydsOpIFBhZ8Oocw==?=)
+Date: Tue, 13 Dec 2022 11:57:13 -0800
+Subject: [Bioc-devel] SpatialExperiment checks fail on Windows platform
+In-Reply-To: <575f8f18-1036-9ae1-6673-9fda1310556a@gmail.com>
+References: <575f8f18-1036-9ae1-6673-9fda1310556a@gmail.com>
+Message-ID: <a654620f-b327-f7d9-0c21-4861fd2911a0@gmail.com>
+
+Hi Dario,
+
+Note that we observe the same problem on our daily Windows builder, so 
+this has not much to do with your GitHub actions setup:
+
+https://bioconductor.org/checkResults/3.17/bioc-LATEST/SpatialExperiment/palomino3-buildsrc.html
+
+It looks to me that some recent changes to the package broke the dim() 
+method for StoredSpatialImage objects. Here is how the method is defined 
+in BioC devel:
+
+ > selectMethod("dim", "StoredSpatialImage")
+Object with tracing code, class "MethodDefinitionWithTrace"
+Original definition:
+Method Definition:
+
+function (x)
+{
+ ??? src <- imgSource(x)
+ ??? src <- normalizePath(src)
+ ??? src <- paste0("file://", src)
+ ??? img <- .get_from_cache(src, NULL)
+ ??? if (!is.null(img))
+ ??????? return(dim(img))
+ ??? img <- image_read(src)
+ ??? tib <- image_info(img)
+ ??? c(tib$height, tib$width)
+}
+<bytecode: 0x55a3f2dee5b8>
+<environment: namespace:SpatialExperiment>
+
+Signatures:
+ ??????? x
+target? "StoredSpatialImage"
+defined "StoredSpatialImage"
+
+## (to see the tracing code, look at body(object))
+
+I'm not sure I understand the logic for prefixing the already normalized 
+local path with "file://", but this breaks magick::image_read() on 
+Windows. Without the "file://" prefix, the dim() method seems to work 
+fine on all platforms.
+
+Hope this helps,
+
+H.
+
+On 12/12/2022 02:11, Dario Righelli wrote:
+> Hi everyone,
+>
+> we are having an issue when running GithubActions on Windows platform
+> that we are not able to figure out.
+>
+> The error is about loading an image as a grob during the vignette
+> construction.
+> It seems that it loads the image path twice, but this sounds weird
+> because the same vignette code is working on the other two platforms
+> (linux and osx).
+>
+> Does anyone have any ideas about this?
+>
+> Here it is the reported check error:
+>
+> Quitting from lines 110-111 (SpatialExperiment.Rmd) Error: processing
+> vignette 'SpatialExperiment.Rmd' failed with diagnostics: Rscript.exe:
+> UnableToOpenBlob
+> `F:\biocbuild\bbs-3.17-bioc\tmpdir\RtmpsN0lzb\Rbuild3f6c3ae24a46\SpatialExperiment\vignettes\file:\F:\biocbuild\bbs-3.17-bioc\tmpdir\RtmpsN0lzb\Rinst3f6c113c6bc2\SpatialExperiment\extdata\10xVisium\section1\outs\spatial\tissue_lowres_image.png':
+> Invalid argument @ error/blob.c/OpenBlob/2924 --- failed re-building
+> 'SpatialExperiment.Rmd'
+>
+> Thanks, Dario
+>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Herv? Pag?s
+
+Bioconductor Core Team
+hpages.on.github at gmail.com
+
+
+From ph|||ppeh@uch@mp@ @end|ng |rom hotm@||@com  Thu Dec 15 10:09:17 2022
+From: ph|||ppeh@uch@mp@ @end|ng |rom hotm@||@com (Philippe Hauchamps)
+Date: Thu, 15 Dec 2022 09:09:17 +0000
+Subject: [Bioc-devel] PeacoQC Bioc version not in line with github repo
+Message-ID: <DB4P189MB2165473ACAB6ECAD14034DCFA6E19@DB4P189MB2165.EURP189.PROD.OUTLOOK.COM>
+
+Hi dear Bioc-devel community,
+
+I am developing a package, CytoPipeline, which depends a.o. on PeacoQC Bioc package. A few months ago, I contributed to PeacoQC with a PR, in order to solve an issue :
+
+https://github.com/saeyslab/PeacoQC/pull/9
+
+https://github.com/saeyslab/PeacoQC/issues/8
+
+
+My PR was subsequently validated by the package maintainer and integrated into the code base (June 2022).
+
+However, I recently noticed that the latest changes made on the PeacoQC github repo, have not been ported to the BioC git repository.  Indeed, although PeacoQC version on Bioc is higher (1.8) than in github repo (1.7.3), the latest commits have not been included.
+
+I already posted a message linked to the PeacoQC github issue, to request an update of the Bioc repo.
+However, is there possibly some action that could be done from Bioc Devel side to gently push for this update ?
+
+Thanks,
+
+Philippe
+
+
+
+
+	[[alternative HTML version deleted]]
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Thu Dec 15 13:19:08 2022
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Thu, 15 Dec 2022 12:19:08 +0000
+Subject: [Bioc-devel] PeacoQC Bioc version not in line with github repo
+In-Reply-To: <DB4P189MB2165473ACAB6ECAD14034DCFA6E19@DB4P189MB2165.EURP189.PROD.OUTLOOK.COM>
+References: <DB4P189MB2165473ACAB6ECAD14034DCFA6E19@DB4P189MB2165.EURP189.PROD.OUTLOOK.COM>
+Message-ID: <BL1PR12MB5301A00098993CCF672B3F23F9E19@BL1PR12MB5301.namprd12.prod.outlook.com>
+
+Besides reminding them to keep both in sync there is not much more the Bioc Devel can do.  It is up to the maintainers to properly maintain their packages and push to the appropriate places to make it available to the community.
+
+
+Lori Shepherd - Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Philippe Hauchamps <philippehauchamps at hotmail.com>
+Sent: Thursday, December 15, 2022 4:09 AM
+To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: [Bioc-devel] PeacoQC Bioc version not in line with github repo
+
+Hi dear Bioc-devel community,
+
+I am developing a package, CytoPipeline, which depends a.o. on PeacoQC Bioc package. A few months ago, I contributed to PeacoQC with a PR, in order to solve an issue :
+
+https://secure-web.cisco.com/1kHaxHWvrkJ6pmvMy5l11CQpE8JgnouzBYno3I-i9g9wZ-q7AQ_bG1vGgaLMp-LdWnFUJjuNlZFQgO9JABK6ct50bePM4LthauLpL_xlbHzHAQH7cuy9RWzJ-lgUPnXBWkNCmWeDBxugF5OBSkJTUZFowlYTknhOhJxfEMyIiFUAukcq1jC8qBgdKD8P9tUZlu3ScUU-Mj9_4vH2cznII7rFPQhVqKlrqUsEG8uXKZz83XGxZZi51OkoL0FibgYpJKAoASPM0F2Odv0k5qvpjnRYISpGIwaRSEHrGVDKwEkNkeaZeYJGD43FHT96CPpmtGa0vDNFypb26tZPTZuLWzA/https%3A%2F%2Fgithub.com%2Fsaeyslab%2FPeacoQC%2Fpull%2F9
+
+https://secure-web.cisco.com/18j7J58SAasdW-RIw2_2x4Ap2qzc4hVoqLUkTzo1Z6tU0s2Bo1wokU4CGAIxAT5Ab2aqkUMHg2JzA4cUPORI4y5ZVgxJ3S5s_l6Y9GwtAcXp3Vo9WckqO41lnnsjzFvo9CBoj1yweLFfiZavDovFlwZt4UBlmXHPwRvs176H3Y8Kte87L-psj5Gtf1sVJUatcGs6OaD3AjsgRG5KYeH-H00ceCHAbO86U6MTobby02TO7eYSX_ZOwPjgZZHbTsVGKAWEbdt3PqmlSURhtKzNrsNwcknPunJZyyQEtf2wRHXEuMA_GincdXB-KypjzcKZDw4SB44B3ybSExbSYEYyNtQ/https%3A%2F%2Fgithub.com%2Fsaeyslab%2FPeacoQC%2Fissues%2F8
+
+
+My PR was subsequently validated by the package maintainer and integrated into the code base (June 2022).
+
+However, I recently noticed that the latest changes made on the PeacoQC github repo, have not been ported to the BioC git repository.  Indeed, although PeacoQC version on Bioc is higher (1.8) than in github repo (1.7.3), the latest commits have not been included.
+
+I already posted a message linked to the PeacoQC github issue, to request an update of the Bioc repo.
+However, is there possibly some action that could be done from Bioc Devel side to gently push for this update ?
+
+Thanks,
+
+Philippe
+
+
+
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://secure-web.cisco.com/11IzcX-KI42HSp1tEYgBqRq-AGft0wfLvPlpu5CDHoCQFUSDsIXhMFc1C3nRD2yq_J1N4ohPYtZdK74Nw7qKNwk9oEuWrOn9XiYM2s2GF1PKt81NsiLynu19oaY5se0MjSbBPgBeI3VbetQKemQbPfunfK4tateHwh0myCnSR0omnIOY9qD0wX-XiG8mzjV6PZzTm-padKVvth_0wYJAJLJsGU-2IL8cwJu8m6feRLaI-CceRuHg91j5WhHEvX4l_5JRNxWm5-x-H3XRygEsavUSeNCg7N68nzMvoGTRQl5rhl7F7ELHvVbV3FCOmogVzdv6Kr1nON12ua09a7_YA7w/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From henr|k@bengt@@on @end|ng |rom gm@||@com  Thu Dec 15 16:15:22 2022
+From: henr|k@bengt@@on @end|ng |rom gm@||@com (Henrik Bengtsson)
+Date: Thu, 15 Dec 2022 07:15:22 -0800
+Subject: [Bioc-devel] PeacoQC Bioc version not in line with github repo
+In-Reply-To: <BL1PR12MB5301A00098993CCF672B3F23F9E19@BL1PR12MB5301.namprd12.prod.outlook.com>
+References: <DB4P189MB2165473ACAB6ECAD14034DCFA6E19@DB4P189MB2165.EURP189.PROD.OUTLOOK.COM>
+ <BL1PR12MB5301A00098993CCF672B3F23F9E19@BL1PR12MB5301.namprd12.prod.outlook.com>
+Message-ID: <CAFDcVCTUttpQLszHnkswAbfhVYQ6T3Z8WGgUV6SqRWQWbojnzA@mail.gmail.com>
+
+> Indeed, although PeacoQC version on Bioc is higher (1.8) than in github
+repo (1.7.3), the latest commits have not been included.
+
+This is explained by Bioconductor bumping versions automatically when
+there's a new release cycle. So, in this case it went from something like
+1.7.2 to 1.8.0 on the Bioconductor side, while your contribution in 1.7.3
+is still only in the GitHub side (because it was never pushed up to
+Bioconductor).
+
+/Henrik
+
+On Thu, Dec 15, 2022, 04:19 Kern, Lori <Lori.Shepherd at roswellpark.org>
+wrote:
+
+> Besides reminding them to keep both in sync there is not much more the
+> Bioc Devel can do.  It is up to the maintainers to properly maintain their
+> packages and push to the appropriate places to make it available to the
+> community.
+>
+>
+> Lori Shepherd - Kern
+>
+> Bioconductor Core Team
+>
+> Roswell Park Comprehensive Cancer Center
+>
+> Department of Biostatistics & Bioinformatics
+>
+> Elm & Carlton Streets
+>
+> Buffalo, New York 14263
+>
+> ________________________________
+> From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Philippe
+> Hauchamps <philippehauchamps at hotmail.com>
+> Sent: Thursday, December 15, 2022 4:09 AM
+> To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+> Subject: [Bioc-devel] PeacoQC Bioc version not in line with github repo
+>
+> Hi dear Bioc-devel community,
+>
+> I am developing a package, CytoPipeline, which depends a.o. on PeacoQC
+> Bioc package. A few months ago, I contributed to PeacoQC with a PR, in
+> order to solve an issue :
+>
+>
+> https://secure-web.cisco.com/1kHaxHWvrkJ6pmvMy5l11CQpE8JgnouzBYno3I-i9g9wZ-q7AQ_bG1vGgaLMp-LdWnFUJjuNlZFQgO9JABK6ct50bePM4LthauLpL_xlbHzHAQH7cuy9RWzJ-lgUPnXBWkNCmWeDBxugF5OBSkJTUZFowlYTknhOhJxfEMyIiFUAukcq1jC8qBgdKD8P9tUZlu3ScUU-Mj9_4vH2cznII7rFPQhVqKlrqUsEG8uXKZz83XGxZZi51OkoL0FibgYpJKAoASPM0F2Odv0k5qvpjnRYISpGIwaRSEHrGVDKwEkNkeaZeYJGD43FHT96CPpmtGa0vDNFypb26tZPTZuLWzA/https%3A%2F%2Fgithub.com%2Fsaeyslab%2FPeacoQC%2Fpull%2F9
+>
+>
+> https://secure-web.cisco.com/18j7J58SAasdW-RIw2_2x4Ap2qzc4hVoqLUkTzo1Z6tU0s2Bo1wokU4CGAIxAT5Ab2aqkUMHg2JzA4cUPORI4y5ZVgxJ3S5s_l6Y9GwtAcXp3Vo9WckqO41lnnsjzFvo9CBoj1yweLFfiZavDovFlwZt4UBlmXHPwRvs176H3Y8Kte87L-psj5Gtf1sVJUatcGs6OaD3AjsgRG5KYeH-H00ceCHAbO86U6MTobby02TO7eYSX_ZOwPjgZZHbTsVGKAWEbdt3PqmlSURhtKzNrsNwcknPunJZyyQEtf2wRHXEuMA_GincdXB-KypjzcKZDw4SB44B3ybSExbSYEYyNtQ/https%3A%2F%2Fgithub.com%2Fsaeyslab%2FPeacoQC%2Fissues%2F8
+>
+>
+> My PR was subsequently validated by the package maintainer and integrated
+> into the code base (June 2022).
+>
+> However, I recently noticed that the latest changes made on the PeacoQC
+> github repo, have not been ported to the BioC git repository.  Indeed,
+> although PeacoQC version on Bioc is higher (1.8) than in github repo
+> (1.7.3), the latest commits have not been included.
+>
+> I already posted a message linked to the PeacoQC github issue, to request
+> an update of the Bioc repo.
+> However, is there possibly some action that could be done from Bioc Devel
+> side to gently push for this update ?
+>
+> Thanks,
+>
+> Philippe
+>
+>
+>
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+>
+> https://secure-web.cisco.com/11IzcX-KI42HSp1tEYgBqRq-AGft0wfLvPlpu5CDHoCQFUSDsIXhMFc1C3nRD2yq_J1N4ohPYtZdK74Nw7qKNwk9oEuWrOn9XiYM2s2GF1PKt81NsiLynu19oaY5se0MjSbBPgBeI3VbetQKemQbPfunfK4tateHwh0myCnSR0omnIOY9qD0wX-XiG8mzjV6PZzTm-padKVvth_0wYJAJLJsGU-2IL8cwJu8m6feRLaI-CceRuHg91j5WhHEvX4l_5JRNxWm5-x-H3XRygEsavUSeNCg7N68nzMvoGTRQl5rhl7F7ELHvVbV3FCOmogVzdv6Kr1nON12ua09a7_YA7w/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+>
+>
+>
+> This email message may contain legally privileged and/or confidential
+> information.  If you are not the intended recipient(s), or the employee or
+> agent responsible for the delivery of this message to the intended
+> recipient(s), you are hereby notified that any disclosure, copying,
+> distribution, or use of this email message is prohibited.  If you have
+> received this message in error, please notify the sender immediately by
+> e-mail and delete this email message from your computer. Thank you.
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+	[[alternative HTML version deleted]]
+
+
+From dr|ghe||| @end|ng |rom gm@||@com  Thu Dec 15 09:53:29 2022
+From: dr|ghe||| @end|ng |rom gm@||@com (Dario Righelli)
+Date: Thu, 15 Dec 2022 09:53:29 +0100
+Subject: [Bioc-devel] SpatialExperiment checks fail on Windows platform
+In-Reply-To: <a654620f-b327-f7d9-0c21-4861fd2911a0@gmail.com>
+References: <575f8f18-1036-9ae1-6673-9fda1310556a@gmail.com>
+ <a654620f-b327-f7d9-0c21-4861fd2911a0@gmail.com>
+Message-ID: <ed60d69a-046e-2401-1e0b-84b82675adaa@gmail.com>
+
+Hi Harv?,
+
+thanks for your reply and suggestion, we'll definitively try what you 
+suggested.
+
+Dario
+
+Il 13/12/22 20:57, Herv? Pag?s ha scritto:
+> Hi Dario,
+>
+> Note that we observe the same problem on our daily Windows builder, so 
+> this has not much to do with your GitHub actions setup:
+>
+> https://bioconductor.org/checkResults/3.17/bioc-LATEST/SpatialExperiment/palomino3-buildsrc.html 
+>
+>
+> It looks to me that some recent changes to the package broke the dim() 
+> method for StoredSpatialImage objects. Here is how the method is 
+> defined in BioC devel:
+>
+> > selectMethod("dim", "StoredSpatialImage")
+> Object with tracing code, class "MethodDefinitionWithTrace"
+> Original definition:
+> Method Definition:
+>
+> function (x)
+> {
+> ??? src <- imgSource(x)
+> ??? src <- normalizePath(src)
+> ??? src <- paste0("file://", src)
+> ??? img <- .get_from_cache(src, NULL)
+> ??? if (!is.null(img))
+> ??????? return(dim(img))
+> ??? img <- image_read(src)
+> ??? tib <- image_info(img)
+> ??? c(tib$height, tib$width)
+> }
+> <bytecode: 0x55a3f2dee5b8>
+> <environment: namespace:SpatialExperiment>
+>
+> Signatures:
+> ??????? x
+> target? "StoredSpatialImage"
+> defined "StoredSpatialImage"
+>
+> ## (to see the tracing code, look at body(object))
+>
+> I'm not sure I understand the logic for prefixing the already 
+> normalized local path with "file://", but this breaks 
+> magick::image_read() on Windows. Without the "file://" prefix, the 
+> dim() method seems to work fine on all platforms.
+>
+> Hope this helps,
+>
+> H.
+>
+> On 12/12/2022 02:11, Dario Righelli wrote:
+>> Hi everyone,
+>>
+>> we are having an issue when running GithubActions on Windows platform
+>> that we are not able to figure out.
+>>
+>> The error is about loading an image as a grob during the vignette
+>> construction.
+>> It seems that it loads the image path twice, but this sounds weird
+>> because the same vignette code is working on the other two platforms
+>> (linux and osx).
+>>
+>> Does anyone have any ideas about this?
+>>
+>> Here it is the reported check error:
+>>
+>> Quitting from lines 110-111 (SpatialExperiment.Rmd) Error: processing
+>> vignette 'SpatialExperiment.Rmd' failed with diagnostics: Rscript.exe:
+>> UnableToOpenBlob
+>> `F:\biocbuild\bbs-3.17-bioc\tmpdir\RtmpsN0lzb\Rbuild3f6c3ae24a46\SpatialExperiment\vignettes\file:\F:\biocbuild\bbs-3.17-bioc\tmpdir\RtmpsN0lzb\Rinst3f6c113c6bc2\SpatialExperiment\extdata\10xVisium\section1\outs\spatial\tissue_lowres_image.png': 
+>>
+>> Invalid argument @ error/blob.c/OpenBlob/2924 --- failed re-building
+>> 'SpatialExperiment.Rmd'
+>>
+>> Thanks, Dario
+>>
+>> ????[[alternative HTML version deleted]]
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+	[[alternative HTML version deleted]]
+
+
+From |@urent@g@tto @end|ng |rom uc|ouv@|n@be  Fri Dec 16 17:38:38 2022
+From: |@urent@g@tto @end|ng |rom uc|ouv@|n@be (Laurent Gatto)
+Date: Fri, 16 Dec 2022 16:38:38 +0000
+Subject: [Bioc-devel] Bioconductor classes and methods working group
+Message-ID: <AM0PR03MB36359D5D5F1EB9B1A5BF667891E69@AM0PR03MB3635.eurprd03.prod.outlook.com>
+
+Dear Bioconductor developer,
+
+The Bioconductor classes and methods working group [1] is going to reflect on what classes should be considered 'official' [2] and thus re-used in newly submitted packages, and to what extend this should possibly be enforced during review.
+
+If you would like to join the discussion, please open an issue in the working group github repo [3] and tag yourself. We plan our first round of discussions Jan 2023. 
+
+Best wishes,
+
+Laurent 
+
+
+
+[1] http://workinggroups.bioconductor.org/currently-active-working-groups-committees.html#recommended-classes-and-methods
+[2] https://contributions.bioconductor.org/important-bioconductor-package-development-features.html#commonclass
+[3] https://github.com/Bioconductor/BiocClassesWorkingGroup
+
+From jh||| @end|ng |rom byu@edu  Fri Dec 16 22:31:35 2022
+From: jh||| @end|ng |rom byu@edu (Jonathon Hill)
+Date: Fri, 16 Dec 2022 21:31:35 +0000
+Subject: [Bioc-devel] Trying to fix package failing on 3.17
+Message-ID: <AAC803E3-609A-40E9-9FAA-9819114714B5@byu.edu>
+
+Hi,
+
+I received a notice that my package, sangerseqR, is failing during the nightly build process for the devel branch (3.17) of bioconductor.
+
+I do not see an error when I use the package in the current build, so it is something specific to the new build.
+
+I have been trying to recreate the error. I downloaded and installed R 4.3 and installed the Bioconductor devel packages. However, when I try to build my package locally, I get the following error:
+
+
+==> R CMD INSTALL --preclean --no-multiarch --with-keep.source sangerseqR
+
+* installing to library ?/Library/Frameworks/R.framework/Versions/4.3/Resources/library?
+* installing *source* package ?sangerseqR? ...
+** using staged installation
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+
+ *** caught segfault ***
+address 0x18, cause 'memory not mapped'
+
+Traceback:
+ 1: dyn.load(file, DLLpath = DLLpath, ...)
+ 2: library.dynam(lib, package, package.lib)
+ 3: loadNamespace(package, lib.loc)
+ 4: doTryCatch(return(expr), name, parentenv, handler)
+ 5: tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 6: tryCatchList(expr, classes, parentenv, handlers)
+ 7: tryCatch({    attr(package, "LibPath") <- which.lib.loc    ns <- loadNamespace(package, lib.loc)    env <- attachNamespace(ns, pos = pos, deps, exclude, include.only)}, error = function(e) {    P <- if (!is.null(cc <- conditionCall(e)))         paste(" in", deparse(cc)[1L])    else ""    msg <- gettextf("package or namespace load failed for %s%s:\n %s",         sQuote(package), P, conditionMessage(e))    if (logical.return && !quietly)         message(paste("Error:", msg), domain = NA)    else stop(msg, call. = FALSE, domain = NA)})
+ 8: library(pkg, character.only = TRUE, logical.return = TRUE, lib.loc = lib.loc,     quietly = quietly)
+ 9: .getRequiredPackages2(pkgInfo, quietly = quietly, lib.loc = c(lib.loc,     .libPaths()))
+10: library(pkg, character.only = TRUE, logical.return = TRUE, lib.loc = lib.loc,     quietly = quietly)
+11: .getRequiredPackages2(pkgInfo, quietly, lib.loc, useImports)
+12: .getRequiredPackages(quietly = TRUE)
+13: withCallingHandlers(expr, packageStartupMessage = function(c) tryInvokeRestart("muffleMessage"))
+14: suppressPackageStartupMessages(.getRequiredPackages(quietly = TRUE))
+An irrecoverable exception occurred. R is aborting now ...
+sh: line 1:  6601 Segmentation fault: 11  R_TESTS= '/Library/Frameworks/R.framework/Resources/bin/R' --no-save --no-restore --no-echo 2>&1 < '/var/folders/1w/yqm9vhw952s4dbb2g9vtr_6r0000gp/T//RtmpRo37lg/file19c36696d396'
+ERROR: lazy loading failed for package ?sangerseqR?
+* removing ?/Library/Frameworks/R.framework/Versions/4.3/Resources/library/sangerseqR?
+
+Exited with status 1.
+
+
+Furthermore, when I try to install my package through bioconductor, I get:
+
+Warning message:
+package ?sangerseqR? is not available for Bioconductor version '3.17'
+
+A version of this package for your version of R might be available elsewhere,
+see the ideas at
+https://cran.r-project.org/doc/manuals/r-devel/R-admin.html#Installing-packages
+
+Any suggestions why I can?t load it?
+
+Thanks,
+
+Jonathon
+
+_____
+
+Jonathon T. Hill, PhD
+Associate Professor
+Cell Biology and Physiology
+Brigham Young University
+801-422-8970
+Lab: LSB 3035
+Office: LSB 3018
+Email: jhill at byu.edu<mailto:jhill at byu.edu>
+
+CONFIDENTIALITY:
+This e-mail and any attachments are confidential and may be privileged. If you are not a named recipient, please notify the sender immediately and do not disclose the content to another person, use it for any purpose, or store or copy the information in any medium.
+
+
+	[[alternative HTML version deleted]]
+
+
+From hx|155 @end|ng |rom c@@e@edu  Sun Dec 18 22:07:21 2022
+From: hx|155 @end|ng |rom c@@e@edu (Hao Feng)
+Date: Sun, 18 Dec 2022 16:07:21 -0500
+Subject: [Bioc-devel] Developing a package that handle BAM file
+Message-ID: <23AD90E6-2827-49A3-BB6C-107023F99E26@case.edu>
+
+Hi Bioconductor team,
+
+We?re developing a package to analyze a `new` type of high-throughput sequencing data. We have some BAM files ready. We?d like the package to be able to take BAM files as the input. In addition, to maintain our method?s statistical rigor, we?d like to implement repeated sampling for multiple times (a large number). 
+
+This brings concern to a package development, which I?d like to collect some feedback prior to proceed:
+1. The best practice to use BAM files as the example data? BAM files are large in general. Although we can use a part of the BAM, instead of the BAM from the whole genome, as the example data, I still don?t think it?s feasible to include those external files in the package submission. And due to the novelty of this sequencing experiment, I don?t think the current experiment data packages have them. Would you suggest us submitting a new experiment data package (of several dozen MBs), along with our software package? 
+2. Deal with long example run time? Due to repeated sampling and the handling of BAM files, we suspect our software code examples may take a long running time. Do you have any suggestions on this so it can pass the software checking, which is time-bound?
+
+Thank you very much in advance. 
+
+
+
+
+Regards,
+Hao
+
+
+---
+Hao Feng, Ph.D.
+Assistant Professor in Biostatistics
+Department of Population and Quantitative Health Sciences
+Case Western Reserve University School of Medicine
+Harland Wood Building - Room WG-82T 
+10900 Euclid Avenue
+SOM / Room G82T 
+Cleveland, OH 44106-4945
+Phone: 216-368-5510
+Lab website: https://hfenglab.org/
+Official website: http://epbiwww.case.edu/haofeng-phd/
+Email: hxf155 at case.edu <mailto:hxf155 at case.edu>
+
+
+
+
+	[[alternative HTML version deleted]]
+
+
+From @tvjc @end|ng |rom ch@nn|ng@h@rv@rd@edu  Mon Dec 19 01:18:09 2022
+From: @tvjc @end|ng |rom ch@nn|ng@h@rv@rd@edu (Vincent Carey)
+Date: Sun, 18 Dec 2022 19:18:09 -0500
+Subject: [Bioc-devel] Developing a package that handle BAM file
+In-Reply-To: <23AD90E6-2827-49A3-BB6C-107023F99E26@case.edu>
+References: <23AD90E6-2827-49A3-BB6C-107023F99E26@case.edu>
+Message-ID: <CAANT7+UTJUv5y54i1OgXUB3H1qpb=Rvt3p2SeqKdzx32qNy4Gg@mail.gmail.com>
+
+On Sun, Dec 18, 2022 at 4:07 PM Hao Feng <hxf155 at case.edu> wrote:
+
+> Hi Bioconductor team,
+>
+> We?re developing a package to analyze a `new` type of high-throughput
+> sequencing data. We have some BAM files ready. We?d like the package to be
+> able to take BAM files as the input. In addition, to maintain our method?s
+> statistical rigor, we?d like to implement repeated sampling for multiple
+> times (a large number).
+>
+> This brings concern to a package development, which I?d like to collect
+> some feedback prior to proceed:
+> 1. The best practice to use BAM files as the example data? BAM files are
+> large in general. Although we can use a part of the BAM, instead of the BAM
+> from the whole genome, as the example data, I still don?t think it?s
+> feasible to include those external files in the package submission. And due
+> to the novelty of this sequencing experiment, I don?t think the current
+> experiment data packages have them. Would you suggest us submitting a new
+> experiment data package (of several dozen MBs), along with our software
+> package?
+
+
+Yes
+
+
+>
+> 2. Deal with long example run time? Due to repeated sampling and the
+> handling of BAM files, we suspect our software code examples may take a
+> long running time. Do you have any suggestions on this so it can pass the
+> software checking, which is time-bound?
+>
+
+https://contributions.bioconductor.org/long-tests.html
+
+We will be happy to help you through any technical obstacles you encounter
+in preparing either
+the experiment data submission or the long testing situation.
+
+Thank you
+
+
+>
+> Thank you very much in advance.
+>
+>
+>
+>
+> Regards,
+> Hao
+>
+>
+> ---
+> Hao Feng, Ph.D.
+> Assistant Professor in Biostatistics
+> Department of Population and Quantitative Health Sciences
+> Case Western Reserve University School of Medicine
+> Harland Wood Building - Room WG-82T
+> 10900 Euclid Avenue
+> SOM / Room G82T
+> Cleveland, OH 44106-4945
+> Phone: 216-368-5510
+> Lab website: https://hfenglab.org/
+> Official website: http://epbiwww.case.edu/haofeng-phd/
+> Email: hxf155 at case.edu <mailto:hxf155 at case.edu>
+>
+>
+>
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+-- 
+The information in this e-mail is intended only for the ...{{dropped:18}}
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Mon Dec 19 13:40:44 2022
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Mon, 19 Dec 2022 12:40:44 +0000
+Subject: [Bioc-devel] Trying to fix package failing on 3.17
+In-Reply-To: <AAC803E3-609A-40E9-9FAA-9819114714B5@byu.edu>
+References: <AAC803E3-609A-40E9-9FAA-9819114714B5@byu.edu>
+Message-ID: <BL1PR12MB530170AD7DC9FEEB277143DDF9E59@BL1PR12MB5301.namprd12.prod.outlook.com>
+
+I can't help much with the segfault
+
+As far as installing through Bioconductor. Until the package installs, builds, and checks cleanly it will not be available.  The fact that it is not listed on the landing page means that it has not yet build since the release on devel and is not available via BiocManager::install
+http://bioconductor.org/packages/3.17/bioc/html/sangerseqR.html
+
+
+
+
+Lori Shepherd - Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Jonathon Hill <jhill at byu.edu>
+Sent: Friday, December 16, 2022 4:31 PM
+To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: [Bioc-devel] Trying to fix package failing on 3.17
+
+Hi,
+
+I received a notice that my package, sangerseqR, is failing during the nightly build process for the devel branch (3.17) of bioconductor.
+
+I do not see an error when I use the package in the current build, so it is something specific to the new build.
+
+I have been trying to recreate the error. I downloaded and installed R 4.3 and installed the Bioconductor devel packages. However, when I try to build my package locally, I get the following error:
+
+
+==> R CMD INSTALL --preclean --no-multiarch --with-keep.source sangerseqR
+
+* installing to library ?/Library/Frameworks/R.framework/Versions/4.3/Resources/library?
+* installing *source* package ?sangerseqR? ...
+** using staged installation
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+
+ *** caught segfault ***
+address 0x18, cause 'memory not mapped'
+
+Traceback:
+ 1: dyn.load(file, DLLpath = DLLpath, ...)
+ 2: library.dynam(lib, package, package.lib)
+ 3: loadNamespace(package, lib.loc)
+ 4: doTryCatch(return(expr), name, parentenv, handler)
+ 5: tryCatchOne(expr, names, parentenv, handlers[[1L]])
+ 6: tryCatchList(expr, classes, parentenv, handlers)
+ 7: tryCatch({    attr(package, "LibPath") <- which.lib.loc    ns <- loadNamespace(package, lib.loc)    env <- attachNamespace(ns, pos = pos, deps, exclude, include.only)}, error = function(e) {    P <- if (!is.null(cc <- conditionCall(e)))         paste(" in", deparse(cc)[1L])    else ""    msg <- gettextf("package or namespace load failed for %s%s:\n %s",         sQuote(package), P, conditionMessage(e))    if (logical.return && !quietly)         message(paste("Error:", msg), domain = NA)    else stop(msg, call. = FALSE, domain = NA)})
+ 8: library(pkg, character.only = TRUE, logical.return = TRUE, lib.loc = lib.loc,     quietly = quietly)
+ 9: .getRequiredPackages2(pkgInfo, quietly = quietly, lib.loc = c(lib.loc,     .libPaths()))
+10: library(pkg, character.only = TRUE, logical.return = TRUE, lib.loc = lib.loc,     quietly = quietly)
+11: .getRequiredPackages2(pkgInfo, quietly, lib.loc, useImports)
+12: .getRequiredPackages(quietly = TRUE)
+13: withCallingHandlers(expr, packageStartupMessage = function(c) tryInvokeRestart("muffleMessage"))
+14: suppressPackageStartupMessages(.getRequiredPackages(quietly = TRUE))
+An irrecoverable exception occurred. R is aborting now ...
+sh: line 1:  6601 Segmentation fault: 11  R_TESTS= '/Library/Frameworks/R.framework/Resources/bin/R' --no-save --no-restore --no-echo 2>&1 < '/var/folders/1w/yqm9vhw952s4dbb2g9vtr_6r0000gp/T//RtmpRo37lg/file19c36696d396'
+ERROR: lazy loading failed for package ?sangerseqR?
+* removing ?/Library/Frameworks/R.framework/Versions/4.3/Resources/library/sangerseqR?
+
+Exited with status 1.
+
+
+Furthermore, when I try to install my package through bioconductor, I get:
+
+Warning message:
+package ?sangerseqR? is not available for Bioconductor version '3.17'
+
+A version of this package for your version of R might be available elsewhere,
+see the ideas at
+https://secure-web.cisco.com/1WQ9FRctS4voq_3uCpC7oa0oRfgVMHTDgY_wy6AUizlaIdzGEyR2TkdbfzpKzzmKJNaJT0PK05WKvnfoQoCBKdxq3gijbHV9QFTNXK8dSIus5-X_8dgaVzMlHCWbL7ki0UVaBOyfOuhNZos2X37vqODVWbDSEsq8C2ov5wyVRAVse1oKF56J2G4mRZJIXo426pHxL1qf52fcAiUa2sfikN6V1gU-paPuC8vA6MsfxE1g2_FhKYtrQPwvUx72vE0bcLS2ipoKlABbcsIszyPFtwntRCkHdG0Uo5aqMxyD3Sf12-pQB5WcuE5C1Ykt4Kt9H/https%3A%2F%2Fcran.r-project.org%2Fdoc%2Fmanuals%2Fr-devel%2FR-admin.html%23Installing-packages
+
+Any suggestions why I can?t load it?
+
+Thanks,
+
+Jonathon
+
+_____
+
+Jonathon T. Hill, PhD
+Associate Professor
+Cell Biology and Physiology
+Brigham Young University
+801-422-8970
+Lab: LSB 3035
+Office: LSB 3018
+Email: jhill at byu.edu<mailto:jhill at byu.edu>
+
+CONFIDENTIALITY:
+This e-mail and any attachments are confidential and may...{{dropped:28}}
+
+
+From hur@n @end|ng |rom uc|@@edu  Tue Dec 20 00:12:57 2022
+From: hur@n @end|ng |rom uc|@@edu (RAN HU)
+Date: Mon, 19 Dec 2022 18:12:57 -0500
+Subject: [Bioc-devel] How to deal with external software dependencies
+Message-ID: <CAGMaoH50mbZwKUpX5=ZgWZTubRQzn+Kk5=B704z4EAgspLHZBg@mail.gmail.com>
+
+Hi all,
+
+I am developing a new R package that relies on some external software.
+There are some system calls written in the R function that requires the
+path to those external software tools.
+
+I am not sure what is the best practice to using external software in R
+Bioconductor packages. If the external software paths are required for the
+functions to run successfully, will the package fail the BiocCheck?
+
+Any suggestions would be appreciated and thank you in advance for your
+help!!!
+
+Best,
+Ran
+
+	[[alternative HTML version deleted]]
+
+
+From @e|n@p@rk @end|ng |rom p@u@edu  Thu Dec 22 01:52:30 2022
+From: @e|n@p@rk @end|ng |rom p@u@edu (Park, Adam Keebum)
+Date: Thu, 22 Dec 2022 00:52:30 +0000
+Subject: [Bioc-devel] bioconductor package testing
+Message-ID: <BYAPR02MB4165941F4A8E0EBDFFD1B491E1E89@BYAPR02MB4165.namprd02.prod.outlook.com>
+
+Dear whom it may concern,
+
+I hope I am contacting the right person for my inquiry.
+
+(1) I wonder how I can test a package in advance of submitting to bioconductor,  especially with respect to dependencies. Dozens of R libraries should be installed with my package.
+
+That is, I would like to simulate BiocManager::install("my package") and check if a fresh new user can run tutorials and vignettes code without any problem.
+
+(2) Similarly, how could I simulate running Vignette codes in my local environment? As I understood so far, codes written in a Vignette(.Rmd) will be executable after being converted to a html document and being published in the bioconductor website.
+
+Sincerely,
+Adam.
+
+	[[alternative HTML version deleted]]
+
+
+From @e|n@p@rk @end|ng |rom p@u@edu  Thu Dec 22 05:42:21 2022
+From: @e|n@p@rk @end|ng |rom p@u@edu (Park, Adam Keebum)
+Date: Thu, 22 Dec 2022 04:42:21 +0000
+Subject: [Bioc-devel] data extension preference
+Message-ID: <BYAPR02MB4165BD80BA328C7C90A45852E1E89@BYAPR02MB4165.namprd02.prod.outlook.com>
+
+Dear whom it may concern,
+
+I want to check if reviewers have a preference in data formats for data included in a package.
+Is rda strongly recommended over csv?
+
+Sincerely,
+Adam.
+
+	[[alternative HTML version deleted]]
+
+
+From br|@n_@ch||der @end|ng |rom @|umn|@brown@edu  Tue Dec 27 22:50:49 2022
+From: br|@n_@ch||der @end|ng |rom @|umn|@brown@edu (Brian Schilder)
+Date: Tue, 27 Dec 2022 21:50:49 +0000
+Subject: [Bioc-devel] bioconductor package testing
+In-Reply-To: <BYAPR02MB4165941F4A8E0EBDFFD1B491E1E89@BYAPR02MB4165.namprd02.prod.outlook.com>
+References: <BYAPR02MB4165941F4A8E0EBDFFD1B491E1E89@BYAPR02MB4165.namprd02.prod.outlook.com>
+Message-ID: <DS0PR11MB74070685532C8E6714BF0C64ABED9@DS0PR11MB7407.namprd11.prod.outlook.com>
+
+Hi Adam, and to any other Bioc developers who have encountered this scenario,
+
+I would humbly offer my new R package rworkflows<https://github.com/neurogenomics/rworkflows/> for this purpose.
+I started this project for exactly the situation you?re describing: wanting to test your package with a fresh install on multiple OS (Linux, Mac, Windows) before pushing the changes to Bioc. It sets up a GitHub Actions<https://github.com/features/actions> workflow that will do all Bioc (and/or CRAN) testing, render/launch documentation website via GitHub Pages, and build a containers hosted on Dockerhub. You can set this all up using a single R function- rworkflows::use_workflow()
+
+https://github.com/neurogenomics/rworkflows/
+
+Accompanying preprint should be up soon. An early release is currently on CRAN, but I?d recommend using the devel version on Github atm as it has more workflow customisation features. Please let me know if you have any questions in the meantime ?
+
+Sincerely,
+Brian
+___________
+Brian Schilder
+PhD Candidate
+UK Dementia Research Institute at Imperial College London
+Faculty of Medicine, Department of Brain Sciences, Neurogenomics Lab
+Profile | bit.ly/imperial_profile<https://bit.ly/imperial_profile>
+LinkedIn | linkedin.com/in/brian-schilder<https://www.linkedin.com/in/brian-schilder/>
+Twitter | twitter.com/BMSchilder<http://www.twitter.com/BMSchilder>
+Lab | neurogenomics.co.uk<http://neurogenomics.co.uk>
+UK DRI | www.ukdri.ac.uk<http://www.ukdri.ac.uk/>
+
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Park, Adam Keebum <sein.park at psu.edu>
+Date: Sunday, 25 December 2022 at 05:45
+To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: [Bioc-devel] bioconductor package testing
+Dear whom it may concern,
+
+I hope I am contacting the right person for my inquiry.
+
+(1) I wonder how I can test a package in advance of submitting to bioconductor,  especially with respect to dependencies. Dozens of R libraries should be installed with my package.
+
+That is, I would like to simulate BiocManager::install("my package") and check if a fresh new user can run tutorials and vignettes code without any problem.
+
+(2) Similarly, how could I simulate running Vignette codes in my local environment? As I understood so far, codes written in a Vignette(.Rmd) will be executable after being converted to a html document and being published in the bioconductor website.
+
+Sincerely,
+Adam.
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+	[[alternative HTML version deleted]]
+
+
+From mer|emb@hd@ @end|ng |rom gm@||@com  Wed Dec 28 18:29:17 2022
+From: mer|emb@hd@ @end|ng |rom gm@||@com (Meriem Bahda)
+Date: Wed, 28 Dec 2022 12:29:17 -0500
+Subject: [Bioc-devel] Package "rmspc" failing on Bioconductor devel
+Message-ID: <CAJBVSvYz+31yo88VmZ05UK1FudgO4n=LZvw6xs0MNdYwfOBLuQ@mail.gmail.com>
+
+Dear Community,
+
+I have recently submitted a new version of the package rmspc to
+Bioconductor in order to update it.
+However, when I pushed the changes to the Bioconductor and GitHub
+repositories, nothing happened (I didn't receive a message saying a new
+build has been started (like I used to before).
+
+To give you some context, the current devel version of the package is 1.5.0
+and I bumped the version of the package to 1.5.1. Did I miss something?
+
+Thank you very much,
+
+-- 
+
+*Meriem BAHDA*
+
+	[[alternative HTML version deleted]]
+
+
+From @tvjc @end|ng |rom ch@nn|ng@h@rv@rd@edu  Wed Dec 28 18:52:30 2022
+From: @tvjc @end|ng |rom ch@nn|ng@h@rv@rd@edu (Vincent Carey)
+Date: Wed, 28 Dec 2022 12:52:30 -0500
+Subject: [Bioc-devel] Package "rmspc" failing on Bioconductor devel
+In-Reply-To: <CAJBVSvYz+31yo88VmZ05UK1FudgO4n=LZvw6xs0MNdYwfOBLuQ@mail.gmail.com>
+References: <CAJBVSvYz+31yo88VmZ05UK1FudgO4n=LZvw6xs0MNdYwfOBLuQ@mail.gmail.com>
+Message-ID: <CAANT7+Vjn0EpPae60wbG5L3gxV1CS-y-XZDyxqqwSxFj15H2QQ@mail.gmail.com>
+
+At this time (and for the foreseeable future) messaging on changes to
+packages
+only occurs during the review process.  Your version 1.5.1 is visible in
+git and will be
+tested in the next build cycle which should be very soon.   Thank you
+
+On Wed, Dec 28, 2022 at 12:29 PM Meriem Bahda <meriembahda at gmail.com> wrote:
+
+> Dear Community,
+>
+> I have recently submitted a new version of the package rmspc to
+> Bioconductor in order to update it.
+> However, when I pushed the changes to the Bioconductor and GitHub
+> repositories, nothing happened (I didn't receive a message saying a new
+> build has been started (like I used to before).
+>
+> To give you some context, the current devel version of the package is 1.5.0
+> and I bumped the version of the package to 1.5.1. Did I miss something?
+>
+> Thank you very much,
+>
+> --
+>
+> *Meriem BAHDA*
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+-- 
+The information in this e-mail is intended only for the ...{{dropped:18}}
+
+

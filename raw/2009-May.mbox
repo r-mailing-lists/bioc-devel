@@ -1,0 +1,646 @@
+From ks280007 at ohio.edu  Wed May  6 16:25:33 2009
+From: ks280007 at ohio.edu (Kaiyu Shen)
+Date: Wed, 06 May 2009 10:25:33 -0400
+Subject: [Bioc-devel] ath1121501 hyperGTest
+Message-ID: <1241619933.6298.9.camel@ubuntu-desktop>
+
+Hi, folks:
+I am now dealing with the ath1121501.db package and the hyperGTest in
+GOStats. 
+I have pulled out a list of genes, with their probe ID.
+these genes are selected with their GO term available, and no
+duplicates.
+I tried:
+params=new("GOHyperGParams",geneIds=gene.list,annotation="ath1121501",ontology="BP",
+pvalueCutoff=0.05, conditional=FALSE,testDirection="over")
+result=hyperGTest(params)
+
+However,they give me an error message :
+
+Error in get(mapName, Envir=pkgEnv,inherits=FALSE):
+variable "ath1121501ENTREZID" was not found
+Error in mget(probes,ID2EntrezID(datPkg)):
+error in evaluating the argument 'envir' in selecting a method for
+function 'mget'
+
+I searched online, and found that someone said in ath1121501.db, the
+ENTREZID equals to the ACCNUM,so I tried to directly assign the value
+as:
+ath1121501ENTREZID<-ath1121501ACCNUM
+
+however, error message still pops out. 
+Does anybody have a clue of how this could be solved??
+
+Thanks again. 
+Kyle.
+
+
+From mcarlson at fhcrc.org  Thu May  7 00:40:47 2009
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Wed, 06 May 2009 15:40:47 -0700
+Subject: [Bioc-devel] ath1121501 hyperGTest
+In-Reply-To: <1241619933.6298.9.camel@ubuntu-desktop>
+References: <1241619933.6298.9.camel@ubuntu-desktop>
+Message-ID: <4A0211EF.7010707@fhcrc.org>
+
+Hi Kaiyu,
+
+You want to share your sessionInfo() with us when you post.  That will
+make it much easier for us to know how to reproduce any troubles you
+might have.  Assuming that you are using the latest stuff (and you
+should be since you are using an annotation package), then you are
+correct about needing to use the identifiers in the ACCNUM mapping. 
+These IDs are gene IDs from TAIR, and they are the central gene ID used
+by our arabidopsis gene databases. 
+
+I am not sure why you are trying to copy the ath1121501ACCNUM mapping
+onto the ath1121501ENTREZID mapping but I am pretty sure this won't
+help.  What you should probably be doing instead is defining a gene
+universe and a list of interesting genes that are represented "as" TAIR
+IDs.  You can use the ath1121501ACCNUM mapping to help you do this.  If
+the geneIds and universeGeneIds parameters are not vectors of TAIR IDs,
+then this process is just not going to work so be sure to makes sure
+that these things are set up correctly.  To see a more complete set of
+instructions for using GOstats to do hypergeometric testing you might
+want to look at the package vignette on this topic:
+
+http://www.bioconductor.org/packages/release/bioc/html/GOstats.html
+
+And here is a toy example for arabidopsis for you to look at:
+
+
+library(GOstats)
+library(ath1121501.db)
+
+##fake some IDs to just fill out the parameters
+universe = mappedRkeys(ath1121501ACCNUM);
+##"interesting" here is defined to be the 1st 400 in the "universe"
+IDs = universe[1:400]
+
+params <- new("GOHyperGParams", geneIds = IDs,
+universeGeneIds = universe, annotation = "ath1121501",
+ontology="BP", pvalueCutoff=0.05, conditional=FALSE,              
+testDirection = "over")
+
+Over <- hyperGTest(params)
+Over
+summary(Over)
+
+
+
+  Marc
+
+
+
+
+
+Kaiyu Shen wrote:
+> Hi, folks:
+> I am now dealing with the ath1121501.db package and the hyperGTest in
+> GOStats. 
+> I have pulled out a list of genes, with their probe ID.
+> these genes are selected with their GO term available, and no
+> duplicates.
+> I tried:
+> params=new("GOHyperGParams",geneIds=gene.list,annotation="ath1121501",ontology="BP",
+> pvalueCutoff=0.05, conditional=FALSE,testDirection="over")
+> result=hyperGTest(params)
+>
+> However,they give me an error message :
+>
+> Error in get(mapName, Envir=pkgEnv,inherits=FALSE):
+> variable "ath1121501ENTREZID" was not found
+> Error in mget(probes,ID2EntrezID(datPkg)):
+> error in evaluating the argument 'envir' in selecting a method for
+> function 'mget'
+>
+> I searched online, and found that someone said in ath1121501.db, the
+> ENTREZID equals to the ACCNUM,so I tried to directly assign the value
+> as:
+> ath1121501ENTREZID<-ath1121501ACCNUM
+>
+> however, error message still pops out. 
+> Does anybody have a clue of how this could be solved??
+>
+> Thanks again. 
+> Kyle.
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+From ks280007 at ohio.edu  Thu May  7 16:41:23 2009
+From: ks280007 at ohio.edu (ks280007 at ohio.edu)
+Date: Thu, 07 May 2009 10:41:23 -0400
+Subject: [Bioc-devel] Bioc-devel Digest, Vol 62, Issue 1
+In-Reply-To: <mailman.24.1241690406.21268.bioc-devel@stat.math.ethz.ch>
+References: <mailman.24.1241690406.21268.bioc-devel@stat.math.ethz.ch>
+Message-ID: <1241707283.4a02f3132dbfa@webmail.ohio.edu>
+
+Thanks Marc.
+I tried your code but still have the same problems. here are my sessionInfo()
+
+R version 2.9.0 (2009-04-17) 
+i386-pc-mingw32 
+
+locale:
+LC_COLLATE=English_United States.1252;LC_CTYPE=English_United
+States.1252;LC_MONETARY=English_United
+States.1252;LC_NUMERIC=C;LC_TIME=English_United States.1252
+
+attached base packages:
+[1] splines   tools     stats     graphics  grDevices utils     datasets 
+[8] methods   base     
+
+other attached packages:
+ [1] GO.db_2.2.5          ath1121501.db_2.2.11 GOstats_2.10.0      
+ [4] RSQLite_0.7-0        DBI_0.2-4            Category_2.6.0      
+ [7] genefilter_1.20.0    survival_2.35-4      annotate_1.18.0     
+[10] xtable_1.5-5         AnnotationDbi_1.6.0  graph_1.20.0        
+[13] Biobase_2.0.1       
+
+loaded via a namespace (and not attached):
+[1] cluster_1.11.13 RBGL_1.18.0    
+
+
+Please point out where the problems could be.
+Thanks
+
+
+Quoting bioc-devel-request at stat.math.ethz.ch:
+
+> Send Bioc-devel mailing list submissions to
+> 	bioc-devel at stat.math.ethz.ch
+> 
+> To subscribe or unsubscribe via the World Wide Web, visit
+> 	https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> or, via email, send a message with subject or body 'help' to
+> 	bioc-devel-request at stat.math.ethz.ch
+> 
+> You can reach the person managing the list at
+> 	bioc-devel-owner at stat.math.ethz.ch
+> 
+> When replying, please edit your Subject line so it is more specific
+> than "Re: Contents of Bioc-devel digest..."
+>
+
+
+From mcarlson at fhcrc.org  Thu May  7 19:20:24 2009
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Thu, 07 May 2009 10:20:24 -0700
+Subject: [Bioc-devel] Bioc-devel Digest, Vol 62, Issue 1
+In-Reply-To: <1241707283.4a02f3132dbfa@webmail.ohio.edu>
+References: <mailman.24.1241690406.21268.bioc-devel@stat.math.ethz.ch>
+	<1241707283.4a02f3132dbfa@webmail.ohio.edu>
+Message-ID: <4A031858.5080500@fhcrc.org>
+
+Hi Kaiyu,
+
+Since you have been somewhat coy about what exactly you did it is pretty
+difficult to reproduce your problems.  For example, you never showed me
+what the input for your function calls look like so I don't have any way
+to know if you fed the right inputs to this code or not.  But now that
+you have posted your sessionInfo() I can see that one problem is that
+that many of your packages are very out of date.  The Category package
+(to name just one example) should be version 2.10.0.  You do not want to
+have bioconductor packages from several different releases installed
+together like this.  To fix this, you should run update.packages() as
+demonstrated on the bioconductor website.
+
+http://www.bioconductor.org/docs/install/
+
+
+  Marc
+
+
+
+ks280007 at ohio.edu wrote:
+> Thanks Marc.
+> I tried your code but still have the same problems. here are my sessionInfo()
+>
+> R version 2.9.0 (2009-04-17) 
+> i386-pc-mingw32 
+>
+> locale:
+> LC_COLLATE=English_United States.1252;LC_CTYPE=English_United
+> States.1252;LC_MONETARY=English_United
+> States.1252;LC_NUMERIC=C;LC_TIME=English_United States.1252
+>
+> attached base packages:
+> [1] splines   tools     stats     graphics  grDevices utils     datasets 
+> [8] methods   base     
+>
+> other attached packages:
+>  [1] GO.db_2.2.5          ath1121501.db_2.2.11 GOstats_2.10.0      
+>  [4] RSQLite_0.7-0        DBI_0.2-4            Category_2.6.0      
+>  [7] genefilter_1.20.0    survival_2.35-4      annotate_1.18.0     
+> [10] xtable_1.5-5         AnnotationDbi_1.6.0  graph_1.20.0        
+> [13] Biobase_2.0.1       
+>
+> loaded via a namespace (and not attached):
+> [1] cluster_1.11.13 RBGL_1.18.0    
+>
+>
+> Please point out where the problems could be.
+> Thanks
+>
+>
+> Quoting bioc-devel-request at stat.math.ethz.ch:
+>
+>   
+>> Send Bioc-devel mailing list submissions to
+>> 	bioc-devel at stat.math.ethz.ch
+>>
+>> To subscribe or unsubscribe via the World Wide Web, visit
+>> 	https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>> or, via email, send a message with subject or body 'help' to
+>> 	bioc-devel-request at stat.math.ethz.ch
+>>
+>> You can reach the person managing the list at
+>> 	bioc-devel-owner at stat.math.ethz.ch
+>>
+>> When replying, please edit your Subject line so it is more specific
+>> than "Re: Contents of Bioc-devel digest..."
+>>
+>>     
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+From ves2111 at columbia.edu  Mon May 11 21:27:32 2009
+From: ves2111 at columbia.edu (Venkatraman E Seshan)
+Date: Mon, 11 May 2009 15:27:32 -0400
+Subject: [Bioc-devel] Dynamic memory in Fortran
+In-Reply-To: <49ECF81D.1040709@fhcrc.org>
+References: <49ECF81D.1040709@fhcrc.org>
+Message-ID: <4A087C24.6010701@columbia.edu>
+
+I would like to use dynamic memory allocation in a Fortran subroutine I 
+am writing using allocatable declaration and allocate/disallocate calls. 
+  I tested it in my current system and it works fine:
+
+    R version 2.9.0 (2009-04-17)
+    x86_64-pc-linux-gnu
+    GNU Fortran (Ubuntu 4.3.3-5ubuntu4) 4.3.3
+    gcc (Ubuntu 4.3.3-5ubuntu4) 4.3.3
+
+Before I proceed any further I would like to know if has a potential to 
+break my Bioconductor package in any system.
+
+Thanks,
+Venkat
+
+-- 
+Venkatraman E. Seshan, Ph.D.
+Columbia University
+
+
+From hpages at fhcrc.org  Wed May 20 02:54:06 2009
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Tue, 19 May 2009 17:54:06 -0700
+Subject: [Bioc-devel] Dynamic memory in Fortran
+In-Reply-To: <4A087C24.6010701@columbia.edu>
+References: <49ECF81D.1040709@fhcrc.org> <4A087C24.6010701@columbia.edu>
+Message-ID: <4A1354AE.8030602@fhcrc.org>
+
+Hi Venkat,
+
+Venkatraman E Seshan wrote:
+> I would like to use dynamic memory allocation in a Fortran subroutine I 
+> am writing using allocatable declaration and allocate/disallocate calls. 
+>  I tested it in my current system and it works fine:
+> 
+>    R version 2.9.0 (2009-04-17)
+>    x86_64-pc-linux-gnu
+>    GNU Fortran (Ubuntu 4.3.3-5ubuntu4) 4.3.3
+>    gcc (Ubuntu 4.3.3-5ubuntu4) 4.3.3
+> 
+> Before I proceed any further I would like to know if has a potential to 
+> break my Bioconductor package in any system.
+
+If this is a standard Fortran 95 feature, then you should be OK because all
+our build machines have gfortran installed (gfortran == the Fortran 95/2003
+compiler for GCC). That will make your package compile on all of them. It's
+also reasonable to assume that people installing from source have a compiler
+supporting Fortran 95 (gfortran is included in almost every Linux distro
+those days).
+
+But if you don't stick to the Fortran 95 standard, all bets are off.
+
+To see what compilers exactly are installed on our build machines, check
+our build/check report here
+
+   http://bioconductor.org/checkResults/2.5/bioc-LATEST/index.html
+
+and click on the name of a build machine in the Hostname column of the
+1st table starting from the top.
+
+Cheers,
+H.
+
+
+> 
+> Thanks,
+> Venkat
+> 
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From sneumann at ipb-halle.de  Thu May 28 12:49:46 2009
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Thu, 28 May 2009 12:49:46 +0200
+Subject: [Bioc-devel] XCMS build farm failures: fillOddEven() and missing rgl
+Message-ID: <1243507786.13387.274.camel@lathan.ipb-sub.ipb-halle.de>
+
+Hi,
+
+for some time now we have two errors for XCMS.
+
+The first is easy, pitt does not have rgl:
+	Packages required but not available:
+	  rgl
+
+The second is somewhat stranger, and also affects 
+quite a few other packages on Windows (and not other platforms):
+
+	Error in png(file.path(specdir, "%003d.png"), width = w, height = h) : 
+	  invalid value of 'fillOddEven'
+
+Is that a known Problem of the R develpment version, 
+or do we need to change something in our package ?
+
+Yours,
+Steffen
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From julie.zhu at umassmed.edu  Thu May 28 20:32:38 2009
+From: julie.zhu at umassmed.edu (Julie Zhu)
+Date: Thu, 28 May 2009 14:32:38 -0400
+Subject: [Bioc-devel] Need help on biomaRt
+In-Reply-To: <C64316C9.502C%julie.zhu@umassmed.edu>
+Message-ID: <C6445106.505B%julie.zhu@umassmed.edu>
+
+Hi,
+
+With the help from Herve, we found out that the devel version of biomaRt is
+broken with the new Rcurl version 095-1. This is confirmed by the build
+system:
+  
+http://bioconductor.org/checkResults/2.5/bioc-LATEST/biomaRt/wilson2-buildsr
+c.html
+
+As you can see, it's broken on Linux and Mac OS. It looks OK
+on the Window build machine because this machine is using an
+older version of RCurl (0.94-1).
+
+I am in the process of submitting a contributed package that relies on
+biomaRt and my package won't be passed to the reviewers until biomaRt is
+fixed. Could someone please fix the devel version of biomaRt? Thanks a lot
+for your kind help!
+
+Best regards,
+
+Julie
+
+
+*******************************************
+Julie Zhu, Ph.D
+Research Assistant Professor
+Program Gene Function and Expression
+University of Massachusetts Medical School
+364 Plantation Street, Room 613
+Worcester, MA 01605
+http://www.umassmed.edu/pgfe/faculty/zhu.cfm
+
+
+From tchiang at fhcrc.org  Thu May 28 22:26:08 2009
+From: tchiang at fhcrc.org (Tony Chiang)
+Date: Thu, 28 May 2009 13:26:08 -0700
+Subject: [Bioc-devel] Need help on biomaRt
+In-Reply-To: <C6445106.505B%julie.zhu@umassmed.edu>
+References: <C64316C9.502C%julie.zhu@umassmed.edu>
+	<C6445106.505B%julie.zhu@umassmed.edu>
+Message-ID: <52f663c40905281326x25c7470aka27de5bd98bde10b@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20090528/19457459/attachment.pl>
+
+From fhahne at fhcrc.org  Fri May 29 17:33:11 2009
+From: fhahne at fhcrc.org (Florian Hahne)
+Date: Fri, 29 May 2009 08:33:11 -0700
+Subject: [Bioc-devel] Need help on biomaRt
+In-Reply-To: <C6445106.505B%julie.zhu@umassmed.edu>
+References: <C6445106.505B%julie.zhu@umassmed.edu>
+Message-ID: <0BED06DC-2258-4F37-A32F-8E276654F669@fhcrc.org>
+
+The problem was fixed by Duncan Temple Lang in the latest RCurl  
+version 0.97-3 which is available from Omegahat (http://www.omegahat.org/RCurl/ 
+)
+The automatic updates on our build systems should pick this up any  
+time now, so all you need is patience for one or two more days :)
+Florian
+
+
+On 28.05.2009, at 11:32, Julie Zhu wrote:
+
+> Hi,
+>
+> With the help from Herve, we found out that the devel version of  
+> biomaRt is
+> broken with the new Rcurl version 095-1. This is confirmed by the  
+> build
+> system:
+>
+> http://bioconductor.org/checkResults/2.5/bioc-LATEST/biomaRt/wilson2-buildsr
+> c.html
+>
+> As you can see, it's broken on Linux and Mac OS. It looks OK
+> on the Window build machine because this machine is using an
+> older version of RCurl (0.94-1).
+>
+> I am in the process of submitting a contributed package that relies on
+> biomaRt and my package won't be passed to the reviewers until  
+> biomaRt is
+> fixed. Could someone please fix the devel version of biomaRt? Thanks  
+> a lot
+> for your kind help!
+>
+> Best regards,
+>
+> Julie
+>
+>
+> *******************************************
+> Julie Zhu, Ph.D
+> Research Assistant Professor
+> Program Gene Function and Expression
+> University of Massachusetts Medical School
+> 364 Plantation Street, Room 613
+> Worcester, MA 01605
+> http://www.umassmed.edu/pgfe/faculty/zhu.cfm
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From julie.zhu at umassmed.edu  Fri May 29 17:42:40 2009
+From: julie.zhu at umassmed.edu (Julie Zhu)
+Date: Fri, 29 May 2009 11:42:40 -0400
+Subject: [Bioc-devel] Need help on biomaRt
+In-Reply-To: <0BED06DC-2258-4F37-A32F-8E276654F669@fhcrc.org>
+Message-ID: <C6457AB0.5082%julie.zhu@umassmed.edu>
+
+Florian,
+
+Thank you very much for the great news!
+
+Best regards,
+
+Julie
+
+On 5/29/09 11:33 AM, "Florian Hahne" <fhahne at fhcrc.org> wrote:
+
+> The problem was fixed by Duncan Temple Lang in the latest RCurl
+> version 0.97-3 which is available from Omegahat
+> (http://www.omegahat.org/RCurl/
+> )
+> The automatic updates on our build systems should pick this up any
+> time now, so all you need is patience for one or two more days :)
+> Florian
+> 
+> 
+> On 28.05.2009, at 11:32, Julie Zhu wrote:
+> 
+>> Hi,
+>> 
+>> With the help from Herve, we found out that the devel version of
+>> biomaRt is
+>> broken with the new Rcurl version 095-1. This is confirmed by the
+>> build
+>> system:
+>> 
+>> http://bioconductor.org/checkResults/2.5/bioc-LATEST/biomaRt/wilson2-buildsr
+>> c.html
+>> 
+>> As you can see, it's broken on Linux and Mac OS. It looks OK
+>> on the Window build machine because this machine is using an
+>> older version of RCurl (0.94-1).
+>> 
+>> I am in the process of submitting a contributed package that relies on
+>> biomaRt and my package won't be passed to the reviewers until
+>> biomaRt is
+>> fixed. Could someone please fix the devel version of biomaRt? Thanks
+>> a lot
+>> for your kind help!
+>> 
+>> Best regards,
+>> 
+>> Julie
+>> 
+>> 
+>> *******************************************
+>> Julie Zhu, Ph.D
+>> Research Assistant Professor
+>> Program Gene Function and Expression
+>> University of Massachusetts Medical School
+>> 364 Plantation Street, Room 613
+>> Worcester, MA 01605
+>> http://www.umassmed.edu/pgfe/faculty/zhu.cfm
+>> 
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+>
+
+
+From hpages at fhcrc.org  Sat May 30 00:08:17 2009
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Fri, 29 May 2009 15:08:17 -0700
+Subject: [Bioc-devel] XCMS build farm failures: fillOddEven() and
+ missing rgl
+In-Reply-To: <1243507786.13387.274.camel@lathan.ipb-sub.ipb-halle.de>
+References: <1243507786.13387.274.camel@lathan.ipb-sub.ipb-halle.de>
+Message-ID: <4A205CD1.8060902@fhcrc.org>
+
+Hi Steffen,
+
+Steffen Neumann wrote:
+[...]
+> The second is somewhat stranger, and also affects 
+> quite a few other packages on Windows (and not other platforms):
+> 
+> 	Error in png(file.path(specdir, "%003d.png"), width = w, height = h) : 
+> 	  invalid value of 'fillOddEven'
+> 
+> Is that a known Problem of the R develpment version, 
+> or do we need to change something in our package ?
+
+The 'fillOddEven' parameter is indeed a recent addition to the R-2.10 series:
+
+   https://svn.r-project.org/R/trunk/NEWS
+
+Something really odd is happening on our Windows build nodes: when calling
+png() here, we get something like:
+
+   Error in png("somefile.png") :
+     invalid value of 'fillOddEven'
+
+But when checking the man page for png() or looking at the code of the
+function, I don't see any 'fillOddEven' argument!
+
+I need to investigate more.
+
+Cheers,
+H.
+
+> 
+> Yours,
+> Steffen
+> 
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+

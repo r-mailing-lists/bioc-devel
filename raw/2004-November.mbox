@@ -1,0 +1,112 @@
+From florence.combes at paris7.jussieu.fr  Wed Nov  3 14:12:14 2004
+From: florence.combes at paris7.jussieu.fr (COMBES Florence)
+Date: Wed Nov  3 14:12:30 2004
+Subject: [Bioc-devel] automation / interactivity of plots on S-PLUS
+Message-ID: <web-9923509@univ-paris7.fr>
+
+Dear all,
+
+I have 2 questions maybe more for developpers, and about an S-PLUS 
+script.
+I think that people from R and maybe Bioconductor could also help me.
+
+1--
+When producing a graph with S-PLUS (under Windows XP), it is possible 
+to select (with the mouse) an area of the graph in order to highlight 
+the rows corresponding to the selected plots on the dataset sheet.
+
+In my case I have to plot about 100 graphs, so I wrote a script with a 
+loop to do that automatically. Each time you pass through this "for" 
+loop the graph is done.
+My problem is that with this way to build graphs, I lost the 
+possiblity to highlight data in the data set sheet by defining a zone 
+with the mouse on the graph sheet.
+(actually it is impossible to define a zone on the graph with the 
+mouse)
+
+Does anyone already encountered this problem, and would handle a 
+solution ?
+
+I saw maybe the brush() function to be applied on the loop, but this 
+seems to return only the row indices and I would like a variable more 
+informative that is on a column in my data set sheet.
+
+2--
+In my script I want to use the menuSubset() command. It works in 
+command line, but I would like this command to appear as a graphical 
+window.
+I can have the window with the following command line:
+
+guiDisplayDialog("Function", "menuSubset")
+
+but the problem is that the script continues to run, and does not wait 
+for the user to click on the "OK" button in order to wait for the 
+result of the command Subset, which is a matrix needed further on the 
+script.
+Do you know a way to pass arguments from the data filled in the window 
+to the script, or to force S-PLUs to wait ?
+
+
+Any help gratefully welcome,
+
+Florence Combes.
+
+From lgautier at altern.org  Wed Nov 17 21:41:43 2004
+From: lgautier at altern.org (Laurent Gautier)
+Date: Wed Nov 17 08:36:01 2004
+Subject: [Bioc-devel] affy-revised
+Message-ID: <419BB787.1050007@altern.org>
+
+Hi,
+
+   During the last months, I did a significant rewrite of the affy
+package (well, almost a complete rewrite from scratch), in the light of
+the limitations discovered, things there just not right, oddities in the
+names, discussions I participated to or just followed silently
+(with people on this list, or package users).
+This new packages works with the class 'CdfEnvAffy' (package 'altcdfenvs').
+
+Some(*) features are:
+- use the class 'eSet' in Biobase (supplementary methods for this
+class missing in Biobase are included in this pack).
+- the use of 'eSet' as a parent class for the new AffyBatch let one use
+pointer-like-sort-of-thing-with-environments (and lower the memory usage)
+- The slot for CDF envs can now be a cdfenv name (like it is now), or
+directly a AffyCdfEnv (defined for the moment in altcdfenvs). Subsetting
+on probes now works (and a CdfEnv is created on the fly); this allows
+things like PM-only AffyBatches (hence, half the memory usage). This can
+be done directly when reading the raw data.
+- Functions exist to register/unregister pre-processing methods. This
+will help to have something more robust than what is currently in
+'affy', and will (hopefully) help to migrate to sealed namespace in the
+future.
+- reading subsets of CEL files on the fly
+- Probe types can be more than only "pm" or "mm" (one can define new types.)
+- interface to have preprocessing functions at the probe set level or at
+the whole chip level
+- missing documentation :)
+- still uses some functions in 'affy' (to avoid uncessary code
+duplication for the moment)
+- already quite some documention
+- easier to adapt the pack to other oligonucletide chips (i.e.,
+non-Affymetrix)
+
+(*: the design tries to make a lot of things that are not explicitely
+detailed possible, but as always it cannot be perfect for everything).
+
+As it is the pack lacks partly documentation, but the good thing is
+that anyone with knowledge of the current 'affy' package should figure 
+out things easily.
+
+Trying 'example(expressor)' or the main (and incomplete) vignette are
+good places to start.
+
+Oops, I almost forget. If some want to play with it, the pack is called
+'affyr' (affy-revised) and is available on the Subversion repository.
+
+
+That's it.
+
+
+L.
+

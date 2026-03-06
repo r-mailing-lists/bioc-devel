@@ -1,0 +1,1665 @@
+From mailinglist.honeypot at gmail.com  Fri Feb 11 08:22:33 2011
+From: mailinglist.honeypot at gmail.com (Steve Lianoglou)
+Date: Fri, 11 Feb 2011 02:22:33 -0500
+Subject: [Bioc-devel] Patch for Biostrings::letterFrequencyInSlidingView
+	over XStringSet
+Message-ID: <AANLkTinKL4Yv6J3w6g9sMDNNQUfg+qEDbH83eim=-QSf@mail.gmail.com>
+
+Hi,
+
+I recently needed to have letterFrequencyInSlidingView work on
+multiple strings at once.
+
+I initially iterated over my XStringSet in R and passed each element
+to the letterFrequencyInSlidingView method, but this was really slow
+over large XStringSet objects.
+
+I bit the bullet and wrote the loop in C as the
+"XStringSet_letterFrequencyInSlidingView" you'll see defined in this
+diff.
+
+That function basically calls a slightly modified
+XString_letterFrequencyInSlidingView, which is also added as
+_XString_letterFrequencyInSlidingView.
+
+Slight changes to the documentation, etc. is also included in this
+patch, which is against svn revision 52588, in order to make it "well
+rounded."
+
+If the "powers that be" deem this a worthy addition, could you please
+apply this, or some cleaned version of it? This was my first real
+foray into modifying any C code in these large/well-established
+libraries, so ... I did a bit of hunting and pecking, and you'll
+surely have an opinion of how to do it better.
+
+The way it is implemented now, the
+XString_letterFrequencyInSlidingView is no longer being called
+directly and I guess should be removed if this is the appropriate
+style. The XStringSet_letterFrequencyInSlidingView is always delegated
+to, in a similar way that there is only a XStringSet_letterFrequency ,
+and no XString_letterFrequency.
+
+The patch is attached.
+
+If attachments don't come through (can't remember if they get
+stripped), you can also find it here:
+http://cbio.mskcc.org/~lianos/files/bioconductor/biostrings.diff
+
+Thanks,
+-steve
+
+-- 
+Steve Lianoglou
+Graduate Student: Computational Systems Biology
+?| Memorial Sloan-Kettering Cancer Center
+?| Weill Medical College of Cornell University
+Contact Info: http://cbio.mskcc.org/~lianos/contact
+
+From lawrence.michael at gene.com  Fri Feb 11 14:22:15 2011
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Fri, 11 Feb 2011 05:22:15 -0800
+Subject: [Bioc-devel] Patch for Biostrings::letterFrequencyInSlidingView
+ over XStringSet
+In-Reply-To: <AANLkTinKL4Yv6J3w6g9sMDNNQUfg+qEDbH83eim=-QSf@mail.gmail.com>
+References: <AANLkTinKL4Yv6J3w6g9sMDNNQUfg+qEDbH83eim=-QSf@mail.gmail.com>
+Message-ID: <AANLkTiktxCFzCtAGEK=vX6us=GXRz8f_uU1_w4qpAc8M@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110211/51eb981a/attachment.pl>
+
+From S.Berri at leeds.ac.uk  Thu Feb 17 15:17:31 2011
+From: S.Berri at leeds.ac.uk (Stefano Berri)
+Date: Thu, 17 Feb 2011 14:17:31 +0000
+Subject: [Bioc-devel] A new beginner
+Message-ID: <C982DE7B.1BCE%s.berri@leeds.ac.uk>
+
+Hi everybody.
+
+I am about to start assembling my code to make my first Bioconductor
+package.
+
+I've read the instructions about "Package Guidelines" and "Package
+Submission" and I will try to follow those instruction the best I can.
+
+I have a first question, however.
+You seem to ask for your code to be in S4 Classes and Methods
+
+( Packages should also conform to the following:
+* Use S4 classes and methods.)
+
+At the moment I wrote my code in the form
+
+List <- myFunction(List, bar = bar, foo = foo)
+
+Using "plain functions" and Lists as input and output.
+I was inspired by 'limma' that, as far as I understand, works this way.
+
+Can submit using this interface or shall I really use S4 implementation? If
+so, could you recommend a simple package that uses classes as you would
+recomend that I can use as template/inspration/guide for my code?
+
+Thank you very much
+
+Stefano Berri
+
+
+From stefano.calza at med.unibs.it  Thu Feb 17 15:34:47 2011
+From: stefano.calza at med.unibs.it (Stefano Calza)
+Date: Thu, 17 Feb 2011 15:34:47 +0100
+Subject: [Bioc-devel] A new beginner
+In-Reply-To: <C982DE7B.1BCE%s.berri@leeds.ac.uk>
+References: <C982DE7B.1BCE%s.berri@leeds.ac.uk>
+Message-ID: <20110217143447.GA29504@Goliath>
+
+Ciao
+
+you probably mean you have been programming using S3 methods not S4.
+
+Using S4 methods is not compulsory though highly recommended. At least this is my understanding. There are packages in BioC not using S4, therefore I assume you can go ahead like this.
+
+Most packages in BioC use S4 methods, so just pick one not too complex!
+
+regards
+
+Stefano
+
+On Thu, Feb 17, 2011 at 02:17:31PM +0000, Stefano Berri wrote:
+<Stefano>Hi everybody.
+<Stefano>
+<Stefano>I am about to start assembling my code to make my first Bioconductor
+<Stefano>package.
+<Stefano>
+<Stefano>I've read the instructions about "Package Guidelines" and "Package
+<Stefano>Submission" and I will try to follow those instruction the best I can.
+<Stefano>
+<Stefano>I have a first question, however.
+<Stefano>You seem to ask for your code to be in S4 Classes and Methods
+<Stefano>
+<Stefano>( Packages should also conform to the following:
+<Stefano>* Use S4 classes and methods.)
+<Stefano>
+<Stefano>At the moment I wrote my code in the form
+<Stefano>
+<Stefano>List <- myFunction(List, bar = bar, foo = foo)
+<Stefano>
+<Stefano>Using "plain functions" and Lists as input and output.
+<Stefano>I was inspired by 'limma' that, as far as I understand, works this way.
+<Stefano>
+<Stefano>Can submit using this interface or shall I really use S4 implementation? If
+<Stefano>so, could you recommend a simple package that uses classes as you would
+<Stefano>recomend that I can use as template/inspration/guide for my code?
+<Stefano>
+<Stefano>Thank you very much
+<Stefano>
+<Stefano>Stefano Berri
+<Stefano>
+<Stefano>_______________________________________________
+<Stefano>Bioc-devel at r-project.org mailing list
+<Stefano>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Stefano Calza, PhD
+Ricercatore (Assistant Professor) - Biostatistician
+*Sezione di Statistica Medica e Biometria
+ Dipartimento di Scienze Biomediche e Biotecnologie
+ Universit? degli Studi di Brescia - Italy
+ Viale Europa, 11 25123 Brescia
+
+ email: stefano.calza at med.unibs.it
+        stefano.calza at biostatistics.it
+
+ pec: stefano.calza at pec.biostatistics.it
+
+ Phone: +390303717653
+ Fax: +390303717488
+
+----------------------------------------------------
+
+The point of philosophy is to start with something so simple as to seem not worth stating, and to end with
+something so paradoxical that no one will believe it.
+		--  Bertrand Russell
+
+
+From mtmorgan at fhcrc.org  Thu Feb 17 16:47:38 2011
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 17 Feb 2011 07:47:38 -0800
+Subject: [Bioc-devel] A new beginner
+In-Reply-To: <20110217143447.GA29504@Goliath>
+References: <C982DE7B.1BCE%s.berri@leeds.ac.uk>
+	<20110217143447.GA29504@Goliath>
+Message-ID: <4D5D431A.3000203@fhcrc.org>
+
+On 02/17/2011 06:34 AM, Stefano Calza wrote:
+> Ciao
+> 
+> you probably mean you have been programming using S3 methods not S4.
+> 
+> Using S4 methods is not compulsory though highly recommended. At
+> least this is my understanding. There are packages in BioC not using
+> S4, therefore I assume you can go ahead like this.
+
+Actually, new package authors should really think of S4 as 'compulsory'.
+Here are two reasons for this:
+
+1. Classes provide a way to structure the complicated data that we
+typically see in high throughput assays. For instance, coordinating
+sample descriptions with expression values and thus minimizing mix-ups
+when the user subsets one but not the other.
+
+2. Classes provide a way for users to use different packages. For
+instance the ExpressionSet returned by affy's justRMA can be used
+directly by arrayQualityMetrics. This is both convenient for the user
+and minimizes opportunities for error. For this reason it is often a
+good strategy to re-use existing classes (like ExpressionSet in the
+microarray world, or the classes in IRanges / Biostrings in the
+sequencing world), rather than to invent new ones.
+
+The S4 requirement is not meant to get in the way of high-quality
+algorithms; a good strategy is to implement algorithms that operate on
+basic data types (a matrix of expression values, for instance) but
+expose these as methods on an S4 object.
+
+In terms of examples, one possibility is the 'StudentGWAS' package we'll
+use in a course here at the Hutch in the next two days; it'll become
+available at
+
+http://bioconductor.org/help/course-materials/2011/
+
+soon. It implements a single class with essential methods (constructor,
+accessors, show) and a method for doing something a little more
+substantial, so it's not too complicated. Next choices would be Biobase
+(something like AnnotatedDataFrame might be a good start) or for a more
+advanced example IRanges.
+
+limma does use S4 classes, e.g., RGlist, etc. While these classes are a
+little 'loose' for my taste, they represent for the authors a compromise
+between structuring data and implementing foundational algorithms, and
+the package was developed at a time when S4 was more in flux than it is
+currently.
+
+Martin
+
+> 
+> Most packages in BioC use S4 methods, so just pick one not too
+> complex!
+> 
+> regards
+> 
+> Stefano
+> 
+> On Thu, Feb 17, 2011 at 02:17:31PM +0000, Stefano Berri wrote: 
+> <Stefano>Hi everybody. <Stefano> <Stefano>I am about to start
+> assembling my code to make my first Bioconductor <Stefano>package. 
+> <Stefano> <Stefano>I've read the instructions about "Package
+> Guidelines" and "Package <Stefano>Submission" and I will try to
+> follow those instruction the best I can. <Stefano> <Stefano>I have a
+> first question, however. <Stefano>You seem to ask for your code to be
+> in S4 Classes and Methods <Stefano> <Stefano>( Packages should also
+> conform to the following: <Stefano>* Use S4 classes and methods.) 
+> <Stefano> <Stefano>At the moment I wrote my code in the form 
+> <Stefano> <Stefano>List <- myFunction(List, bar = bar, foo = foo) 
+> <Stefano> <Stefano>Using "plain functions" and Lists as input and
+> output. <Stefano>I was inspired by 'limma' that, as far as I
+> understand, works this way. <Stefano> <Stefano>Can submit using this
+> interface or shall I really use S4 implementation? If <Stefano>so,
+> could you recommend a simple package that uses classes as you would 
+> <Stefano>recomend that I can use as template/inspration/guide for my
+> code? <Stefano> <Stefano>Thank you very much <Stefano> 
+> <Stefano>Stefano Berri <Stefano> 
+> <Stefano>_______________________________________________ 
+> <Stefano>Bioc-devel at r-project.org mailing list 
+> <Stefano>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From whuber at embl.de  Thu Feb 17 17:14:29 2011
+From: whuber at embl.de (Wolfgang Huber)
+Date: Thu, 17 Feb 2011 17:14:29 +0100
+Subject: [Bioc-devel] A new beginner
+In-Reply-To: <4D5D431A.3000203@fhcrc.org>
+References: <C982DE7B.1BCE%s.berri@leeds.ac.uk>	<20110217143447.GA29504@Goliath>
+	<4D5D431A.3000203@fhcrc.org>
+Message-ID: <4D5D4965.1030303@embl.de>
+
+Hi
+
+I find that S4 classes really help with writing robust, maintainable and 
+elegant code, since they allow to put related data into one object and 
+can automate much of the validity checking that would be very tedious 
+e.g. with lists.
+
+My mileage with S4 methods is more variable. If a certain method is only 
+ever going to be used with one particular signature, one might as well 
+implement it as a normal function, since the syntax for doing so and the 
+debugging is simpler, and not much is lost in other respects.
+
+There are, of course, also examples where S4 methods are very useful, 
+like what Martin mentioned. Often there is one big, "substantial" 
+function (S4 or not), which is wrapped by different S4-method 
+definitions that do some datatype-specific pre- or postprocessing.
+
+	Wolfgang
+
+
+
+
+
+
+
+
+Martin Morgan scripsit 17/02/11 16:47:
+> On 02/17/2011 06:34 AM, Stefano Calza wrote:
+>> Ciao
+>>
+>> you probably mean you have been programming using S3 methods not S4.
+>>
+>> Using S4 methods is not compulsory though highly recommended. At
+>> least this is my understanding. There are packages in BioC not using
+>> S4, therefore I assume you can go ahead like this.
+>
+> Actually, new package authors should really think of S4 as 'compulsory'.
+> Here are two reasons for this:
+>
+> 1. Classes provide a way to structure the complicated data that we
+> typically see in high throughput assays. For instance, coordinating
+> sample descriptions with expression values and thus minimizing mix-ups
+> when the user subsets one but not the other.
+>
+> 2. Classes provide a way for users to use different packages. For
+> instance the ExpressionSet returned by affy's justRMA can be used
+> directly by arrayQualityMetrics. This is both convenient for the user
+> and minimizes opportunities for error. For this reason it is often a
+> good strategy to re-use existing classes (like ExpressionSet in the
+> microarray world, or the classes in IRanges / Biostrings in the
+> sequencing world), rather than to invent new ones.
+>
+> The S4 requirement is not meant to get in the way of high-quality
+> algorithms; a good strategy is to implement algorithms that operate on
+> basic data types (a matrix of expression values, for instance) but
+> expose these as methods on an S4 object.
+>
+> In terms of examples, one possibility is the 'StudentGWAS' package we'll
+> use in a course here at the Hutch in the next two days; it'll become
+> available at
+>
+> http://bioconductor.org/help/course-materials/2011/
+>
+> soon. It implements a single class with essential methods (constructor,
+> accessors, show) and a method for doing something a little more
+> substantial, so it's not too complicated. Next choices would be Biobase
+> (something like AnnotatedDataFrame might be a good start) or for a more
+> advanced example IRanges.
+>
+> limma does use S4 classes, e.g., RGlist, etc. While these classes are a
+> little 'loose' for my taste, they represent for the authors a compromise
+> between structuring data and implementing foundational algorithms, and
+> the package was developed at a time when S4 was more in flux than it is
+> currently.
+>
+> Martin
+>
+>>
+>> Most packages in BioC use S4 methods, so just pick one not too
+>> complex!
+>>
+>> regards
+>>
+>> Stefano
+>>
+>> On Thu, Feb 17, 2011 at 02:17:31PM +0000, Stefano Berri wrote:
+>> <Stefano>Hi everybody.<Stefano>  <Stefano>I am about to start
+>> assembling my code to make my first Bioconductor<Stefano>package.
+>> <Stefano>  <Stefano>I've read the instructions about "Package
+>> Guidelines" and "Package<Stefano>Submission" and I will try to
+>> follow those instruction the best I can.<Stefano>  <Stefano>I have a
+>> first question, however.<Stefano>You seem to ask for your code to be
+>> in S4 Classes and Methods<Stefano>  <Stefano>( Packages should also
+>> conform to the following:<Stefano>* Use S4 classes and methods.)
+>> <Stefano>  <Stefano>At the moment I wrote my code in the form
+>> <Stefano>  <Stefano>List<- myFunction(List, bar = bar, foo = foo)
+>> <Stefano>  <Stefano>Using "plain functions" and Lists as input and
+>> output.<Stefano>I was inspired by 'limma' that, as far as I
+>> understand, works this way.<Stefano>  <Stefano>Can submit using this
+>> interface or shall I really use S4 implementation? If<Stefano>so,
+>> could you recommend a simple package that uses classes as you would
+>> <Stefano>recomend that I can use as template/inspration/guide for my
+>> code?<Stefano>  <Stefano>Thank you very much<Stefano>
+>> <Stefano>Stefano Berri<Stefano>
+>> <Stefano>_______________________________________________
+>> <Stefano>Bioc-devel at r-project.org mailing list
+>> <Stefano>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+>
+
+
+-- 
+
+
+Wolfgang Huber
+EMBL
+http://www.embl.de/research/units/genome_biology/huber
+
+
+From ttriche at usc.edu  Thu Feb 17 17:56:12 2011
+From: ttriche at usc.edu (Tim Triche, Jr.)
+Date: Thu, 17 Feb 2011 08:56:12 -0800
+Subject: [Bioc-devel] A new beginner
+In-Reply-To: <4D5D4965.1030303@embl.de>
+References: <C982DE7B.1BCE%s.berri@leeds.ac.uk>
+	<20110217143447.GA29504@Goliath>
+	<4D5D431A.3000203@fhcrc.org> <4D5D4965.1030303@embl.de>
+Message-ID: <AANLkTiknZSr7TkwTiSec1fMQaFLkKWbLMjWYh0bAqz2G@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110217/a88c5955/attachment.pl>
+
+From mailinglist.honeypot at gmail.com  Thu Feb 17 20:47:45 2011
+From: mailinglist.honeypot at gmail.com (Steve Lianoglou)
+Date: Thu, 17 Feb 2011 14:47:45 -0500
+Subject: [Bioc-devel] Patch for Biostrings::letterFrequencyInSlidingView
+	over XStringSet
+In-Reply-To: <AANLkTinKL4Yv6J3w6g9sMDNNQUfg+qEDbH83eim=-QSf@mail.gmail.com>
+References: <AANLkTinKL4Yv6J3w6g9sMDNNQUfg+qEDbH83eim=-QSf@mail.gmail.com>
+Message-ID: <AANLkTikoWu94ku2Z8VzmHZ0CnwmZyXNbtBdn4PrB=WiN@mail.gmail.com>
+
+I've got a suit at home for special occasions, and I'm wondering if I
+should put it on so I can start lobbying to get my patch into
+Biostrings? :-)
+
+Seriously though ... I think it's a worthwhile addition to Biostrings
+as it seems like a natural extension to the
+Biostrings::letterFrequencyInSlidingView function so you can perform
+this operation over a large number of events (sequences) very quickly.
+
+Perhaps I can provide a motivating example?
+
+I'm working with sequence data, and I needed to remove reads that seem
+to be a result of an artifact. I rigged up a "score" for this artifact
+by calculating the frequency of A's in a sliding window in the
+neighborhood of where my reads align.
+
+So. Imagine that `v` is a DNAStringSet that consists of the genomic
+sequences in the neighborhoods of my alignments. Looping over these
+sequence elements in R and calculating the nucleotide frequency there
+takes a long time. Below I'm just showing the timing for 200 such
+regions:
+
+R> system.time(scores <- lapply(v[1:200],
+letterFrequencyInSlidingView, 10, 'A'))
+  user  system elapsed
+ 2.197   0.002   2.199
+
+Running this code for all of the reads in my NGS experiment would be
+prohibitively slow.
+
+When I implemented the C code to loop over the same 200 set of
+sequences, the picture/timing changed drastically:
+
+R> system.time(scores2 <- letterFrequencyInSlidingView(v[1:200], 10, 'A'))
+  user  system elapsed
+ 0.011   0.000   0.011
+
+And further more, the result of these calculations are identical:
+
+R> all(mapply(identical, scores, scores2))
+
+Soo ... there's just one example of how it's practically useful. I
+guess other will find their own ways to use the function (or not), but
+there are many functions in Biostrings that work quickly/efficiently
+over XStringSets, and I think (obviously) letterFrequencyInSlidingView
+should, too.
+
+I'd be happy to groom the code in any ways that seems fit to get this
+into Biostrings trunk, if that's what's preventing it from doing so.
+
+Thanks,
+-steve
+
+On Fri, Feb 11, 2011 at 2:22 AM, Steve Lianoglou
+<mailinglist.honeypot at gmail.com> wrote:
+> Hi,
+>
+> I recently needed to have letterFrequencyInSlidingView work on
+> multiple strings at once.
+>
+> I initially iterated over my XStringSet in R and passed each element
+> to the letterFrequencyInSlidingView method, but this was really slow
+> over large XStringSet objects.
+>
+> I bit the bullet and wrote the loop in C as the
+> "XStringSet_letterFrequencyInSlidingView" you'll see defined in this
+> diff.
+>
+> That function basically calls a slightly modified
+> XString_letterFrequencyInSlidingView, which is also added as
+> _XString_letterFrequencyInSlidingView.
+>
+> Slight changes to the documentation, etc. is also included in this
+> patch, which is against svn revision 52588, in order to make it "well
+> rounded."
+>
+> If the "powers that be" deem this a worthy addition, could you please
+> apply this, or some cleaned version of it? This was my first real
+> foray into modifying any C code in these large/well-established
+> libraries, so ... I did a bit of hunting and pecking, and you'll
+> surely have an opinion of how to do it better.
+>
+> The way it is implemented now, the
+> XString_letterFrequencyInSlidingView is no longer being called
+> directly and I guess should be removed if this is the appropriate
+> style. The XStringSet_letterFrequencyInSlidingView is always delegated
+> to, in a similar way that there is only a XStringSet_letterFrequency ,
+> and no XString_letterFrequency.
+>
+> The patch is attached.
+>
+> If attachments don't come through (can't remember if they get
+> stripped), you can also find it here:
+> http://cbio.mskcc.org/~lianos/files/bioconductor/biostrings.diff
+>
+> Thanks,
+> -steve
+>
+> --
+> Steve Lianoglou
+> Graduate Student: Computational Systems Biology
+> ?| Memorial Sloan-Kettering Cancer Center
+> ?| Weill Medical College of Cornell University
+> Contact Info: http://cbio.mskcc.org/~lianos/contact
+>
+
+
+
+-- 
+Steve Lianoglou
+Graduate Student: Computational Systems Biology
+?| Memorial Sloan-Kettering Cancer Center
+?| Weill Medical College of Cornell University
+Contact Info: http://cbio.mskcc.org/~lianos/contact
+
+
+From mtmorgan at fhcrc.org  Fri Feb 18 02:01:47 2011
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 17 Feb 2011 17:01:47 -0800
+Subject: [Bioc-devel] A new beginner
+In-Reply-To: <AANLkTiknZSr7TkwTiSec1fMQaFLkKWbLMjWYh0bAqz2G@mail.gmail.com>
+References: <C982DE7B.1BCE%s.berri@leeds.ac.uk>	<20110217143447.GA29504@Goliath>	<4D5D431A.3000203@fhcrc.org>
+	<4D5D4965.1030303@embl.de>
+	<AANLkTiknZSr7TkwTiSec1fMQaFLkKWbLMjWYh0bAqz2G@mail.gmail.com>
+Message-ID: <4D5DC4FB.8080902@fhcrc.org>
+
+On 02/17/2011 08:56 AM, Tim Triche, Jr. wrote:
+> A silly and perhaps tangential question regarding S4 versus R5 classes:
+> 
+> What about R5 classes?  Aren't these sort of handy for the large-scale data
+> processing targeted in GWAS and integrative studies?  Where can I find out
+> more (aside from Chambers' slides and Dirk's offhand references) in terms of
+> using them in BioC packages?
+> 
+> Learning about what Vince Carey did with GGtools, and Benilton Carvalho did
+> with crlmm, has piqued my interest in more efficient representations.  I use
+> S4 classes and methods out of habit (I learned to do this by aping Sean
+> Davis' code, FWIW) and would not want to go back to the implicit dispatch of
+> S3 methods.  However, I also find that having to create a clone() method for
+> things like eSets is a bit of a drag, and suggests (to me) that the whole
+> endeavor would be better carried out with explicit C++-style semantics and
+> R5 classes.
+> 
+> Obviously that is not something that would happen overnight, or perhaps
+> ever.  But the thought occurs after a few misteaks that maybe C++ is
+> actually the right frame of mind (!?).  What do developers with long
+> experience on Bioconductor think of the R5 class model?  Is there any
+> intention to move towards reference classes in Bioconductor for the long
+> haul?
+
+Hi Tim -- I think you're talking of ?ReferenceClasses.
+
+I think they're appropriate when reference semantics is appropriate,
+e.g., for a file on a disk or a url, something for which there is only
+one of. They might also be appropriate for data that is essentially
+read-only, like a 'view' onto a DNA sequence.
+
+A very serious challenge to using these more generally is that they
+introduce 'action at a distance' -- x <- y; <update y>; and now x is
+changed. This will be very surprising for users.
+
+Reference classes also introduce another syntax -- a$foo() -- and this
+too will be confusing.
+
+In ShortRead, ?"Sampler-class" is a reference class. It is used to refer
+to files, and is manipulated with an S4 generic yield() that hides the
+implementation from the 'user'.
+
+This is an interesting discussion to have, and it would be good to hear
+what others think; at the moment I think new package submissions using
+reference classes where action at a distance is likely should be
+discouraged.
+
+Martin
+
+> 
+> thanks,
+> 
+> --t
+> 
+> 
+> On Thu, Feb 17, 2011 at 8:14 AM, Wolfgang Huber <whuber at embl.de> wrote:
+> 
+>> Hi
+>>
+>> I find that S4 classes really help with writing robust, maintainable and
+>> elegant code, since they allow to put related data into one object and can
+>> automate much of the validity checking that would be very tedious e.g. with
+>> lists.
+>>
+>> My mileage with S4 methods is more variable. If a certain method is only
+>> ever going to be used with one particular signature, one might as well
+>> implement it as a normal function, since the syntax for doing so and the
+>> debugging is simpler, and not much is lost in other respects.
+>>
+>> There are, of course, also examples where S4 methods are very useful, like
+>> what Martin mentioned. Often there is one big, "substantial" function (S4 or
+>> not), which is wrapped by different S4-method definitions that do some
+>> datatype-specific pre- or postprocessing.
+>>
+>>        Wolfgang
+>>
+>>
+>>
+>>
+>>
+>>
+>>
+>>
+>> Martin Morgan scripsit 17/02/11 16:47:
+>>
+>>  On 02/17/2011 06:34 AM, Stefano Calza wrote:
+>>>
+>>>> Ciao
+>>>>
+>>>> you probably mean you have been programming using S3 methods not S4.
+>>>>
+>>>> Using S4 methods is not compulsory though highly recommended. At
+>>>> least this is my understanding. There are packages in BioC not using
+>>>> S4, therefore I assume you can go ahead like this.
+>>>>
+>>>
+>>> Actually, new package authors should really think of S4 as 'compulsory'.
+>>> Here are two reasons for this:
+>>>
+>>> 1. Classes provide a way to structure the complicated data that we
+>>> typically see in high throughput assays. For instance, coordinating
+>>> sample descriptions with expression values and thus minimizing mix-ups
+>>> when the user subsets one but not the other.
+>>>
+>>> 2. Classes provide a way for users to use different packages. For
+>>> instance the ExpressionSet returned by affy's justRMA can be used
+>>> directly by arrayQualityMetrics. This is both convenient for the user
+>>> and minimizes opportunities for error. For this reason it is often a
+>>> good strategy to re-use existing classes (like ExpressionSet in the
+>>> microarray world, or the classes in IRanges / Biostrings in the
+>>> sequencing world), rather than to invent new ones.
+>>>
+>>> The S4 requirement is not meant to get in the way of high-quality
+>>> algorithms; a good strategy is to implement algorithms that operate on
+>>> basic data types (a matrix of expression values, for instance) but
+>>> expose these as methods on an S4 object.
+>>>
+>>> In terms of examples, one possibility is the 'StudentGWAS' package we'll
+>>> use in a course here at the Hutch in the next two days; it'll become
+>>> available at
+>>>
+>>> http://bioconductor.org/help/course-materials/2011/
+>>>
+>>> soon. It implements a single class with essential methods (constructor,
+>>> accessors, show) and a method for doing something a little more
+>>> substantial, so it's not too complicated. Next choices would be Biobase
+>>> (something like AnnotatedDataFrame might be a good start) or for a more
+>>> advanced example IRanges.
+>>>
+>>> limma does use S4 classes, e.g., RGlist, etc. While these classes are a
+>>> little 'loose' for my taste, they represent for the authors a compromise
+>>> between structuring data and implementing foundational algorithms, and
+>>> the package was developed at a time when S4 was more in flux than it is
+>>> currently.
+>>>
+>>> Martin
+>>>
+>>>
+>>>> Most packages in BioC use S4 methods, so just pick one not too
+>>>> complex!
+>>>>
+>>>> regards
+>>>>
+>>>> Stefano
+>>>>
+>>>> On Thu, Feb 17, 2011 at 02:17:31PM +0000, Stefano Berri wrote:
+>>>> <Stefano>Hi everybody.<Stefano>  <Stefano>I am about to start
+>>>> assembling my code to make my first Bioconductor<Stefano>package.
+>>>> <Stefano>  <Stefano>I've read the instructions about "Package
+>>>> Guidelines" and "Package<Stefano>Submission" and I will try to
+>>>> follow those instruction the best I can.<Stefano>  <Stefano>I have a
+>>>> first question, however.<Stefano>You seem to ask for your code to be
+>>>> in S4 Classes and Methods<Stefano>  <Stefano>( Packages should also
+>>>> conform to the following:<Stefano>* Use S4 classes and methods.)
+>>>> <Stefano>  <Stefano>At the moment I wrote my code in the form
+>>>> <Stefano>  <Stefano>List<- myFunction(List, bar = bar, foo = foo)
+>>>> <Stefano>  <Stefano>Using "plain functions" and Lists as input and
+>>>> output.<Stefano>I was inspired by 'limma' that, as far as I
+>>>> understand, works this way.<Stefano>  <Stefano>Can submit using this
+>>>> interface or shall I really use S4 implementation? If<Stefano>so,
+>>>> could you recommend a simple package that uses classes as you would
+>>>> <Stefano>recomend that I can use as template/inspration/guide for my
+>>>> code?<Stefano>  <Stefano>Thank you very much<Stefano>
+>>>> <Stefano>Stefano Berri<Stefano>
+>>>> <Stefano>_______________________________________________
+>>>> <Stefano>Bioc-devel at r-project.org mailing list
+>>>> <Stefano>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>>>
+>>>
+>>>
+>>
+>> --
+>>
+>>
+>> Wolfgang Huber
+>> EMBL
+>> http://www.embl.de/research/units/genome_biology/huber
+>>
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+> 
+> 
+> 
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From lawrence.michael at gene.com  Fri Feb 18 13:24:20 2011
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Fri, 18 Feb 2011 04:24:20 -0800
+Subject: [Bioc-devel] GappedAlignments and AlignedRead should have a Seqinfo
+Message-ID: <AANLkTimHHzx+Qe56hTrBEVMCB1iGLm3VtTFfyS2Mb3fe@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110218/d0595021/attachment.pl>
+
+From mtmorgan at fhcrc.org  Fri Feb 18 15:25:42 2011
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Fri, 18 Feb 2011 06:25:42 -0800
+Subject: [Bioc-devel] GappedAlignments and AlignedRead should have a
+	Seqinfo
+In-Reply-To: <AANLkTimHHzx+Qe56hTrBEVMCB1iGLm3VtTFfyS2Mb3fe@mail.gmail.com>
+References: <AANLkTimHHzx+Qe56hTrBEVMCB1iGLm3VtTFfyS2Mb3fe@mail.gmail.com>
+Message-ID: <4D5E8166.5040305@fhcrc.org>
+
+On 02/18/2011 04:24 AM, Michael Lawrence wrote:
+> Hi,
+> 
+> The GappedAlignments class is very useful, since we do not have to load the
+> sequence information from a BAM file. I might suggest that GappedAlignments
+> gain a Seqinfo slot (or an element in the metadata), which would be e.g.
+> derived from the BAM header. That way, we get the right info on
+> GRanges(List)s derived from the object and the coverage method can use the
+> lengths. It would also be nice if AlignedRead could hold such information
+> for when we care about the sequence.
+
+Hi Michael -- I think there's a seqinfo slot in GappedAlignments
+already, and that Rsamtools should just fill it in when
+readBamGappedAlignments. I'll do that.
+
+AlignedRead requires a bit more thought, in part because it doesn't
+track metadata very well at all, and was in place before some of the key
+infrastructure in IRanges was fully mature; this is on my radar...
+
+Martin
+
+> 
+> Thanks,
+> Michael
+> 
+> 	[[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From cstrato at aon.at  Sat Feb 19 16:44:24 2011
+From: cstrato at aon.at (cstrato)
+Date: Sat, 19 Feb 2011 16:44:24 +0100
+Subject: [Bioc-devel] Download stats for Feb/2011?
+Message-ID: <4D5FE558.9010901@aon.at>
+
+Dear all,
+
+Looking at the download stats of my package xps I was astonished to see 
+that it was downloaded 692 times which is twice as high as usually, but 
+by only 57 distinct IPs which is about twice as low as usually.
+
+Looking at the download stats for other packages I realized that the 
+same strange pattern of download stats, very high overall downloads vs 
+low downloads by distinct IPs is true for many other packages.
+
+Does someone have an explanation for this strange download pattern in 
+February?
+
+Best regards
+Christian
+_._._._._._._._._._._._._._._._._._
+C.h.r.i.s.t.i.a.n   S.t.r.a.t.o.w.a
+V.i.e.n.n.a           A.u.s.t.r.i.a
+e.m.a.i.l:        cstrato at aon.at
+_._._._._._._._._._._._._._._._._._
+
+
+From mtmorgan at fhcrc.org  Sat Feb 19 17:18:15 2011
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Sat, 19 Feb 2011 08:18:15 -0800
+Subject: [Bioc-devel] Download stats for Feb/2011?
+In-Reply-To: <4D5FE558.9010901@aon.at>
+References: <4D5FE558.9010901@aon.at>
+Message-ID: <4D5FED47.3050605@fhcrc.org>
+
+On 02/19/2011 07:44 AM, cstrato wrote:
+> Dear all,
+> 
+> Looking at the download stats of my package xps I was astonished to see
+> that it was downloaded 692 times which is twice as high as usually, but
+> by only 57 distinct IPs which is about twice as low as usually.
+> 
+> Looking at the download stats for other packages I realized that the
+> same strange pattern of download stats, very high overall downloads vs
+> low downloads by distinct IPs is true for many other packages.
+> 
+> Does someone have an explanation for this strange download pattern in
+> February?
+
+Worth remembering that these stats are summaries of the server logs at
+FHCRC; they exclude mirrors and can reflect whatever weirdness the
+internet might concoct.
+
+February is only half done so I think that's the distinct IP answer; the
+total downloads could be any of a number of reasons, for instance
+biomaRt was very popular in September 2010, when what appears from their
+IP address to be many nodes in a HPC cluster somewhere in the US midwest
+decided that they needed to repeatedly install biomaRt.
+
+A more complete answer will take a little digging...
+
+Martin
+
+
+> 
+> Best regards
+> Christian
+> _._._._._._._._._._._._._._._._._._
+> C.h.r.i.s.t.i.a.n   S.t.r.a.t.o.w.a
+> V.i.e.n.n.a           A.u.s.t.r.i.a
+> e.m.a.i.l:        cstrato at aon.at
+> _._._._._._._._._._._._._._._._._._
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From cstrato at aon.at  Sat Feb 19 18:56:10 2011
+From: cstrato at aon.at (cstrato)
+Date: Sat, 19 Feb 2011 18:56:10 +0100
+Subject: [Bioc-devel] Download stats for Feb/2011?
+In-Reply-To: <4D5FED47.3050605@fhcrc.org>
+References: <4D5FE558.9010901@aon.at> <4D5FED47.3050605@fhcrc.org>
+Message-ID: <4D60043A.6020909@aon.at>
+
+Dear Martin,
+
+Thank you for your reply, you are right with the distinct IPs downloads. 
+The high  downloads of different packages is still conspicuous (a 
+statistical outlier) but I must agree that it is not so strange as the 
+biomaRt outlier.
+
+Best regards
+Christian
+
+
+On 2/19/11 5:18 PM, Martin Morgan wrote:
+> On 02/19/2011 07:44 AM, cstrato wrote:
+>> Dear all,
+>>
+>> Looking at the download stats of my package xps I was astonished to see
+>> that it was downloaded 692 times which is twice as high as usually, but
+>> by only 57 distinct IPs which is about twice as low as usually.
+>>
+>> Looking at the download stats for other packages I realized that the
+>> same strange pattern of download stats, very high overall downloads vs
+>> low downloads by distinct IPs is true for many other packages.
+>>
+>> Does someone have an explanation for this strange download pattern in
+>> February?
+>
+> Worth remembering that these stats are summaries of the server logs at
+> FHCRC; they exclude mirrors and can reflect whatever weirdness the
+> internet might concoct.
+>
+> February is only half done so I think that's the distinct IP answer; the
+> total downloads could be any of a number of reasons, for instance
+> biomaRt was very popular in September 2010, when what appears from their
+> IP address to be many nodes in a HPC cluster somewhere in the US midwest
+> decided that they needed to repeatedly install biomaRt.
+>
+> A more complete answer will take a little digging...
+>
+> Martin
+>
+>
+>>
+>> Best regards
+>> Christian
+>> _._._._._._._._._._._._._._._._._._
+>> C.h.r.i.s.t.i.a.n   S.t.r.a.t.o.w.a
+>> V.i.e.n.n.a           A.u.s.t.r.i.a
+>> e.m.a.i.l:        cstrato at aon.at
+>> _._._._._._._._._._._._._._._._._._
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+From luo_weijun at yahoo.com  Mon Feb 21 03:28:37 2011
+From: luo_weijun at yahoo.com (Luo Weijun)
+Date: Sun, 20 Feb 2011 18:28:37 -0800
+Subject: [Bioc-devel] Download stats for Feb/2011?
+In-Reply-To: <4D60043A.6020909@aon.at>
+Message-ID: <106538.61772.qm@web112620.mail.gq1.yahoo.com>
+
+Hi Christian and Martin,
+The same download pattern also occurred to my gage package. Actually it occurred to many non-core packages, i.e. those don't install through biocLite(). For those core packages or highly used packages already with thousands of downloads per month, this pattern is not seen. For instance, the biomaRt package you have mentioned, its February is similar to other normal months. Based on Martin's description, very likely some other computer cluster with a few hundred nodes is installing Bioconductor with all packages included. These exta few hundred downloads mean a lot more for the non-core packages, but little for core packages. 
+A related question I am interested now, is there any way to know the total download stats, not only from FHCRC server, but also from the mirrors. Martin said mirror stats are not counted currently.
+Weijun
+
+
+--- On Sat, 2/19/11, cstrato <cstrato at aon.at> wrote:
+
+> From: cstrato <cstrato at aon.at>
+> Subject: Re: [Bioc-devel] Download stats for Feb/2011?
+> To: "Martin Morgan" <mtmorgan at fhcrc.org>
+> Cc: bioc-devel at stat.math.ethz.ch
+> Date: Saturday, February 19, 2011, 12:56 PM
+> Dear Martin,
+> 
+> Thank you for your reply, you are right with the distinct
+> IPs downloads. 
+> The high? downloads of different packages is still
+> conspicuous (a 
+> statistical outlier) but I must agree that it is not so
+> strange as the 
+> biomaRt outlier.
+> 
+> Best regards
+> Christian
+> 
+> 
+> On 2/19/11 5:18 PM, Martin Morgan wrote:
+> > On 02/19/2011 07:44 AM, cstrato wrote:
+> >> Dear all,
+> >>
+> >> Looking at the download stats of my package xps I
+> was astonished to see
+> >> that it was downloaded 692 times which is twice as
+> high as usually, but
+> >> by only 57 distinct IPs which is about twice as
+> low as usually.
+> >>
+> >> Looking at the download stats for other packages I
+> realized that the
+> >> same strange pattern of download stats, very high
+> overall downloads vs
+> >> low downloads by distinct IPs is true for many
+> other packages.
+> >>
+> >> Does someone have an explanation for this strange
+> download pattern in
+> >> February?
+> >
+> > Worth remembering that these stats are summaries of
+> the server logs at
+> > FHCRC; they exclude mirrors and can reflect whatever
+> weirdness the
+> > internet might concoct.
+> >
+> > February is only half done so I think that's the
+> distinct IP answer; the
+> > total downloads could be any of a number of reasons,
+> for instance
+> > biomaRt was very popular in September 2010, when what
+> appears from their
+> > IP address to be many nodes in a HPC cluster somewhere
+> in the US midwest
+> > decided that they needed to repeatedly install
+> biomaRt.
+> >
+> > A more complete answer will take a little digging...
+> >
+> > Martin
+> >
+> >
+> >>
+> >> Best regards
+> >> Christian
+> >> _._._._._._._._._._._._._._._._._._
+> >>
+> C.h.r.i.s.t.i.a.n???S.t.r.a.t.o.w.a
+> >> V.i.e.n.n.a? ? ? ?
+> ???A.u.s.t.r.i.a
+> >> e.m.a.i.l:? ? ? ? cstrato at
+> aon.at
+> >> _._._._._._._._._._._._._._._._._._
+> >>
+> >> _______________________________________________
+> >> Bioc-devel at r-project.org
+> mailing list
+> >> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >
+> >
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org
+> mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+
+
+
+
+From mtmorgan at fhcrc.org  Mon Feb 21 03:37:12 2011
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Sun, 20 Feb 2011 18:37:12 -0800
+Subject: [Bioc-devel] Download stats for Feb/2011?
+In-Reply-To: <106538.61772.qm@web112620.mail.gq1.yahoo.com>
+References: <106538.61772.qm@web112620.mail.gq1.yahoo.com>
+Message-ID: <4D61CFD8.1000307@fhcrc.org>
+
+On 02/20/2011 06:28 PM, Luo Weijun wrote:
+> Hi Christian and Martin,
+
+> The same download pattern also occurred to my gage package. Actually
+> it occurred to many non-core packages, i.e. those don't install
+> through biocLite(). For those core packages or highly used packages
+> already with thousands of downloads per month, this pattern is not
+> seen. For instance, the biomaRt package you have mentioned, its
+> February is similar to other normal months. Based on Martin's
+> description, very likely some other computer cluster with a few
+> hundred nodes is installing Bioconductor with all packages included.
+> These exta few hundred downloads mean a lot more for the non-core
+> packages, but little for core packages.
+
+Hi Weijun
+
+We'll try to get to the bottom of this, but not until working hours,
+which in the US starts on Tuesday this week.
+
+> A related question I am interested now, is there any way to know the
+> total download stats, not only from FHCRC server, but also from the
+> mirrors. Martin said mirror stats are not counted currently.
+
+There is no centralized collation of statistics; mirrors are listed at
+
+  http://bioconductor.org/about/mirrors/
+
+but this list might be out of date and not comprehensive (there are
+instructions for creating mirrors, and no requirement that someone who
+creates a mirror, e.g., for internal use, report this to us), and there
+is no requirement for mirrors to collect download statistics.
+
+Martin
+
+> Weijun
+> 
+> 
+> --- On Sat, 2/19/11, cstrato <cstrato at aon.at> wrote:
+> 
+>> From: cstrato <cstrato at aon.at> Subject: Re: [Bioc-devel] Download
+>> stats for Feb/2011? To: "Martin Morgan" <mtmorgan at fhcrc.org> Cc:
+>> bioc-devel at stat.math.ethz.ch Date: Saturday, February 19, 2011,
+>> 12:56 PM Dear Martin,
+>> 
+>> Thank you for your reply, you are right with the distinct IPs
+>> downloads. The high  downloads of different packages is still 
+>> conspicuous (a statistical outlier) but I must agree that it is not
+>> so strange as the biomaRt outlier.
+>> 
+>> Best regards Christian
+>> 
+>> 
+>> On 2/19/11 5:18 PM, Martin Morgan wrote:
+>>> On 02/19/2011 07:44 AM, cstrato wrote:
+>>>> Dear all,
+>>>> 
+>>>> Looking at the download stats of my package xps I
+>> was astonished to see
+>>>> that it was downloaded 692 times which is twice as
+>> high as usually, but
+>>>> by only 57 distinct IPs which is about twice as
+>> low as usually.
+>>>> 
+>>>> Looking at the download stats for other packages I
+>> realized that the
+>>>> same strange pattern of download stats, very high
+>> overall downloads vs
+>>>> low downloads by distinct IPs is true for many
+>> other packages.
+>>>> 
+>>>> Does someone have an explanation for this strange
+>> download pattern in
+>>>> February?
+>>> 
+>>> Worth remembering that these stats are summaries of
+>> the server logs at
+>>> FHCRC; they exclude mirrors and can reflect whatever
+>> weirdness the
+>>> internet might concoct.
+>>> 
+>>> February is only half done so I think that's the
+>> distinct IP answer; the
+>>> total downloads could be any of a number of reasons,
+>> for instance
+>>> biomaRt was very popular in September 2010, when what
+>> appears from their
+>>> IP address to be many nodes in a HPC cluster somewhere
+>> in the US midwest
+>>> decided that they needed to repeatedly install
+>> biomaRt.
+>>> 
+>>> A more complete answer will take a little digging...
+>>> 
+>>> Martin
+>>> 
+>>> 
+>>>> 
+>>>> Best regards Christian _._._._._._._._._._._._._._._._._._
+>>>> 
+>> C.h.r.i.s.t.i.a.n   S.t.r.a.t.o.w.a
+>>>> V.i.e.n.n.a
+>> A.u.s.t.r.i.a
+>>>> e.m.a.i.l:        cstrato at
+>> aon.at
+>>>> _._._._._._._._._._._._._._._._._._
+>>>> 
+>>>> _______________________________________________ 
+>>>> Bioc-devel at r-project.org
+>> mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>> 
+>>> 
+>> 
+>> _______________________________________________ 
+>> Bioc-devel at r-project.org mailing list 
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>> 
+> 
+> 
+> 
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From S.Berri at leeds.ac.uk  Mon Feb 21 14:53:39 2011
+From: S.Berri at leeds.ac.uk (Stefano Berri)
+Date: Mon, 21 Feb 2011 13:53:39 +0000
+Subject: [Bioc-devel] s4 guidance
+In-Reply-To: <mailman.21.1298286005.7041.bioc-devel@r-project.org>
+Message-ID: <C9881EE3.1C13%s.berri@leeds.ac.uk>
+
+Hi.
+
+could somebody give me some guidance and direction?
+
+I started to make a S4 module for bioconductor.
+I am stuck to adding values to a slot using a method.
+
+here a proof of concept
+
+The code, class and methods:
+############################
+
+setClass (
+    Class = 'test',
+    representation = representation (
+        x = "numeric",
+        doubleX = "numeric"
+    )   
+)
+
+setGeneric(name = "myDouble", function(object){standardGeneric("myDouble")})
+setMethod("myDouble", "test", function(object){
+        object at doubleX <- 2*object at x
+    })
+
+###########################
+
+# then I type
+
+myT <- new(Class = "test", x = c(1,2,3))
+# hoping to populate "myDouble" slot
+myDouble(myT)
+# but if I look into
+myT at doubleX
+# I get "numeric(0)"
+
+
+to make it work I have to return the object
+{object at doubleX <- 2*object at x; return (object)}
+but then it returns the object (with associated "show" method) which I do
+not want.
+
+
+I also struggle to find documentation online on S4. I have "R programming
+for bioinformatics" which cover the basics and then a few bits here and
+there, but I could not find a nice tutorial and a reference guide...
+
+I have some other questions:
+Comparing to other object-oriented programming languages, I expect to find
+similar concepts. 
+ - Is there a way to hide/encapsulate slots and methods? If I type "myT" and
+then press Tab twice it shows all slots that can be read and even written
+to! I makes the whole hassle to object oriented programming useless if the
+user can overwrite variables, does it not?
+
+Sorry if my questions are naive...
+
+Thanks for your help
+
+Stefano Berri
+
+
+From Joern.Toedling at curie.fr  Mon Feb 21 15:31:33 2011
+From: Joern.Toedling at curie.fr (Joern Toedling)
+Date: Mon, 21 Feb 2011 15:31:33 +0100
+Subject: [Bioc-devel] s4 guidance
+In-Reply-To: <C9881EE3.1C13%s.berri@leeds.ac.uk>
+References: <mailman.21.1298286005.7041.bioc-devel@r-project.org>
+	<C9881EE3.1C13%s.berri@leeds.ac.uk>
+Message-ID: <20110221142239.M17857@curie.fr>
+
+Hello,
+
+there are a several good introductions to S4 classes out there, for example 
+check out "A (not so) short introduction to S4" by Christophe Genolini which 
+is available from this page:
+http://cran.r-project.org/other-docs.html
+
+And to avoid the use of "@" at user-level, one should provide accessor 
+methods to users to retrieve and set the values for all slots.
+However, as far as I am aware, there is no way to prevent users from making 
+use of "@" altogether.
+
+Regarding your example, I think it would be best if populating test at doubleX 
+happens either in the initialization function and/or the replace method for 
+test at x.
+
+Cheers,
+Joern
+
+
+On Mon, 21 Feb 2011 13:53:39 +0000, Stefano Berri wrote
+> Hi.
+> 
+> could somebody give me some guidance and direction?
+> 
+> I started to make a S4 module for bioconductor.
+> I am stuck to adding values to a slot using a method.
+> 
+> here a proof of concept
+> 
+> The code, class and methods:
+> ############################
+> 
+> setClass (
+>     Class = 'test',
+>     representation = representation (
+>         x = "numeric",
+>         doubleX = "numeric"
+>     )   
+> )
+> 
+> setGeneric(name = "myDouble", function(object)
+> {standardGeneric("myDouble")}) setMethod("myDouble", "test", 
+> function(object){        object at doubleX <- 2*object at x    })
+> 
+> ###########################
+> 
+> # then I type
+> 
+> myT <- new(Class = "test", x = c(1,2,3))
+> # hoping to populate "myDouble" slot
+> myDouble(myT)
+> # but if I look into
+> myT at doubleX
+> # I get "numeric(0)"
+> 
+> to make it work I have to return the object
+> {object at doubleX <- 2*object at x; return (object)}
+> but then it returns the object (with associated "show" method) which 
+> I do not want.
+> 
+> I also struggle to find documentation online on S4. I have "R programming
+> for bioinformatics" which cover the basics and then a few bits here and
+> there, but I could not find a nice tutorial and a reference guide...
+> 
+> I have some other questions:
+> Comparing to other object-oriented programming languages, I expect 
+> to find similar concepts.  - Is there a way to hide/encapsulate 
+> slots and methods? If I type "myT" and then press Tab twice it shows 
+> all slots that can be read and even written to! I makes the whole 
+> hassle to object oriented programming useless if the user can 
+> overwrite variables, does it not?
+> 
+> Sorry if my questions are naive...
+> 
+> Thanks for your help
+> 
+> Stefano Berri
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+---
+Joern Toedling
+Institut Curie -- U900
+26 rue d'Ulm, 75005 Paris, FRANCE
+Tel. +33 (0)156246927
+
+
+From stvjc at channing.harvard.edu  Mon Feb 21 15:56:12 2011
+From: stvjc at channing.harvard.edu (Vincent Carey)
+Date: Mon, 21 Feb 2011 09:56:12 -0500
+Subject: [Bioc-devel] s4 guidance
+In-Reply-To: <C9881EE3.1C13%s.berri@leeds.ac.uk>
+References: <mailman.21.1298286005.7041.bioc-devel@r-project.org>
+	<C9881EE3.1C13%s.berri@leeds.ac.uk>
+Message-ID: <AANLkTimemaF9DGUbJ2Ao2=FECcBLsvxiex==nOAZQQx+@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110221/35afd95d/attachment.pl>
+
+From lawrence.michael at gene.com  Wed Feb 23 05:20:56 2011
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Tue, 22 Feb 2011 20:20:56 -0800
+Subject: [Bioc-devel] AlignedRead should allow [i, drop=FALSE]
+Message-ID: <AANLkTim7yEgVW1PYJZg4mQVJ9N+tpVqU6WGhAEwqqNCE@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110222/0aef09d7/attachment.pl>
+
+From mtmorgan at fhcrc.org  Wed Feb 23 05:39:18 2011
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Tue, 22 Feb 2011 20:39:18 -0800
+Subject: [Bioc-devel] AlignedRead should allow [i, drop=FALSE]
+In-Reply-To: <AANLkTim7yEgVW1PYJZg4mQVJ9N+tpVqU6WGhAEwqqNCE@mail.gmail.com>
+References: <AANLkTim7yEgVW1PYJZg4mQVJ9N+tpVqU6WGhAEwqqNCE@mail.gmail.com>
+Message-ID: <4D648F76.1040509@fhcrc.org>
+
+On 02/22/2011 08:20 PM, Michael Lawrence wrote:
+> AlignedRead complains when drop=FALSE is passed to [, but it seems like this
+> should be allowed. This breaks things like putting an AlignedRead in a
+> DataFrame.
+
+Is this with
+
+> packageDescription("ShortRead")$Version
+[1] "1.9.14"
+
+(which because of build system issues seems only to be in svn at the
+moment)? I have
+
+> example(readAligned)
+> aln1[1, drop=TRUE]
+class: AlignedRead
+length: 1 reads; width: 35 cycles
+chromosome: NA
+position: 2652
+strand: +
+alignQuality: NumericQuality
+alignData varLabels: nMatch nextBestAlignQuality
+
+but also
+
+> df = DataFrame(seq_len(length(aln1)))
+> df[["aln"]] = aln1
+> df1 = df[1:10,]
+> df1[["aln"]]
+class: AlignedRead
+length: 10 reads; width: 35 cycles
+chromosome: NA NA ... NA NA
+position: 2652 2652 ... 353 1498
+strand: + + ... + +
+alignQuality: NumericQuality
+alignData varLabels: nMatch nextBestAlignQuality
+> df1
+DataFrame with 1000 rows and 2 columns
+Error in as.matrix(format(do.call(data.frame, lapply(object, function(x)
+showAsCell(head(x,  :
+  error in evaluating the argument 'x' in selecting a method for
+function 'as.matrix'
+
+and I wasn't sure what the rules were for making a class
+DataFrame-compatible.
+
+Martin
+
+
+> 
+> Michael
+> 
+> 	[[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Computational Biology
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109
+
+Location: M1-B861
+Telephone: 206 667-2793
+
+
+From dtenenba at fhcrc.org  Wed Feb 23 18:10:19 2011
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Wed, 23 Feb 2011 09:10:19 -0800
+Subject: [Bioc-devel] Download stats for Feb/2011?
+In-Reply-To: <9406_1298255347_4D61CDF3_9406_15265_1_106538.61772.qm@web112620.mail.gq1.yahoo.com>
+References: <4D60043A.6020909@aon.at>
+	<9406_1298255347_4D61CDF3_9406_15265_1_106538.61772.qm@web112620.mail.gq1.yahoo.com>
+Message-ID: <AANLkTik7id8DsrJYNaaPcxVi4rV0Kc1m2ZnZHwJWvBrQ@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110223/ec0f02c1/attachment.pl>
+
+From lawrence.michael at gene.com  Wed Feb 23 19:02:37 2011
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Wed, 23 Feb 2011 10:02:37 -0800
+Subject: [Bioc-devel] AlignedRead should allow [i, drop=FALSE]
+In-Reply-To: <4D648F76.1040509@fhcrc.org>
+References: <AANLkTim7yEgVW1PYJZg4mQVJ9N+tpVqU6WGhAEwqqNCE@mail.gmail.com>
+	<4D648F76.1040509@fhcrc.org>
+Message-ID: <AANLkTikkM7o1zg7m5cHOCC=fzbh6hRY62qK_ZfmyQd0o@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110223/b9df5d50/attachment.pl>
+
+From cstrato at aon.at  Wed Feb 23 21:15:34 2011
+From: cstrato at aon.at (cstrato)
+Date: Wed, 23 Feb 2011 21:15:34 +0100
+Subject: [Bioc-devel] Download stats for Feb/2011?
+In-Reply-To: <AANLkTik7id8DsrJYNaaPcxVi4rV0Kc1m2ZnZHwJWvBrQ@mail.gmail.com>
+References: <4D60043A.6020909@aon.at>	<9406_1298255347_4D61CDF3_9406_15265_1_106538.61772.qm@web112620.mail.gq1.yahoo.com>
+	<AANLkTik7id8DsrJYNaaPcxVi4rV0Kc1m2ZnZHwJWvBrQ@mail.gmail.com>
+Message-ID: <4D656AE6.7060208@aon.at>
+
+Dear Dan,
+
+Thank you for this information and for the update.
+
+Best regards
+Christian
+
+
+On 2/23/11 6:10 PM, Dan Tenenbaum wrote:
+>
+>
+> On Sun, Feb 20, 2011 at 6:28 PM, Luo Weijun <luo_weijun at yahoo.com
+> <mailto:luo_weijun at yahoo.com>> wrote:
+>
+>     Hi Christian and Martin,
+>     The same download pattern also occurred to my gage package. Actually
+>     it occurred to many non-core packages, i.e. those don't install
+>     through biocLite(). For those core packages or highly used packages
+>     already with thousands of downloads per month, this pattern is not
+>     seen. For instance, the biomaRt package you have mentioned, its
+>     February is similar to other normal months. Based on Martin's
+>     description, very likely some other computer cluster with a few
+>     hundred nodes is installing Bioconductor with all packages included.
+>     These exta few hundred downloads mean a lot more for the non-core
+>     packages, but little for core packages.
+>     A related question I am interested now, is there any way to know the
+>     total download stats, not only from FHCRC server, but also from the
+>     mirrors. Martin said mirror stats are not counted currently.
+>     Weijun
+>
+>
+> Christian and Weijun,
+>
+> There were some internal housekeeping processes which were skewing the
+> results. These have now been filtered out.
+>
+> Thanks
+> Dan
+>
+>
+>
+>     --- On Sat, 2/19/11, cstrato <cstrato at aon.at
+>     <mailto:cstrato at aon.at>> wrote:
+>
+>      > From: cstrato <cstrato at aon.at <mailto:cstrato at aon.at>>
+>      > Subject: Re: [Bioc-devel] Download stats for Feb/2011?
+>      > To: "Martin Morgan" <mtmorgan at fhcrc.org <mailto:mtmorgan at fhcrc.org>>
+>      > Cc: bioc-devel at stat.math.ethz.ch
+>     <mailto:bioc-devel at stat.math.ethz.ch>
+>      > Date: Saturday, February 19, 2011, 12:56 PM
+>      > Dear Martin,
+>      >
+>      > Thank you for your reply, you are right with the distinct
+>      > IPs downloads.
+>      > The high  downloads of different packages is still
+>      > conspicuous (a
+>      > statistical outlier) but I must agree that it is not so
+>      > strange as the
+>      > biomaRt outlier.
+>      >
+>      > Best regards
+>      > Christian
+>      >
+>      >
+>      > On 2/19/11 5:18 PM, Martin Morgan wrote:
+>      > > On 02/19/2011 07:44 AM, cstrato wrote:
+>      > >> Dear all,
+>      > >>
+>      > >> Looking at the download stats of my package xps I
+>      > was astonished to see
+>      > >> that it was downloaded 692 times which is twice as
+>      > high as usually, but
+>      > >> by only 57 distinct IPs which is about twice as
+>      > low as usually.
+>      > >>
+>      > >> Looking at the download stats for other packages I
+>      > realized that the
+>      > >> same strange pattern of download stats, very high
+>      > overall downloads vs
+>      > >> low downloads by distinct IPs is true for many
+>      > other packages.
+>      > >>
+>      > >> Does someone have an explanation for this strange
+>      > download pattern in
+>      > >> February?
+>      > >
+>      > > Worth remembering that these stats are summaries of
+>      > the server logs at
+>      > > FHCRC; they exclude mirrors and can reflect whatever
+>      > weirdness the
+>      > > internet might concoct.
+>      > >
+>      > > February is only half done so I think that's the
+>      > distinct IP answer; the
+>      > > total downloads could be any of a number of reasons,
+>      > for instance
+>      > > biomaRt was very popular in September 2010, when what
+>      > appears from their
+>      > > IP address to be many nodes in a HPC cluster somewhere
+>      > in the US midwest
+>      > > decided that they needed to repeatedly install
+>      > biomaRt.
+>      > >
+>      > > A more complete answer will take a little digging...
+>      > >
+>      > > Martin
+>      > >
+>      > >
+>      > >>
+>      > >> Best regards
+>      > >> Christian
+>      > >> _._._._._._._._._._._._._._._._._._
+>      > >>
+>      > C.h.r.i.s.t.i.a.n   S.t.r.a.t.o.w.a
+>      > >> V.i.e.n.n.a
+>      >    A.u.s.t.r.i.a
+>      > >> e.m.a.i.l:        cstrato at
+>      > aon.at <http://aon.at>
+>      > >> _._._._._._._._._._._._._._._._._._
+>      > >>
+>      > >> _______________________________________________
+>      > >> Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>
+>      > mailing list
+>      > >> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>      > >
+>      > >
+>      >
+>      > _______________________________________________
+>      > Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>
+>      > mailing list
+>      > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>      >
+>
+>
+>
+>
+>     _______________________________________________
+>     Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org> mailing list
+>     https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+

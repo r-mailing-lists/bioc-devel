@@ -1,0 +1,1124 @@
+From robert.castelo at upf.edu  Mon Sep  6 11:38:09 2010
+From: robert.castelo at upf.edu (Robert Castelo)
+Date: Mon, 06 Sep 2010 11:38:09 +0200
+Subject: [Bioc-devel] packageDescription() call in help page with recent R
+	devel
+Message-ID: <1283765889.765.62.camel@llull.imim.es>
+
+dear developers,
+
+i have the following lines in the main help page
+(man/qpgraph-package.Rd) of my package 'qpgraph':
+
+\details{
+  \tabular{ll}{
+  Package: \tab qpgraph\cr
+  Version: \tab \Sexpr{packageDescription("qpgraph")[["Version"]]}\cr
+  Built: \tab \Sexpr{packageDescription("qpgraph")[["Built"]]}\cr
+  Depends: \tab \Sexpr{packageDescription("qpgraph")[["Depends"]]}\cr
+  Imports: \tab \Sexpr{packageDescription("qpgraph")[["Imports"]]}\cr
+  Suggests: \tab \Sexpr{packageDescription("qpgraph")[["Suggests"]]}\cr
+  biocViews: \tab
+\Sexpr{packageDescription("qpgraph")[["biocViews"]]}\cr
+  License: \tab \Sexpr{packageDescription("qpgraph")[["License"]]}\cr
+  URL: \tab \Sexpr{packageDescription("qpgraph")[["URL"]]}\cr
+  }
+}
+
+
+so far i have been developing with the following development version of
+R:
+
+R version 2.12.0 Under development (unstable) (2010-06-30 r52417)
+
+under which the currently available version of the package runs without
+errors the R CMD build, R CMD check and R CMD INSTALL commands:
+
+however, in the daily build at the bioconductor site the follow error
+occurs:
+
+http://bioconductor.org/checkResults/2.7/bioc-LATEST/qpgraph/lamb2-buildsrc.html
+
+Command: /home/biocbuild/bbs-2.7-bioc/R/bin/R CMD build qpgraph
+StartedAt: 2010-09-05 02:17:17 -0700 (Sun, 05 Sep 2010)
+EndedAt: 2010-09-05 02:17:25 -0700 (Sun, 05 Sep 2010)
+
+* checking for file ?qpgraph/DESCRIPTION? ... OK
+* preparing ?qpgraph?:
+* checking DESCRIPTION meta-information ... OK
+* cleaning src
+* running cleanup
+* installing the package to process help pages
+* building the package manual
+Hmm ... looks like a package
+Converting Rd files to LaTeX ..Warning in packageDescription("qpgraph") :
+  no package 'qpgraph' was found
+Error : /loc/home/biocbuild/bbs-2.7-bioc/meat/qpgraph/man/qpgraph-package.Rd:9: subscript out of bounds
+
+
+where the following development version of R is employed:
+
+2.12.0 Under development (unstable) (2010-08-26 r52817)
+
+i have updated my development version to the lates one and indeed i can now reproduce
+the error when doing R CMD build.
+
+therefore, something changed in the R development version since june that now it does not accept anymore
+to have 'packageDescription()' calls in '\Sexpr{}' tags within help pages.
+
+i have been googling a bit, and looking to the documentation whether there is any update about the use of
+'packageDescription()' but so far i have not found anything.
+
+does anyone know if this is an intended change?
+
+if yes, do you think is there any workaround?
+
+if not, and this is therefore a bug, how do you recommend me to report it? (i'd appreciate if maybe some
+core R-developer here would do it for me).
+
+thanks!!
+robert.
+
+
+From sneumann at ipb-halle.de  Mon Sep  6 19:17:03 2010
+From: sneumann at ipb-halle.de (Neumann, Steffen)
+Date: Mon, 6 Sep 2010 19:17:03 +0200
+Subject: [Bioc-devel] Windows x64 linking problem
+Message-ID: <assp.586578e590.9264FE63AD0A634995D25D233D701BAD01D6DB51@ipb-exchange.ipb-halle.de>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100906/9f416b05/attachment.pl>
+
+From mtmorgan at fhcrc.org  Tue Sep  7 07:41:08 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 06 Sep 2010 22:41:08 -0700
+Subject: [Bioc-devel] packageDescription() call in help page with recent
+ R	devel
+In-Reply-To: <1283765889.765.62.camel@llull.imim.es>
+References: <1283765889.765.62.camel@llull.imim.es>
+Message-ID: <4C85D074.9030409@fhcrc.org>
+
+On 09/06/2010 02:38 AM, Robert Castelo wrote:
+> dear developers,
+>
+> i have the following lines in the main help page
+> (man/qpgraph-package.Rd) of my package 'qpgraph':
+>
+> \details{
+>   \tabular{ll}{
+>   Package: \tab qpgraph\cr
+>   Version: \tab \Sexpr{packageDescription("qpgraph")[["Version"]]}\cr
+>   Built: \tab \Sexpr{packageDescription("qpgraph")[["Built"]]}\cr
+>   Depends: \tab \Sexpr{packageDescription("qpgraph")[["Depends"]]}\cr
+>   Imports: \tab \Sexpr{packageDescription("qpgraph")[["Imports"]]}\cr
+>   Suggests: \tab \Sexpr{packageDescription("qpgraph")[["Suggests"]]}\cr
+>   biocViews: \tab
+> \Sexpr{packageDescription("qpgraph")[["biocViews"]]}\cr
+>   License: \tab \Sexpr{packageDescription("qpgraph")[["License"]]}\cr
+>   URL: \tab \Sexpr{packageDescription("qpgraph")[["URL"]]}\cr
+>   }
+> }
+>
+>
+> so far i have been developing with the following development version of
+> R:
+>
+> R version 2.12.0 Under development (unstable) (2010-06-30 r52417)
+>
+> under which the currently available version of the package runs without
+> errors the R CMD build, R CMD check and R CMD INSTALL commands:
+>
+> however, in the daily build at the bioconductor site the follow error
+> occurs:
+>
+> http://bioconductor.org/checkResults/2.7/bioc-LATEST/qpgraph/lamb2-buildsrc.html
+>
+> Command: /home/biocbuild/bbs-2.7-bioc/R/bin/R CMD build qpgraph
+> StartedAt: 2010-09-05 02:17:17 -0700 (Sun, 05 Sep 2010)
+> EndedAt: 2010-09-05 02:17:25 -0700 (Sun, 05 Sep 2010)
+>
+> * checking for file ?qpgraph/DESCRIPTION? ... OK
+> * preparing ?qpgraph?:
+> * checking DESCRIPTION meta-information ... OK
+> * cleaning src
+> * running cleanup
+> * installing the package to process help pages
+> * building the package manual
+> Hmm ... looks like a package
+> Converting Rd files to LaTeX ..Warning in packageDescription("qpgraph") :
+>   no package 'qpgraph' was found
+> Error : /loc/home/biocbuild/bbs-2.7-bioc/meat/qpgraph/man/qpgraph-package.Rd:9: subscript out of bounds
+>
+>
+> where the following development version of R is employed:
+>
+> 2.12.0 Under development (unstable) (2010-08-26 r52817)
+>
+> i have updated my development version to the lates one and indeed i can now reproduce
+> the error when doing R CMD build.
+>
+> therefore, something changed in the R development version since june that now it does not accept anymore
+> to have 'packageDescription()' calls in '\Sexpr{}' tags within help pages.
+>
+> i have been googling a bit, and looking to the documentation whether there is any update about the use of
+> 'packageDescription()' but so far i have not found anything.
+>
+> does anyone know if this is an intended change?
+>
+> if yes, do you think is there any workaround?
+>
+> if not, and this is therefore a bug, how do you recommend me to report it? (i'd appreciate if maybe some
+> core R-developer here would do it for me).
+>   
+
+I'll ask on R-devel and report back if this is resolved. Martin
+> thanks!!
+> robert.
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From robert.castelo at upf.edu  Tue Sep  7 09:34:03 2010
+From: robert.castelo at upf.edu (Robert Castelo)
+Date: Tue, 07 Sep 2010 09:34:03 +0200
+Subject: [Bioc-devel] packageDescription() call in help page with	recent
+	R	devel
+In-Reply-To: <5604_1283838147_4C85D0C2_5604_920_1_4C85D074.9030409@fhcrc.org>
+References: <1283765889.765.62.camel@llull.imim.es>
+	<5604_1283838147_4C85D0C2_5604_920_1_4C85D074.9030409@fhcrc.org>
+Message-ID: <1283844843.24011.4.camel@llull.imim.es>
+
+On Mon, 2010-09-06 at 22:41 -0700, Martin Morgan wrote:
+[...]
+> > * checking for file ?qpgraph/DESCRIPTION? ... OK
+> > * preparing ?qpgraph?:
+> > * checking DESCRIPTION meta-information ... OK
+> > * cleaning src
+> > * running cleanup
+> > * installing the package to process help pages
+> > * building the package manual
+> > Hmm ... looks like a package
+> > Converting Rd files to LaTeX ..Warning in packageDescription("qpgraph") :
+> >   no package 'qpgraph' was found
+> > Error : /loc/home/biocbuild/bbs-2.7-bioc/meat/qpgraph/man/qpgraph-package.Rd:9: subscript out of bounds
+[...]
+> I'll ask on R-devel and report back if this is resolved. Martin
+
+thanks Martin, very much appreciated.
+
+robert.
+
+
+From sneumann at ipb-halle.de  Tue Sep  7 12:23:35 2010
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Tue, 07 Sep 2010 12:23:35 +0200
+Subject: [Bioc-devel] Windows x64 linking problem
+In-Reply-To: <9264FE63AD0A634995D25D233D701BAD01D6DB51@ipb-exchange.ipb-halle.de>
+References: <9264FE63AD0A634995D25D233D701BAD01D6DB51@ipb-exchange.ipb-halle.de>
+Message-ID: <assp.08664d6bd1.1283855015.8536.57.camel@paddy>
+
+Hi,
+
+Short story: fixed.
+
+Or, as Jerry Pournelle (formerly Byte magazine, does anyone remember ?!)
+would put it: I learned more about Win64 linking than I ever wanted 
+to know...
+
+The change is that "mingw-w64 toolchain is moving towards the MSVC
+convention of not using leading underscores on symbols" 
+http://www.stats.ox.ac.uk/~ripley/Win64/W64porting.html
+
+So the precompiled libnetCDF and zlib had to be compiled 
+with the compiler flag -fno-leading-underscore,
+and I placed the notes on the XCMS wiki:
+http://metlinwiki.scripps.edu/mediawiki/index.php/CrossCompilation
+
+Yours,
+Steffen
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From sneumann at ipb-halle.de  Tue Sep 14 09:32:54 2010
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Tue, 14 Sep 2010 07:32:54 +0000
+Subject: [Bioc-devel] R CMD check "Subdirectory src contains object files"
+	Rdisop and bgx
+Message-ID: <assp.5873b97900.1284449574.3516.606.camel@paddy>
+
+Hi,
+
+there are some packages (at least my Rdisop and bgx)
+which show a Warning: "Subdirectory src contains object files"
+only for windows:
+http://bioconductor.org/checkResults/2.7/bioc-LATEST/Rdisop/gewurz-checksrc.html
+
+I know that this is probably only a minor warning, 
+and it has been discussed before [1,2], 
+but nevertheless it is cosmetically unpleasing :-)
+Both packages have a configure.win, if that makes any difference.
+
+Is there anything to put into e.g. the cleanup or Makevars.win 
+or whatever to get rid of the warning ? 
+
+Yours,
+Steffen
+
+[1] https://stat.ethz.ch/pipermail/bioc-devel/2005-April/000076.html
+[2] http://tolstoy.newcastle.edu.au/R/devel/06/06/5689.html
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From hpages at fhcrc.org  Fri Sep 17 21:32:13 2010
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Fri, 17 Sep 2010 12:32:13 -0700
+Subject: [Bioc-devel] Bioconductor 2.7 Release Schedule
+Message-ID: <4C93C23D.4050702@fhcrc.org>
+
+Hi developers,
+
+R-devel went alpha today and R-2.12.0 is scheduled for Friday,
+October 15, 2010.
+
+We plan to release Bioconductor 2.7 on Monday, October 17.
+Please have a look at the schedule for this release:
+
+   http://bioconductor.org/developers/release-schedule/
+
+In particular, you should start using R-devel alpha for testing
+your packages ASAP.
+
+Note that the deadline for new package submissions that go into
+this release is Friday, September 24 (next Friday).
+
+Please check the daily build/check report and make sure that
+your packages pass 'R CMD build' and 'R CMD check' with no
+warnings:
+
+   http://bioconductor.org/checkResults/2.7/bioc-LATEST/index.html
+
+You might have noticed that there have been a lot of turbulences
+recently on the Windows builds. We are working on it and hopefully
+those problems will soon disappear.
+
+Please let us know if you have any question.
+
+Thanks for your contribution to the Bioconductor project!
+
+Cheers,
+H.
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From hpages at fhcrc.org  Fri Sep 17 21:39:42 2010
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Fri, 17 Sep 2010 12:39:42 -0700
+Subject: [Bioc-devel] Bioconductor 2.7 Release Schedule
+In-Reply-To: <4C93C23D.4050702@fhcrc.org>
+References: <4C93C23D.4050702@fhcrc.org>
+Message-ID: <4C93C3FE.8070202@fhcrc.org>
+
+On 09/17/2010 12:32 PM, Herv? Pag?s wrote:
+> Hi developers,
+>
+> R-devel went alpha today and R-2.12.0 is scheduled for Friday,
+> October 15, 2010.
+>
+> We plan to release Bioconductor 2.7 on Monday, October 17.
+                                          ^^^^^^^^^^^^^^^^^^
+oops, ...    ...    ...     ...    read "Monday, October 18"
+
+sorry.  H.
+
+
+From kasperdanielhansen at gmail.com  Sun Sep 19 22:36:20 2010
+From: kasperdanielhansen at gmail.com (Kasper Daniel Hansen)
+Date: Sun, 19 Sep 2010 16:36:20 -0400
+Subject: [Bioc-devel] matchprobes
+Message-ID: <AANLkTikSKp+0X83ksZ_rVh+j_ukpzgyZ98vSndMjUDP_@mail.gmail.com>
+
+matchprobes seems to be absent from the devel branch when I use
+R-2.12-alpha with biocLite?  Perhaps this is a fluke because I have
+installed it earlier in the year under R-devel (then R-2.12), but it
+is also absent from the devel build webpage:
+  http://bioconductor.org/checkResults/devel/bioc-LATEST/
+
+Kasper
+
+
+From hpages at fhcrc.org  Sun Sep 19 23:05:33 2010
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Sun, 19 Sep 2010 14:05:33 -0700
+Subject: [Bioc-devel] matchprobes
+In-Reply-To: <AANLkTikSKp+0X83ksZ_rVh+j_ukpzgyZ98vSndMjUDP_@mail.gmail.com>
+References: <AANLkTikSKp+0X83ksZ_rVh+j_ukpzgyZ98vSndMjUDP_@mail.gmail.com>
+Message-ID: <4C967B1D.2030604@fhcrc.org>
+
+Hi Kasper,
+
+On 09/19/2010 01:36 PM, Kasper Daniel Hansen wrote:
+> matchprobes seems to be absent from the devel branch when I use
+> R-2.12-alpha with biocLite?  Perhaps this is a fluke because I have
+> installed it earlier in the year under R-devel (then R-2.12), but it
+> is also absent from the devel build webpage:
+>    http://bioconductor.org/checkResults/devel/bioc-LATEST/
+
+Yes matchprobes has been deprecated for a while (more than 2 releases
+ago) and now it's gone. Note that at the same time we made it
+a deprecated package, we also moved most of its content to Biostrings:
+     basecontent()
+     countbases()
+     complementSeq()
+     reverseSeq()
+     revcompDNA()
+     revcompRNA()
+     longestConsecutive()
+     matchprobes()
+Most of this stuff is deprecated too. See the individual man pages
+for the details.
+
+Cheers,
+H.
+
+
+>
+> Kasper
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From kasperdanielhansen at gmail.com  Sun Sep 19 23:28:37 2010
+From: kasperdanielhansen at gmail.com (Kasper Daniel Hansen)
+Date: Sun, 19 Sep 2010 17:28:37 -0400
+Subject: [Bioc-devel] matchprobes
+In-Reply-To: <4C967B1D.2030604@fhcrc.org>
+References: <AANLkTikSKp+0X83ksZ_rVh+j_ukpzgyZ98vSndMjUDP_@mail.gmail.com>
+	<4C967B1D.2030604@fhcrc.org>
+Message-ID: <AANLkTimGRELUg5MBJ5k0uyzzn3KHGLxGuEn9bEwYyzP9@mail.gmail.com>
+
+Sure, Biostrings is the better place.  I was wondering (caring) about
+the probe annotation packages but you seem to have moved the
+probetable functions (like print.probetable) into AnnotationDbi which
+looks fine as well.
+
+Thanks for the explanation,
+Kasper
+
+2010/9/19 Herv? Pag?s <hpages at fhcrc.org>:
+> Hi Kasper,
+>
+> On 09/19/2010 01:36 PM, Kasper Daniel Hansen wrote:
+>>
+>> matchprobes seems to be absent from the devel branch when I use
+>> R-2.12-alpha with biocLite? ?Perhaps this is a fluke because I have
+>> installed it earlier in the year under R-devel (then R-2.12), but it
+>> is also absent from the devel build webpage:
+>> ? http://bioconductor.org/checkResults/devel/bioc-LATEST/
+>
+> Yes matchprobes has been deprecated for a while (more than 2 releases
+> ago) and now it's gone. Note that at the same time we made it
+> a deprecated package, we also moved most of its content to Biostrings:
+> ? ?basecontent()
+> ? ?countbases()
+> ? ?complementSeq()
+> ? ?reverseSeq()
+> ? ?revcompDNA()
+> ? ?revcompRNA()
+> ? ?longestConsecutive()
+> ? ?matchprobes()
+> Most of this stuff is deprecated too. See the individual man pages
+> for the details.
+>
+> Cheers,
+> H.
+>
+>
+>>
+>> Kasper
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+> --
+> Herv? Pag?s
+>
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M2-B876
+> P.O. Box 19024
+> Seattle, WA 98109-1024
+>
+> E-mail: hpages at fhcrc.org
+> Phone: ?(206) 667-5791
+> Fax: ? ?(206) 667-1319
+>
+
+
+From atarca at med.wayne.edu  Wed Sep 22 17:15:04 2010
+From: atarca at med.wayne.edu (Tarca, Adi)
+Date: Wed, 22 Sep 2010 11:15:04 -0400
+Subject: [Bioc-devel] check package with 2.12.0 alpha
+In-Reply-To: <mailman.19.1284976804.13395.bioc-devel@stat.math.ethz.ch>
+References: <mailman.19.1284976804.13395.bioc-devel@stat.math.ethz.ch>
+Message-ID: <0E8F0B4E0B01D349BEF68D80B4A365BC04364E4E53@MED-CORE05.med.wayne.edu>
+
+
+Hi all,
+I try to check my package with 2.12.0 alpha on windows and I get the error below. Any ideas what cause it?
+Thanks,
+Adi
+
+Z:\PRB>c:\Progs\R\R-2.12.0alpha\bin\R CMD check SPIA
+* using log directory 'Z:/PRB/SPIA.Rcheck'
+* using R version 2.12.0 alpha (2010-09-20 r52948)
+* using platform: i386-pc-mingw32 (32-bit)
+* using session charset: ISO8859-1
+* checking for file 'SPIA/DESCRIPTION' ... OK
+* this is package 'SPIA' version '1.7.1'
+* checking package name space information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+Error in system2("file", "--version", TRUE, TRUE) : '"file"' not found
+Execution halted
+
+From cruckert at uni-muenster.de  Wed Sep 22 21:16:13 2010
+From: cruckert at uni-muenster.de (Christian Ruckert)
+Date: Wed, 22 Sep 2010 21:16:13 +0200
+Subject: [Bioc-devel] NAMESPACE, vignette and .Rd examples
+Message-ID: <4C9A55FD.8070602@uni-muenster.de>
+
+In an old posting on this list 
+https://stat.ethz.ch/pipermail/r-devel/2008-December/051602.html it is 
+stated, that for vignettes and the NAMESPACE file the following holds:
+
+Packages used in the vignette must be loaded with library():
+- If the package is already listed as Imports or Depends, it will load 
+without problems
+- Otherwise the package should be listed in Suggests, but the vignette 
+may not run, as installation of the package is not ensured
+
+
+Does this also hold for examples in the help-files (.Rd)?
+
+The bioconductor package guidelines say:
+"Depends: is also appropriate when a package is used in the example 
+section of a man page. It is very unusual for a package to list more 
+than three packages as 'Depends:'."
+
+For my package I will have definitely far more than three packages in 
+the depends list. If doing so can I omit the call to library() in the 
+example section? Is it ok to list the same packages in Imports as well 
+as in Depends?
+
+Best,
+Christian
+
+
+From hpages at fhcrc.org  Wed Sep 22 21:41:03 2010
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Wed, 22 Sep 2010 12:41:03 -0700
+Subject: [Bioc-devel] check package with 2.12.0 alpha
+In-Reply-To: <0E8F0B4E0B01D349BEF68D80B4A365BC04364E4E53@MED-CORE05.med.wayne.edu>
+References: <mailman.19.1284976804.13395.bioc-devel@stat.math.ethz.ch>
+	<0E8F0B4E0B01D349BEF68D80B4A365BC04364E4E53@MED-CORE05.med.wayne.edu>
+Message-ID: <4C9A5BCF.6090101@fhcrc.org>
+
+Hi Tarca,
+
+On 09/22/2010 08:15 AM, Tarca, Adi wrote:
+>
+> Hi all,
+> I try to check my package with 2.12.0 alpha on windows and I get the error below. Any ideas what cause it?
+> Thanks,
+> Adi
+>
+> Z:\PRB>c:\Progs\R\R-2.12.0alpha\bin\R CMD check SPIA
+> * using log directory 'Z:/PRB/SPIA.Rcheck'
+> * using R version 2.12.0 alpha (2010-09-20 r52948)
+> * using platform: i386-pc-mingw32 (32-bit)
+> * using session charset: ISO8859-1
+> * checking for file 'SPIA/DESCRIPTION' ... OK
+> * this is package 'SPIA' version '1.7.1'
+> * checking package name space information ... OK
+> * checking package dependencies ... OK
+> * checking if this is a source package ... OK
+> Error in system2("file", "--version", TRUE, TRUE) : '"file"' not found
+> Execution halted
+
+This seems to be related to the chaotic behavior of 'R CMD build'
+and 'R CMD check' with recent R-2.12 on Windows. See:
+
+   https://stat.ethz.ch/pipermail/r-devel/2010-September/058464.html
+
+Hopefully the R people will be able to do something about this
+very soon.
+
+Cheers,
+H.
+
+
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From mtmorgan at fhcrc.org  Wed Sep 22 21:52:53 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 22 Sep 2010 12:52:53 -0700
+Subject: [Bioc-devel] NAMESPACE, vignette and .Rd examples
+In-Reply-To: <4C9A55FD.8070602@uni-muenster.de>
+References: <4C9A55FD.8070602@uni-muenster.de>
+Message-ID: <4C9A5E95.3030605@fhcrc.org>
+
+On 09/22/2010 12:16 PM, Christian Ruckert wrote:
+> In an old posting on this list
+> https://stat.ethz.ch/pipermail/r-devel/2008-December/051602.html it is
+> stated, that for vignettes and the NAMESPACE file the following holds:
+> 
+> Packages used in the vignette must be loaded with library():
+> - If the package is already listed as Imports or Depends, it will load
+> without problems
+> - Otherwise the package should be listed in Suggests, but the vignette
+> may not run, as installation of the package is not ensured
+> 
+> 
+> Does this also hold for examples in the help-files (.Rd)?
+> 
+> The bioconductor package guidelines say:
+> "Depends: is also appropriate when a package is used in the example
+> section of a man page. It is very unusual for a package to list more
+> than three packages as 'Depends:'."
+> 
+
+Hi Christian --
+
+It's probably useful to divide the answer into different parts.
+
+First, in terms of the code you write in your package, it is much better
+to use Imports: and NAMESPACE to ensure that you get exactly the objects
+you expect, regardless of what the user adds to their search path. This
+is the primary driver behind the "It is very unusual for a package to
+list more than three packages as 'Depends:" statement -- the only
+packages relevant to the evaluation of your code that belong in the
+Depends: fields are those that can't (e.g., because they don't have a
+NAMESPACE) be Import'ed.
+
+Second, it's useful to think of the role of an example versus a vignette
+versus a test. Examples are meant to illustrate how the function works.
+They should be straight-forward and readily evaluated (e.g., calling
+example(foo) returns within seconds). It will often be convenient to
+'curate' a few key examples that are small but illustrative, and have
+these as data objects in the package. In contrast the vignette can
+definitely be more comprehensive, and might rely on several additional
+packages with 'real' computations involved (while still conforming to
+the Bioc guidelines for overall build time). Perhaps your package is
+using 'examples' for what might better be placed in a vignette?
+
+Tests are really another beast entirely, and don't belong in either the
+examples or vignette -- they should be simple, typically using
+artificial data constructed to test the code that you write; there
+paradigm we've adopted can be seen in a package like GenomicRanges,
+where the basic structure is created by the
+codetoolsBioC::writeRUnitRUnner (codetoolsBioC is available via svn
+only, see http://bioconductor.org/developers/source-control/). Test code
+seldom has explicit package dependencies -- you're testing your own
+code, not that produced by others.
+
+> For my package I will have definitely far more than three packages in
+> the depends list. If doing so can I omit the call to library() in the
+> example section? Is it ok to list the same packages in Imports as well
+> as in Depends?
+
+Useful to remember that Depend:'ing on a package implies that its
+dependencies and imports are also available and attached / loaded as
+prescribed by the corresponding packages.
+
+A package might end up on the Depends: and Imports: fields if on the one
+hand your code uses functions from the package, and on the other hand
+not having a package available to the user would make your package not
+very useful, e.g., if your functions always return GRanges objects from
+GenomicRanges, then you'd really like to Import: GenomicRanges for your
+internal code, and set the user's environment up for success
+manipulating the objects you return with Depends: GenomicRanges. This is
+actually not a very common occurrence in practice.
+
+If the package appears in Depends: then you won't need library() in the
+examples.
+
+This is just general advice; why will your package have 'far more than
+three packages' in the Depends: list?
+
+Martin
+
+> 
+> Best,
+> Christian
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From cruckert at uni-muenster.de  Sun Sep 26 00:09:22 2010
+From: cruckert at uni-muenster.de (Christian Ruckert)
+Date: Sun, 26 Sep 2010 00:09:22 +0200
+Subject: [Bioc-devel] NAMESPACE, vignette and .Rd examples
+In-Reply-To: <4C9A5E95.3030605@fhcrc.org>
+References: <4C9A55FD.8070602@uni-muenster.de> <4C9A5E95.3030605@fhcrc.org>
+Message-ID: <4C9E7312.1040105@uni-muenster.de>
+
+Am 22.09.2010 21:52, schrieb Martin Morgan:
+> On 09/22/2010 12:16 PM, Christian Ruckert wrote:
+>> In an old posting on this list
+>> https://stat.ethz.ch/pipermail/r-devel/2008-December/051602.html it is
+>> stated, that for vignettes and the NAMESPACE file the following holds:
+>>
+>> Packages used in the vignette must be loaded with library():
+>> - If the package is already listed as Imports or Depends, it will load
+>> without problems
+>> - Otherwise the package should be listed in Suggests, but the vignette
+>> may not run, as installation of the package is not ensured
+>>
+>>
+>> Does this also hold for examples in the help-files (.Rd)?
+>>
+>> The bioconductor package guidelines say:
+>> "Depends: is also appropriate when a package is used in the example
+>> section of a man page. It is very unusual for a package to list more
+>> than three packages as 'Depends:'."
+>>
+>
+> Hi Christian --
+>
+> It's probably useful to divide the answer into different parts.
+>
+> First, in terms of the code you write in your package, it is much better
+> to use Imports: and NAMESPACE to ensure that you get exactly the objects
+> you expect, regardless of what the user adds to their search path. This
+> is the primary driver behind the "It is very unusual for a package to
+> list more than three packages as 'Depends:" statement -- the only
+> packages relevant to the evaluation of your code that belong in the
+> Depends: fields are those that can't (e.g., because they don't have a
+> NAMESPACE) be Import'ed.
+>
+> Second, it's useful to think of the role of an example versus a vignette
+> versus a test. Examples are meant to illustrate how the function works.
+> They should be straight-forward and readily evaluated (e.g., calling
+> example(foo) returns within seconds). It will often be convenient to
+> 'curate' a few key examples that are small but illustrative, and have
+> these as data objects in the package. In contrast the vignette can
+> definitely be more comprehensive, and might rely on several additional
+> packages with 'real' computations involved (while still conforming to
+> the Bioc guidelines for overall build time). Perhaps your package is
+> using 'examples' for what might better be placed in a vignette?
+>
+> Tests are really another beast entirely, and don't belong in either the
+> examples or vignette -- they should be simple, typically using
+> artificial data constructed to test the code that you write; there
+> paradigm we've adopted can be seen in a package like GenomicRanges,
+> where the basic structure is created by the
+> codetoolsBioC::writeRUnitRUnner (codetoolsBioC is available via svn
+> only, see http://bioconductor.org/developers/source-control/). Test code
+> seldom has explicit package dependencies -- you're testing your own
+> code, not that produced by others.
+>
+>> For my package I will have definitely far more than three packages in
+>> the depends list. If doing so can I omit the call to library() in the
+>> example section? Is it ok to list the same packages in Imports as well
+>> as in Depends?
+>
+> Useful to remember that Depend:'ing on a package implies that its
+> dependencies and imports are also available and attached / loaded as
+> prescribed by the corresponding packages.
+>
+> A package might end up on the Depends: and Imports: fields if on the one
+> hand your code uses functions from the package, and on the other hand
+> not having a package available to the user would make your package not
+> very useful, e.g., if your functions always return GRanges objects from
+> GenomicRanges, then you'd really like to Import: GenomicRanges for your
+> internal code, and set the user's environment up for success
+> manipulating the objects you return with Depends: GenomicRanges. This is
+> actually not a very common occurrence in practice.
+>
+> If the package appears in Depends: then you won't need library() in the
+> examples.
+>
+> This is just general advice; why will your package have 'far more than
+> three packages' in the Depends: list?
+>
+> Martin
+>
+
+Thank you very much for this detailed answer. I ended up with three 
+packages in Depends, as you guessed I had to move some examples to the 
+vignette.
+
+Many thanks,
+Christian
+
+
+From hpages at fhcrc.org  Mon Sep 27 20:56:56 2010
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Mon, 27 Sep 2010 11:56:56 -0700
+Subject: [Bioc-devel] BioC 2.6 builds about to be stopped
+Message-ID: <4CA0E8F8.5050509@fhcrc.org>
+
+Hi developers,
+
+With our next release getting close (scheduled for Oct 18, see details
+here http://bioconductor.org/developers/release-schedule/), we are going
+to stop the daily builds for the BioC 2.6 branch (the current release)
+in a couple of days:
+
+   http://bioconductor.org/checkResults/2.6/bioc-LATEST/
+
+This will allow us to focus on the upcoming release and also to start
+reallocate our limited computing resources on building the next
+development version (BioC 2.8, based on R 2.13).
+
+This means that you should stop committing changes to the 2.6 branch.
+Any change committed to the 2.6 branch after tomorrow (Tuesday 28, Sept)
+won't propagate to the public repositories anymore.
+
+Please focus on getting the current devel version of your packages ready
+for the upcoming release:
+
+   http://bioconductor.org/checkResults/2.7/bioc-LATEST/
+
+Unfortunately, there are still some serious unsolved issues with R
+alpha on Windows that are causing a lot of failures on our Windows
+build machines. Please ignore them for now.
+
+Thanks!
+H.
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From Daniel.Berner at unibas.ch  Wed Sep 29 17:37:23 2010
+From: Daniel.Berner at unibas.ch (Daniel.Berner at unibas.ch)
+Date: Wed, 29 Sep 2010 17:37:23 +0200
+Subject: [Bioc-devel] adding a genome
+Message-ID: <20100929173723.273514otusaxl06r@webmail.unibas.ch>
+
+Hi
+I want to align Solexa reads to the stickleback (Gasterosteus  
+aculeatus) genome using Biostrings/BSgenome, but that genome is not  
+yet available on the repository. Can anyone provide help on how to add  
+this genome?
+Thank you,
+Daniel Berner
+
+
+From stvjc at channing.harvard.edu  Wed Sep 29 17:42:26 2010
+From: stvjc at channing.harvard.edu (Vincent Carey)
+Date: Wed, 29 Sep 2010 11:42:26 -0400
+Subject: [Bioc-devel] adding a genome
+In-Reply-To: <20100929173723.273514otusaxl06r@webmail.unibas.ch>
+References: <20100929173723.273514otusaxl06r@webmail.unibas.ch>
+Message-ID: <AANLkTinkLRJVrf_KYg6+t94RqK8v_FRFfeQufbfDsDuq@mail.gmail.com>
+
+Have you read the "How to forge a BSgenome data package", the vignette
+for BSgenome?  A version is available at
+
+http://www.bioconductor.org/packages/2.6/bioc/vignettes/BSgenome/inst/doc/BSgenomeForge.pdf
+
+On Wed, Sep 29, 2010 at 11:37 AM,  <Daniel.Berner at unibas.ch> wrote:
+> Hi
+> I want to align Solexa reads to the stickleback (Gasterosteus aculeatus)
+> genome using Biostrings/BSgenome, but that genome is not yet available on
+> the repository. Can anyone provide help on how to add this genome?
+> Thank you,
+> Daniel Berner
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From hb at stat.berkeley.edu  Thu Sep 30 01:58:18 2010
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Wed, 29 Sep 2010 16:58:18 -0700
+Subject: [Bioc-devel] BUG/TYPO: gcrma::bg.adjust.affinities <- function(...,
+	k=k, ...)
+Message-ID: <AANLkTinQpXP0Lsisocv6uCgDCPvAZiU8xoOEstrQTs0U@mail.gmail.com>
+
+[maintainer cc:ed]
+
+Hi,
+
+I looks like there is a cut'n'paste bug in gcrma::bg.adjust.affinities():
+
+> library("gcrma");
+> args(gcrma::bg.adjust.affinities);
+function (pms, ncs, apm, anc, index.affinities, k = k, fast = FALSE,
+    nomm = FALSE)
+
+Note how the default value for argument 'k' is k.  Looks like a
+mistake to me.  Most likely it is not a serious one.
+
+> sessionInfo()
+R version 2.12.0 alpha (2010-09-27 r53048)
+Platform: x86_64-pc-mingw32/x64 (64-bit)
+
+locale:
+[1] LC_COLLATE=English_United States.1252
+[2] LC_CTYPE=English_United States.1252
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C
+[5] LC_TIME=English_United States.1252
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] gcrma_2.21.1  affy_1.27.2   Biobase_2.9.1
+
+loaded via a namespace (and not attached):
+[1] affyio_1.17.4         Biostrings_2.17.47    IRanges_1.7.34
+[4] preprocessCore_1.11.0 splines_2.12.0        tools_2.12.0
+
+/Henrik
+
+
+From guangchuangyu at gmail.com  Thu Sep 30 11:30:49 2010
+From: guangchuangyu at gmail.com (guangchuang yu)
+Date: Thu, 30 Sep 2010 17:30:49 +0800
+Subject: [Bioc-devel] replicable of *PLGEM*
+Message-ID: <AANLkTin_cD4SPOgRWKzjgEw9gNJrdf5E=6FGoJ=1WWdn@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100930/02203297/attachment.pl>
+
+From zwu at stat.brown.edu  Thu Sep 30 15:00:34 2010
+From: zwu at stat.brown.edu (Zhijin Wu)
+Date: Thu, 30 Sep 2010 09:00:34 -0400
+Subject: [Bioc-devel] BUG/TYPO: gcrma::bg.adjust.affinities <-
+	function(..., k=k, ...)
+In-Reply-To: <AANLkTinQpXP0Lsisocv6uCgDCPvAZiU8xoOEstrQTs0U@mail.gmail.com>
+References: <AANLkTinQpXP0Lsisocv6uCgDCPvAZiU8xoOEstrQTs0U@mail.gmail.com>
+Message-ID: <4CA489F2.7060806@stat.brown.edu>
+
+Thank you for pointing it out. Since the function is called from a 
+higher level one and "k" is always passed from that level it has not 
+caused problem for most users. But for someone to directly use this 
+function I do need to set the default
+
+Thanks,
+Jean
+On 9/29/2010 7:58 PM, Henrik Bengtsson wrote:
+> [maintainer cc:ed]
+>
+> Hi,
+>
+> I looks like there is a cut'n'paste bug in gcrma::bg.adjust.affinities():
+>
+>> library("gcrma");
+>> args(gcrma::bg.adjust.affinities);
+> function (pms, ncs, apm, anc, index.affinities, k = k, fast = FALSE,
+>      nomm = FALSE)
+>
+> Note how the default value for argument 'k' is k.  Looks like a
+> mistake to me.  Most likely it is not a serious one.
+>
+>> sessionInfo()
+> R version 2.12.0 alpha (2010-09-27 r53048)
+> Platform: x86_64-pc-mingw32/x64 (64-bit)
+>
+> locale:
+> [1] LC_COLLATE=English_United States.1252
+> [2] LC_CTYPE=English_United States.1252
+> [3] LC_MONETARY=English_United States.1252
+> [4] LC_NUMERIC=C
+> [5] LC_TIME=English_United States.1252
+>
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>
+> other attached packages:
+> [1] gcrma_2.21.1  affy_1.27.2   Biobase_2.9.1
+>
+> loaded via a namespace (and not attached):
+> [1] affyio_1.17.4         Biostrings_2.17.47    IRanges_1.7.34
+> [4] preprocessCore_1.11.0 splines_2.12.0        tools_2.12.0
+>
+> /Henrik
+
+
+-- 
+------------------------------------
+Zhijin (Jean) Wu
+Assistant Professor of Biostatistics
+Brown University, Box G-S121
+Providence, RI  02912
+
+Tel: 401 863 1230
+Fax: 401 863 9182
+http://www.stat.brown.edu/zwu
+
+
+From hb at stat.berkeley.edu  Thu Sep 30 16:31:14 2010
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Thu, 30 Sep 2010 07:31:14 -0700
+Subject: [Bioc-devel] BUG/TYPO: gcrma::bg.adjust.affinities <-
+	function(..., k=k, ...)
+In-Reply-To: <4CA489F2.7060806@stat.brown.edu>
+References: <AANLkTinQpXP0Lsisocv6uCgDCPvAZiU8xoOEstrQTs0U@mail.gmail.com>
+	<4CA489F2.7060806@stat.brown.edu>
+Message-ID: <AANLkTinTPd5qvEkB4goi-2xUz85R3rRSKZv5SAqBDG0a@mail.gmail.com>
+
+I also spotted this one:
+
+> args(gcrma::bg.adjust.fullmodel)
+function (pms, mms, ncs = NULL, apm, amm, anc = NULL, index.affinities,
+    k = k, rho = 0.7, fast = FALSE)
+
+Thxs,
+
+Henrik
+
+On Thu, Sep 30, 2010 at 6:00 AM, Zhijin Wu <zwu at stat.brown.edu> wrote:
+> Thank you for pointing it out. Since the function is called from a higher
+> level one and "k" is always passed from that level it has not caused problem
+> for most users. But for someone to directly use this function I do need to
+> set the default
+>
+> Thanks,
+> Jean
+> On 9/29/2010 7:58 PM, Henrik Bengtsson wrote:
+>>
+>> [maintainer cc:ed]
+>>
+>> Hi,
+>>
+>> I looks like there is a cut'n'paste bug in gcrma::bg.adjust.affinities():
+>>
+>>> library("gcrma");
+>>> args(gcrma::bg.adjust.affinities);
+>>
+>> function (pms, ncs, apm, anc, index.affinities, k = k, fast = FALSE,
+>> ? ? nomm = FALSE)
+>>
+>> Note how the default value for argument 'k' is k. ?Looks like a
+>> mistake to me. ?Most likely it is not a serious one.
+>>
+>>> sessionInfo()
+>>
+>> R version 2.12.0 alpha (2010-09-27 r53048)
+>> Platform: x86_64-pc-mingw32/x64 (64-bit)
+>>
+>> locale:
+>> [1] LC_COLLATE=English_United States.1252
+>> [2] LC_CTYPE=English_United States.1252
+>> [3] LC_MONETARY=English_United States.1252
+>> [4] LC_NUMERIC=C
+>> [5] LC_TIME=English_United States.1252
+>>
+>> attached base packages:
+>> [1] stats ? ? graphics ?grDevices utils ? ? datasets ?methods ? base
+>>
+>> other attached packages:
+>> [1] gcrma_2.21.1 ?affy_1.27.2 ? Biobase_2.9.1
+>>
+>> loaded via a namespace (and not attached):
+>> [1] affyio_1.17.4 ? ? ? ? Biostrings_2.17.47 ? ?IRanges_1.7.34
+>> [4] preprocessCore_1.11.0 splines_2.12.0 ? ? ? ?tools_2.12.0
+>>
+>> /Henrik
+>
+>
+> --
+> ------------------------------------
+> Zhijin (Jean) Wu
+> Assistant Professor of Biostatistics
+> Brown University, Box G-S121
+> Providence, RI ?02912
+>
+> Tel: 401 863 1230
+> Fax: 401 863 9182
+> http://www.stat.brown.edu/zwu
+>
+>
+
+

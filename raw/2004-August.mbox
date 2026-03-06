@@ -1,0 +1,167 @@
+From jgentry at jimmy.harvard.edu  Fri Aug  6 20:10:03 2004
+From: jgentry at jimmy.harvard.edu (Jeff Gentry)
+Date: Fri Aug  6 20:10:07 2004
+Subject: [Bioc-devel] Packages and R-devel
+Message-ID: <Pine.SOL.4.20.0408061356260.5644-100000@jaws.dfci.harvard.edu>
+
+Hi there ...
+
+This is really for the package maintainers on this list (which I believe
+might actually be 'everyone on this list').  Just a reminder that while
+our release is still probably about 2.5 months away, that people should
+really start thinking about making sure that their packages work against
+R-devel.  Putting in some time now to get your packages up to date with
+the current R-devel will save a lot of potential headaches down the road
+later.
+
+As a reminder, the 'rsync' method of obtaining R doesn't work
+anymore.  You'll either need to download the tarball or use a Subversion
+client.  If doing the latter, once you get the client setup, you need to
+do:
+svn co https://svn.r-project.org/R/trunk <target>
+
+After that is finished, you should be able to configure/make as usual
+(although if you're using a FreeBSD machine there's a problem with the
+Makefile.in in methods, I don't believe it is fixed yet, so if you run
+into this just let me know and I can help you out).
+
+After that, to keep up to date, use 'svn up' from inside your R directory.
+
+People who are not in biocore who have contributed packages, as always you
+can forward me updates of your packages.
+
+I'd also like to point people to the 'codetools' package (at
+http://www.stat.uiowa.edu/~luke/R/codetools/), which can be used to help
+identify programming errors in your packages.
+
+Thanks
+-J
+
+From rossini at blindglobe.net  Sat Aug  7 01:25:38 2004
+From: rossini at blindglobe.net (A.J. Rossini)
+Date: Sat Aug  7 01:26:17 2004
+Subject: [Bioc-devel] Packages and R-devel
+In-Reply-To: <Pine.SOL.4.20.0408061356260.5644-100000@jaws.dfci.harvard.edu>
+	(Jeff Gentry's message of "Fri, 6 Aug 2004 14:10:03 -0400 (EDT)")
+References: <Pine.SOL.4.20.0408061356260.5644-100000@jaws.dfci.harvard.edu>
+Message-ID: <85k6wbkfwt.fsf@servant.blindglobe.net>
+
+
+One clarification; with respect to subversion, 
+
+     svn co https://svn.r-project.org/R/trunk rdevel 
+
+will explicitly D/L the R sources into the rdevel directory.  The use
+of "svn update" from within that directory will update, accordingly.
+
+
+
+
+Jeff Gentry <jgentry@jimmy.harvard.edu> writes:
+
+> Hi there ...
+>
+> This is really for the package maintainers on this list (which I believe
+> might actually be 'everyone on this list').  Just a reminder that while
+> our release is still probably about 2.5 months away, that people should
+> really start thinking about making sure that their packages work against
+> R-devel.  Putting in some time now to get your packages up to date with
+> the current R-devel will save a lot of potential headaches down the road
+> later.
+>
+> As a reminder, the 'rsync' method of obtaining R doesn't work
+> anymore.  You'll either need to download the tarball or use a Subversion
+> client.  If doing the latter, once you get the client setup, you need to
+> do:
+> svn co https://svn.r-project.org/R/trunk <target>
+>
+> After that is finished, you should be able to configure/make as usual
+> (although if you're using a FreeBSD machine there's a problem with the
+> Makefile.in in methods, I don't believe it is fixed yet, so if you run
+> into this just let me know and I can help you out).
+>
+> After that, to keep up to date, use 'svn up' from inside your R directory.
+>
+> People who are not in biocore who have contributed packages, as always you
+> can forward me updates of your packages.
+>
+> I'd also like to point people to the 'codetools' package (at
+> http://www.stat.uiowa.edu/~luke/R/codetools/), which can be used to help
+> identify programming errors in your packages.
+>
+> Thanks
+> -J
+>
+> _______________________________________________
+> Bioc-devel@stat.math.ethz.ch mailing list
+> https://www.stat.math.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+-- 
+Anthony Rossini			    Research Associate Professor
+rossini@u.washington.edu            http://www.analytics.washington.edu/ 
+Biomedical and Health Informatics   University of Washington
+Biostatistics, SCHARP/HVTN          Fred Hutchinson Cancer Research Center
+UW (Tu/Th/F): 206-616-7630 FAX=206-543-3461 | Voicemail is unreliable
+FHCRC  (M/W): 206-667-7025 FAX=206-667-4812 | use Email
+
+CONFIDENTIALITY NOTICE: This e-mail message and any attachme...{{dropped}}
+
+From jgentry at jimmy.harvard.edu  Tue Aug 31 20:47:55 2004
+From: jgentry at jimmy.harvard.edu (Jeff Gentry)
+Date: Tue Aug 31 20:47:24 2004
+Subject: [Bioc-devel] Package dependencies, checking, others
+Message-ID: <Pine.SOL.4.20.0408311431330.3366-100000@santiam.dfci.harvard.edu>
+
+Hi all ...
+
+For all of the BioC package maintainers (biocore & contributed
+authors), please note it probably would be a good idea to start testing
+your packages against relatively recent version of R-devel, as quite a bit
+has changed in recent weeks. 
+
+ One thing in particular is that now you'll find that packages listed
+under the "Depends:" field will be autoloaded - this has a variety of side
+effects:
+  - Packages which are dependencies now no longer need to be loaded
+elsewhere (First.lib, install.R, R_PROFILE.R, etc).
+  - Packages which are listed as dependencies but aren't really are still
+being loaded.  While "lazy loading" is around and the effect here is
+lessened, it still makes it a bad idea to be putting in dependencies which
+aren't really dependencies.  Now would be a good time to determine if
+things listed under "Depends" are actually "Suggests" (which are not
+autoloaded).  Packages which are used only in examples, vignettes, or
+loaded only for particular functions (ie the package does not need to be
+attached for basic functionality of your package) should be listed under
+"Suggests" instead of "Depends".  More information is available in the
+R-extensions guide in section 1.1.1.
+  - Not really a concern to others, but due to the way our build system
+works, it runs headless (no display).  If a package depends on 'tcltk' in
+some manner (either directly or via widgetTools/tkWidgets), this will
+cause the package to not build properly.  Now, AFAIK every package that
+does this already checked 'if (interactive())' before loading the package,
+as this was always a problem, but now that the dependencies get
+auto-loaded, that check no longer works.  All instances of using packages
+which need a DISPLAY (tcltk, RGtk, etc) should be put in Suggests and
+wrapped w/ "if (interactive())" in your code.
+
+Another thing I'd once again like to point out is the daily package
+checking page (which up until today hadn't been updated for a while, but I
+believe all of the problems have been ironed out now):
+http://www.bioconductor.org/checkResults/checkResults.html
+
+A lot of packages are broken under R-devel, which sparked my original
+comment that people should start thinking along those lines - the more
+work done now, the less that has to be done in a few weeks when we start
+to move towards release (remember, packages which don't pass check are not
+included in the release).  I'm going to be increasingly annoying toward
+maintainers with failing packages over the next month or so - if you'd
+like to avoid that :), please try to get things working - let me know if
+you can't - and either commit your fixes (for biocore) or send them to me
+(for contributed maintainers).
+
+As always, let me know if you have any issues, problems, etc.
+
+Thanks
+-J
+

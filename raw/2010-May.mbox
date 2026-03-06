@@ -1,0 +1,3294 @@
+From robert.castelo at upf.edu  Mon May  3 12:35:00 2010
+From: robert.castelo at upf.edu (Robert Castelo)
+Date: Mon, 03 May 2010 12:35:00 +0200
+Subject: [Bioc-devel] Committing changes to the release branch
+In-Reply-To: <4BD9B3FD.6060401@fhcrc.org>
+References: <4BD945AC.7090005@cam.ac.uk>
+	<m2m52f663c41004290146sbe098ed7r844fc9c3af9e6ff2@mail.gmail.com>
+	<4BD94992.8000703@ipb-halle.de>
+	<n2we780c0971004290634vb31fbbfdqe7a423f796ede7a3@mail.gmail.com>
+	<4BD98FC1.1040909@fhcrc.org>  <4BD9B3FD.6060401@fhcrc.org>
+Message-ID: <1272882900.23823.46.camel@llull.imim.es>
+
+hi Patrick,
+
+i was trying this morning also to update the main help page of my
+package at the release branch and got this error:
+
+
+svn: Commit failed (details follow):
+svn: CHECKOUT of '/bioconductor/!
+svn/ver/46404/branches/RELEASE_2_6/madman/Rpacks/qpgraph/DESCRIPTION':
+403 Forbidden (https://hedgehog.fhcrc.org)
+
+the preceeding checkout command was:
+
+svn co
+https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_2_6/madman/Rpacks/qpgraph
+
+after which i modified the main help page of the package, the
+DESCRIPTION and the NEWS file and then i tried the checkin.
+
+i'm sorry if i missed anything from the previous discussion but i
+understood that i should be able to checkin change in the release :-?
+
+cheers,
+robert.
+
+On Thu, 2010-04-29 at 09:29 -0700, Patrick Aboyoun wrote:
+> I was looking into this issue and found it was a typo that was 
+> propagated throughout the svn permissions file. Please try committing 
+> your changes to the BioC 2.6 branch again. Sorry for the inconvenience.
+> 
+> Cheers,
+> Patrick
+> 
+> 
+> On 4/29/10 6:55 AM, Seth Falcon wrote:
+> > Hi,
+> >
+> > First, we will investigate the svn permission issues this morning and
+> > things going again.
+> >
+> > On 4/29/10 6:34 AM, Kasper Daniel Hansen wrote:
+> >    
+> >> At this point I would like to highlight the final step on the Bioc
+> >> HOWTO for updating the release branch:
+> >>
+> >> "Send a mail to the main bioconductor email list to announce the new version."
+> >>
+> >> It seems almost no-one - including the Biocore team - follows this.
+> >> Should this requirement be removed (I don't think so personally, but
+> >> since it is not adhered to, there is not much point in having it)?
+> >>      
+> > This doesn't strike me as a very fair assessment.  In many cases,
+> > changes are initiated due to discussion on the list and these threads
+> > are often resolved with a "fixed in release and devel available in
+> > 36hrs" sort of message.
+> >
+> > In any case, sending an email to the Bioconductor list to announce
+> > changes to release packages seems like a useful idea.  I would encourage
+> > folks to follow it.
+> >
+> > + seth
+> >
+> > _______________________________________________
+> > Bioc-devel at stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From mtmorgan at fhcrc.org  Mon May  3 15:33:04 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 03 May 2010 06:33:04 -0700
+Subject: [Bioc-devel] ShortRead error
+In-Reply-To: <C7FDD0B2.140CE%arnaud.droit@ircm.qc.ca>
+References: <C7FDD0B2.140CE%arnaud.droit@ircm.qc.ca>
+Message-ID: <4BDED090.7050807@fhcrc.org>
+
+On 04/28/2010 08:46 AM, Droit Arnaud wrote:
+> Hi,
+> We find the problems.
+> I just add
+> #include <errno.h> in read_maq_map.cc  and readBfaToc.cc
+
+Thanks Arnaud; this was caused by a recent change (r51839-51840) to the
+development version of R, where R_ext/R.h, R_ext/Rinternals.h no longer
+include errno.h.
+
+Martin
+
+> 
+> Thanks
+> 
+> Arnaud.
+> 
+> 
+> On 10-04-28 11:39 AM, "Droit Arnaud" <Arnaud.Droit at ircm.qc.ca> wrote:
+> 
+> Hi,
+> 
+> I installed the last R beta  version 2.12.
+> When, I try to install the ShortRead package (1.7.0).
+> I have the following error message :
+> 
+> g++ -arch x86_64 -I/Library/Frameworks/R.framework/Resources/include  -I/usr/local/include -I"/Library/Frameworks/R.framework/Resources/library/IRanges/include" -I"/Library/Frameworks/R.framework/Resources/library/Biostrings/include"  -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DSIZEOF_UNSIGNED_LONG=8 -DHAVE_LIBZ=1 -fPIC  -g -O2 -c readBfaToc.cc -o readBfaToc.o
+> readBfaToc.cc: In function 'SEXPREC* readBfaToc(SEXPREC*)':
+> readBfaToc.cc:28: error: 'errno' was not declared in this scope
+> make: *** [readBfaToc.o] Error 1
+> ERROR: compilation failed for package 'ShortRead'
+> * removing '/Library/Frameworks/R.framework/Resources/library/ShortRead'
+> 
+> Anyone have any idea about the problems ?
+> 
+> Thanks
+> 
+> Arnaud.
+> 
+> 
+>> sessionInfo()
+> R version 2.12.0 Under development (unstable) (2010-04-28 r51857)
+> x86_64-apple-darwin10.2.0
+> 
+> locale:
+> [1] C
+> 
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From Julie.Zhu at umassmed.edu  Mon May  3 16:03:41 2010
+From: Julie.Zhu at umassmed.edu (Zhu, Julie)
+Date: Mon, 3 May 2010 10:03:41 -0400
+Subject: [Bioc-devel] Bioconductor package not found with Google search
+	result link
+Message-ID: <C8044FFD.9588%julie.zhu@umassmed.edu>
+
+Hi,
+
+When I search ChIPpeakAnno using google web site, the first hit is the
+following URL. But when I click on the URL, I got the error "The requested
+URL was not found on this server". I am wondering if this is because the
+server is temporary down or the site is permanently removed.
+ 
+http://www.bioconductor.org/packages/bioc/html/ChIPpeakAnno.html
+
+Thanks so much for your help!
+
+Best regards,
+
+Julie
+
+*******************************************
+Lihua Julie Zhu, Ph.D
+Research Associate Professor
+Program in Gene Function and Expression
+Program in Molecular Medicine
+University of Massachusetts Medical School
+364 Plantation Street, Room 613
+Worcester, MA 01605
+508-856-5256
+http://www.umassmed.edu/pgfe/faculty/zhu.cfm
+
+
+From jmacdon at med.umich.edu  Mon May  3 17:09:19 2010
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Mon, 03 May 2010 11:09:19 -0400
+Subject: [Bioc-devel] Bioconductor package not found with Google search
+ result link
+In-Reply-To: <C8044FFD.9588%julie.zhu@umassmed.edu>
+References: <C8044FFD.9588%julie.zhu@umassmed.edu>
+Message-ID: <4BDEE71F.3000905@med.umich.edu>
+
+Hi Julie,
+
+Zhu, Julie wrote:
+> Hi,
+> 
+> When I search ChIPpeakAnno using google web site, the first hit is the
+> following URL. But when I click on the URL, I got the error "The requested
+> URL was not found on this server". I am wondering if this is because the
+> server is temporary down or the site is permanently removed.
+
+It appears Google doesn't have the current index of the Bioc website. 
+The URI you want is
+
+http://www.bioconductor.org/packages/2.6/bioc/html/ChIPpeakAnno.html
+
+Best,
+
+Jim
+
+
+>  
+> http://www.bioconductor.org/packages/bioc/html/ChIPpeakAnno.html
+> 
+> Thanks so much for your help!
+> 
+> Best regards,
+> 
+> Julie
+> 
+> *******************************************
+> Lihua Julie Zhu, Ph.D
+> Research Associate Professor
+> Program in Gene Function and Expression
+> Program in Molecular Medicine
+> University of Massachusetts Medical School
+> 364 Plantation Street, Room 613
+> Worcester, MA 01605
+> 508-856-5256
+> http://www.umassmed.edu/pgfe/faculty/zhu.cfm
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Douglas Lab
+University of Michigan
+Department of Human Genetics
+5912 Buhl
+1241 E. Catherine St.
+Ann Arbor MI 48109-5618
+734-615-7826
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues 
+
+
+From seandavi at gmail.com  Mon May  3 17:52:22 2010
+From: seandavi at gmail.com (Sean Davis)
+Date: Mon, 3 May 2010 11:52:22 -0400
+Subject: [Bioc-devel] Bioconductor package not found with Google search
+	result link
+In-Reply-To: <4BDEE71F.3000905@med.umich.edu>
+References: <C8044FFD.9588%julie.zhu@umassmed.edu>
+	<4BDEE71F.3000905@med.umich.edu>
+Message-ID: <m2s264855a01005030852j9434979fze43a280c711d24b3@mail.gmail.com>
+
+On Mon, May 3, 2010 at 11:09 AM, James W. MacDonald
+<jmacdon at med.umich.edu> wrote:
+> Hi Julie,
+>
+> Zhu, Julie wrote:
+>>
+>> Hi,
+>>
+>> When I search ChIPpeakAnno using google web site, the first hit is the
+>> following URL. But when I click on the URL, I got the error "The requested
+>> URL was not found on this server". I am wondering if this is because the
+>> server is temporary down or the site is permanently removed.
+>
+> It appears Google doesn't have the current index of the Bioc website. The
+> URI you want is
+>
+> http://www.bioconductor.org/packages/2.6/bioc/html/ChIPpeakAnno.html
+
+And the following URL will get the most recent release, whatever that may be.
+
+http://www.bioconductor.org/packages/release/bioc/html/ChIPpeakAnno.html
+
+>
+> Best,
+>
+> Jim
+>
+>
+>> ?http://www.bioconductor.org/packages/bioc/html/ChIPpeakAnno.html
+
+It will be interesting to hear from the Seattle folks, as I'm not sure
+that this was ever a valid URL?
+
+Sean
+
+
+From sfalcon at fhcrc.org  Mon May  3 19:10:24 2010
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 03 May 2010 10:10:24 -0700
+Subject: [Bioc-devel] Bioconductor package not found with Google search
+ result link
+In-Reply-To: <m2s264855a01005030852j9434979fze43a280c711d24b3@mail.gmail.com>
+References: <C8044FFD.9588%julie.zhu@umassmed.edu>	<4BDEE71F.3000905@med.umich.edu>
+	<m2s264855a01005030852j9434979fze43a280c711d24b3@mail.gmail.com>
+Message-ID: <4BDF0380.4060306@fhcrc.org>
+
+On 5/3/10 8:52 AM, Sean Davis wrote:
+> On Mon, May 3, 2010 at 11:09 AM, James W. MacDonald
+> <jmacdon at med.umich.edu> wrote:
+>> Hi Julie,
+>>
+>> Zhu, Julie wrote:
+>>>
+>>> Hi,
+>>>
+>>> When I search ChIPpeakAnno using google web site, the first hit is the
+>>> following URL. But when I click on the URL, I got the error "The requested
+>>> URL was not found on this server". I am wondering if this is because the
+>>> server is temporary down or the site is permanently removed.
+>>
+>> It appears Google doesn't have the current index of the Bioc website. The
+>> URI you want is
+>>
+>> http://www.bioconductor.org/packages/2.6/bioc/html/ChIPpeakAnno.html
+> 
+> And the following URL will get the most recent release, whatever that may be.
+> 
+> http://www.bioconductor.org/packages/release/bioc/html/ChIPpeakAnno.html
+> 
+>>
+>> Best,
+>>
+>> Jim
+>>
+>>
+>>>  http://www.bioconductor.org/packages/bioc/html/ChIPpeakAnno.html
+> 
+> It will be interesting to hear from the Seattle folks, as I'm not sure
+> that this was ever a valid URL?
+
+I believe this is related to some cleanup of some quite old repository
+organization that was done as part of the release.  We will have some
+details and possibly a fix later today.
+
+
+From paboyoun at fhcrc.org  Mon May  3 20:59:22 2010
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Mon, 03 May 2010 11:59:22 -0700
+Subject: [Bioc-devel] Committing changes to the release branch
+In-Reply-To: <1272882900.23823.46.camel@llull.imim.es>
+References: <4BD945AC.7090005@cam.ac.uk>	
+	<m2m52f663c41004290146sbe098ed7r844fc9c3af9e6ff2@mail.gmail.com>	
+	<4BD94992.8000703@ipb-halle.de>	
+	<n2we780c0971004290634vb31fbbfdqe7a423f796ede7a3@mail.gmail.com>	
+	<4BD98FC1.1040909@fhcrc.org> <4BD9B3FD.6060401@fhcrc.org>
+	<1272882900.23823.46.camel@llull.imim.es>
+Message-ID: <4BDF1D0A.2010607@fhcrc.org>
+
+Robert,
+I double-checked the svn authorization file and the BioC 2.6 qpgraph 
+properties are properly specified and you are granted read/write 
+permission. Could you perform the checkout using --username and 
+--password with your username and password to ensure you are using the 
+right account information? Other developers have been able to check into 
+the BioC 2.6 branch, so this doesn't appear to be a global issue anymore.
+
+
+Patrick
+
+
+On 5/3/10 3:35 AM, Robert Castelo wrote:
+> hi Patrick,
+>
+> i was trying this morning also to update the main help page of my
+> package at the release branch and got this error:
+>
+>
+> svn: Commit failed (details follow):
+> svn: CHECKOUT of '/bioconductor/!
+> svn/ver/46404/branches/RELEASE_2_6/madman/Rpacks/qpgraph/DESCRIPTION':
+> 403 Forbidden  (https://hedgehog.fhcrc.org)
+>
+> the preceeding checkout command was:
+>
+> svn co
+> https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_2_6/madman/Rpacks/qpgraph
+>
+> after which i modified the main help page of the package, the
+> DESCRIPTION and the NEWS file and then i tried the checkin.
+>
+> i'm sorry if i missed anything from the previous discussion but i
+> understood that i should be able to checkin change in the release :-?
+>
+> cheers,
+> robert.
+>
+> On Thu, 2010-04-29 at 09:29 -0700, Patrick Aboyoun wrote:
+>    
+>> I was looking into this issue and found it was a typo that was
+>> propagated throughout the svn permissions file. Please try committing
+>> your changes to the BioC 2.6 branch again. Sorry for the inconvenience.
+>>
+>> Cheers,
+>> Patrick
+>>
+>>
+>> On 4/29/10 6:55 AM, Seth Falcon wrote:
+>>      
+>>> Hi,
+>>>
+>>> First, we will investigate the svn permission issues this morning and
+>>> things going again.
+>>>
+>>> On 4/29/10 6:34 AM, Kasper Daniel Hansen wrote:
+>>>
+>>>        
+>>>> At this point I would like to highlight the final step on the Bioc
+>>>> HOWTO for updating the release branch:
+>>>>
+>>>> "Send a mail to the main bioconductor email list to announce the new version."
+>>>>
+>>>> It seems almost no-one - including the Biocore team - follows this.
+>>>> Should this requirement be removed (I don't think so personally, but
+>>>> since it is not adhered to, there is not much point in having it)?
+>>>>
+>>>>          
+>>> This doesn't strike me as a very fair assessment.  In many cases,
+>>> changes are initiated due to discussion on the list and these threads
+>>> are often resolved with a "fixed in release and devel available in
+>>> 36hrs" sort of message.
+>>>
+>>> In any case, sending an email to the Bioconductor list to announce
+>>> changes to release packages seems like a useful idea.  I would encourage
+>>> folks to follow it.
+>>>
+>>> + seth
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>>        
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>      
+>
+
+
+From robert.castelo at upf.edu  Mon May  3 22:19:03 2010
+From: robert.castelo at upf.edu (Robert Castelo)
+Date: Mon, 03 May 2010 22:19:03 +0200
+Subject: [Bioc-devel] Committing changes to the release branch
+In-Reply-To: <4BDF1D0A.2010607@fhcrc.org>
+References: <4BD945AC.7090005@cam.ac.uk>	
+	<m2m52f663c41004290146sbe098ed7r844fc9c3af9e6ff2@mail.gmail.com>	
+	<4BD94992.8000703@ipb-halle.de>	
+	<n2we780c0971004290634vb31fbbfdqe7a423f796ede7a3@mail.gmail.com>	
+	<4BD98FC1.1040909@fhcrc.org> <4BD9B3FD.6060401@fhcrc.org>
+	<1272882900.23823.46.camel@llull.imim.es>
+	<4BDF1D0A.2010607@fhcrc.org>
+Message-ID: <4BDF2FB7.6040300@upf.edu>
+
+Patrick, i tried now with username and password and it works smoothly,
+i must have been using the readonly user and password by default. sorry
+for bothering about this issue again, and thanks for your help!
+
+robert.
+
+On 5/3/10 8:59 PM, Patrick Aboyoun wrote:
+> Robert,
+> I double-checked the svn authorization file and the BioC 2.6 qpgraph 
+> properties are properly specified and you are granted read/write 
+> permission. Could you perform the checkout using --username and 
+> --password with your username and password to ensure you are using the 
+> right account information? Other developers have been able to check 
+> into the BioC 2.6 branch, so this doesn't appear to be a global issue 
+> anymore.
+>
+>
+> Patrick
+>
+>
+> On 5/3/10 3:35 AM, Robert Castelo wrote:
+>> hi Patrick,
+>>
+>> i was trying this morning also to update the main help page of my
+>> package at the release branch and got this error:
+>>
+>>
+>> svn: Commit failed (details follow):
+>> svn: CHECKOUT of '/bioconductor/!
+>> svn/ver/46404/branches/RELEASE_2_6/madman/Rpacks/qpgraph/DESCRIPTION':
+>> 403 Forbidden  (https://hedgehog.fhcrc.org)
+>>
+>> the preceeding checkout command was:
+>>
+>> svn co
+>> https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_2_6/madman/Rpacks/qpgraph 
+>>
+>>
+>> after which i modified the main help page of the package, the
+>> DESCRIPTION and the NEWS file and then i tried the checkin.
+>>
+>> i'm sorry if i missed anything from the previous discussion but i
+>> understood that i should be able to checkin change in the release :-?
+>>
+>> cheers,
+>> robert.
+>>
+>> On Thu, 2010-04-29 at 09:29 -0700, Patrick Aboyoun wrote:
+>>> I was looking into this issue and found it was a typo that was
+>>> propagated throughout the svn permissions file. Please try committing
+>>> your changes to the BioC 2.6 branch again. Sorry for the inconvenience.
+>>>
+>>> Cheers,
+>>> Patrick
+>>>
+>>>
+>>> On 4/29/10 6:55 AM, Seth Falcon wrote:
+>>>> Hi,
+>>>>
+>>>> First, we will investigate the svn permission issues this morning and
+>>>> things going again.
+>>>>
+>>>> On 4/29/10 6:34 AM, Kasper Daniel Hansen wrote:
+>>>>
+>>>>> At this point I would like to highlight the final step on the Bioc
+>>>>> HOWTO for updating the release branch:
+>>>>>
+>>>>> "Send a mail to the main bioconductor email list to announce the 
+>>>>> new version."
+>>>>>
+>>>>> It seems almost no-one - including the Biocore team - follows this.
+>>>>> Should this requirement be removed (I don't think so personally, but
+>>>>> since it is not adhered to, there is not much point in having it)?
+>>>>>
+>>>> This doesn't strike me as a very fair assessment.  In many cases,
+>>>> changes are initiated due to discussion on the list and these threads
+>>>> are often resolved with a "fixed in release and devel available in
+>>>> 36hrs" sort of message.
+>>>>
+>>>> In any case, sending an email to the Bioconductor list to announce
+>>>> changes to release packages seems like a useful idea.  I would 
+>>>> encourage
+>>>> folks to follow it.
+>>>>
+>>>> + seth
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>
+
+
+From sfalcon at fhcrc.org  Mon May  3 22:52:10 2010
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 03 May 2010 13:52:10 -0700
+Subject: [Bioc-devel] Bioconductor package not found with Google search
+ result link
+In-Reply-To: <4BDF0380.4060306@fhcrc.org>
+References: <C8044FFD.9588%julie.zhu@umassmed.edu>	<4BDEE71F.3000905@med.umich.edu>	<m2s264855a01005030852j9434979fze43a280c711d24b3@mail.gmail.com>
+	<4BDF0380.4060306@fhcrc.org>
+Message-ID: <4BDF377A.3020307@fhcrc.org>
+
+Hi again,
+
+On 5/3/10 10:10 AM, Seth Falcon wrote:
+> On 5/3/10 8:52 AM, Sean Davis wrote:
+>> On Mon, May 3, 2010 at 11:09 AM, James W. MacDonald
+>> <jmacdon at med.umich.edu> wrote:
+>>> It appears Google doesn't have the current index of the Bioc website. The
+>>> URI you want is
+>>>
+>>> http://www.bioconductor.org/packages/2.6/bioc/html/ChIPpeakAnno.html
+>>
+>> And the following URL will get the most recent release, whatever that may be.
+>>
+>> http://www.bioconductor.org/packages/release/bioc/html/ChIPpeakAnno.html
+
+Yes, both of the above URLs work and are the intended URLs for a
+package.  As you mention the /packages/release/... URLs will always
+point to the current release which will change over time.  Such URLs
+will go 404 if a given package drops out of the Bioconductor releases.
+
+So the /packages/release/... URLs have the convenience of always being
+current, but don't have the permanence that one might want when, e.g.,
+referencing software used for a particular analysis.
+
+>>>>  http://www.bioconductor.org/packages/bioc/html/ChIPpeakAnno.html
+>>
+>> It will be interesting to hear from the Seattle folks, as I'm not sure
+>> that this was ever a valid URL?
+
+Well it somewhat depends on what "valid" means ;-)
+
+This URL did resolve to the current release, but it represents a very
+out-dated repository layout that existed before Bioconductor had
+separate annotation and experiment data package repositories.
+
+We have added a "moved permanently" redirect so the above link (and
+those similar to it) resolve again.
+
+That path is also now excluded from indexing via robots.txt (but this
+can take awhile to be updated).  We have added the task of generating a
+proper site map for bioconductor.org to our TODO list which should also
+help with these sort of issues.
+
+
++ seth
+
+
+From wang.likun at gmail.com  Tue May  4 14:27:33 2010
+From: wang.likun at gmail.com (Likun Wang)
+Date: Tue, 4 May 2010 20:27:33 +0800
+Subject: [Bioc-devel] Bioc-devel Digest, Vol 74, Issue 2
+In-Reply-To: <mailman.21.1272967207.30902.bioc-devel@stat.math.ethz.ch>
+References: <mailman.21.1272967207.30902.bioc-devel@stat.math.ethz.ch>
+Message-ID: <l2u81ff58ed1005040527g19f6653dy8c0a349a965b30c6@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100504/85a83fa7/attachment.pl>
+
+From mtmorgan at fhcrc.org  Tue May  4 14:36:53 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Tue, 04 May 2010 05:36:53 -0700
+Subject: [Bioc-devel] Bioc-devel Digest, Vol 74, Issue 2
+In-Reply-To: <l2u81ff58ed1005040527g19f6653dy8c0a349a965b30c6@mail.gmail.com>
+References: <mailman.21.1272967207.30902.bioc-devel@stat.math.ethz.ch>
+	<l2u81ff58ed1005040527g19f6653dy8c0a349a965b30c6@mail.gmail.com>
+Message-ID: <4BE014E5.20201@fhcrc.org>
+
+On 05/04/2010 05:27 AM, Likun Wang wrote:
+> Hi all,
+> 
+> I have checked our package into the BioC 2.6 branch successfully.
+> But the DEGseq_1.2.1.zip for Windows 32-bit binary has not been generated
+> till
+
+I think this  is a build system issue; the reports are at
+
+  http://bioconductor.org/checkResults/2.6/bioc-LATEST/
+
+but the date at the top of the page indicates that it was last generated
+on April 30th, from the April 29th svn snapshot. We'll look in to this;
+thanks for the report.
+
+Martin
+
+> ----------------------------------------
+> Package Downloads
+> Package source DEGseq_1.2.1.tar.gz
+> Windows 32-bit binary DEGseq_1.2.0.zip
+> Windows 64-bit binary DEGseq_1.2.1.zip
+> MacOS X 10.5 (Leopard) binary DEGseq_1.2.1.tgz
+> ------------------------------------------
+> 
+> I think the package can not passed the CHECK test on liverpool.
+> And how can I find the check results for DEGseq_1.2.1?
+> Now the results are for DEGseq_1.2.0.
+> 
+> Best,
+> Likun
+> 
+> 	[[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From whuber at embl.de  Tue May 11 12:26:47 2010
+From: whuber at embl.de (Wolfgang Huber)
+Date: Tue, 11 May 2010 12:26:47 +0200
+Subject: [Bioc-devel] Bioconductor Developer Meeting - Heidelberg 17./18.
+	Nov 2010
+Message-ID: <4BE930E7.3060600@embl.de>
+
+Bioconductor developers and those would like to become,
+
+mark your calendars:
+
+a two-day developer workshop will take place on 17./18. Nov at EMBL in 
+Heidelberg, Germany.
+
+The workshop will cover current developments in the project, especially 
+those related to "next gen" sequencing data analysis and statistics, 
+genome annotation data structures and visualisation, genomic variation, 
+hierarchical and distributed storage models. There will also be 
+discussion of other fields, such as imaging-based data.
+
+A formal call & registration information will be announced in early summer.
+
+The timing of the workshop allows participants to also attend the EMBO 
+Conference "From Functional Genomics to Systems Biology", which we 
+expect will offer a broad and stimulating cross-section of biology:
+http://www.embl.de/training/courses_conferences/conference/2010/OMX10-01/participants
+
+Wolfgang Huber
+EMBL
+http://www.embl.de/research/units/genome_biology/huber
+
+
+From jose.muino at wur.nl  Wed May 12 09:36:42 2010
+From: jose.muino at wur.nl (Muino, Jose)
+Date: Wed, 12 May 2010 09:36:42 +0200
+Subject: [Bioc-devel] Problem installing packages using biocLite
+In-Reply-To: <mailman.23.1272535208.4095.bioc-devel@stat.math.ethz.ch>
+References: <mailman.23.1272535208.4095.bioc-devel@stat.math.ethz.ch>
+Message-ID: <1D200DE1A9A1614D99F25CF7DD78DE3501B7CE93@scomp0040.wurnet.nl>
+
+Hi,
+
+I was trying to install the package CSAR from biocLite using
+
+source("http://bioconductor.org/biocLite.R")
+biocLite("CSAR")
+
+But it doesn't work, I have a message saying that "Warning message:
+package 'CSAR' is not available "
+
+I also was trying to install PICS with biocLite, and I have the same
+problem.
+
+Perhaps, is this a common problem for packages submitted to the new
+bioconductor version?
+
+
+Thanks,
+Jose
+
+
+From Joern.Toedling at curie.fr  Wed May 12 10:35:04 2010
+From: Joern.Toedling at curie.fr (Joern Toedling)
+Date: Wed, 12 May 2010 10:35:04 +0200
+Subject: [Bioc-devel] Problem installing packages using biocLite
+In-Reply-To: <1D200DE1A9A1614D99F25CF7DD78DE3501B7CE93@scomp0040.wurnet.nl>
+References: <mailman.23.1272535208.4095.bioc-devel@stat.math.ethz.ch>
+	<1D200DE1A9A1614D99F25CF7DD78DE3501B7CE93@scomp0040.wurnet.nl>
+Message-ID: <20100512082802.M79376@curie.fr>
+
+Hi Jose,
+
+perhaps you are not using the newest version of R (2.11)? biocLite only gets
+the Bioconductor package versions that match the version of R that you are
+calling biocLite from. So if you use an older version of R, you will only get
+older versions of Bioconductor, which may not include certain packages.
+This is also why we always ask for the output of sessionInfo() to be appended
+to questions asked on this list, so please do so next time.
+
+And btw, I think this was rather a question for the normal Bioc list than for
+Bioc-devel.
+
+Regards,
+Joern
+
+
+On Wed, 12 May 2010 09:36:42 +0200, Muino, Jose wrote
+> Hi,
+> 
+> I was trying to install the package CSAR from biocLite using
+> 
+> source("http://bioconductor.org/biocLite.R")
+> biocLite("CSAR")
+> 
+> But it doesn't work, I have a message saying that "Warning message:
+> package 'CSAR' is not available "
+> 
+> I also was trying to install PICS with biocLite, and I have the same
+> problem.
+> 
+> Perhaps, is this a common problem for packages submitted to the new
+> bioconductor version?
+> 
+> Thanks,
+> Jose
+>
+
+
+From jose.muino at wur.nl  Wed May 12 11:32:28 2010
+From: jose.muino at wur.nl (Muino, Jose)
+Date: Wed, 12 May 2010 11:32:28 +0200
+Subject: [Bioc-devel] Problem installing packages using biocLite
+In-Reply-To: <20100512082802.M79376@curie.fr>
+References: <1D200DE1A9A1614D99F25CF7DD78DE3501B7CE93@scomp0040.wurnet.nl>
+	<20100512082802.M79376@curie.fr>
+Message-ID: <1D200DE1A9A1614D99F25CF7DD78DE3501B7CE98@scomp0040.wurnet.nl>
+
+Hi Joern,
+
+Thanks for your answer.
+Indeed, I was using an older version (2.8.1).
+
+I am the author of the CSAR package, and the most common email that I
+get is from users that can not install it using BiocLite (I guess
+because they are also using an old R version). 
+
+Perhaps, will it be possible to include the information that you need
+the last R version to run the last BiocLite version on each package
+website? Exactly, where it is said:
+
+"To install this package, start R and enter:
+    source("http://bioconductor.org/biocLite.R")
+    biocLite("CSAR")
+"
+
+Say something like:
+"To install this package, start R and enter:
+    source("http://bioconductor.org/biocLite.R")
+    biocLite("CSAR")
+If you have any problem with the installation, check if you have the
+last R version
+"
+
+Thanks,
+Jose
+
+Dr. Jose M Muino
+Plant Research International B.V.
+Droevendaalsesteeg 1
+P.O. Box 16, 6700 AA Wageningen, The Netherlands
+Phone: +0317-481122.
+E-mail: jose.muino at wur.nl
+http://www.pri.wur.nl 
+ 
+
+> -----Original Message-----
+> From: Joern Toedling [mailto:Joern.Toedling at curie.fr] 
+> Sent: woensdag 12 mei 2010 10:35
+> To: Muino, Jose; bioc-devel at stat.math.ethz.ch
+> Subject: Re: [Bioc-devel] Problem installing packages using biocLite
+> 
+> Hi Jose,
+> 
+> perhaps you are not using the newest version of R (2.11)? 
+> biocLite only gets the Bioconductor package versions that 
+> match the version of R that you are calling biocLite from. So 
+> if you use an older version of R, you will only get older 
+> versions of Bioconductor, which may not include certain packages.
+> This is also why we always ask for the output of 
+> sessionInfo() to be appended to questions asked on this list, 
+> so please do so next time.
+> 
+> And btw, I think this was rather a question for the normal 
+> Bioc list than for Bioc-devel.
+> 
+> Regards,
+> Joern
+> 
+> 
+> On Wed, 12 May 2010 09:36:42 +0200, Muino, Jose wrote
+> > Hi,
+> > 
+> > I was trying to install the package CSAR from biocLite using
+> > 
+> > source("http://bioconductor.org/biocLite.R")
+> > biocLite("CSAR")
+> > 
+> > But it doesn't work, I have a message saying that "Warning message:
+> > package 'CSAR' is not available "
+> > 
+> > I also was trying to install PICS with biocLite, and I have 
+> the same 
+> > problem.
+> > 
+> > Perhaps, is this a common problem for packages submitted to the new 
+> > bioconductor version?
+> > 
+> > Thanks,
+> > Jose
+> > 
+> 
+> 
+
+
+From mtmorgan at fhcrc.org  Wed May 12 14:43:01 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 12 May 2010 05:43:01 -0700
+Subject: [Bioc-devel] Problem installing packages using biocLite
+In-Reply-To: <1D200DE1A9A1614D99F25CF7DD78DE3501B7CE98@scomp0040.wurnet.nl>
+References: <1D200DE1A9A1614D99F25CF7DD78DE3501B7CE93@scomp0040.wurnet.nl>	<20100512082802.M79376@curie.fr>
+	<1D200DE1A9A1614D99F25CF7DD78DE3501B7CE98@scomp0040.wurnet.nl>
+Message-ID: <4BEAA255.3010203@fhcrc.org>
+
+On 05/12/2010 02:32 AM, Muino, Jose wrote:
+> Hi Joern,
+> 
+> Thanks for your answer.
+> Indeed, I was using an older version (2.8.1).
+> 
+> I am the author of the CSAR package, and the most common email that I
+> get is from users that can not install it using BiocLite (I guess
+> because they are also using an old R version). 
+> 
+> Perhaps, will it be possible to include the information that you need
+> the last R version to run the last BiocLite version on each package
+> website? Exactly, where it is said:
+> 
+> "To install this package, start R and enter:
+>     source("http://bioconductor.org/biocLite.R")
+>     biocLite("CSAR")
+> "
+> 
+> Say something like:
+> "To install this package, start R and enter:
+>     source("http://bioconductor.org/biocLite.R")
+>     biocLite("CSAR")
+> If you have any problem with the installation, check if you have the
+> last R version
+
+Thanks Jose for the suggestion; adding additional information to the
+package 'landing page' is a good idea; probably there will be changes
+during this release cycle, but not immediately (packages can fail to
+install for a variety of reasons).
+
+Martin
+
+> "
+> 
+> Thanks,
+> Jose
+> 
+> Dr. Jose M Muino
+> Plant Research International B.V.
+> Droevendaalsesteeg 1
+> P.O. Box 16, 6700 AA Wageningen, The Netherlands
+> Phone: +0317-481122.
+> E-mail: jose.muino at wur.nl
+> http://www.pri.wur.nl 
+>  
+> 
+>> -----Original Message-----
+>> From: Joern Toedling [mailto:Joern.Toedling at curie.fr] 
+>> Sent: woensdag 12 mei 2010 10:35
+>> To: Muino, Jose; bioc-devel at stat.math.ethz.ch
+>> Subject: Re: [Bioc-devel] Problem installing packages using biocLite
+>>
+>> Hi Jose,
+>>
+>> perhaps you are not using the newest version of R (2.11)? 
+>> biocLite only gets the Bioconductor package versions that 
+>> match the version of R that you are calling biocLite from. So 
+>> if you use an older version of R, you will only get older 
+>> versions of Bioconductor, which may not include certain packages.
+>> This is also why we always ask for the output of 
+>> sessionInfo() to be appended to questions asked on this list, 
+>> so please do so next time.
+>>
+>> And btw, I think this was rather a question for the normal 
+>> Bioc list than for Bioc-devel.
+>>
+>> Regards,
+>> Joern
+>>
+>>
+>> On Wed, 12 May 2010 09:36:42 +0200, Muino, Jose wrote
+>>> Hi,
+>>>
+>>> I was trying to install the package CSAR from biocLite using
+>>>
+>>> source("http://bioconductor.org/biocLite.R")
+>>> biocLite("CSAR")
+>>>
+>>> But it doesn't work, I have a message saying that "Warning message:
+>>> package 'CSAR' is not available "
+>>>
+>>> I also was trying to install PICS with biocLite, and I have 
+>> the same 
+>>> problem.
+>>>
+>>> Perhaps, is this a common problem for packages submitted to the new 
+>>> bioconductor version?
+>>>
+>>> Thanks,
+>>> Jose
+>>>
+>>
+>>
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From zd224 at cam.ac.uk  Wed May 12 15:16:29 2010
+From: zd224 at cam.ac.uk (Dr Z. Du)
+Date: 12 May 2010 14:16:29 +0100
+Subject: [Bioc-devel] Gene Annotation and Gene Ontology
+Message-ID: <Prayer.1.3.2.1005121416290.2237@hermes-2.csi.cam.ac.uk>
+
+Hi,
+
+I finished analysis of the differential expression of genes using Limma 
+package, and got the list of differentialy expressed genes. I tried to make 
+gene annotation (ath1121501db)and Gene ontology (gostats) for these 
+differential expressed genes. But, I failed. Does anybody have any 
+experience about is, and share it with me? I need to say the microarray I 
+used is Affy Arabidopsis ATH1. I will appreciate if you can supply any 
+information.
+
+Regards,
+
+Zhiyou
+
+
+From mailinglist.honeypot at gmail.com  Wed May 12 16:24:26 2010
+From: mailinglist.honeypot at gmail.com (Steve Lianoglou)
+Date: Wed, 12 May 2010 10:24:26 -0400
+Subject: [Bioc-devel] Gene Annotation and Gene Ontology
+In-Reply-To: <Prayer.1.3.2.1005121416290.2237@hermes-2.csi.cam.ac.uk>
+References: <Prayer.1.3.2.1005121416290.2237@hermes-2.csi.cam.ac.uk>
+Message-ID: <AANLkTinfp-Hl6ZHdYMEGAfs_8vECFLFf66MBsvlj_S56@mail.gmail.com>
+
+Hi Zhiyou,
+
+On Wed, May 12, 2010 at 9:16 AM, Dr Z. Du <zd224 at cam.ac.uk> wrote:
+> Hi,
+>
+> I finished analysis of the differential expression of genes using Limma
+> package, and got the list of differentialy expressed genes. I tried to make
+> gene annotation (ath1121501db)and Gene ontology (gostats) for these
+> differential expressed genes. But, I failed. Does anybody have any
+> experience about is, and share it with me? I need to say the microarray I
+> used is Affy Arabidopsis ATH1. I will appreciate if you can supply any
+> information.
+
+This question doesn't really belong on bioc-devel: you should repost
+to the general user/helpl list:
+
+Sign up at: https://stat.ethz.ch/mailman/listinfo/bioconductor
+email: bioconductor at stat.math.ethz.ch
+
+That having been said, it might help to add more information to your
+question. You said that you tried and failed to do GO analysis with
+GOstats, but what did you try to do, exactly? What error messages are
+you getting?
+
+The "GOstatsHyperG" vignette should pretty much take you from start to
+finish w/ what you want to do. In section 2.2: "Gene selection via
+t-test", you are rather doing your gene selection by using limma to
+pick off the differentially expressed genes ...
+
+-steve
+
+-- 
+Steve Lianoglou
+Graduate Student: Computational Systems Biology
+ | Memorial Sloan-Kettering Cancer Center
+ | Weill Medical College of Cornell University
+Contact Info: http://cbio.mskcc.org/~lianos/contact
+
+
+From g-feng at northwestern.edu  Wed May 12 16:26:07 2010
+From: g-feng at northwestern.edu (Gilbert Feng)
+Date: Wed, 12 May 2010 09:26:07 -0500
+Subject: [Bioc-devel] Gene Annotation and Gene Ontology
+In-Reply-To: <Prayer.1.3.2.1005121416290.2237@hermes-2.csi.cam.ac.uk>
+Message-ID: <C81024AF.4123%g-feng@northwestern.edu>
+
+Hi, Zhiyou
+
+We have developed a bioconductor package, GeneAnswers, which also uses
+hypergeometric test to run enrichment test for a group of genes. The
+background algorithm is similar to GoStats/Category, but GeneAnswers can
+provide keywords test and extra graphics representation for analysis.
+
+Let me know if you have any question about it.
+
+Best
+
+
+
+On 5/12/10 8:16 AM, "Dr Z. Du" <zd224 at cam.ac.uk> wrote:
+
+> Hi,
+> 
+> I finished analysis of the differential expression of genes using Limma
+> package, and got the list of differentialy expressed genes. I tried to make
+> gene annotation (ath1121501db)and Gene ontology (gostats) for these
+> differential expressed genes. But, I failed. Does anybody have any
+> experience about is, and share it with me? I need to say the microarray I
+> used is Affy Arabidopsis ATH1. I will appreciate if you can supply any
+> information.
+> 
+> Regards,
+> 
+> Zhiyou
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-----------------------------------------------
+Gang (Gilbert) Feng, PhD
+Biomedical Informatics Center
+Robert H. Lurie Comprehensive Cancer Center
+Northwestern University
+750 N. Lake Shore Drive, 11th Floor(11-175e)
+Chicago, IL  60611
+Phone:312-503-2358
+Email g-feng (at) northwestern.edu
+
+
+From mtmorgan at fhcrc.org  Tue May 18 15:02:14 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Tue, 18 May 2010 06:02:14 -0700
+Subject: [Bioc-devel] BioC 2010 Afternoon Practical Proposals
+Message-ID: <4BF28FD6.4070207@fhcrc.org>
+
+BioC 2010 is July 29 / 30 (developer day July 28). Take this opportunity
+to register today, at
+
+  https://secure.bioconductor.org/BioC2010/
+
+Want to promote your package(s), gain user feedback, and contribute to
+the success of others working in similar research areas? Consider
+contributing a 2 hour afternoon practical
+
+  https://secure.bioconductor.org/BioC2010/lab_submit.php
+
+The deadline for practical submission is May 31. Uncertain whether your
+proposal is appropriate? Feel free to contact me directly for guidance.
+
+See you in Seattle!
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From Julie.Zhu at umassmed.edu  Tue May 18 16:10:20 2010
+From: Julie.Zhu at umassmed.edu (Zhu, Julie)
+Date: Tue, 18 May 2010 10:10:20 -0400
+Subject: [Bioc-devel] svn account information
+In-Reply-To: <4A7C6545.8030603@fhcrc.org>
+Message-ID: <C818180C.98E7%julie.zhu@umassmed.edu>
+
+Hi Nishant,
+
+With the new release, do I have to change the URLs using SVN to update the
+repository for both released and dev version? Thanks so much for your help!
+
+Best regards,
+
+Julie
+
+
+*******************************************
+Lihua Julie Zhu, Ph.D
+Research Associate Professor
+Program in Gene Function and Expression
+Program in Molecular Medicine
+University of Massachusetts Medical School
+364 Plantation Street, Room 613
+Worcester, MA 01605
+508-856-5256
+http://www.umassmed.edu/pgfe/faculty/zhu.cfm
+
+
+
+
+On 8/7/09 1:32 PM, "Nishant Gopalakrishnan" <ngopalak at fhcrc.org> wrote:
+
+> Hi Julie,
+> 
+> 
+> 
+> 
+> You have been given read/write access to the ChIPpeakAnno package:
+> 
+>   URL:
+> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/ChIPpeakAnno
+> 
+> The rest of this email contains the standard information sent to all new
+> Bioconductor official maintainers. Please read it carefully and let me know
+> if you have any question or problem with your svn access.
+> 
+> For more general questions or advice about the development/maintenance of
+> your package, please use the Bioc-devel mailing list (our primary channel
+> for communication between developers and for important announcements like
+> release schedules, build system news, etc...).
+> 
+> Thanks for participating,
+> 
+> Nishant
+> 
+> ==============================================================================
+> 
+> Subversion Quick Start
+> ----------------------
+> 
+> You will need the Subversion client (the 'svn' command) in order to
+> access our Subversion repository.  Typical use:
+> 
+>   o Check out your package with:
+>       svn co
+> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/mypackage/
+>     This will create a working copy of the package source tree on
+>     your local disk.  You can edit the files, add new files (first
+>     create the new file, then put it under revision control with
+>     'svn add <newfile>'), delete files (with 'svn del <file>')
+>     and rename files (with 'svn rename <file>').
+> 
+>   o Once you are done, commit your changes with:
+>       cd top/directory/of/mypackage
+>       svn ci -m 'comment your changes here'
+> 
+>   o Next time you want to work again on the package, don't forget
+>     to 'svn update' first (no need to check out the whole source
+>     tree again):
+>       cd top/directory/of/your/mypackage
+>       svn up
+> 
+> You have global read access to the Bioconductor repository and
+> read/write access to your own package directory.
+> 
+> 
+> More about Subversion
+> ---------------------
+> 
+> - The Subversion command line client is available here:
+>     http://subversion.tigris.org/project_packages.html
+> 
+> - Windows users looking for a GUI interface should look at the
+>   TortoiseSVN project (http://tortoisesvn.tigris.org).
+> 
+> - If you plan to build the Subversion client from source, be sure to
+>   include support for HTTPS by adding "--with-ssl" to the configure
+>   line.
+> 
+> - Read _our_ SVN How To page at
+>     http://wiki.fhcrc.org/bioc/SvnHowTo
+> 
+> 
+> How we build, test and publish the Bioconductor packages
+> --------------------------------------------------------
+> 
+> Please, keep an eye on the build/check daily report for the
+> Bioconductor devel packages (currently BioC 2.5):
+> 
+>   http://bioconductor.org/checkResults/2.5/bioc-LATEST/
+> 
+> A package is made publicly available only if it passes the CHECK
+> test on lamb1 with no error (it can have warnings though). Then the
+> easiest (and recommended) way to install it is with biocLite():
+> 
+>> source("http://bioconductor.org/biocLite.R")
+>> biocLite("mypackage")
+> 
+> However, if your package is already published and you make changes
+> to it, the new version will not replace the old version unless
+> you have bumped z in the version number x.y.z. DON'T FORGET TO
+> BUMP Z! or the last version of your package will not be pushed
+> to the public repository.
+> 
+> 
+> Mailing lists
+> -------------
+> 
+> Let me know or ask on the Bioc-devel mailing list
+> (bioc-devel at stat.math.ethz.ch) if you have any question.
+> Also, when your package will pass the CHECK test for the first time,
+> we strongly encourage you to send a note to Bioc-devel to announce
+> its public avaibility (with a short description) so other people
+> can start to test it.
+> 
+> Finally, if you have not already done so, we urge you to
+> subscribe to the Bioconductor mailing list so that you can
+> answer questions from users of your package and respond to bug
+> reports promptly. You can find the information about the mailing
+> lists here:
+> 
+>   http://bioconductor.org/docs/mailList.html
+> 
+> 
+> Thanks for contributing to the Bioconductor project!
+> 
+> 
+
+
+From mtmorgan at fhcrc.org  Tue May 18 22:07:54 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Tue, 18 May 2010 13:07:54 -0700
+Subject: [Bioc-devel] svn account information
+In-Reply-To: <C818180C.98E7%julie.zhu@umassmed.edu>
+References: <C818180C.98E7%julie.zhu@umassmed.edu>
+Message-ID: <4BF2F39A.6000504@fhcrc.org>
+
+On 05/18/2010 07:10 AM, Zhu, Julie wrote:
+> Hi Nishant,
+> 
+> With the new release, do I have to change the URLs using SVN to update the
+> repository for both released and dev version? Thanks so much for your help!
+
+Hi Julie --
+
+The svn repository is 'branched' when a new release of Bioconductor is
+created. The 'devel' versions of packages continue to have the same
+location in the repository, e.g.,
+
+  https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/ChIPpeakAnno
+
+whereas the release version is at
+
+
+https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_2_6/madman/Rpacks/ChIPpeakAnno
+
+If you need to update the release version (only for bug fixes, and only
+after carefully checking that the bug fix is correct), then you might
+check out the 'release' branch into its own directory
+
+  cd R-2-6-repository
+  svn co
+https://hedgehog.fhcrc.org/bioconductor/branches/RELEASE_2_6/madman/Rpacks/ChIPpeakAnno
+
+and make changes to it. When you commit your changes, they are committed
+to the release branch.
+
+See the instructions here
+
+  http://wiki.fhcrc.org/bioc/HowTo
+
+for more information.
+
+Martin
+
+> 
+> Best regards,
+> 
+> Julie
+> 
+> 
+> *******************************************
+> Lihua Julie Zhu, Ph.D
+> Research Associate Professor
+> Program in Gene Function and Expression
+> Program in Molecular Medicine
+> University of Massachusetts Medical School
+> 364 Plantation Street, Room 613
+> Worcester, MA 01605
+> 508-856-5256
+> http://www.umassmed.edu/pgfe/faculty/zhu.cfm
+> 
+> 
+> 
+> 
+> On 8/7/09 1:32 PM, "Nishant Gopalakrishnan" <ngopalak at fhcrc.org> wrote:
+> 
+>> Hi Julie,
+>>
+>>
+>>
+>>
+>> You have been given read/write access to the ChIPpeakAnno package:
+>>
+>>   URL:
+>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/ChIPpeakAnno
+>>
+>> The rest of this email contains the standard information sent to all new
+>> Bioconductor official maintainers. Please read it carefully and let me know
+>> if you have any question or problem with your svn access.
+>>
+>> For more general questions or advice about the development/maintenance of
+>> your package, please use the Bioc-devel mailing list (our primary channel
+>> for communication between developers and for important announcements like
+>> release schedules, build system news, etc...).
+>>
+>> Thanks for participating,
+>>
+>> Nishant
+>>
+>> ==============================================================================
+>>
+>> Subversion Quick Start
+>> ----------------------
+>>
+>> You will need the Subversion client (the 'svn' command) in order to
+>> access our Subversion repository.  Typical use:
+>>
+>>   o Check out your package with:
+>>       svn co
+>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/mypackage/
+>>     This will create a working copy of the package source tree on
+>>     your local disk.  You can edit the files, add new files (first
+>>     create the new file, then put it under revision control with
+>>     'svn add <newfile>'), delete files (with 'svn del <file>')
+>>     and rename files (with 'svn rename <file>').
+>>
+>>   o Once you are done, commit your changes with:
+>>       cd top/directory/of/mypackage
+>>       svn ci -m 'comment your changes here'
+>>
+>>   o Next time you want to work again on the package, don't forget
+>>     to 'svn update' first (no need to check out the whole source
+>>     tree again):
+>>       cd top/directory/of/your/mypackage
+>>       svn up
+>>
+>> You have global read access to the Bioconductor repository and
+>> read/write access to your own package directory.
+>>
+>>
+>> More about Subversion
+>> ---------------------
+>>
+>> - The Subversion command line client is available here:
+>>     http://subversion.tigris.org/project_packages.html
+>>
+>> - Windows users looking for a GUI interface should look at the
+>>   TortoiseSVN project (http://tortoisesvn.tigris.org).
+>>
+>> - If you plan to build the Subversion client from source, be sure to
+>>   include support for HTTPS by adding "--with-ssl" to the configure
+>>   line.
+>>
+>> - Read _our_ SVN How To page at
+>>     http://wiki.fhcrc.org/bioc/SvnHowTo
+>>
+>>
+>> How we build, test and publish the Bioconductor packages
+>> --------------------------------------------------------
+>>
+>> Please, keep an eye on the build/check daily report for the
+>> Bioconductor devel packages (currently BioC 2.5):
+>>
+>>   http://bioconductor.org/checkResults/2.5/bioc-LATEST/
+>>
+>> A package is made publicly available only if it passes the CHECK
+>> test on lamb1 with no error (it can have warnings though). Then the
+>> easiest (and recommended) way to install it is with biocLite():
+>>
+>>> source("http://bioconductor.org/biocLite.R")
+>>> biocLite("mypackage")
+>>
+>> However, if your package is already published and you make changes
+>> to it, the new version will not replace the old version unless
+>> you have bumped z in the version number x.y.z. DON'T FORGET TO
+>> BUMP Z! or the last version of your package will not be pushed
+>> to the public repository.
+>>
+>>
+>> Mailing lists
+>> -------------
+>>
+>> Let me know or ask on the Bioc-devel mailing list
+>> (bioc-devel at stat.math.ethz.ch) if you have any question.
+>> Also, when your package will pass the CHECK test for the first time,
+>> we strongly encourage you to send a note to Bioc-devel to announce
+>> its public avaibility (with a short description) so other people
+>> can start to test it.
+>>
+>> Finally, if you have not already done so, we urge you to
+>> subscribe to the Bioconductor mailing list so that you can
+>> answer questions from users of your package and respond to bug
+>> reports promptly. You can find the information about the mailing
+>> lists here:
+>>
+>>   http://bioconductor.org/docs/mailList.html
+>>
+>>
+>> Thanks for contributing to the Bioconductor project!
+>>
+>>
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From Julie.Zhu at umassmed.edu  Tue May 18 22:31:13 2010
+From: Julie.Zhu at umassmed.edu (Zhu, Julie)
+Date: Tue, 18 May 2010 16:31:13 -0400
+Subject: [Bioc-devel] svn account information
+In-Reply-To: <4BF2F39A.6000504@fhcrc.org>
+Message-ID: <C8187151.991B%julie.zhu@umassmed.edu>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100518/5e01056e/attachment.pl>
+
+From philip.degroot at wur.nl  Wed May 19 10:00:29 2010
+From: philip.degroot at wur.nl (Groot, Philip de)
+Date: Wed, 19 May 2010 10:00:29 +0200
+Subject: [Bioc-devel] Dimension (rows & columns) in the writeCDF function
+ seems to be swapped
+Message-ID: <DF4F62C0A6BCB44C84A8CC0C23AC73360AD9A0465E@scomp0534.wurnet.nl>
+
+Dear Kasper,
+
+I am contacting you because I am puzzled with an issue that is related to affxparser. I submitted this message to the bioc-devel list on april 29 (subject: "RE: [Bioc-devel] FW: problem in ReadAffy function (affy and affyio libraries)") but never received any reply. Interestingly, in the file writeCDF.R (affxparser source) the following comment is present:
+
+# 2006-09-11 /HB
+# o BUG FIX: nrows & ncols were swapped in the CDF header.
+The problem:
+I succesfully created a "mogene11stv1cdf" library that can be used with the "affy" library. Benefit of this is that e.g. the affyPLM library can be used for creating informative plots. I applied rma utilizing affy and oligo and found exactly the same normalized intensities (see attached png-image).
+
+So far so good, BUT... in order to get rma working for affy, I needed to switch the number or rows and columns when creating the CDF-file. And this puzzles me a lot! I do not understand where this originates from.
+
+Let me explain. I use the oligo library and the "pd.mogene.1.1.st.v1" annotation file to create the CDF-file. I (together with Guido Hooiveld) adapted the original "PdInfo2Cdf.R" script for this purpose. Information on the original "PdInfo2Cdf.R" script is here: http://www.aroma-project.org/node/40. The adapted file is also in the attachment.
+
+The CDF-file is created as follows:
+source("PdInfo2Cdf.R")
+PdInfo2Cdf("pd.mogene.1.1.st.v1", <An appropriate .CEL-file>);
+
+library(makecdfenv)
+make.cdf.package(file="pdmogene11stv1.cdf", packagename = "mogene11stv1cdf", author="Philip de Groot", maintainer="Philip de Groot <Philip.deGroot at wur.nl>", version="2.1.0", species="Mus_musculus")
+
+Both CDF-files are available in a single zip-file via sendit:
+https://sendit.wur.nl/Download.aspx?id=9299e472-1d5a-4f83-af75-c10aa1faf94c
+
+Does somebody has an explanation for this? Is it a bug in writeCDF?
+
+Regards,
+
+Dr. Philip de Groot Ph.D.
+Bioinformatics Researcher
+
+Wageningen University / TIFN
+Nutrigenomics Consortium
+Nutrition, Metabolism & Genomics Group
+Division of Human Nutrition
+PO Box 8129, 6700 EV Wageningen
+Visiting Address: Erfelijkheidsleer: De Valk, Building 304
+Dreijenweg 2, 6703 HA  Wageningen
+Room: 0052a
+T: +31-317-485786
+F: +31-317-483342
+E-mail:   Philip.deGroot at wur.nl<mailto:Philip.deGroot at wur.nl>
+Internet: http://www.nutrigenomicsconsortium.nl<http://www.nutrigenomicsconsortium.nl/>
+             http://humannutrition.wur.nl/
+             https://madmax.bioinformatics.nl/
+
+From khansen at stat.berkeley.edu  Wed May 19 18:34:48 2010
+From: khansen at stat.berkeley.edu (Kasper Daniel Hansen)
+Date: Wed, 19 May 2010 12:34:48 -0400
+Subject: [Bioc-devel] Dimension (rows & columns) in the writeCDF
+	function seems to be swapped
+In-Reply-To: <DF4F62C0A6BCB44C84A8CC0C23AC73360AD9A0465E@scomp0534.wurnet.nl>
+References: <DF4F62C0A6BCB44C84A8CC0C23AC73360AD9A0465E@scomp0534.wurnet.nl>
+Message-ID: <AANLkTim0eviCsa7wf9gSnY--dz5nLTNmscLNHO9ZrBDD@mail.gmail.com>
+
+Hi Philip
+
+I am trying to understand what you report here.
+
+If I use the "wrong" cdf file and I read it using either readCdfHeader
+in affxparser or read.cdffile.list (full output below) in affyio I get
+  Cols = 990
+  Rows = 1190
+and I have looked at the binary file using hexdump and this is also
+what is in the file according to Affymetrix file format
+specifications.
+
+This means that I can understand your message as either
+1) the file pdmogene11stv1_wrong.cdf does not reflect the dimensions
+in the PDinfo package.
+2) Using this cdf file as input to makecdfenv yields wrong results.
+
+Now, when I install the pd.mogene.1.1.st.v1 package I get
+> pd.mogene.1.1.st.v1
+Class........: AffyGenePDInfo
+Manufacturer.: Affymetrix
+Genome Build.: MM09
+Chip Geometry: 1190 rows x  990 columns
+
+which looks correct.  Not that the pdinfo2cdf script posted on the
+aroma.affymetrix website has an error (the lines
+  celHead <- readCelHeader(celfile)
+  nrows <- celHead$rows
+  ncols <- celHead$rows
+), but you say in your email you have modifed the script (which never
+made it through), and given that the CDF file corresponds to the
+pdinfo object you have probably fixed this).
+
+That leaves 2).  A casual inspection of the tarball
+  mogene11stv1cdf_2.1.0_notSwitched.tar.gz
+makes it look as if the dimensions here are correct as well.  However,
+I suspect I am missing something.
+
+In order to debug this further (and there could very well be an error
+somewhere, where cols and rows are switched) we will need your scripts
+for generating the normalized intensities and we probably also need
+the cell files.  Please modify your scripts to use the exact same
+filenames as the packages you have posted on sendit.
+
+And not that you cannot attach anything (or at least, your attachments
+does not make it through to me).
+
+Kasper
+
+
+> tmp = read.cdffile.list("pdmogene11stv1_wrong.cdf")
+> tmp$Header
+$Dimensions
+  MagicNumber VersionNumber          Cols          Rows     n.QCunits
+           67             1           990          1190             0
+      n.units     LenRefSeq
+        35556             0
+
+$ReseqRefSeq
+[1] ""
+
+> readCdfHeader("pdmogene11stv1_wrong.cdf")
+$ncols
+[1] 990
+
+$nrows
+[1] 1190
+
+$nunits
+[1] 35556
+
+$nqcunits
+[1] 0
+
+$refseq
+[1] ""
+
+$chiptype
+[1] "pdmogene11stv1_wrong"
+
+$filename
+[1] "./pdmogene11stv1_wrong.cdf"
+
+$rows
+[1] 1190
+
+$cols
+[1] 990
+
+$probesets
+[1] 35556
+
+$qcprobesets
+[1] 0
+
+$reference
+[1] ""
+
+>
+
+
+On Wed, May 19, 2010 at 4:00 AM, Groot, Philip de <philip.degroot at wur.nl> wrote:
+> Dear Kasper,
+>
+> I am contacting you because I am puzzled with an issue that is related to affxparser. I submitted this message to the bioc-devel list on april 29 (subject: "RE: [Bioc-devel] FW: problem in ReadAffy function (affy and affyio libraries)") but never received any reply. Interestingly, in the file writeCDF.R (affxparser source) the following comment is present:
+>
+> # 2006-09-11 /HB
+> # o BUG FIX: nrows & ncols were swapped in the CDF header.
+> The problem:
+> I succesfully created a "mogene11stv1cdf" library that can be used with the "affy" library. Benefit of this is that e.g. the affyPLM library can be used for creating informative plots. I applied rma utilizing affy and oligo and found exactly the same normalized intensities (see attached png-image).
+>
+> So far so good, BUT... in order to get rma working for affy, I needed to switch the number or rows and columns when creating the CDF-file. And this puzzles me a lot! I do not understand where this originates from.
+>
+> Let me explain. I use the oligo library and the "pd.mogene.1.1.st.v1" annotation file to create the CDF-file. I (together with Guido Hooiveld) adapted the original "PdInfo2Cdf.R" script for this purpose. Information on the original "PdInfo2Cdf.R" script is here: http://www.aroma-project.org/node/40. The adapted file is also in the attachment.
+>
+> The CDF-file is created as follows:
+> source("PdInfo2Cdf.R")
+> PdInfo2Cdf("pd.mogene.1.1.st.v1", <An appropriate .CEL-file>);
+>
+> library(makecdfenv)
+> make.cdf.package(file="pdmogene11stv1.cdf", packagename = "mogene11stv1cdf", author="Philip de Groot", maintainer="Philip de Groot <Philip.deGroot at wur.nl>", version="2.1.0", species="Mus_musculus")
+>
+> Both CDF-files are available in a single zip-file via sendit:
+> https://sendit.wur.nl/Download.aspx?id=9299e472-1d5a-4f83-af75-c10aa1faf94c
+>
+> Does somebody has an explanation for this? Is it a bug in writeCDF?
+>
+> Regards,
+>
+> Dr. Philip de Groot Ph.D.
+> Bioinformatics Researcher
+>
+> Wageningen University / TIFN
+> Nutrigenomics Consortium
+> Nutrition, Metabolism & Genomics Group
+> Division of Human Nutrition
+> PO Box 8129, 6700 EV Wageningen
+> Visiting Address: Erfelijkheidsleer: De Valk, Building 304
+> Dreijenweg 2, 6703 HA ?Wageningen
+> Room: 0052a
+> T: +31-317-485786
+> F: +31-317-483342
+> E-mail: ? Philip.deGroot at wur.nl<mailto:Philip.deGroot at wur.nl>
+> Internet: http://www.nutrigenomicsconsortium.nl<http://www.nutrigenomicsconsortium.nl/>
+> ? ? ? ? ? ? http://humannutrition.wur.nl/
+> ? ? ? ? ? ? https://madmax.bioinformatics.nl/
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+From g-feng at northwestern.edu  Wed May 19 22:07:45 2010
+From: g-feng at northwestern.edu (Gilbert Feng)
+Date: Wed, 19 May 2010 15:07:45 -0500
+Subject: [Bioc-devel] One to more id mapping for annotation package building
+Message-ID: <C819AF41.4253%g-feng@northwestern.edu>
+
+Hi, Bioc-dev people
+
+I noticed, if one ID, like a lumi nuID, maps two or more refseq ids, which
+point to different entrez genes, and this information was built in an
+annotation package by 'makeDBPackage',  it will return NA when I use
+'lookUp' to retrieve info for that nuID. But if those refseq IDs point to
+the same entrez id, the correct result is returned. I wonder whether I
+forget something or current AnnotationDBI does not support this type of
+one-to-more id mapping.
+
+Thanks a lot!
+
+Gilbert
+
+
+From mcarlson at fhcrc.org  Wed May 19 22:39:55 2010
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Wed, 19 May 2010 13:39:55 -0700
+Subject: [Bioc-devel] One to more id mapping for annotation package
+	building
+In-Reply-To: <C819AF41.4253%g-feng@northwestern.edu>
+References: <C819AF41.4253%g-feng@northwestern.edu>
+Message-ID: <4BF44C9B.1060403@fhcrc.org>
+
+Hi Gilbert,
+
+It sounds like you want to see the manual page for the toggleProbes()
+function.  By default, multple mapping probes are not exposed.  But they
+ARE in the db and you CAN expose then by using toggleProbes().
+
+
+  Marc
+
+
+On 05/19/2010 01:07 PM, Gilbert Feng wrote:
+> Hi, Bioc-dev people
+>
+> I noticed, if one ID, like a lumi nuID, maps two or more refseq ids, which
+> point to different entrez genes, and this information was built in an
+> annotation package by 'makeDBPackage',  it will return NA when I use
+> 'lookUp' to retrieve info for that nuID. But if those refseq IDs point to
+> the same entrez id, the correct result is returned. I wonder whether I
+> forget something or current AnnotationDBI does not support this type of
+> one-to-more id mapping.
+>
+> Thanks a lot!
+>
+> Gilbert
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+From g-feng at northwestern.edu  Wed May 19 23:03:57 2010
+From: g-feng at northwestern.edu (Gilbert Feng)
+Date: Wed, 19 May 2010 16:03:57 -0500
+Subject: [Bioc-devel] One to more id mapping for annotation package
+ building
+In-Reply-To: <4BF44C9B.1060403@fhcrc.org>
+Message-ID: <C819BC6D.425A%g-feng@northwestern.edu>
+
+Hi, Marc
+
+Got it! Thanks a lot.
+
+Gilbert
+
+
+On 5/19/10 3:39 PM, "Marc Carlson" <mcarlson at fhcrc.org> wrote:
+
+> Hi Gilbert,
+> 
+> It sounds like you want to see the manual page for the toggleProbes()
+> function.  By default, multple mapping probes are not exposed.  But they
+> ARE in the db and you CAN expose then by using toggleProbes().
+> 
+> 
+>   Marc
+> 
+> 
+> On 05/19/2010 01:07 PM, Gilbert Feng wrote:
+>> Hi, Bioc-dev people
+>> 
+>> I noticed, if one ID, like a lumi nuID, maps two or more refseq ids, which
+>> point to different entrez genes, and this information was built in an
+>> annotation package by 'makeDBPackage',  it will return NA when I use
+>> 'lookUp' to retrieve info for that nuID. But if those refseq IDs point to
+>> the same entrez id, the correct result is returned. I wonder whether I
+>> forget something or current AnnotationDBI does not support this type of
+>> one-to-more id mapping.
+>> 
+>> Thanks a lot!
+>> 
+>> Gilbert
+>> 
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>> 
+>> 
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From philip.degroot at wur.nl  Thu May 20 12:12:46 2010
+From: philip.degroot at wur.nl (Groot, Philip de)
+Date: Thu, 20 May 2010 12:12:46 +0200
+Subject: [Bioc-devel] Dimension (rows & columns) in the writeCDF
+ function seems to be swapped
+Message-ID: <669F86B281D61848914E902AA63F426939E1F40F22@scomp0535.wurnet.nl>
+
+Hello Karst,
+
+You can download all required files via this link:
+https://sendit.wur.nl/Download.aspx?id=9eed2afd-40a8-4770-b44b-5c0b6e55084c
+
+Simply execute the commands in the Create_CDF.R script and everything you need will be created and installed. 
+
+Note that also a fixed "PdInfo2Cdf.R" file is included. To create a CDF with the rows & columns NOT swapped (so that gives the error during RMA) please edit the script at the commented-out lines. Currently, the script creates a proper CDF that also does the RMA normalization properly.
+
+Thank you for your help!
+
+Regards,
+
+Dr. Philip de Groot Ph.D.
+Bioinformatics Researcher
+
+Wageningen University / TIFN
+Nutrigenomics Consortium
+Nutrition, Metabolism & Genomics Group
+Division of Human Nutrition
+PO Box 8129, 6700 EV Wageningen
+Visiting Address: Erfelijkheidsleer: De Valk, Building 304
+Dreijenweg 2, 6703 HA  Wageningen
+Room: 0052a
+T: +31-317-485786
+F: +31-317-483342
+E-mail:   Philip.deGroot at wur.nl
+Internet: http://www.nutrigenomicsconsortium.nl
+             http://humannutrition.wur.nl/
+             https://madmax.bioinformatics.nl/
+________________________________________
+From: kasperdanielhansen at gmail.com [kasperdanielhansen at gmail.com] On Behalf Of Kasper Daniel Hansen [khansen at stat.berkeley.edu]
+Sent: 19 May 2010 18:34
+To: Groot, Philip de
+Cc: bioc-devel at stat.math.ethz.ch; Hooiveld, Guido
+Subject: Re: [Bioc-devel] Dimension (rows & columns) in the writeCDF function   seems to be swapped
+
+Hi Philip
+
+I am trying to understand what you report here.
+
+If I use the "wrong" cdf file and I read it using either readCdfHeader
+in affxparser or read.cdffile.list (full output below) in affyio I get
+  Cols = 990
+  Rows = 1190
+and I have looked at the binary file using hexdump and this is also
+what is in the file according to Affymetrix file format
+specifications.
+
+This means that I can understand your message as either
+1) the file pdmogene11stv1_wrong.cdf does not reflect the dimensions
+in the PDinfo package.
+2) Using this cdf file as input to makecdfenv yields wrong results.
+
+Now, when I install the pd.mogene.1.1.st.v1 package I get
+> pd.mogene.1.1.st.v1
+Class........: AffyGenePDInfo
+Manufacturer.: Affymetrix
+Genome Build.: MM09
+Chip Geometry: 1190 rows x  990 columns
+
+which looks correct.  Not that the pdinfo2cdf script posted on the
+aroma.affymetrix website has an error (the lines
+  celHead <- readCelHeader(celfile)
+  nrows <- celHead$rows
+  ncols <- celHead$rows
+), but you say in your email you have modifed the script (which never
+made it through), and given that the CDF file corresponds to the
+pdinfo object you have probably fixed this).
+
+That leaves 2).  A casual inspection of the tarball
+  mogene11stv1cdf_2.1.0_notSwitched.tar.gz
+makes it look as if the dimensions here are correct as well.  However,
+I suspect I am missing something.
+
+In order to debug this further (and there could very well be an error
+somewhere, where cols and rows are switched) we will need your scripts
+for generating the normalized intensities and we probably also need
+the cell files.  Please modify your scripts to use the exact same
+filenames as the packages you have posted on sendit.
+
+And not that you cannot attach anything (or at least, your attachments
+does not make it through to me).
+
+Kasper
+
+
+> tmp = read.cdffile.list("pdmogene11stv1_wrong.cdf")
+> tmp$Header
+$Dimensions
+  MagicNumber VersionNumber          Cols          Rows     n.QCunits
+           67             1           990          1190             0
+      n.units     LenRefSeq
+        35556             0
+
+$ReseqRefSeq
+[1] ""
+
+> readCdfHeader("pdmogene11stv1_wrong.cdf")
+$ncols
+[1] 990
+
+$nrows
+[1] 1190
+
+$nunits
+[1] 35556
+
+$nqcunits
+[1] 0
+
+$refseq
+[1] ""
+
+$chiptype
+[1] "pdmogene11stv1_wrong"
+
+$filename
+[1] "./pdmogene11stv1_wrong.cdf"
+
+$rows
+[1] 1190
+
+$cols
+[1] 990
+
+$probesets
+[1] 35556
+
+$qcprobesets
+[1] 0
+
+$reference
+[1] ""
+
+>
+
+
+On Wed, May 19, 2010 at 4:00 AM, Groot, Philip de <philip.degroot at wur.nl> wrote:
+> Dear Kasper,
+>
+> I am contacting you because I am puzzled with an issue that is related to affxparser. I submitted this message to the bioc-devel list on april 29 (subject: "RE: [Bioc-devel] FW: problem in ReadAffy function (affy and affyio libraries)") but never received any reply. Interestingly, in the file writeCDF.R (affxparser source) the following comment is present:
+>
+> # 2006-09-11 /HB
+> # o BUG FIX: nrows & ncols were swapped in the CDF header.
+> The problem:
+> I succesfully created a "mogene11stv1cdf" library that can be used with the "affy" library. Benefit of this is that e.g. the affyPLM library can be used for creating informative plots. I applied rma utilizing affy and oligo and found exactly the same normalized intensities (see attached png-image).
+>
+> So far so good, BUT... in order to get rma working for affy, I needed to switch the number or rows and columns when creating the CDF-file. And this puzzles me a lot! I do not understand where this originates from.
+>
+> Let me explain. I use the oligo library and the "pd.mogene.1.1.st.v1" annotation file to create the CDF-file. I (together with Guido Hooiveld) adapted the original "PdInfo2Cdf.R" script for this purpose. Information on the original "PdInfo2Cdf.R" script is here: http://www.aroma-project.org/node/40. The adapted file is also in the attachment.
+>
+> The CDF-file is created as follows:
+> source("PdInfo2Cdf.R")
+> PdInfo2Cdf("pd.mogene.1.1.st.v1", <An appropriate .CEL-file>);
+>
+> library(makecdfenv)
+> make.cdf.package(file="pdmogene11stv1.cdf", packagename = "mogene11stv1cdf", author="Philip de Groot", maintainer="Philip de Groot <Philip.deGroot at wur.nl>", version="2.1.0", species="Mus_musculus")
+>
+> Both CDF-files are available in a single zip-file via sendit:
+> https://sendit.wur.nl/Download.aspx?id=9299e472-1d5a-4f83-af75-c10aa1faf94c
+>
+> Does somebody has an explanation for this? Is it a bug in writeCDF?
+>
+> Regards,
+>
+> Dr. Philip de Groot Ph.D.
+> Bioinformatics Researcher
+>
+> Wageningen University / TIFN
+> Nutrigenomics Consortium
+> Nutrition, Metabolism & Genomics Group
+> Division of Human Nutrition
+> PO Box 8129, 6700 EV Wageningen
+> Visiting Address: Erfelijkheidsleer: De Valk, Building 304
+> Dreijenweg 2, 6703 HA  Wageningen
+> Room: 0052a
+> T: +31-317-485786
+> F: +31-317-483342
+> E-mail:   Philip.deGroot at wur.nl<mailto:Philip.deGroot at wur.nl>
+> Internet: http://www.nutrigenomicsconsortium.nl<http://www.nutrigenomicsconsortium.nl/>
+>             http://humannutrition.wur.nl/
+>             https://madmax.bioinformatics.nl/
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+From khansen at stat.berkeley.edu  Thu May 20 14:30:54 2010
+From: khansen at stat.berkeley.edu (Kasper Daniel Hansen)
+Date: Thu, 20 May 2010 08:30:54 -0400
+Subject: [Bioc-devel] Dimension (rows & columns) in the writeCDF
+	function seems to be swapped
+In-Reply-To: <669F86B281D61848914E902AA63F426939E1F40F22@scomp0535.wurnet.nl>
+References: <669F86B281D61848914E902AA63F426939E1F40F22@scomp0535.wurnet.nl>
+Message-ID: <AANLkTimRvItvD7I3Qxn9yzJvUYfQA0NDdFXzaCvHxJ1Z@mail.gmail.com>
+
+Your zip file does not seem to be working.
+
+Kasper
+
+On Thu, May 20, 2010 at 6:12 AM, Groot, Philip de <philip.degroot at wur.nl> wrote:
+> Hello Karst,
+>
+> You can download all required files via this link:
+> https://sendit.wur.nl/Download.aspx?id=9eed2afd-40a8-4770-b44b-5c0b6e55084c
+>
+> Simply execute the commands in the Create_CDF.R script and everything you need will be created and installed.
+>
+> Note that also a fixed "PdInfo2Cdf.R" file is included. To create a CDF with the rows & columns NOT swapped (so that gives the error during RMA) please edit the script at the commented-out lines. Currently, the script creates a proper CDF that also does the RMA normalization properly.
+>
+> Thank you for your help!
+>
+> Regards,
+>
+> Dr. Philip de Groot Ph.D.
+> Bioinformatics Researcher
+>
+> Wageningen University / TIFN
+> Nutrigenomics Consortium
+> Nutrition, Metabolism & Genomics Group
+> Division of Human Nutrition
+> PO Box 8129, 6700 EV Wageningen
+> Visiting Address: Erfelijkheidsleer: De Valk, Building 304
+> Dreijenweg 2, 6703 HA ?Wageningen
+> Room: 0052a
+> T: +31-317-485786
+> F: +31-317-483342
+> E-mail: ? Philip.deGroot at wur.nl
+> Internet: http://www.nutrigenomicsconsortium.nl
+> ? ? ? ? ? ? http://humannutrition.wur.nl/
+> ? ? ? ? ? ? https://madmax.bioinformatics.nl/
+> ________________________________________
+> From: kasperdanielhansen at gmail.com [kasperdanielhansen at gmail.com] On Behalf Of Kasper Daniel Hansen [khansen at stat.berkeley.edu]
+> Sent: 19 May 2010 18:34
+> To: Groot, Philip de
+> Cc: bioc-devel at stat.math.ethz.ch; Hooiveld, Guido
+> Subject: Re: [Bioc-devel] Dimension (rows & columns) in the writeCDF function ? seems to be swapped
+>
+> Hi Philip
+>
+> I am trying to understand what you report here.
+>
+> If I use the "wrong" cdf file and I read it using either readCdfHeader
+> in affxparser or read.cdffile.list (full output below) in affyio I get
+> ?Cols = 990
+> ?Rows = 1190
+> and I have looked at the binary file using hexdump and this is also
+> what is in the file according to Affymetrix file format
+> specifications.
+>
+> This means that I can understand your message as either
+> 1) the file pdmogene11stv1_wrong.cdf does not reflect the dimensions
+> in the PDinfo package.
+> 2) Using this cdf file as input to makecdfenv yields wrong results.
+>
+> Now, when I install the pd.mogene.1.1.st.v1 package I get
+>> pd.mogene.1.1.st.v1
+> Class........: AffyGenePDInfo
+> Manufacturer.: Affymetrix
+> Genome Build.: MM09
+> Chip Geometry: 1190 rows x ?990 columns
+>
+> which looks correct. ?Not that the pdinfo2cdf script posted on the
+> aroma.affymetrix website has an error (the lines
+> ?celHead <- readCelHeader(celfile)
+> ?nrows <- celHead$rows
+> ?ncols <- celHead$rows
+> ), but you say in your email you have modifed the script (which never
+> made it through), and given that the CDF file corresponds to the
+> pdinfo object you have probably fixed this).
+>
+> That leaves 2). ?A casual inspection of the tarball
+> ?mogene11stv1cdf_2.1.0_notSwitched.tar.gz
+> makes it look as if the dimensions here are correct as well. ?However,
+> I suspect I am missing something.
+>
+> In order to debug this further (and there could very well be an error
+> somewhere, where cols and rows are switched) we will need your scripts
+> for generating the normalized intensities and we probably also need
+> the cell files. ?Please modify your scripts to use the exact same
+> filenames as the packages you have posted on sendit.
+>
+> And not that you cannot attach anything (or at least, your attachments
+> does not make it through to me).
+>
+> Kasper
+>
+>
+>> tmp = read.cdffile.list("pdmogene11stv1_wrong.cdf")
+>> tmp$Header
+> $Dimensions
+> ?MagicNumber VersionNumber ? ? ? ? ?Cols ? ? ? ? ?Rows ? ? n.QCunits
+> ? ? ? ? ? 67 ? ? ? ? ? ? 1 ? ? ? ? ? 990 ? ? ? ? ?1190 ? ? ? ? ? ? 0
+> ? ? ?n.units ? ? LenRefSeq
+> ? ? ? ?35556 ? ? ? ? ? ? 0
+>
+> $ReseqRefSeq
+> [1] ""
+>
+>> readCdfHeader("pdmogene11stv1_wrong.cdf")
+> $ncols
+> [1] 990
+>
+> $nrows
+> [1] 1190
+>
+> $nunits
+> [1] 35556
+>
+> $nqcunits
+> [1] 0
+>
+> $refseq
+> [1] ""
+>
+> $chiptype
+> [1] "pdmogene11stv1_wrong"
+>
+> $filename
+> [1] "./pdmogene11stv1_wrong.cdf"
+>
+> $rows
+> [1] 1190
+>
+> $cols
+> [1] 990
+>
+> $probesets
+> [1] 35556
+>
+> $qcprobesets
+> [1] 0
+>
+> $reference
+> [1] ""
+>
+>>
+>
+>
+> On Wed, May 19, 2010 at 4:00 AM, Groot, Philip de <philip.degroot at wur.nl> wrote:
+>> Dear Kasper,
+>>
+>> I am contacting you because I am puzzled with an issue that is related to affxparser. I submitted this message to the bioc-devel list on april 29 (subject: "RE: [Bioc-devel] FW: problem in ReadAffy function (affy and affyio libraries)") but never received any reply. Interestingly, in the file writeCDF.R (affxparser source) the following comment is present:
+>>
+>> # 2006-09-11 /HB
+>> # o BUG FIX: nrows & ncols were swapped in the CDF header.
+>> The problem:
+>> I succesfully created a "mogene11stv1cdf" library that can be used with the "affy" library. Benefit of this is that e.g. the affyPLM library can be used for creating informative plots. I applied rma utilizing affy and oligo and found exactly the same normalized intensities (see attached png-image).
+>>
+>> So far so good, BUT... in order to get rma working for affy, I needed to switch the number or rows and columns when creating the CDF-file. And this puzzles me a lot! I do not understand where this originates from.
+>>
+>> Let me explain. I use the oligo library and the "pd.mogene.1.1.st.v1" annotation file to create the CDF-file. I (together with Guido Hooiveld) adapted the original "PdInfo2Cdf.R" script for this purpose. Information on the original "PdInfo2Cdf.R" script is here: http://www.aroma-project.org/node/40. The adapted file is also in the attachment.
+>>
+>> The CDF-file is created as follows:
+>> source("PdInfo2Cdf.R")
+>> PdInfo2Cdf("pd.mogene.1.1.st.v1", <An appropriate .CEL-file>);
+>>
+>> library(makecdfenv)
+>> make.cdf.package(file="pdmogene11stv1.cdf", packagename = "mogene11stv1cdf", author="Philip de Groot", maintainer="Philip de Groot <Philip.deGroot at wur.nl>", version="2.1.0", species="Mus_musculus")
+>>
+>> Both CDF-files are available in a single zip-file via sendit:
+>> https://sendit.wur.nl/Download.aspx?id=9299e472-1d5a-4f83-af75-c10aa1faf94c
+>>
+>> Does somebody has an explanation for this? Is it a bug in writeCDF?
+>>
+>> Regards,
+>>
+>> Dr. Philip de Groot Ph.D.
+>> Bioinformatics Researcher
+>>
+>> Wageningen University / TIFN
+>> Nutrigenomics Consortium
+>> Nutrition, Metabolism & Genomics Group
+>> Division of Human Nutrition
+>> PO Box 8129, 6700 EV Wageningen
+>> Visiting Address: Erfelijkheidsleer: De Valk, Building 304
+>> Dreijenweg 2, 6703 HA ?Wageningen
+>> Room: 0052a
+>> T: +31-317-485786
+>> F: +31-317-483342
+>> E-mail: ? Philip.deGroot at wur.nl<mailto:Philip.deGroot at wur.nl>
+>> Internet: http://www.nutrigenomicsconsortium.nl<http://www.nutrigenomicsconsortium.nl/>
+>> ? ? ? ? ? ? http://humannutrition.wur.nl/
+>> ? ? ? ? ? ? https://madmax.bioinformatics.nl/
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From khansen at stat.berkeley.edu  Fri May 21 02:25:42 2010
+From: khansen at stat.berkeley.edu (Kasper Daniel Hansen)
+Date: Thu, 20 May 2010 20:25:42 -0400
+Subject: [Bioc-devel] Dimension (rows & columns) in the writeCDF
+	function seems to be swapped
+In-Reply-To: <AANLkTimRvItvD7I3Qxn9yzJvUYfQA0NDdFXzaCvHxJ1Z@mail.gmail.com>
+References: <669F86B281D61848914E902AA63F426939E1F40F22@scomp0535.wurnet.nl>
+	<AANLkTimRvItvD7I3Qxn9yzJvUYfQA0NDdFXzaCvHxJ1Z@mail.gmail.com>
+Message-ID: <AANLkTinh6wJtJYIeT15hctkL0WMoOqgjP8k2K6V7BpMK@mail.gmail.com>
+
+CC to Ben Bolstad who may want to confirm a statement below and the
+maintainer of affy, since the bug is there
+
+Executive summary: there is a bug in read.affybatch having to do with
+non-square microarrays (ncol and nrow were switched).  This comes from
+a misunderstanding of the output of affyio::read.celfile.header which
+lists dimensions as c(ncol, nrow), not as c(nrow, ncol).  I have added
+names to the output of affyio::read.celfile.header and I have changed
+affy::read.affybatch to use these names instead of the order of the
+output.  I have committed the changes to the devel branch, but I think
+release needs to be updated as well.  Version numbers have not been
+bumped.  I will wait for reactions to this email first.
+
+Long summary: To the people coming in a bit late: This is a
+complicated issue Philip has reported with a pipeline taking a
+platform design object, converting it into a binary CDF file using
+affxparser as well as a script from the aroma.affymetrix website,
+converting the cdf file into a cdf environment using makecdfenv and
+finally calling rma from affy.  All of this on a non-square cel file.
+
+Data is in the zip file
+  https://sendit.wur.nl/Download.aspx?id=7becdf12-35ff-44c3-a4a7-537d0fe895a2
+The main script from Philip is CreateCel.R
+
+Note that the CDF file included above has "switched" dimensions, ie.
+Philip has modified a script to swap dimensions.
+
+Essentially, it all boils down to the following: read.celfile.header yields
+> read.celfile.header("MouseBrain_1.CEL")
+$`CEL dimensions`
+[1]  990 1190
+
+Contrary to what one immediately would assume, this is actually
+nColumns, nRows as stated by Ben Bolstad in another thread (and I
+would agree based on a casual reading of the source code from affyio).
+ I also get (using affxparser, output scrubbed)
+> readCelHeader("MouseBrain_1.CEL")
+$cols
+[1] 990
+
+$rows
+[1] 1190
+
+However, the function read.affybatch in affy assumes that the
+dimensions are nRows x nColumns, as seen in the source code (line
+numbers from read.affybatch.R from subversion):
+
+     71   headdetails <- read.celfile.header(as.character(filenames[[1]]))
+     72   ##now we use the length
+     73   dim.intensity <- headdetails[[2]]   ##dim(intensity(cel))
+
+<SNIP>
+
+   108   if (!sd){
+    109     return(new("AffyBatch",
+    110                exprs  = exprs,
+    111                ##se.exprs = array(NaN, dim=dim.sd),
+    112                cdfName    = cdfname,   ##cel at cdfName,
+    113                phenoData  = phenoData,
+    114                nrow       = dim.intensity[1],
+    115                ncol       = dim.intensity[2],
+    116                annotation = cleancdfname(cdfname, addcdf=FALSE),
+    117                protocolData  = protocol,
+    118                description= description,
+    119                notes      = notes))
+
+Clearly the current author assumed the dimensions would be nrow x ncol
+and not reversed.
+
+Finally, a FYI to Ben: currently, the show method for AffyBatch does
+_not_ report nCol x nRow as stated in another thread, as per
+
+> getMethod("show", "AffyBatch")
+<SNIP>
+    cat("size of arrays=", nrow(object), "x", ncol(object), " features (",
+        object.size(object)%/%1024, " kb)\n", sep = "")
+<SNIP>
+
+A short time bug fix would be to change line 73 in read.affybatch.R from
+  dim.intensity <- headdetails[[2]]
+to
+  dim.intensity <- rev(headdetails[[2]])
+
+A better long term fix would be to put names on the output of
+affyio::read.celfile.header so that the order is documented, and also
+to
+
+Kasper
+
+
+On Thu, May 20, 2010 at 8:30 AM, Kasper Daniel Hansen
+<khansen at stat.berkeley.edu> wrote:
+> Your zip file does not seem to be working.
+>
+> Kasper
+>
+> On Thu, May 20, 2010 at 6:12 AM, Groot, Philip de <philip.degroot at wur.nl> wrote:
+>> Hello Karst,
+>>
+>> You can download all required files via this link:
+>> https://sendit.wur.nl/Download.aspx?id=9eed2afd-40a8-4770-b44b-5c0b6e55084c
+>>
+>> Simply execute the commands in the Create_CDF.R script and everything you need will be created and installed.
+>>
+>> Note that also a fixed "PdInfo2Cdf.R" file is included. To create a CDF with the rows & columns NOT swapped (so that gives the error during RMA) please edit the script at the commented-out lines. Currently, the script creates a proper CDF that also does the RMA normalization properly.
+>>
+>> Thank you for your help!
+>>
+>> Regards,
+>>
+>> Dr. Philip de Groot Ph.D.
+>> Bioinformatics Researcher
+>>
+>> Wageningen University / TIFN
+>> Nutrigenomics Consortium
+>> Nutrition, Metabolism & Genomics Group
+>> Division of Human Nutrition
+>> PO Box 8129, 6700 EV Wageningen
+>> Visiting Address: Erfelijkheidsleer: De Valk, Building 304
+>> Dreijenweg 2, 6703 HA ?Wageningen
+>> Room: 0052a
+>> T: +31-317-485786
+>> F: +31-317-483342
+>> E-mail: ? Philip.deGroot at wur.nl
+>> Internet: http://www.nutrigenomicsconsortium.nl
+>> ? ? ? ? ? ? http://humannutrition.wur.nl/
+>> ? ? ? ? ? ? https://madmax.bioinformatics.nl/
+>> ________________________________________
+>> From: kasperdanielhansen at gmail.com [kasperdanielhansen at gmail.com] On Behalf Of Kasper Daniel Hansen [khansen at stat.berkeley.edu]
+>> Sent: 19 May 2010 18:34
+>> To: Groot, Philip de
+>> Cc: bioc-devel at stat.math.ethz.ch; Hooiveld, Guido
+>> Subject: Re: [Bioc-devel] Dimension (rows & columns) in the writeCDF function ? seems to be swapped
+>>
+>> Hi Philip
+>>
+>> I am trying to understand what you report here.
+>>
+>> If I use the "wrong" cdf file and I read it using either readCdfHeader
+>> in affxparser or read.cdffile.list (full output below) in affyio I get
+>> ?Cols = 990
+>> ?Rows = 1190
+>> and I have looked at the binary file using hexdump and this is also
+>> what is in the file according to Affymetrix file format
+>> specifications.
+>>
+>> This means that I can understand your message as either
+>> 1) the file pdmogene11stv1_wrong.cdf does not reflect the dimensions
+>> in the PDinfo package.
+>> 2) Using this cdf file as input to makecdfenv yields wrong results.
+>>
+>> Now, when I install the pd.mogene.1.1.st.v1 package I get
+>>> pd.mogene.1.1.st.v1
+>> Class........: AffyGenePDInfo
+>> Manufacturer.: Affymetrix
+>> Genome Build.: MM09
+>> Chip Geometry: 1190 rows x ?990 columns
+>>
+>> which looks correct. ?Not that the pdinfo2cdf script posted on the
+>> aroma.affymetrix website has an error (the lines
+>> ?celHead <- readCelHeader(celfile)
+>> ?nrows <- celHead$rows
+>> ?ncols <- celHead$rows
+>> ), but you say in your email you have modifed the script (which never
+>> made it through), and given that the CDF file corresponds to the
+>> pdinfo object you have probably fixed this).
+>>
+>> That leaves 2). ?A casual inspection of the tarball
+>> ?mogene11stv1cdf_2.1.0_notSwitched.tar.gz
+>> makes it look as if the dimensions here are correct as well. ?However,
+>> I suspect I am missing something.
+>>
+>> In order to debug this further (and there could very well be an error
+>> somewhere, where cols and rows are switched) we will need your scripts
+>> for generating the normalized intensities and we probably also need
+>> the cell files. ?Please modify your scripts to use the exact same
+>> filenames as the packages you have posted on sendit.
+>>
+>> And not that you cannot attach anything (or at least, your attachments
+>> does not make it through to me).
+>>
+>> Kasper
+>>
+>>
+>>> tmp = read.cdffile.list("pdmogene11stv1_wrong.cdf")
+>>> tmp$Header
+>> $Dimensions
+>> ?MagicNumber VersionNumber ? ? ? ? ?Cols ? ? ? ? ?Rows ? ? n.QCunits
+>> ? ? ? ? ? 67 ? ? ? ? ? ? 1 ? ? ? ? ? 990 ? ? ? ? ?1190 ? ? ? ? ? ? 0
+>> ? ? ?n.units ? ? LenRefSeq
+>> ? ? ? ?35556 ? ? ? ? ? ? 0
+>>
+>> $ReseqRefSeq
+>> [1] ""
+>>
+>>> readCdfHeader("pdmogene11stv1_wrong.cdf")
+>> $ncols
+>> [1] 990
+>>
+>> $nrows
+>> [1] 1190
+>>
+>> $nunits
+>> [1] 35556
+>>
+>> $nqcunits
+>> [1] 0
+>>
+>> $refseq
+>> [1] ""
+>>
+>> $chiptype
+>> [1] "pdmogene11stv1_wrong"
+>>
+>> $filename
+>> [1] "./pdmogene11stv1_wrong.cdf"
+>>
+>> $rows
+>> [1] 1190
+>>
+>> $cols
+>> [1] 990
+>>
+>> $probesets
+>> [1] 35556
+>>
+>> $qcprobesets
+>> [1] 0
+>>
+>> $reference
+>> [1] ""
+>>
+>>>
+>>
+>>
+>> On Wed, May 19, 2010 at 4:00 AM, Groot, Philip de <philip.degroot at wur.nl> wrote:
+>>> Dear Kasper,
+>>>
+>>> I am contacting you because I am puzzled with an issue that is related to affxparser. I submitted this message to the bioc-devel list on april 29 (subject: "RE: [Bioc-devel] FW: problem in ReadAffy function (affy and affyio libraries)") but never received any reply. Interestingly, in the file writeCDF.R (affxparser source) the following comment is present:
+>>>
+>>> # 2006-09-11 /HB
+>>> # o BUG FIX: nrows & ncols were swapped in the CDF header.
+>>> The problem:
+>>> I succesfully created a "mogene11stv1cdf" library that can be used with the "affy" library. Benefit of this is that e.g. the affyPLM library can be used for creating informative plots. I applied rma utilizing affy and oligo and found exactly the same normalized intensities (see attached png-image).
+>>>
+>>> So far so good, BUT... in order to get rma working for affy, I needed to switch the number or rows and columns when creating the CDF-file. And this puzzles me a lot! I do not understand where this originates from.
+>>>
+>>> Let me explain. I use the oligo library and the "pd.mogene.1.1.st.v1" annotation file to create the CDF-file. I (together with Guido Hooiveld) adapted the original "PdInfo2Cdf.R" script for this purpose. Information on the original "PdInfo2Cdf.R" script is here: http://www.aroma-project.org/node/40. The adapted file is also in the attachment.
+>>>
+>>> The CDF-file is created as follows:
+>>> source("PdInfo2Cdf.R")
+>>> PdInfo2Cdf("pd.mogene.1.1.st.v1", <An appropriate .CEL-file>);
+>>>
+>>> library(makecdfenv)
+>>> make.cdf.package(file="pdmogene11stv1.cdf", packagename = "mogene11stv1cdf", author="Philip de Groot", maintainer="Philip de Groot <Philip.deGroot at wur.nl>", version="2.1.0", species="Mus_musculus")
+>>>
+>>> Both CDF-files are available in a single zip-file via sendit:
+>>> https://sendit.wur.nl/Download.aspx?id=9299e472-1d5a-4f83-af75-c10aa1faf94c
+>>>
+>>> Does somebody has an explanation for this? Is it a bug in writeCDF?
+>>>
+>>> Regards,
+>>>
+>>> Dr. Philip de Groot Ph.D.
+>>> Bioinformatics Researcher
+>>>
+>>> Wageningen University / TIFN
+>>> Nutrigenomics Consortium
+>>> Nutrition, Metabolism & Genomics Group
+>>> Division of Human Nutrition
+>>> PO Box 8129, 6700 EV Wageningen
+>>> Visiting Address: Erfelijkheidsleer: De Valk, Building 304
+>>> Dreijenweg 2, 6703 HA ?Wageningen
+>>> Room: 0052a
+>>> T: +31-317-485786
+>>> F: +31-317-483342
+>>> E-mail: ? Philip.deGroot at wur.nl<mailto:Philip.deGroot at wur.nl>
+>>> Internet: http://www.nutrigenomicsconsortium.nl<http://www.nutrigenomicsconsortium.nl/>
+>>> ? ? ? ? ? ? http://humannutrition.wur.nl/
+>>> ? ? ? ? ? ? https://madmax.bioinformatics.nl/
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+
+
+From philip.degroot at wur.nl  Fri May 21 10:21:27 2010
+From: philip.degroot at wur.nl (Groot, Philip de)
+Date: Fri, 21 May 2010 10:21:27 +0200
+Subject: [Bioc-devel] Dimension (rows & columns) in the writeCDF
+ function seems to be swapped
+In-Reply-To: <AANLkTinh6wJtJYIeT15hctkL0WMoOqgjP8k2K6V7BpMK@mail.gmail.com>
+References: <669F86B281D61848914E902AA63F426939E1F40F22@scomp0535.wurnet.nl>
+	<AANLkTimRvItvD7I3Qxn9yzJvUYfQA0NDdFXzaCvHxJ1Z@mail.gmail.com>,
+	<AANLkTinh6wJtJYIeT15hctkL0WMoOqgjP8k2K6V7BpMK@mail.gmail.com>
+Message-ID: <669F86B281D61848914E902AA63F426939E1F40F2A@scomp0535.wurnet.nl>
+
+Hello all,
+
+I am glad that the issue is resolved at last (Thanks Kasper!). Consequently, I (or the core project members) can provide CDF-files (derived from the pdInfoBuilder packages) for the hugene, mogene, ragene ST v1.0 and 1.1 arrays so that these arrays can also be analysed utilizing the "affy" library.
+
+The question is: who takes responsibility for this? Currently, I maintain the NuGO (custom Affymetrix) arrays and including the CDF-files (derived from the pdInfoBuilder files) for these arrays  is no big deal.
+
+However, the issue is that for the Gene ST 1.0 arrays non-supported CDF-files have been released by Affymetrix which are reflected in the currently available CDF-environments in the Bioconductor repository. Unfortunately, the different CDF-environments for the same chip do not match, for example:
+
+Freshly installed mogene10stv1cdf library from Bioconductor:
+> length(ls(mogene10stv1cdf))
+[1] 34760
+
+And the CDF-library as compiled by me (derived from pdInfoBuilder):
+> length(ls(mogene10stv1cdf))
+[1] 35556
+
+Personally, I prefer the CDF-libraries derived from the pdInfoBuilder libraries, because these exactly reflects the chips as Affymetrix intended it (utilizing the .bgp, .clf, and so on files from Affymetrix: the official support files).
+
+So I think we need to discuss on this issue too... What CDF files will be made available, who takes responsibility, and who else needs to be included?
+
+Regards,
+
+Dr. Philip de Groot Ph.D.
+Bioinformatics Researcher
+
+Wageningen University / TIFN
+Nutrigenomics Consortium
+Nutrition, Metabolism & Genomics Group
+Division of Human Nutrition
+PO Box 8129, 6700 EV Wageningen
+Visiting Address: Erfelijkheidsleer: De Valk, Building 304
+Dreijenweg 2, 6703 HA  Wageningen
+Room: 0052a
+T: +31-317-485786
+F: +31-317-483342
+E-mail:   Philip.deGroot at wur.nl
+Internet: http://www.nutrigenomicsconsortium.nl
+             http://humannutrition.wur.nl/
+             https://madmax.bioinformatics.nl/
+________________________________________
+From: kasperdanielhansen at gmail.com [kasperdanielhansen at gmail.com] On Behalf Of Kasper Daniel Hansen [khansen at stat.berkeley.edu]
+Sent: 21 May 2010 02:25
+To: Groot, Philip de
+Cc: bioc-devel at stat.math.ethz.ch; Hooiveld, Guido; bmb at bmbolstad.com; rafa at jhu.edu; Henrik Bengtsson
+Subject: Re: [Bioc-devel] Dimension (rows & columns) in the writeCDF function   seems to be swapped
+
+CC to Ben Bolstad who may want to confirm a statement below and the
+maintainer of affy, since the bug is there
+
+Executive summary: there is a bug in read.affybatch having to do with
+non-square microarrays (ncol and nrow were switched).  This comes from
+a misunderstanding of the output of affyio::read.celfile.header which
+lists dimensions as c(ncol, nrow), not as c(nrow, ncol).  I have added
+names to the output of affyio::read.celfile.header and I have changed
+affy::read.affybatch to use these names instead of the order of the
+output.  I have committed the changes to the devel branch, but I think
+release needs to be updated as well.  Version numbers have not been
+bumped.  I will wait for reactions to this email first.
+
+Long summary: To the people coming in a bit late: This is a
+complicated issue Philip has reported with a pipeline taking a
+platform design object, converting it into a binary CDF file using
+affxparser as well as a script from the aroma.affymetrix website,
+converting the cdf file into a cdf environment using makecdfenv and
+finally calling rma from affy.  All of this on a non-square cel file.
+
+Data is in the zip file
+  https://sendit.wur.nl/Download.aspx?id=7becdf12-35ff-44c3-a4a7-537d0fe895a2
+The main script from Philip is CreateCel.R
+
+Note that the CDF file included above has "switched" dimensions, ie.
+Philip has modified a script to swap dimensions.
+
+Essentially, it all boils down to the following: read.celfile.header yields
+> read.celfile.header("MouseBrain_1.CEL")
+$`CEL dimensions`
+[1]  990 1190
+
+Contrary to what one immediately would assume, this is actually
+nColumns, nRows as stated by Ben Bolstad in another thread (and I
+would agree based on a casual reading of the source code from affyio).
+ I also get (using affxparser, output scrubbed)
+> readCelHeader("MouseBrain_1.CEL")
+$cols
+[1] 990
+
+$rows
+[1] 1190
+
+However, the function read.affybatch in affy assumes that the
+dimensions are nRows x nColumns, as seen in the source code (line
+numbers from read.affybatch.R from subversion):
+
+     71   headdetails <- read.celfile.header(as.character(filenames[[1]]))
+     72   ##now we use the length
+     73   dim.intensity <- headdetails[[2]]   ##dim(intensity(cel))
+
+<SNIP>
+
+   108   if (!sd){
+    109     return(new("AffyBatch",
+    110                exprs  = exprs,
+    111                ##se.exprs = array(NaN, dim=dim.sd),
+    112                cdfName    = cdfname,   ##cel at cdfName,
+    113                phenoData  = phenoData,
+    114                nrow       = dim.intensity[1],
+    115                ncol       = dim.intensity[2],
+    116                annotation = cleancdfname(cdfname, addcdf=FALSE),
+    117                protocolData  = protocol,
+    118                description= description,
+    119                notes      = notes))
+
+Clearly the current author assumed the dimensions would be nrow x ncol
+and not reversed.
+
+Finally, a FYI to Ben: currently, the show method for AffyBatch does
+_not_ report nCol x nRow as stated in another thread, as per
+
+> getMethod("show", "AffyBatch")
+<SNIP>
+    cat("size of arrays=", nrow(object), "x", ncol(object), " features (",
+        object.size(object)%/%1024, " kb)\n", sep = "")
+<SNIP>
+
+A short time bug fix would be to change line 73 in read.affybatch.R from
+  dim.intensity <- headdetails[[2]]
+to
+  dim.intensity <- rev(headdetails[[2]])
+
+A better long term fix would be to put names on the output of
+affyio::read.celfile.header so that the order is documented, and also
+to
+
+Kasper
+
+
+On Thu, May 20, 2010 at 8:30 AM, Kasper Daniel Hansen
+<khansen at stat.berkeley.edu> wrote:
+> Your zip file does not seem to be working.
+>
+> Kasper
+>
+> On Thu, May 20, 2010 at 6:12 AM, Groot, Philip de <philip.degroot at wur.nl> wrote:
+>> Hello Karst,
+>>
+>> You can download all required files via this link:
+>> https://sendit.wur.nl/Download.aspx?id=9eed2afd-40a8-4770-b44b-5c0b6e55084c
+>>
+>> Simply execute the commands in the Create_CDF.R script and everything you need will be created and installed.
+>>
+>> Note that also a fixed "PdInfo2Cdf.R" file is included. To create a CDF with the rows & columns NOT swapped (so that gives the error during RMA) please edit the script at the commented-out lines. Currently, the script creates a proper CDF that also does the RMA normalization properly.
+>>
+>> Thank you for your help!
+>>
+>> Regards,
+>>
+>> Dr. Philip de Groot Ph.D.
+>> Bioinformatics Researcher
+>>
+>> Wageningen University / TIFN
+>> Nutrigenomics Consortium
+>> Nutrition, Metabolism & Genomics Group
+>> Division of Human Nutrition
+>> PO Box 8129, 6700 EV Wageningen
+>> Visiting Address: Erfelijkheidsleer: De Valk, Building 304
+>> Dreijenweg 2, 6703 HA  Wageningen
+>> Room: 0052a
+>> T: +31-317-485786
+>> F: +31-317-483342
+>> E-mail:   Philip.deGroot at wur.nl
+>> Internet: http://www.nutrigenomicsconsortium.nl
+>>             http://humannutrition.wur.nl/
+>>             https://madmax.bioinformatics.nl/
+>> ________________________________________
+>> From: kasperdanielhansen at gmail.com [kasperdanielhansen at gmail.com] On Behalf Of Kasper Daniel Hansen [khansen at stat.berkeley.edu]
+>> Sent: 19 May 2010 18:34
+>> To: Groot, Philip de
+>> Cc: bioc-devel at stat.math.ethz.ch; Hooiveld, Guido
+>> Subject: Re: [Bioc-devel] Dimension (rows & columns) in the writeCDF function   seems to be swapped
+>>
+>> Hi Philip
+>>
+>> I am trying to understand what you report here.
+>>
+>> If I use the "wrong" cdf file and I read it using either readCdfHeader
+>> in affxparser or read.cdffile.list (full output below) in affyio I get
+>>  Cols = 990
+>>  Rows = 1190
+>> and I have looked at the binary file using hexdump and this is also
+>> what is in the file according to Affymetrix file format
+>> specifications.
+>>
+>> This means that I can understand your message as either
+>> 1) the file pdmogene11stv1_wrong.cdf does not reflect the dimensions
+>> in the PDinfo package.
+>> 2) Using this cdf file as input to makecdfenv yields wrong results.
+>>
+>> Now, when I install the pd.mogene.1.1.st.v1 package I get
+>>> pd.mogene.1.1.st.v1
+>> Class........: AffyGenePDInfo
+>> Manufacturer.: Affymetrix
+>> Genome Build.: MM09
+>> Chip Geometry: 1190 rows x  990 columns
+>>
+>> which looks correct.  Not that the pdinfo2cdf script posted on the
+>> aroma.affymetrix website has an error (the lines
+>>  celHead <- readCelHeader(celfile)
+>>  nrows <- celHead$rows
+>>  ncols <- celHead$rows
+>> ), but you say in your email you have modifed the script (which never
+>> made it through), and given that the CDF file corresponds to the
+>> pdinfo object you have probably fixed this).
+>>
+>> That leaves 2).  A casual inspection of the tarball
+>>  mogene11stv1cdf_2.1.0_notSwitched.tar.gz
+>> makes it look as if the dimensions here are correct as well.  However,
+>> I suspect I am missing something.
+>>
+>> In order to debug this further (and there could very well be an error
+>> somewhere, where cols and rows are switched) we will need your scripts
+>> for generating the normalized intensities and we probably also need
+>> the cell files.  Please modify your scripts to use the exact same
+>> filenames as the packages you have posted on sendit.
+>>
+>> And not that you cannot attach anything (or at least, your attachments
+>> does not make it through to me).
+>>
+>> Kasper
+>>
+>>
+>>> tmp = read.cdffile.list("pdmogene11stv1_wrong.cdf")
+>>> tmp$Header
+>> $Dimensions
+>>  MagicNumber VersionNumber          Cols          Rows     n.QCunits
+>>           67             1           990          1190             0
+>>      n.units     LenRefSeq
+>>        35556             0
+>>
+>> $ReseqRefSeq
+>> [1] ""
+>>
+>>> readCdfHeader("pdmogene11stv1_wrong.cdf")
+>> $ncols
+>> [1] 990
+>>
+>> $nrows
+>> [1] 1190
+>>
+>> $nunits
+>> [1] 35556
+>>
+>> $nqcunits
+>> [1] 0
+>>
+>> $refseq
+>> [1] ""
+>>
+>> $chiptype
+>> [1] "pdmogene11stv1_wrong"
+>>
+>> $filename
+>> [1] "./pdmogene11stv1_wrong.cdf"
+>>
+>> $rows
+>> [1] 1190
+>>
+>> $cols
+>> [1] 990
+>>
+>> $probesets
+>> [1] 35556
+>>
+>> $qcprobesets
+>> [1] 0
+>>
+>> $reference
+>> [1] ""
+>>
+>>>
+>>
+>>
+>> On Wed, May 19, 2010 at 4:00 AM, Groot, Philip de <philip.degroot at wur.nl> wrote:
+>>> Dear Kasper,
+>>>
+>>> I am contacting you because I am puzzled with an issue that is related to affxparser. I submitted this message to the bioc-devel list on april 29 (subject: "RE: [Bioc-devel] FW: problem in ReadAffy function (affy and affyio libraries)") but never received any reply. Interestingly, in the file writeCDF.R (affxparser source) the following comment is present:
+>>>
+>>> # 2006-09-11 /HB
+>>> # o BUG FIX: nrows & ncols were swapped in the CDF header.
+>>> The problem:
+>>> I succesfully created a "mogene11stv1cdf" library that can be used with the "affy" library. Benefit of this is that e.g. the affyPLM library can be used for creating informative plots. I applied rma utilizing affy and oligo and found exactly the same normalized intensities (see attached png-image).
+>>>
+>>> So far so good, BUT... in order to get rma working for affy, I needed to switch the number or rows and columns when creating the CDF-file. And this puzzles me a lot! I do not understand where this originates from.
+>>>
+>>> Let me explain. I use the oligo library and the "pd.mogene.1.1.st.v1" annotation file to create the CDF-file. I (together with Guido Hooiveld) adapted the original "PdInfo2Cdf.R" script for this purpose. Information on the original "PdInfo2Cdf.R" script is here: http://www.aroma-project.org/node/40. The adapted file is also in the attachment.
+>>>
+>>> The CDF-file is created as follows:
+>>> source("PdInfo2Cdf.R")
+>>> PdInfo2Cdf("pd.mogene.1.1.st.v1", <An appropriate .CEL-file>);
+>>>
+>>> library(makecdfenv)
+>>> make.cdf.package(file="pdmogene11stv1.cdf", packagename = "mogene11stv1cdf", author="Philip de Groot", maintainer="Philip de Groot <Philip.deGroot at wur.nl>", version="2.1.0", species="Mus_musculus")
+>>>
+>>> Both CDF-files are available in a single zip-file via sendit:
+>>> https://sendit.wur.nl/Download.aspx?id=9299e472-1d5a-4f83-af75-c10aa1faf94c
+>>>
+>>> Does somebody has an explanation for this? Is it a bug in writeCDF?
+>>>
+>>> Regards,
+>>>
+>>> Dr. Philip de Groot Ph.D.
+>>> Bioinformatics Researcher
+>>>
+>>> Wageningen University / TIFN
+>>> Nutrigenomics Consortium
+>>> Nutrition, Metabolism & Genomics Group
+>>> Division of Human Nutrition
+>>> PO Box 8129, 6700 EV Wageningen
+>>> Visiting Address: Erfelijkheidsleer: De Valk, Building 304
+>>> Dreijenweg 2, 6703 HA  Wageningen
+>>> Room: 0052a
+>>> T: +31-317-485786
+>>> F: +31-317-483342
+>>> E-mail:   Philip.deGroot at wur.nl<mailto:Philip.deGroot at wur.nl>
+>>> Internet: http://www.nutrigenomicsconsortium.nl<http://www.nutrigenomicsconsortium.nl/>
+>>>             http://humannutrition.wur.nl/
+>>>             https://madmax.bioinformatics.nl/
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+
+From khansen at stat.berkeley.edu  Fri May 21 16:02:24 2010
+From: khansen at stat.berkeley.edu (Kasper Daniel Hansen)
+Date: Fri, 21 May 2010 10:02:24 -0400
+Subject: [Bioc-devel] Dimension (rows & columns) in the writeCDF
+	function seems to be swapped
+In-Reply-To: <AANLkTikaNkWo64Jm7gwpzGhrAXZOGranB3f0nAq0SUh4@mail.gmail.com>
+References: <669F86B281D61848914E902AA63F426939E1F40F22@scomp0535.wurnet.nl>
+	<AANLkTimRvItvD7I3Qxn9yzJvUYfQA0NDdFXzaCvHxJ1Z@mail.gmail.com>
+	<AANLkTinh6wJtJYIeT15hctkL0WMoOqgjP8k2K6V7BpMK@mail.gmail.com>
+	<AANLkTikaNkWo64Jm7gwpzGhrAXZOGranB3f0nAq0SUh4@mail.gmail.com>
+Message-ID: <AANLkTilHPvRe2NeNYl1XtvtakDxFbhl0p3n-VZadkf3k@mail.gmail.com>
+
+On Fri, May 21, 2010 at 3:56 AM, Henrik Bengtsson
+<henrik.bengtsson at gmail.com> wrote:
+> Thanks for this Kasper.
+>
+> Comments below.
+>
+> On Fri, May 21, 2010 at 2:25 AM, Kasper Daniel Hansen
+> <khansen at stat.berkeley.edu> wrote:
+> UPDATE TO AFFYIO:
+> I see that you picked names c("Cols", "Rows") for
+> affyio::read.celfile.header(). ?In affxparser::readCelHeader() these
+> are labelled *lower-case* c("cols", "rows"). ?Unless there is a
+> specific reason, I recommend to use the same names in affyio.
+>
+> Other than this, I agree with your update. ?Adding names should be
+> safe, especially since you are not changing the order (being explicit
+> about the latter can be useful to add to the NEWS file). ? Then
+> packages/functions relying on affyio::read.celfile.header() can start
+> updating their code (and remember to set the correct package
+> dependency in DESCRIPTION).
+>
+> Although it is not a bug in affyio, I also agree that it is worth
+> updating the release version of affyio, because the change will be
+> backward compatible, hence no API change. ?Updating the affyio release
+> will help fixing the bug in affy release.
+
+I was trying to use the same capitalization as the other output of
+read.celfile.header, but I agree that using the same capitalization as
+readCelHeader in affxparser might be better here.  I will change it in
+svn, after the discussion has ended (we still need to hear from
+Ben/Rafa).
+
+I will also do a grep on any package that depends/suggests/imports
+affyio in order to identify other packages potentially using this
+piece of code.
+
+Kasper
+
+
+From bmb at bmbolstad.com  Sun May 23 00:14:11 2010
+From: bmb at bmbolstad.com (Ben Bolstad)
+Date: Sat, 22 May 2010 15:14:11 -0700
+Subject: [Bioc-devel] Dimension (rows & columns) in the writeCDF
+ function seems to be swapped
+In-Reply-To: <AANLkTilHPvRe2NeNYl1XtvtakDxFbhl0p3n-VZadkf3k@mail.gmail.com>
+References: <669F86B281D61848914E902AA63F426939E1F40F22@scomp0535.wurnet.nl>
+	<AANLkTimRvItvD7I3Qxn9yzJvUYfQA0NDdFXzaCvHxJ1Z@mail.gmail.com>
+	<AANLkTinh6wJtJYIeT15hctkL0WMoOqgjP8k2K6V7BpMK@mail.gmail.com>
+	<AANLkTikaNkWo64Jm7gwpzGhrAXZOGranB3f0nAq0SUh4@mail.gmail.com>
+	<AANLkTilHPvRe2NeNYl1XtvtakDxFbhl0p3n-VZadkf3k@mail.gmail.com>
+Message-ID: <1274566451.2755.15.camel@localhost.localdomain>
+
+I don't have specific objections to capitalization. The current
+capitalization (initial letter upper-case) is consistent with the
+version 3 CEL file format (text).
+
+I see no reasons why these changes can not be batch ported to the
+release branch.
+
+Ben
+
+On Fri, 2010-05-21 at 10:02 -0400, Kasper Daniel Hansen wrote:
+> On Fri, May 21, 2010 at 3:56 AM, Henrik Bengtsson
+> <henrik.bengtsson at gmail.com> wrote:
+> > Thanks for this Kasper.
+> >
+> > Comments below.
+> >
+> > On Fri, May 21, 2010 at 2:25 AM, Kasper Daniel Hansen
+> > <khansen at stat.berkeley.edu> wrote:
+> > UPDATE TO AFFYIO:
+> > I see that you picked names c("Cols", "Rows") for
+> > affyio::read.celfile.header().  In affxparser::readCelHeader() these
+> > are labelled *lower-case* c("cols", "rows").  Unless there is a
+> > specific reason, I recommend to use the same names in affyio.
+> >
+> > Other than this, I agree with your update.  Adding names should be
+> > safe, especially since you are not changing the order (being explicit
+> > about the latter can be useful to add to the NEWS file).   Then
+> > packages/functions relying on affyio::read.celfile.header() can start
+> > updating their code (and remember to set the correct package
+> > dependency in DESCRIPTION).
+> >
+> > Although it is not a bug in affyio, I also agree that it is worth
+> > updating the release version of affyio, because the change will be
+> > backward compatible, hence no API change.  Updating the affyio release
+> > will help fixing the bug in affy release.
+> 
+> I was trying to use the same capitalization as the other output of
+> read.celfile.header, but I agree that using the same capitalization as
+> readCelHeader in affxparser might be better here.  I will change it in
+> svn, after the discussion has ended (we still need to hear from
+> Ben/Rafa).
+> 
+> I will also do a grep on any package that depends/suggests/imports
+> affyio in order to identify other packages potentially using this
+> piece of code.
+> 
+> Kasper
+
+
+From philip.degroot at wur.nl  Sun May 23 23:52:35 2010
+From: philip.degroot at wur.nl (Groot, Philip de)
+Date: Sun, 23 May 2010 23:52:35 +0200
+Subject: [Bioc-devel] Weird problem: invalid internal conversion?
+Message-ID: <669F86B281D61848914E902AA63F426939E1F40F3C@scomp0535.wurnet.nl>
+
+Hello all,
+
+I bumped upon the following weird problem:
+
+> coords <- rbind(c("-7.27996304796776", "-0.318763179006429"),
++                 c("-5.32491457041437", "0.0899675866959967"),
++                 c("-1.59446413449287", "-0.0537973666317704"),
++                 c("-4.07009809428656", "-0.311306729381296"),
++                 c("1.4145619288123", "0.212680197703627"))
+> rownames(coords) <- c("A", "B", "C", "D", "E")
+> colnames(coords) <- c("x", "y")
+>
+> Clusters <- as.factor(c(21, 18, 9, 23, 24))
+>
+> cbind(coords, Clusters)
+  x                   y                     Clusters
+A "-7.27996304796776" "-0.318763179006429"  "3"
+B "-5.32491457041437" "0.0899675866959967"  "2"
+C "-1.59446413449287" "-0.0537973666317704" "1"
+D "-4.07009809428656" "-0.311306729381296"  "4"
+E "1.4145619288123"   "0.212680197703627"   "5"
+> sessionInfo()
+R version 2.11.0 (2010-04-22)
+x86_64-unknown-linux-gnu
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+ [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+>
+
+The column "Clusters" does not contain the numbers that I expect! Instead, it contains the references to
+levels(Clusters)! I don't understand the reason. What do I miss here? Please note that this "feature" is at least present in R-2.10 and R-2.11 in both Windows and Linux. And yes: it is reproducible!
+
+Regards,
+
+Dr. Philip de Groot Ph.D.
+Bioinformatics Researcher
+
+Wageningen University / TIFN
+Nutrigenomics Consortium
+Nutrition, Metabolism & Genomics Group
+Division of Human Nutrition
+PO Box 8129, 6700 EV Wageningen
+Visiting Address: Erfelijkheidsleer: De Valk, Building 304
+Dreijenweg 2, 6703 HA  Wageningen
+Room: 0052a
+T: +31-317-485786
+F: +31-317-483342
+E-mail:   Philip.deGroot at wur.nl<mailto:Philip.deGroot at wur.nl>
+Internet: http://www.nutrigenomicsconsortium.nl<http://www.nutrigenomicsconsortium.nl/>
+             http://humannutrition.wur.nl/
+             https://madmax.bioinformatics.nl/
+
+
+From mtmorgan at fhcrc.org  Mon May 24 00:08:25 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Sun, 23 May 2010 15:08:25 -0700
+Subject: [Bioc-devel] Weird problem: invalid internal conversion?
+In-Reply-To: <669F86B281D61848914E902AA63F426939E1F40F3C@scomp0535.wurnet.nl>
+References: <669F86B281D61848914E902AA63F426939E1F40F3C@scomp0535.wurnet.nl>
+Message-ID: <4BF9A759.5020409@fhcrc.org>
+
+On 05/23/2010 02:52 PM, Groot, Philip de wrote:
+> Hello all,
+> 
+> I bumped upon the following weird problem:
+> 
+>> coords <- rbind(c("-7.27996304796776", "-0.318763179006429"),
+> +                 c("-5.32491457041437", "0.0899675866959967"),
+> +                 c("-1.59446413449287", "-0.0537973666317704"),
+> +                 c("-4.07009809428656", "-0.311306729381296"),
+> +                 c("1.4145619288123", "0.212680197703627"))
+>> rownames(coords) <- c("A", "B", "C", "D", "E")
+>> colnames(coords) <- c("x", "y")
+>>
+>> Clusters <- as.factor(c(21, 18, 9, 23, 24))
+>>
+>> cbind(coords, Clusters)
+>   x                   y                     Clusters
+> A "-7.27996304796776" "-0.318763179006429"  "3"
+> B "-5.32491457041437" "0.0899675866959967"  "2"
+> C "-1.59446413449287" "-0.0537973666317704" "1"
+> D "-4.07009809428656" "-0.311306729381296"  "4"
+> E "1.4145619288123"   "0.212680197703627"   "5"
+>> sessionInfo()
+> R version 2.11.0 (2010-04-22)
+> x86_64-unknown-linux-gnu
+> locale:
+>  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+>  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+>  [5] LC_MONETARY=C              LC_MESSAGES=en_US.UTF-8
+>  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+>  [9] LC_ADDRESS=C               LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+>>
+> 
+> The column "Clusters" does not contain the numbers that I expect!
+> Instead, it contains the references to levels(Clusters)! I don't
+> understand the reason. What do I miss here? Please note that this
+> "feature" is at least present in R-2.10 and R-2.11 in both Windows
+> and Linux. And yes: it is reproducible!
+
+from ?cbind,
+
+     Any classes the inputs
+     might have are discarded (in particular, factors are replaced by
+     their internal codes).
+
+so it's weird but as documented. Probably an R-help question.
+
+Martin
+
+
+
+> 
+> Regards,
+> 
+> Dr. Philip de Groot Ph.D.
+> Bioinformatics Researcher
+> 
+> Wageningen University / TIFN
+> Nutrigenomics Consortium
+> Nutrition, Metabolism & Genomics Group
+> Division of Human Nutrition
+> PO Box 8129, 6700 EV Wageningen
+> Visiting Address: Erfelijkheidsleer: De Valk, Building 304
+> Dreijenweg 2, 6703 HA  Wageningen
+> Room: 0052a
+> T: +31-317-485786
+> F: +31-317-483342
+> E-mail:   Philip.deGroot at wur.nl<mailto:Philip.deGroot at wur.nl>
+> Internet: http://www.nutrigenomicsconsortium.nl<http://www.nutrigenomicsconsortium.nl/>
+>              http://humannutrition.wur.nl/
+>              https://madmax.bioinformatics.nl/
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From mtmorgan at fhcrc.org  Mon May 24 15:02:55 2010
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 24 May 2010 06:02:55 -0700
+Subject: [Bioc-devel] REVISED BioC 2010 Scholarship Application due date
+Message-ID: <4BFA78FF.8000702@fhcrc.org>
+
+The BioC2010 Scholarship Application due date has been revised to June
+15; please accept our apologies for any inconvenience this may cause.
+
+See
+
+  https://secure.bioconductor.org/BioC2010/
+
+for more conference information.
+
+Best,
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From Julie.Zhu at umassmed.edu  Mon May 24 18:25:23 2010
+From: Julie.Zhu at umassmed.edu (Zhu, Julie)
+Date: Mon, 24 May 2010 12:25:23 -0400
+Subject: [Bioc-devel] Problem with merge
+Message-ID: <C82020B3.9985%julie.zhu@umassmed.edu>
+
+Dear developers,
+
+I encountered a strange merge problem and hope you can help me to understand
+why this is happening and how to resolve it.
+
+r3 and z1 are both data frames produced inside a function, when I try to
+merge these two (R.2.10 and R.2.11),  chr 1 [19000000, 19000300], chr1
+[30000000, 30000300] and chr2 [  100000,   100300] in r3 failed to merge
+with the corresponding rows in z1. Is this related to the precision on auto
+conversion of character to numeric? Thanks so much for your help in advance!
+
+r3 
+  feature_id name  chr  PeakLoc peakStart  peakEnd start_position
+end_position strand FeatureLoc
+1          1    1 chr1  2000160   2000010  2000310        1000000
+2000000      +    1000000
+2          2    2 chr1 19000150  19000000 19000300       10000000
+20000000      -   20000000
+3          2    3 chr1 30000150  30000000 30000300       10000000
+20000000      -   20000000
+4          4    4 chr2      450       300      600           1000
+5000      +       1000
+5          5    5 chr2     5650      5500     5800           6000
+7000      -       7000
+6          6    6 chr2   100150    100000   100300          10000
+15000      +      10000
+
+z1
+     name chr    peakStart  peakEnd    PeakLoc
+[1,] "1"  "chr1" "2000010"  "2000310"  "2000160"
+[2,] "2"  "chr1" "19000000" "19000300" "19000150"
+[3,] "3"  "chr1" "30000000" "30000300" "30000150"
+[4,] "4"  "chr2" "300"      "600"      "450"
+[5,] "5"  "chr2" "5500"     "5800"     "5650"
+[6,] "6"  "chr2" "100000"   "100300"   "100150"
+
+Best regards,
+
+Julie
+
+*******************************************
+Lihua Julie Zhu, Ph.D
+Research Associate Professor
+Program in Gene Function and Expression
+Program in Molecular Medicine
+University of Massachusetts Medical School
+364 Plantation Street, Room 613
+Worcester, MA 01605
+508-856-5256
+http://www.umassmed.edu/pgfe/faculty/zhu.cfm
+
+
+From lawrence.michael at gene.com  Mon May 24 18:28:16 2010
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Mon, 24 May 2010 09:28:16 -0700
+Subject: [Bioc-devel] Problem with merge
+In-Reply-To: <C82020B3.9985%julie.zhu@umassmed.edu>
+References: <C82020B3.9985%julie.zhu@umassmed.edu>
+Message-ID: <AANLkTikSZ32LzVkhPsoOMN0S-hkRAsh1LNfYSIgQixnD@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20100524/e44f8310/attachment.pl>
+

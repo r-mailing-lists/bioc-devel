@@ -1,0 +1,548 @@
+{
+  "list": "bioc-devel",
+  "description": "",
+  "month": "2008-06",
+  "messages": [
+    {
+      "id": "msg-f0d0d2dd9ee2",
+      "message_id": "<264855a00806040423n60dbd637m1afa3fcb8cb3e47@mail.gmail.com>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "5a8e0e6abee8db2f7eeaea6df4cbae4d8713a79b51ddc5ef74e7c509c4b05f87",
+      "date": "2008-06-04T07:23:46-04:00",
+      "subject": "[Bioc-devel] Views of a MaskedDNAstring in Biostrings",
+      "subject_clean": "[Bioc-devel] Views of a MaskedDNAstring in Biostrings",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Herve,\n\nI have been playing with the new version of Biostrings--very nice,\nindeed!  Is it possible to generate a view on a MaskedDNAString object\nusing the newest version of Biostrings?  I tried using views(.....) on\nhuman chr1 and got back a DNAstring object rather than a\nMaskedDNAString object.\n\nThanks,\nSean\n\n\n> sessionInfo()\nR version 2.8.0 Under development (unstable) (2008-05-12 r45677)\ni386-apple-darwin8.10.1\n\nlocale:\nC\n\nattached base packages:\n[1] tools     stats     graphics  grDevices utils     datasets  methods\n[8] base\n\nother attached packages:\n[1] BSgenome.Hsapiens.UCSC.hg18_1.3.7 BSgenome_1.9.3\n[3] Biostrings_2.9.17                 Biobase_2.1.3",
+      "body_snippet": "Herve,\n\nI have been playing with the new version of Biostrings--very nice,\nindeed!  Is it possible to generate a view on a MaskedDNAString object\nusing the newest version of Biostrings?  I tried using",
+      "thread_id": "thread-f0d0d2dd9ee2",
+      "thread_depth": 0,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-2207398c098f",
+      "message_id": "<4846EA4D.1070502@fhcrc.org>",
+      "from_name": "Herve Pages",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2008-06-04T12:17:33-07:00",
+      "subject": "[Bioc-devel] Views of a MaskedDNAstring in Biostrings",
+      "subject_clean": "[Bioc-devel] Views of a MaskedDNAstring in Biostrings",
+      "in_reply_to": "<264855a00806040423n60dbd637m1afa3fcb8cb3e47@mail.gmail.com>",
+      "references": [
+        "<264855a00806040423n60dbd637m1afa3fcb8cb3e47@mail.gmail.com>"
+      ],
+      "body_plain": "Hi Sean,\n\nSean Davis wrote:\n> Herve,\n> \n> I have been playing with the new version of Biostrings--very nice,\n> indeed!  Is it possible to generate a view on a MaskedDNAString object\n> using the newest version of Biostrings?  I tried using views(.....) on\n> human chr1 and got back a DNAstring object rather than a\n> MaskedDNAString object.\n\nNo, strictly speaking, you cannot create views on a MaskedDNAString\nobject. You can still call views() on a MaskedDNAString object but\nthe masks will be dropped so you will get a set of views on the\noriginal (unmasked) sequence in return.\nThe XStringViews container has been around for a while and its\n'subject' slot has been of type XString from the beginning (there\nhas been some renaming in the meantime e.g. BString -> XString and\nBStringViews -> XStringViews, but these containers remain basically\nthe same).\nWe could change the definition of the XStringViews class to allow\nthe 'subject' slot to be a MaskedXString object (in addition to being\nan XString object) or we could introduce a new class (MaskedXStringViews)\nthat would extend the XStringViews class. Maybe I like the latter better,\nnot sure yet, I would need to think a little bit more about it.\nBut having a container for storing views on a MaskedXString object\nwill add yet another level of complexity and there are lots of details\nthat will need to be examined to make this new container fit nicely\ninto the global picture.\n\nIn the meantime, you can work around this by using \"hard masking\".\nIf you inject a hard mask in your sequence:\n\n   > mask0 <- Mask(mask.width=29, start=c(3, 10, 25), width=c(6, 8, 5))\n   > x <- DNAString(\"ACACAACTAGATAGNACTNNGAGAGACGC\")\n   > masks(x) <- mask0\n   > x\n     29-letter \"MaskedDNAString\" instance (# for masking)\n   seq: AC######A########TNNGAGA#####\n   masks:\n     maskedwidth maskedratio active\n   1          19   0.6551724   TRUE\n   > y <- injectHardMask(x)\n   > y\n     29-letter \"DNAString\" instance\n   seq: AC++++++A++++++++TNNGAGA+++++\n\nThen, creating views on it keeps the hard mask information:\n\n   > views(y, 1:7, 23:29)\n     Views on a 29-letter DNAString subject\n   subject: AC++++++A++++++++TNNGAGA+++++\n   views:\n       start end width\n   [1]     1  23    23 [AC++++++A++++++++TNNGAG]\n   [2]     2  24    23 [C++++++A++++++++TNNGAGA]\n   [3]     3  25    23 [++++++A++++++++TNNGAGA+]\n   [4]     4  26    23 [+++++A++++++++TNNGAGA++]\n   [5]     5  27    23 [++++A++++++++TNNGAGA+++]\n   [6]     6  28    23 [+++A++++++++TNNGAGA++++]\n   [7]     7  29    23 [++A++++++++TNNGAGA+++++]\n\nThis is because, with a hard mask, the masking letter ('+', belongs\nto the DNAString alphabet) is really *in* the sequence.\n\nHope this helps,\nH.\n\n> \n> Thanks,\n> Sean\n> \n> \n>> sessionInfo()\n> R version 2.8.0 Under development (unstable) (2008-05-12 r45677)\n> i386-apple-darwin8.10.1\n> \n> locale:\n> C\n> \n> attached base packages:\n> [1] tools     stats     graphics  grDevices utils     datasets  methods\n> [8] base\n> \n> other attached packages:\n> [1] BSgenome.Hsapiens.UCSC.hg18_1.3.7 BSgenome_1.9.3\n> [3] Biostrings_2.9.17                 Biobase_2.1.3",
+      "body_snippet": "Hi Sean,\n\nSean Davis wrote:\n> Herve,\n> \n> I have been playing with the new version of Biostrings--very nice,\n> indeed!  Is it possible to generate a view on a MaskedDNAString object\n> using the newest",
+      "thread_id": "thread-f0d0d2dd9ee2",
+      "thread_depth": 1,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-37010d4e99f4",
+      "message_id": "<264855a00806041317o292ef73do6bb04f679f38eee5@mail.gmail.com>",
+      "from_name": "Sean Davis",
+      "from_email_hash": "5a8e0e6abee8db2f7eeaea6df4cbae4d8713a79b51ddc5ef74e7c509c4b05f87",
+      "date": "2008-06-04T16:17:22-04:00",
+      "subject": "[Bioc-devel] Views of a MaskedDNAstring in Biostrings",
+      "subject_clean": "[Bioc-devel] Views of a MaskedDNAstring in Biostrings",
+      "in_reply_to": "<4846EA4D.1070502@fhcrc.org>",
+      "references": [
+        "<264855a00806040423n60dbd637m1afa3fcb8cb3e47@mail.gmail.com>",
+        "<4846EA4D.1070502@fhcrc.org>"
+      ],
+      "body_plain": "On Wed, Jun 4, 2008 at 3:17 PM, Herve Pages <hpages at fhcrc.org> wrote:\n> Hi Sean,\n>\n> Sean Davis wrote:\n>>\n>> Herve,\n>>\n>> I have been playing with the new version of Biostrings--very nice,\n>> indeed!  Is it possible to generate a view on a MaskedDNAString object\n>> using the newest version of Biostrings?  I tried using views(.....) on\n>> human chr1 and got back a DNAstring object rather than a\n>> MaskedDNAString object.\n>\n> No, strictly speaking, you cannot create views on a MaskedDNAString\n> object. You can still call views() on a MaskedDNAString object but\n> the masks will be dropped so you will get a set of views on the\n> original (unmasked) sequence in return.\n> The XStringViews container has been around for a while and its\n> 'subject' slot has been of type XString from the beginning (there\n> has been some renaming in the meantime e.g. BString -> XString and\n> BStringViews -> XStringViews, but these containers remain basically\n> the same).\n> We could change the definition of the XStringViews class to allow\n> the 'subject' slot to be a MaskedXString object (in addition to being\n> an XString object) or we could introduce a new class (MaskedXStringViews)\n> that would extend the XStringViews class. Maybe I like the latter better,\n> not sure yet, I would need to think a little bit more about it.\n> But having a container for storing views on a MaskedXString object\n> will add yet another level of complexity and there are lots of details\n> that will need to be examined to make this new container fit nicely\n> into the global picture.\n>\n> In the meantime, you can work around this by using \"hard masking\".\n> If you inject a hard mask in your sequence:\n>\n>  > mask0 <- Mask(mask.width=29, start=c(3, 10, 25), width=c(6, 8, 5))\n>  > x <- DNAString(\"ACACAACTAGATAGNACTNNGAGAGACGC\")\n>  > masks(x) <- mask0\n>  > x\n>    29-letter \"MaskedDNAString\" instance (# for masking)\n>  seq: AC######A########TNNGAGA#####\n>  masks:\n>    maskedwidth maskedratio active\n>  1          19   0.6551724   TRUE\n>  > y <- injectHardMask(x)\n>  > y\n>    29-letter \"DNAString\" instance\n>  seq: AC++++++A++++++++TNNGAGA+++++\n>\n> Then, creating views on it keeps the hard mask information:\n>\n>  > views(y, 1:7, 23:29)\n>    Views on a 29-letter DNAString subject\n>  subject: AC++++++A++++++++TNNGAGA+++++\n>  views:\n>      start end width\n>  [1]     1  23    23 [AC++++++A++++++++TNNGAG]\n>  [2]     2  24    23 [C++++++A++++++++TNNGAGA]\n>  [3]     3  25    23 [++++++A++++++++TNNGAGA+]\n>  [4]     4  26    23 [+++++A++++++++TNNGAGA++]\n>  [5]     5  27    23 [++++A++++++++TNNGAGA+++]\n>  [6]     6  28    23 [+++A++++++++TNNGAGA++++]\n>  [7]     7  29    23 [++A++++++++TNNGAGA+++++]\n>\n> This is because, with a hard mask, the masking letter ('+', belongs\n> to the DNAString alphabet) is really *in* the sequence.\n>\n> Hope this helps,\n\nThis solution will do just fine for what I need.  The other route I\nthought of is to use coverage() to get an integer representation of\nthe mask and use that for determining masked bases relative to a view.\n\nSean\n\n>>\n>> Thanks,\n>> Sean\n>>\n>>\n>>> sessionInfo()\n>>\n>> R version 2.8.0 Under development (unstable) (2008-05-12 r45677)\n>> i386-apple-darwin8.10.1\n>>\n>> locale:\n>> C\n>>\n>> attached base packages:\n>> [1] tools     stats     graphics  grDevices utils     datasets  methods\n>> [8] base\n>>\n>> other attached packages:\n>> [1] BSgenome.Hsapiens.UCSC.hg18_1.3.7 BSgenome_1.9.3\n>> [3] Biostrings_2.9.17                 Biobase_2.1.3\n>\n>",
+      "body_snippet": "On Wed, Jun 4, 2008 at 3:17 PM, Herve Pages <hpages at fhcrc.org> wrote:\n> Hi Sean,\n>\n> Sean Davis wrote:\n>>\n>> Herve,\n>>\n>> I have been playing with the new version of Biostrings--very nice,\n>> indee",
+      "thread_id": "thread-f0d0d2dd9ee2",
+      "thread_depth": 2,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-2bf5dd966541",
+      "message_id": "<484E686D.30903@mdacc.tmc.edu>",
+      "from_name": "Kevin R. Coombes",
+      "from_email_hash": "375938c6f312d6b2e1e3e64a12957191f738351ecb97f436ec1cf74e8cbfc6c5",
+      "date": "2008-06-10T06:41:33-05:00",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "subject_clean": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi,\n\nThe BioConductor package guidelines say that a package should take less \nthan five minutes to run \"R CMD check\". I have a package that is almost \nready to submit; however, it currently includes nontrivial regression \ntesting in the \"tests\" subdirectory. With the tests, the time for \"R CMD \ncheck\" could be significantly longer than five minutes. Without the \ntests, the package easily fits within the time limit.\n\n[1] I know that I can run \"R CMD check --no-tests [PKG]\" to prevent the \ntests from running when I check the code myself. Is there any way for a \npackage submitted to BioConductor to indicate that the tests should be \nskipped?\n\n[2] Alternatively, is there an easy way to include the tests so that I \ncan run them whenever I want to make sure I haven't broken the code (too \nbadly ...), but not force everyone else to run them when checking the \nrest of the structure of the code and documentation?\n\nThanks in advance,\n     Kevin",
+      "body_snippet": "Hi,\n\nThe BioConductor package guidelines say that a package should take less \nthan five minutes to run \"R CMD check\". I have a package that is almost \nready to submit; however, it currently includes n",
+      "thread_id": "thread-2bf5dd966541",
+      "thread_depth": 0,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-ae5eae34e8ae",
+      "message_id": "<27d1e6020806100447t163c3c9hf7442aa9988d0104@mail.gmail.com>",
+      "from_name": "Laurent Gautier",
+      "from_email_hash": "bf804a19bca99afd3e8648a6bb32a7956ed8fcfdac81cf240f84fad273a2991e",
+      "date": "2008-06-10T13:47:57+02:00",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "subject_clean": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "in_reply_to": "<484E686D.30903@mdacc.tmc.edu>",
+      "references": [
+        "<484E686D.30903@mdacc.tmc.edu>"
+      ],
+      "body_plain": "2008/6/10 Kevin R. Coombes <krcoombes at mdacc.tmc.edu>:\n> Hi,\n>\n> The BioConductor package guidelines say that a package should take less than\n> five minutes to run \"R CMD check\". I have a package that is almost ready to\n> submit; however, it currently includes nontrivial regression testing in the\n> \"tests\" subdirectory. With the tests, the time for \"R CMD check\" could be\n> significantly longer than five minutes. Without the tests, the package\n> easily fits within the time limit.\n>\n> [1] I know that I can run \"R CMD check --no-tests [PKG]\" to prevent the\n> tests from running when I check the code myself. Is there any way for a\n> package submitted to BioConductor to indicate that the tests should be\n> skipped?\n>\n> [2] Alternatively, is there an easy way to include the tests so that I can\n> run them whenever I want to make sure I haven't broken the code (too badly\n> ...), but not force everyone else to run them when checking the rest of the\n> structure of the code and documentation?\n\nYou could consider having them in your package, in a directory\ninst/tests/ for example\n(so the tests are still available from an installed package).\n\n> Thanks in advance,\n>    Kevin\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "2008/6/10 Kevin R. Coombes <krcoombes at mdacc.tmc.edu>:\n> Hi,\n>\n> The BioConductor package guidelines say that a package should take less than\n> five minutes to run \"R CMD check\". I have a package th",
+      "thread_id": "thread-2bf5dd966541",
+      "thread_depth": 1,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-f223a81ef69b",
+      "message_id": "<484E8BC9.4040801@mdacc.tmc.edu>",
+      "from_name": "Kevin R. Coombes",
+      "from_email_hash": "375938c6f312d6b2e1e3e64a12957191f738351ecb97f436ec1cf74e8cbfc6c5",
+      "date": "2008-06-10T09:12:25-05:00",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "subject_clean": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "in_reply_to": "<27d1e6020806100447t163c3c9hf7442aa9988d0104@mail.gmail.com>",
+      "references": [
+        "<484E686D.30903@mdacc.tmc.edu>",
+        "<27d1e6020806100447t163c3c9hf7442aa9988d0104@mail.gmail.com>"
+      ],
+      "body_plain": "Hi,\n\nI have considered that possibility, but am not yet convinced that it is \nthe best approach. I will, of course, do something like that if I cannot \npersuade this list that an alternative approach might be better. The \nbasic argument is:\n\n* Complex algorithms can be better maintained if they are accompanied by \nregression testing.\n* \"R CMD check\" provides an automated method to run regression tests, \nwith a defined directory structure for storing those tests.\n* Changing the directory location in the source makes running the \nregression tests more awkward and thus less likely to occur on a regular \nbasis.\n* The \"--no-tests\" argument already provides a mechanism for preventing \nthe tests from being run.\n\nWhat appears to be missing is either a mechanism to designate the tests \nas optional or to indicate a preference for not running some or all of \nthem. I can think of three ways to accomplish my goals in this matter:\n\n[1] Make \"--no-tests\" the default way to run \"R CMD check\" at \nBioConductor. (Of course, this is unlikely to be the optimal solution \nsince it merely avoids the question.)\n[2] Add a field to the DESCRIPTION file that tells \"R CMD check\" whether \nor not to run the tests. Something like\n\tTests: run\nor\n\tTests: dontrun\n[3] Add an optional special file in the tests directory that indicates \nthe complexity/length of the tests that would allow \"R CMD check\" to \ndecide whether or not to run them. Perhaps something like\n\n###################\n# COMPLEXITY file\n\ntest1.R: long\ntest2.R: short\n...\n###################\n\nOf course, options [2] or [3] require changes to \"R CMD check\" (for \nwhich I should eventually move this discussion to the R-devel list), but \nI am really only interested in convincing BioConductor that (possibly \ncomplex) regression tests are a good thing, and should be encouraged by \nadopting something like [1].\n\nBest,\n\tKevin\n\nLaurent Gautier wrote:\n> 2008/6/10 Kevin R. Coombes <krcoombes at mdacc.tmc.edu>:\n>> Hi,\n>>\n>> The BioConductor package guidelines say that a package should take less than\n>> five minutes to run \"R CMD check\". I have a package that is almost ready to\n>> submit; however, it currently includes nontrivial regression testing in the\n>> \"tests\" subdirectory. With the tests, the time for \"R CMD check\" could be\n>> significantly longer than five minutes. Without the tests, the package\n>> easily fits within the time limit.\n>>\n>> [1] I know that I can run \"R CMD check --no-tests [PKG]\" to prevent the\n>> tests from running when I check the code myself. Is there any way for a\n>> package submitted to BioConductor to indicate that the tests should be\n>> skipped?\n>>\n>> [2] Alternatively, is there an easy way to include the tests so that I can\n>> run them whenever I want to make sure I haven't broken the code (too badly\n>> ...), but not force everyone else to run them when checking the rest of the\n>> structure of the code and documentation?\n> \n> You could consider having them in your package, in a directory\n> inst/tests/ for example\n> (so the tests are still available from an installed package).\n> \n>> Thanks in advance,\n>>    Kevin\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>",
+      "body_snippet": "Hi,\n\nI have considered that possibility, but am not yet convinced that it is \nthe best approach. I will, of course, do something like that if I cannot \npersuade this list that an alternative approach ",
+      "thread_id": "thread-2bf5dd966541",
+      "thread_depth": 2,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-4efe6acd0319",
+      "message_id": "<27d1e6020806100737v4e848a2dw14f04e3b4a5a34af@mail.gmail.com>",
+      "from_name": "Laurent Gautier",
+      "from_email_hash": "bf804a19bca99afd3e8648a6bb32a7956ed8fcfdac81cf240f84fad273a2991e",
+      "date": "2008-06-10T16:37:17+02:00",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "subject_clean": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "in_reply_to": "<484E8BC9.4040801@mdacc.tmc.edu>",
+      "references": [
+        "<484E686D.30903@mdacc.tmc.edu>",
+        "<27d1e6020806100447t163c3c9hf7442aa9988d0104@mail.gmail.com>",
+        "<484E8BC9.4040801@mdacc.tmc.edu>"
+      ],
+      "body_plain": "I think that you points are relevant, and the value of regression\ntests is well understood... however\nthey require changes in \"R CMD check\" (and that's something for r-devel).\n\n[1] The trouble with suggesting \"R CMD check --no-tests\" as a default,\nis that package\nmaintainers with tests running quickly may feel unhappy (as they prefer having\nthe tests ran automatically without having to worry about what switch is where).\n\n[2] The proposed change to the DESCRIPTION file (Test: run/don't run)\ncan be emulated,\nfor example by adding a variable DO_TEST at the top of the test script\nand having a \"if (DO_TEST)\"\nbranching.\n\n[3] The notion of short or long is very relative, I guess. In the\nearly days of bioconductor,\nwhen the number of packages was smaller, packages maintainer were only\nscolded when\nthe check was reaching half an hour or more.\n\nJust a thought,\n\n\nLaurent\n\n\n\n\n\n\n2008/6/10 Kevin R. Coombes <krcoombes at mdacc.tmc.edu>:\n> Hi,\n>\n> I have considered that possibility, but am not yet convinced that it is the\n> best approach. I will, of course, do something like that if I cannot\n> persuade this list that an alternative approach might be better. The basic\n> argument is:\n>\n> * Complex algorithms can be better maintained if they are accompanied by\n> regression testing.\n> * \"R CMD check\" provides an automated method to run regression tests, with a\n> defined directory structure for storing those tests.\n> * Changing the directory location in the source makes running the regression\n> tests more awkward and thus less likely to occur on a regular basis.\n> * The \"--no-tests\" argument already provides a mechanism for preventing the\n> tests from being run.\n>\n> What appears to be missing is either a mechanism to designate the tests as\n> optional or to indicate a preference for not running some or all of them. I\n> can think of three ways to accomplish my goals in this matter:\n>\n> [1] Make \"--no-tests\" the default way to run \"R CMD check\" at BioConductor.\n> (Of course, this is unlikely to be the optimal solution since it merely\n> avoids the question.)\n> [2] Add a field to the DESCRIPTION file that tells \"R CMD check\" whether or\n> not to run the tests. Something like\n>        Tests: run\n> or\n>        Tests: dontrun\n> [3] Add an optional special file in the tests directory that indicates the\n> complexity/length of the tests that would allow \"R CMD check\" to decide\n> whether or not to run them. Perhaps something like\n>\n> ###################\n> # COMPLEXITY file\n>\n> test1.R: long\n> test2.R: short\n> ...\n> ###################\n>\n> Of course, options [2] or [3] require changes to \"R CMD check\" (for which I\n> should eventually move this discussion to the R-devel list), but I am really\n> only interested in convincing BioConductor that (possibly complex)\n> regression tests are a good thing, and should be encouraged by adopting\n> something like [1].\n>\n> Best,\n>        Kevin\n>\n> Laurent Gautier wrote:\n>>\n>> 2008/6/10 Kevin R. Coombes <krcoombes at mdacc.tmc.edu>:\n>>>\n>>> Hi,\n>>>\n>>> The BioConductor package guidelines say that a package should take less\n>>> than\n>>> five minutes to run \"R CMD check\". I have a package that is almost ready\n>>> to\n>>> submit; however, it currently includes nontrivial regression testing in\n>>> the\n>>> \"tests\" subdirectory. With the tests, the time for \"R CMD check\" could be\n>>> significantly longer than five minutes. Without the tests, the package\n>>> easily fits within the time limit.\n>>>\n>>> [1] I know that I can run \"R CMD check --no-tests [PKG]\" to prevent the\n>>> tests from running when I check the code myself. Is there any way for a\n>>> package submitted to BioConductor to indicate that the tests should be\n>>> skipped?\n>>>\n>>> [2] Alternatively, is there an easy way to include the tests so that I\n>>> can\n>>> run them whenever I want to make sure I haven't broken the code (too\n>>> badly\n>>> ...), but not force everyone else to run them when checking the rest of\n>>> the\n>>> structure of the code and documentation?\n>>\n>> You could consider having them in your package, in a directory\n>> inst/tests/ for example\n>> (so the tests are still available from an installed package).\n>>\n>>> Thanks in advance,\n>>>   Kevin\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>\n>",
+      "body_snippet": "I think that you points are relevant, and the value of regression\ntests is well understood... however\nthey require changes in \"R CMD check\" (and that's something for r-devel).\n\n[1] The trouble with su",
+      "thread_id": "thread-2bf5dd966541",
+      "thread_depth": 3,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-63b29eb1f1c6",
+      "message_id": "<484EB7E4.5000506@fhcrc.org>",
+      "from_name": "Robert Gentleman",
+      "from_email_hash": "7de55c0000c437ab05b37d16b5a00e42a9bba6254ce27d76eb635498d1e3dda7",
+      "date": "2008-06-10T10:20:36-07:00",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "subject_clean": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "in_reply_to": "<20080610142252.518891A4DD@jade.fhcrc.org>",
+      "references": [
+        "<484E686D.30903@mdacc.tmc.edu>",
+        "<27d1e6020806100447t163c3c9hf7442aa9988d0104@mail.gmail.com>",
+        "<20080610142252.518891A4DD@jade.fhcrc.org>"
+      ],
+      "body_plain": "Hi Kevin,\n\nKevin R. Coombes wrote:\n> Hi,\n> \n> I have considered that possibility, but am not yet convinced that it is \n> the best approach. I will, of course, do something like that if I cannot \n> persuade this list that an alternative approach might be better. The \n\n\nHi Kevin,\n   These are good points, and not ones that are somehow suddenly new. \nThe issues are ones we grapple with, and there are many different \nsolutions that developers have taken.\n\n   First, I think that there may be a misconception in play. The build \nsystem is essentially just that: a build system.  We don't have the \nresources to provide a comprehensive testing resource for developers. We \ndo minimal checks and push out the packages that pass those in as timely \na fashion as possible. We do expect that developers take the steps you \nare describing, and before committing code to BioC that they have been \ncareful to run all appropriate testing they deem necessary, but I don't \nsee where there is, or should be, a reliance on having the testing done \nevery day on four (or more) platforms, or being done by Bioconductor at \nall.  I think that is one of the developer's responsibilities, not the \nproject's.\n\n   The time limits were instituted because the build system was unable \nto complete within 24 hours (and the math is pretty simple, there are \nover 260 packages, so we need to build more than 10 per hour to be done \nevery day).  And as we upgrade equipment, we are hoping to be able to \nkeep the guidelines as they are.  Other options are to allow longer \ntests but have longer delays before packages are ready. My impression is \nthat most developers would rather have their code available sooner, but \nI would appreciate hearing alternative points of view.  Perhaps this \ntopic can be visited during the developer day at BioC2008.\n\n   I strongly encourage you to do the testing you believe is \nappropriate.  I will mention that the basic checks for all of R (and \nthere are two levels of testing even there) would run within the time \nframe we have asked package maintainers to meet.\n\n   best wishes\n     Robert\n\n\n> basic argument is:\n> \n> * Complex algorithms can be better maintained if they are accompanied by \n> regression testing.\n> * \"R CMD check\" provides an automated method to run regression tests, \n> with a defined directory structure for storing those tests.\n> * Changing the directory location in the source makes running the \n> regression tests more awkward and thus less likely to occur on a regular \n> basis.\n> * The \"--no-tests\" argument already provides a mechanism for preventing \n> the tests from being run.\n> \n> What appears to be missing is either a mechanism to designate the tests \n> as optional or to indicate a preference for not running some or all of \n> them. I can think of three ways to accomplish my goals in this matter:\n> \n> [1] Make \"--no-tests\" the default way to run \"R CMD check\" at \n> BioConductor. (Of course, this is unlikely to be the optimal solution \n> since it merely avoids the question.)\n> [2] Add a field to the DESCRIPTION file that tells \"R CMD check\" whether \n> or not to run the tests. Something like\n>     Tests: run\n> or\n>     Tests: dontrun\n> [3] Add an optional special file in the tests directory that indicates \n> the complexity/length of the tests that would allow \"R CMD check\" to \n> decide whether or not to run them. Perhaps something like\n> \n> ###################\n> # COMPLEXITY file\n> \n> test1.R: long\n> test2.R: short\n> ...\n> ###################\n> \n> Of course, options [2] or [3] require changes to \"R CMD check\" (for \n> which I should eventually move this discussion to the R-devel list), but \n> I am really only interested in convincing BioConductor that (possibly \n> complex) regression tests are a good thing, and should be encouraged by \n> adopting something like [1].\n> \n> Best,\n>     Kevin\n> \n> Laurent Gautier wrote:\n>> 2008/6/10 Kevin R. Coombes <krcoombes at mdacc.tmc.edu>:\n>>> Hi,\n>>>\n>>> The BioConductor package guidelines say that a package should take \n>>> less than\n>>> five minutes to run \"R CMD check\". I have a package that is almost \n>>> ready to\n>>> submit; however, it currently includes nontrivial regression testing \n>>> in the\n>>> \"tests\" subdirectory. With the tests, the time for \"R CMD check\" \n>>> could be\n>>> significantly longer than five minutes. Without the tests, the package\n>>> easily fits within the time limit.\n>>>\n>>> [1] I know that I can run \"R CMD check --no-tests [PKG]\" to prevent the\n>>> tests from running when I check the code myself. Is there any way for a\n>>> package submitted to BioConductor to indicate that the tests should be\n>>> skipped?\n>>>\n>>> [2] Alternatively, is there an easy way to include the tests so that \n>>> I can\n>>> run them whenever I want to make sure I haven't broken the code (too \n>>> badly\n>>> ...), but not force everyone else to run them when checking the rest \n>>> of the\n>>> structure of the code and documentation?\n>>\n>> You could consider having them in your package, in a directory\n>> inst/tests/ for example\n>> (so the tests are still available from an installed package).\n>>\n>>> Thanks in advance,\n>>>    Kevin\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n\n-- \nRobert Gentleman, PhD\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M2-B876\nPO Box 19024\nSeattle, Washington 98109-1024\n206-667-7700\nrgentlem at fhcrc.org",
+      "body_snippet": "Hi Kevin,\n\nKevin R. Coombes wrote:\n> Hi,\n> \n> I have considered that possibility, but am not yet convinced that it is \n> the best approach. I will, of course, do something like that if I cannot \n> per",
+      "thread_id": "thread-63b29eb1f1c6",
+      "thread_depth": 0,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-11a4becab316",
+      "message_id": "<484EBB36.1030100@mdacc.tmc.edu>",
+      "from_name": "Kevin R. Coombes",
+      "from_email_hash": "375938c6f312d6b2e1e3e64a12957191f738351ecb97f436ec1cf74e8cbfc6c5",
+      "date": "2008-06-10T12:34:46-05:00",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "subject_clean": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "in_reply_to": "<484EB7E4.5000506@fhcrc.org>",
+      "references": [
+        "<484E686D.30903@mdacc.tmc.edu>",
+        "<27d1e6020806100447t163c3c9hf7442aa9988d0104@mail.gmail.com>",
+        "<20080610142252.518891A4DD@jade.fhcrc.org>",
+        "<484EB7E4.5000506@fhcrc.org>"
+      ],
+      "body_plain": "Hi Robert,\n\nI didn't think the issues were new, but I figured it couldn't hurt to \nraise them again....\n\nI also understand the need for the time limits, and agree with their \nrationale. But building (\"R CMD build\" or \"R CMD build --binary\") for \nthe package I'm putting together is pretty fast. The part that takes \ntime is checking, largely because I am running regression tests on \nseveral different honest-to-god real data sets. And I'm doing the \ntesting with at least three different statistical models to fit the data \n(since we don't claim to know which one will ultimately turn out to be \nthe best). Now, I could game the system by breaking everything into 3 \ndifferent sub-packages, where each test could probably be completed \nwithin five minutes. However, that seems like a rather artificial \napproach to the problem.  I guess what I'd really like is two different \nlevels of testing. In addition to the time-consuming tests, my package \nalso has scripts that do basic tests to make sure that the code behaves \n(as) sensibly (as possible) even when the user hands it the wrong kind \nof inputs. It would be nice to have a system that allowed these \"easy \nbut important interface tests\" to run routinely while keeping the \"time \nconsuming core algorithm development\" tests around for when you are \ntesting out more radical changes.\n\nThanks for listening ...\n\n\tKevin\n\nRobert Gentleman wrote:\n> Hi Kevin,\n> \n> Kevin R. Coombes wrote:\n>> Hi,\n>>\n>> I have considered that possibility, but am not yet convinced that it \n>> is the best approach. I will, of course, do something like that if I \n>> cannot persuade this list that an alternative approach might be \n>> better. The \n> \n> \n> Hi Kevin,\n>   These are good points, and not ones that are somehow suddenly new. The \n> issues are ones we grapple with, and there are many different solutions \n> that developers have taken.\n> \n>   First, I think that there may be a misconception in play. The build \n> system is essentially just that: a build system.  We don't have the \n> resources to provide a comprehensive testing resource for developers. We \n> do minimal checks and push out the packages that pass those in as timely \n> a fashion as possible. We do expect that developers take the steps you \n> are describing, and before committing code to BioC that they have been \n> careful to run all appropriate testing they deem necessary, but I don't \n> see where there is, or should be, a reliance on having the testing done \n> every day on four (or more) platforms, or being done by Bioconductor at \n> all.  I think that is one of the developer's responsibilities, not the \n> project's.\n> \n>   The time limits were instituted because the build system was unable to \n> complete within 24 hours (and the math is pretty simple, there are over \n> 260 packages, so we need to build more than 10 per hour to be done every \n> day).  And as we upgrade equipment, we are hoping to be able to keep the \n> guidelines as they are.  Other options are to allow longer tests but \n> have longer delays before packages are ready. My impression is that most \n> developers would rather have their code available sooner, but I would \n> appreciate hearing alternative points of view.  Perhaps this topic can \n> be visited during the developer day at BioC2008.\n> \n>   I strongly encourage you to do the testing you believe is \n> appropriate.  I will mention that the basic checks for all of R (and \n> there are two levels of testing even there) would run within the time \n> frame we have asked package maintainers to meet.\n> \n>   best wishes\n>     Robert\n> \n> \n>> basic argument is:\n>>\n>> * Complex algorithms can be better maintained if they are accompanied \n>> by regression testing.\n>> * \"R CMD check\" provides an automated method to run regression tests, \n>> with a defined directory structure for storing those tests.\n>> * Changing the directory location in the source makes running the \n>> regression tests more awkward and thus less likely to occur on a \n>> regular basis.\n>> * The \"--no-tests\" argument already provides a mechanism for \n>> preventing the tests from being run.\n>>\n>> What appears to be missing is either a mechanism to designate the \n>> tests as optional or to indicate a preference for not running some or \n>> all of them. I can think of three ways to accomplish my goals in this \n>> matter:\n>>\n>> [1] Make \"--no-tests\" the default way to run \"R CMD check\" at \n>> BioConductor. (Of course, this is unlikely to be the optimal solution \n>> since it merely avoids the question.)\n>> [2] Add a field to the DESCRIPTION file that tells \"R CMD check\" \n>> whether or not to run the tests. Something like\n>>     Tests: run\n>> or\n>>     Tests: dontrun\n>> [3] Add an optional special file in the tests directory that indicates \n>> the complexity/length of the tests that would allow \"R CMD check\" to \n>> decide whether or not to run them. Perhaps something like\n>>\n>> ###################\n>> # COMPLEXITY file\n>>\n>> test1.R: long\n>> test2.R: short\n>> ...\n>> ###################\n>>\n>> Of course, options [2] or [3] require changes to \"R CMD check\" (for \n>> which I should eventually move this discussion to the R-devel list), \n>> but I am really only interested in convincing BioConductor that \n>> (possibly complex) regression tests are a good thing, and should be \n>> encouraged by adopting something like [1].\n>>\n>> Best,\n>>     Kevin\n>>\n>> Laurent Gautier wrote:\n>>> 2008/6/10 Kevin R. Coombes <krcoombes at mdacc.tmc.edu>:\n>>>> Hi,\n>>>>\n>>>> The BioConductor package guidelines say that a package should take \n>>>> less than\n>>>> five minutes to run \"R CMD check\". I have a package that is almost \n>>>> ready to\n>>>> submit; however, it currently includes nontrivial regression testing \n>>>> in the\n>>>> \"tests\" subdirectory. With the tests, the time for \"R CMD check\" \n>>>> could be\n>>>> significantly longer than five minutes. Without the tests, the package\n>>>> easily fits within the time limit.\n>>>>\n>>>> [1] I know that I can run \"R CMD check --no-tests [PKG]\" to prevent the\n>>>> tests from running when I check the code myself. Is there any way for a\n>>>> package submitted to BioConductor to indicate that the tests should be\n>>>> skipped?\n>>>>\n>>>> [2] Alternatively, is there an easy way to include the tests so that \n>>>> I can\n>>>> run them whenever I want to make sure I haven't broken the code (too \n>>>> badly\n>>>> ...), but not force everyone else to run them when checking the rest \n>>>> of the\n>>>> structure of the code and documentation?\n>>>\n>>> You could consider having them in your package, in a directory\n>>> inst/tests/ for example\n>>> (so the tests are still available from an installed package).\n>>>\n>>>> Thanks in advance,\n>>>>    Kevin\n>>>>\n>>>> _______________________________________________\n>>>> Bioc-devel at stat.math.ethz.ch mailing list\n>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>\n>>\n>> _______________________________________________\n>> Bioc-devel at stat.math.ethz.ch mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>",
+      "body_snippet": "Hi Robert,\n\nI didn't think the issues were new, but I figured it couldn't hurt to \nraise them again....\n\nI also understand the need for the time limits, and agree with their \nrationale. But building (",
+      "thread_id": "thread-63b29eb1f1c6",
+      "thread_depth": 1,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-a79e7a287472",
+      "message_id": "<484EC13A.50702@fhcrc.org>",
+      "from_name": "Herve Pages",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2008-06-10T11:00:26-07:00",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "subject_clean": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "in_reply_to": "<20080610172404.36DF21A50B@jade.fhcrc.org>",
+      "references": [
+        "<484E686D.30903@mdacc.tmc.edu>",
+        "<27d1e6020806100447t163c3c9hf7442aa9988d0104@mail.gmail.com>",
+        "<20080610142252.518891A4DD@jade.fhcrc.org>",
+        "<20080610172404.36DF21A50B@jade.fhcrc.org>"
+      ],
+      "body_plain": "Hi,\n\nRobert Gentleman wrote:\n[...]\n>   The time limits were instituted because the build system was unable to \n> complete within 24 hours (and the math is pretty simple, there are over \n> 260 packages, so we need to build more than 10 per hour to be done every \n> day).\n\nJust to clarify:\n\n- We build BioC devel *and* BioC release every day.\n\n- Some build machines are running both builds (devel and release) so at most\n   12 hours can be spent on each build (the devel builds run from noon to midnight\n   and the release builds from midnight to noon, Seattle time).\n\n- The builds are parallelized i.e. up to 4 'R CMD check' processes can run\n   simultaneously on the same build machine at any given time. As a consequence,\n   an entire build run (250-270 packages) takes between 6 and 11 hours\n   on each build machine (64-bit Linux like wilson1-2 are the fastest).\n   Parallelization is the only way an entire build run can be done in less\n   than 12 hours on all the machines.\n\n- Note that 'R CMD check' is not the only command that is executed for each\n   package. The build stages are: (a) install the dependencies, (b) run 'R CMD build',\n   (c) run 'R CMD check' and (d) build the binary package (on Windows and Mac OS X\n   only).\n\nDuring the same build run, a lot of CPU cycles are wasted because the same\nthing can be computed several times. For example each vignette is tested twice:\nthe 1st time by 'R CMD build' and the 2nd time by 'R CMD check'. We could easily\navoid this by running 'R CMD check --no-vignettes': that would probably make\nthe builds 10%-30% faster without compromising the current testing paradigm.\nOther things are done several times (like installing the exact same package 2\nor 3 times, even 4 times in some rare situations) but trying to avoid this\nwould more complicated.\n\nCheers,\nH.",
+      "body_snippet": "Hi,\n\nRobert Gentleman wrote:\n[...]\n>   The time limits were instituted because the build system was unable to \n> complete within 24 hours (and the math is pretty simple, there are over \n> 260 packages",
+      "thread_id": "thread-a79e7a287472",
+      "thread_depth": 0,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-874e9ebb9f31",
+      "message_id": "<Pine.GSO.4.58.0806101433460.9692@capecod.bwh.harvard.edu>",
+      "from_name": "Vincent Carey 525-2265",
+      "from_email_hash": "a2452f5b8291c3819d7bf5f8363b8501a99d965cccb34679af430953cca3c633",
+      "date": "2008-06-10T15:03:45-04:00",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "subject_clean": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "in_reply_to": "<484EC13A.50702@fhcrc.org>",
+      "references": [
+        "<484E686D.30903@mdacc.tmc.edu>",
+        "<27d1e6020806100447t163c3c9hf7442aa9988d0104@mail.gmail.com>",
+        "<20080610142252.518891A4DD@jade.fhcrc.org>",
+        "<20080610172404.36DF21A50B@jade.fhcrc.org>",
+        "<484EC13A.50702@fhcrc.org>"
+      ],
+      "body_plain": "This is an important topic.  I believe that the building/checking\nprocess is a key source of value added by the Bioc project for developers.\n\nA worthwhile thought experiment: What would be done if we had unlimited\nresources?  It seems to me that a primary resource that a developer\nlacks access to is the range of platforms -- hardware, OS, compilers --\nthat we want users to be able to work with reliably.  Thus a very\nhigh priority for the build/check system is coverage of the main\nvarieties of \"system\" that users are likely to use Bioconductor on.\n\nThe devel branch is very important because it indicates how ongoing\nchanges to R affect performance/accuracy/interactions of package code.  Most\ndevelopers aren't going to be updating R and all other packages approximately\ndaily.  Thus, without the devel build system, many developers would\nfind themselves working hard when a new R release became imminent, to\nport abruptly to the new release.  The devel build system allows this\nto occur somewhat more smoothly, and affords the possibility of feedback\nto R core when tentative changes to R are problematic.\n\nI recognize that the points just made are well-known, and these remarks\nare not made defensively.  Instead I am trying to come up with some\na priori limits to testing requirements falling to bioconductor, as\nopposed to requirements that lie uniquely with the developer.  So the\nfirst two priorities are, briefly:\n\n1) Cover the platforms\n2) Track performance relative to evolving R\n\nNow we know full well that our resources require that package testing\nbe limited to around five minutes.  Is this in itself a value or an\nobstacle to ensuring project/package reliability?\n\nMy sense is that this constraint might be a value -- I understand that\na very multifaceted package may have many essential tests that can finish\nrapidly but the sum of testing times exceeds our limits.  Perhaps that\npackage should be broken up... Perhaps it should get an exception...\nI don't know.  Other things being equal, I think it is good for the software\nthat there be cases that are legitimate tests that run quickly.  It means\nusers can demonstrate the functionality in short order, that the tests\ncan be varied and examined without long delay, and that, probably, we\nhave capacity to do more tests of different facets of the package.\n\n>From the project perspective, I feel that the tests we need to be\nconcerned about most involve tests that would indicate problems with\nrespect to priorities 1) and 2).  Portability problems, or dependencies\non ephemeral features of R, might only crop up with certain very long\ntests ... but I think that would be exceptional.  Thus the deep tests\nshould be done \"at home\" and the light ones left for the project\nsystem.\n\nFinally, the complexity of the project test/build system has to be\nkept very manageable -- we have {release, devel} X platform X {software,\nexperiment, annotation} and introducing a short/long testing stream\nmay be feasible but may not pay off.  The point is that even if we did\nhave a lot more resources I am not sure it would be sound to allow\nindefinite test return times.\n\nI am open to correction or criticism on any point made above.  I am\ntrying to articulate some points about testing in the project that\nare probably quite superficial from the perspective of serious software\ndevelopment and engineering -- yet the breadth of testing\naccomplished and the necessity of release/devel branches is not very\nwidely appreciated among some of my contacts in other domains ...\nso I have taken this opportunity to articulate these views to the devel\ngroup.\n\nThe information transmitted in this electronic communica...{{dropped:10}}",
+      "body_snippet": "This is an important topic.  I believe that the building/checking\nprocess is a key source of value added by the Bioc project for developers.\n\nA worthwhile thought experiment: What would be done if we ",
+      "thread_id": "thread-a79e7a287472",
+      "thread_depth": 1,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-3375534110fa",
+      "message_id": "<484EE3A6.80605@ebi.ac.uk>",
+      "from_name": "Wolfgang Huber",
+      "from_email_hash": "8481a5f74e0203c0e279b0cd7f952f11ea65fcad4bf054f5268c275ad236a2d9",
+      "date": "2008-06-10T21:27:18+01:00",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "subject_clean": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "in_reply_to": "<484EBB36.1030100@mdacc.tmc.edu>",
+      "references": [
+        "<484E686D.30903@mdacc.tmc.edu>",
+        "<27d1e6020806100447t163c3c9hf7442aa9988d0104@mail.gmail.com>",
+        "<20080610142252.518891A4DD@jade.fhcrc.org>",
+        "<484EB7E4.5000506@fhcrc.org>",
+        "<484EBB36.1030100@mdacc.tmc.edu>"
+      ],
+      "body_plain": "Dear Kevin,\n\n> I also understand the need for the time limits, and agree with their \n> rationale. But building (\"R CMD build\" or \"R CMD build --binary\") for \n> the package I'm putting together is pretty fast. The part that takes \n> time is checking, largely because I am running regression tests on \n> several different honest-to-god real data sets. And I'm doing the \n> testing with at least three different statistical models to fit the data \n> (since we don't claim to know which one will ultimately turn out to be \n> the best). Now, I could game the system by breaking everything into 3 \n> different sub-packages, where each test could probably be completed \n> within five minutes. However, that seems like a rather artificial \n> approach to the problem.  I guess what I'd really like is two different \n> levels of testing. In addition to the time-consuming tests, my package \n> also has scripts that do basic tests to make sure that the code behaves \n> (as) sensibly (as possible) even when the user hands it the wrong kind \n> of inputs. It would be nice to have a system that allowed these \"easy \n> but important interface tests\" to run routinely while keeping the \"time \n> consuming core algorithm development\" tests around for when you are \n> testing out more radical changes.\n\nI think I had similar issues with the vsn and tilingArray package. They \ncontain tests of their functionalities in their vignettes that take \nhours or days, and >10GB of RAM in the tilingArray case. Like you, I \nfeel that these are necessary to properly test the packages, but there \nis no way the build system in Seattle should do this every night.\n\nSo the vignettes sit in the inst/scripts directory, and I (or anyone) \ncan invoke them manually when they feel the urge. You might be \ninterested in the \"Makefile\" in inst/doc that makes sure that the PDFs \nfrom these vignettes are still visible to package users like \"normal\" \nvignettes.\n-- \nBest wishes\n  Wolfgang\n\n------------------------------------------------------------------\nWolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber\n\n\n\n> \n> Robert Gentleman wrote:\n>> Hi Kevin,\n>>\n>> Kevin R. Coombes wrote:\n>>> Hi,\n>>>\n>>> I have considered that possibility, but am not yet convinced that it \n>>> is the best approach. I will, of course, do something like that if I \n>>> cannot persuade this list that an alternative approach might be \n>>> better. The \n>>\n>>\n>> Hi Kevin,\n>>   These are good points, and not ones that are somehow suddenly new. \n>> The issues are ones we grapple with, and there are many different \n>> solutions that developers have taken.\n>>\n>>   First, I think that there may be a misconception in play. The build \n>> system is essentially just that: a build system.  We don't have the \n>> resources to provide a comprehensive testing resource for developers. \n>> We do minimal checks and push out the packages that pass those in as \n>> timely a fashion as possible. We do expect that developers take the \n>> steps you are describing, and before committing code to BioC that they \n>> have been careful to run all appropriate testing they deem necessary, \n>> but I don't see where there is, or should be, a reliance on having the \n>> testing done every day on four (or more) platforms, or being done by \n>> Bioconductor at all.  I think that is one of the developer's \n>> responsibilities, not the project's.\n>>\n>>   The time limits were instituted because the build system was unable \n>> to complete within 24 hours (and the math is pretty simple, there are \n>> over 260 packages, so we need to build more than 10 per hour to be \n>> done every day).  And as we upgrade equipment, we are hoping to be \n>> able to keep the guidelines as they are.  Other options are to allow \n>> longer tests but have longer delays before packages are ready. My \n>> impression is that most developers would rather have their code \n>> available sooner, but I would appreciate hearing alternative points of \n>> view.  Perhaps this topic can be visited during the developer day at \n>> BioC2008.\n>>\n>>   I strongly encourage you to do the testing you believe is \n>> appropriate.  I will mention that the basic checks for all of R (and \n>> there are two levels of testing even there) would run within the time \n>> frame we have asked package maintainers to meet.\n>>\n>>   best wishes\n>>     Robert\n>>\n>>\n>>> basic argument is:\n>>>\n>>> * Complex algorithms can be better maintained if they are accompanied \n>>> by regression testing.\n>>> * \"R CMD check\" provides an automated method to run regression tests, \n>>> with a defined directory structure for storing those tests.\n>>> * Changing the directory location in the source makes running the \n>>> regression tests more awkward and thus less likely to occur on a \n>>> regular basis.\n>>> * The \"--no-tests\" argument already provides a mechanism for \n>>> preventing the tests from being run.\n>>>\n>>> What appears to be missing is either a mechanism to designate the \n>>> tests as optional or to indicate a preference for not running some or \n>>> all of them. I can think of three ways to accomplish my goals in this \n>>> matter:\n>>>\n>>> [1] Make \"--no-tests\" the default way to run \"R CMD check\" at \n>>> BioConductor. (Of course, this is unlikely to be the optimal solution \n>>> since it merely avoids the question.)\n>>> [2] Add a field to the DESCRIPTION file that tells \"R CMD check\" \n>>> whether or not to run the tests. Something like\n>>>     Tests: run\n>>> or\n>>>     Tests: dontrun\n>>> [3] Add an optional special file in the tests directory that \n>>> indicates the complexity/length of the tests that would allow \"R CMD \n>>> check\" to decide whether or not to run them. Perhaps something like\n>>>\n>>> ###################\n>>> # COMPLEXITY file\n>>>\n>>> test1.R: long\n>>> test2.R: short\n>>> ...\n>>> ###################\n>>>\n>>> Of course, options [2] or [3] require changes to \"R CMD check\" (for \n>>> which I should eventually move this discussion to the R-devel list), \n>>> but I am really only interested in convincing BioConductor that \n>>> (possibly complex) regression tests are a good thing, and should be \n>>> encouraged by adopting something like [1].\n>>>\n>>> Best,\n>>>     Kevin\n>>>\n>>> Laurent Gautier wrote:\n>>>> 2008/6/10 Kevin R. Coombes <krcoombes at mdacc.tmc.edu>:\n>>>>> Hi,\n>>>>>\n>>>>> The BioConductor package guidelines say that a package should take \n>>>>> less than\n>>>>> five minutes to run \"R CMD check\". I have a package that is almost \n>>>>> ready to\n>>>>> submit; however, it currently includes nontrivial regression \n>>>>> testing in the\n>>>>> \"tests\" subdirectory. With the tests, the time for \"R CMD check\" \n>>>>> could be\n>>>>> significantly longer than five minutes. Without the tests, the package\n>>>>> easily fits within the time limit.\n>>>>>\n>>>>> [1] I know that I can run \"R CMD check --no-tests [PKG]\" to prevent \n>>>>> the\n>>>>> tests from running when I check the code myself. Is there any way \n>>>>> for a\n>>>>> package submitted to BioConductor to indicate that the tests should be\n>>>>> skipped?\n>>>>>\n>>>>> [2] Alternatively, is there an easy way to include the tests so \n>>>>> that I can\n>>>>> run them whenever I want to make sure I haven't broken the code \n>>>>> (too badly\n>>>>> ...), but not force everyone else to run them when checking the \n>>>>> rest of the\n>>>>> structure of the code and documentation?\n>>>>\n>>>> You could consider having them in your package, in a directory\n>>>> inst/tests/ for example\n>>>> (so the tests are still available from an installed package).\n>>>>\n>>>>> Thanks in advance,\n>>>>>    Kevin\n>>>>>",
+      "body_snippet": "Dear Kevin,\n\n> I also understand the need for the time limits, and agree with their \n> rationale. But building (\"R CMD build\" or \"R CMD build --binary\") for \n> the package I'm putting together is pret",
+      "thread_id": "thread-63b29eb1f1c6",
+      "thread_depth": 2,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-d38f586284ba",
+      "message_id": "<484EE50D.5000508@ebi.ac.uk>",
+      "from_name": "Wolfgang Huber",
+      "from_email_hash": "8481a5f74e0203c0e279b0cd7f952f11ea65fcad4bf054f5268c275ad236a2d9",
+      "date": "2008-06-10T21:33:17+01:00",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "subject_clean": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "in_reply_to": "<484EE3A6.80605@ebi.ac.uk>",
+      "references": [
+        "<484E686D.30903@mdacc.tmc.edu>",
+        "<27d1e6020806100447t163c3c9hf7442aa9988d0104@mail.gmail.com>",
+        "<20080610142252.518891A4DD@jade.fhcrc.org>",
+        "<484EB7E4.5000506@fhcrc.org>",
+        "<484EBB36.1030100@mdacc.tmc.edu>",
+        "<484EE3A6.80605@ebi.ac.uk>"
+      ],
+      "body_plain": "Just to clarify... vignettes are being used in Bioconductor for two \npurposes, documentation and checking. These often overlap, but of course \ndon't always have to. In the case described below, they do, and the \nsolution described is geared towards such cases.\n\n\nWolfgang Huber a ?crit 10/06/2008 21:27:\n> Dear Kevin,\n> \n>> I also understand the need for the time limits, and agree with their \n>> rationale. But building (\"R CMD build\" or \"R CMD build --binary\") for \n>> the package I'm putting together is pretty fast. The part that takes \n>> time is checking, largely because I am running regression tests on \n>> several different honest-to-god real data sets. And I'm doing the \n>> testing with at least three different statistical models to fit the \n>> data (since we don't claim to know which one will ultimately turn out \n>> to be the best). Now, I could game the system by breaking everything \n>> into 3 different sub-packages, where each test could probably be \n>> completed within five minutes. However, that seems like a rather \n>> artificial approach to the problem.  I guess what I'd really like is \n>> two different levels of testing. In addition to the time-consuming \n>> tests, my package also has scripts that do basic tests to make sure \n>> that the code behaves (as) sensibly (as possible) even when the user \n>> hands it the wrong kind of inputs. It would be nice to have a system \n>> that allowed these \"easy but important interface tests\" to run \n>> routinely while keeping the \"time consuming core algorithm \n>> development\" tests around for when you are testing out more radical \n>> changes.\n> \n> I think I had similar issues with the vsn and tilingArray package. They \n> contain tests of their functionalities in their vignettes that take \n> hours or days, and >10GB of RAM in the tilingArray case. Like you, I \n> feel that these are necessary to properly test the packages, but there \n> is no way the build system in Seattle should do this every night.\n> \n> So the vignettes sit in the inst/scripts directory, and I (or anyone) \n> can invoke them manually when they feel the urge. You might be \n> interested in the \"Makefile\" in inst/doc that makes sure that the PDFs \n> from these vignettes are still visible to package users like \"normal\" \n> vignettes.\n\n-- \nBest wishes\n  Wolfgang\n\n------------------------------------------------------------------\nWolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber",
+      "body_snippet": "Just to clarify... vignettes are being used in Bioconductor for two \npurposes, documentation and checking. These often overlap, but of course \ndon't always have to. In the case described below, they d",
+      "thread_id": "thread-63b29eb1f1c6",
+      "thread_depth": 3,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-d748d4d6a218",
+      "message_id": "<484FD766.6070602@mdacc.tmc.edu>",
+      "from_name": "Kevin R. Coombes",
+      "from_email_hash": "375938c6f312d6b2e1e3e64a12957191f738351ecb97f436ec1cf74e8cbfc6c5",
+      "date": "2008-06-11T08:47:18-05:00",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "subject_clean": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "in_reply_to": "<Pine.GSO.4.58.0806101433460.9692@capecod.bwh.harvard.edu>",
+      "references": [
+        "<484E686D.30903@mdacc.tmc.edu>",
+        "<27d1e6020806100447t163c3c9hf7442aa9988d0104@mail.gmail.com>",
+        "<20080610142252.518891A4DD@jade.fhcrc.org>",
+        "<20080610172404.36DF21A50B@jade.fhcrc.org>",
+        "<484EC13A.50702@fhcrc.org>",
+        "<Pine.GSO.4.58.0806101433460.9692@capecod.bwh.harvard.edu>"
+      ],
+      "body_plain": "Hi Vince,\n\nI agree with everything you said. The conclusion I draw from it (which \nis, of course, compatible with my prior distribution on the issue ...) \nis that we really need two levels of testing. One would cover your \nissues (1) and (2) and, because of the need to complete checking and \nbuilding every day, would have to run quickly. A more elaborate level of \nsystematic \"deep\" regression testing should also be available which (i) \nwould not be run by default but (ii) could be optionally included by \"R \nCMD check\" without forcing everyone who wants this kind of testing to \nhave to reinvent the wheel. Given that conclusion, I'm going to move \nover to R-devel and try to convince them to add this feature to R....\n\nThanks,\n\tKevin\n\nVincent Carey 525-2265 wrote:\n> This is an important topic.  I believe that the building/checking\n> process is a key source of value added by the Bioc project for developers.\n> \n> A worthwhile thought experiment: What would be done if we had unlimited\n> resources?  It seems to me that a primary resource that a developer\n> lacks access to is the range of platforms -- hardware, OS, compilers --\n> that we want users to be able to work with reliably.  Thus a very\n> high priority for the build/check system is coverage of the main\n> varieties of \"system\" that users are likely to use Bioconductor on.\n> \n> The devel branch is very important because it indicates how ongoing\n> changes to R affect performance/accuracy/interactions of package code.  Most\n> developers aren't going to be updating R and all other packages approximately\n> daily.  Thus, without the devel build system, many developers would\n> find themselves working hard when a new R release became imminent, to\n> port abruptly to the new release.  The devel build system allows this\n> to occur somewhat more smoothly, and affords the possibility of feedback\n> to R core when tentative changes to R are problematic.\n> \n> I recognize that the points just made are well-known, and these remarks\n> are not made defensively.  Instead I am trying to come up with some\n> a priori limits to testing requirements falling to bioconductor, as\n> opposed to requirements that lie uniquely with the developer.  So the\n> first two priorities are, briefly:\n> \n> 1) Cover the platforms\n> 2) Track performance relative to evolving R\n> \n> Now we know full well that our resources require that package testing\n> be limited to around five minutes.  Is this in itself a value or an\n> obstacle to ensuring project/package reliability?\n> \n> My sense is that this constraint might be a value -- I understand that\n> a very multifaceted package may have many essential tests that can finish\n> rapidly but the sum of testing times exceeds our limits.  Perhaps that\n> package should be broken up... Perhaps it should get an exception...\n> I don't know.  Other things being equal, I think it is good for the software\n> that there be cases that are legitimate tests that run quickly.  It means\n> users can demonstrate the functionality in short order, that the tests\n> can be varied and examined without long delay, and that, probably, we\n> have capacity to do more tests of different facets of the package.\n> \n>>From the project perspective, I feel that the tests we need to be\n> concerned about most involve tests that would indicate problems with\n> respect to priorities 1) and 2).  Portability problems, or dependencies\n> on ephemeral features of R, might only crop up with certain very long\n> tests ... but I think that would be exceptional.  Thus the deep tests\n> should be done \"at home\" and the light ones left for the project\n> system.\n> \n> Finally, the complexity of the project test/build system has to be\n> kept very manageable -- we have {release, devel} X platform X {software,\n> experiment, annotation} and introducing a short/long testing stream\n> may be feasible but may not pay off.  The point is that even if we did\n> have a lot more resources I am not sure it would be sound to allow\n> indefinite test return times.\n> \n> I am open to correction or criticism on any point made above.  I am\n> trying to articulate some points about testing in the project that\n> are probably quite superficial from the perspective of serious software\n> development and engineering -- yet the breadth of testing\n> accomplished and the necessity of release/devel branches is not very\n> widely appreciated among some of my contacts in other domains ...\n> so I have taken this opportunity to articulate these views to the devel\n> group.\n> \n> The information transmitted in this electronic communica...{{dropped:10}}\n> \n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "Hi Vince,\n\nI agree with everything you said. The conclusion I draw from it (which \nis, of course, compatible with my prior distribution on the issue ...) \nis that we really need two levels of testing.",
+      "thread_id": "thread-a79e7a287472",
+      "thread_depth": 2,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-7378685fe8b9",
+      "message_id": "<6D49098A-BEEE-4608-8096-359E7936A884@stat.berkeley.edu>",
+      "from_name": "Kasper Daniel Hansen",
+      "from_email_hash": "64daa056fd8bc97c1a667a56c348131f4bfb7651adb6032fb836238a930de545",
+      "date": "2008-06-11T12:10:57-07:00",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "subject_clean": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "in_reply_to": "<Pine.GSO.4.58.0806101433460.9692@capecod.bwh.harvard.edu>",
+      "references": [
+        "<484E686D.30903@mdacc.tmc.edu>",
+        "<27d1e6020806100447t163c3c9hf7442aa9988d0104@mail.gmail.com>",
+        "<20080610142252.518891A4DD@jade.fhcrc.org>",
+        "<20080610172404.36DF21A50B@jade.fhcrc.org>",
+        "<484EC13A.50702@fhcrc.org>",
+        "<Pine.GSO.4.58.0806101433460.9692@capecod.bwh.harvard.edu>"
+      ],
+      "body_plain": "This is just a followup to what Vince was asking \"what would we want  \nwith unlimited resources.  I agree with others that there are often  \ntwo tiers of tests I think a package could have. Small quick tests are  \n(perhaps) sensible to run daily, but longer tests would only have to  \nbe run once in a while. I however strongly feel that the opportunity  \nto get these tests run on a variety of platforms can prove  \nindispensable for catching bugs you only see when moving across OS's  \nand compilers. Perhaps I have been unlucky but the majority of the  \nnasty bugs I have been involved with are of this type.\n\nSo to wrap it up: I am fine with only allowing 5 minutes per run, but  \nin my dream world it would be possible for developers to request to  \nget the results of a longer test. That will be very nice when (1) you  \nare working hard on changing core things in the package and (2)  \nnearing a new release when you are wondering about the accumulated  \nchanges in all packages. By having it being request only, we will  \nspend relatively few cpu cycles on it compared to a daily check.\n\nOf course, I have no great idea as to how such a system could be  \nimplemented. I assume granting ssh access is out of the question.\n\nKasper\n\nOn Jun 10, 2008, at 12:03 PM, Vincent Carey 525-2265 wrote:\n\n> This is an important topic.  I believe that the building/checking\n> process is a key source of value added by the Bioc project for  \n> developers.\n>\n> A worthwhile thought experiment: What would be done if we had  \n> unlimited\n> resources?  It seems to me that a primary resource that a developer\n> lacks access to is the range of platforms -- hardware, OS, compilers  \n> --\n> that we want users to be able to work with reliably.  Thus a very\n> high priority for the build/check system is coverage of the main\n> varieties of \"system\" that users are likely to use Bioconductor on.\n>\n> The devel branch is very important because it indicates how ongoing\n> changes to R affect performance/accuracy/interactions of package  \n> code.  Most\n> developers aren't going to be updating R and all other packages  \n> approximately\n> daily.  Thus, without the devel build system, many developers would\n> find themselves working hard when a new R release became imminent, to\n> port abruptly to the new release.  The devel build system allows this\n> to occur somewhat more smoothly, and affords the possibility of  \n> feedback\n> to R core when tentative changes to R are problematic.\n>\n> I recognize that the points just made are well-known, and these  \n> remarks\n> are not made defensively.  Instead I am trying to come up with some\n> a priori limits to testing requirements falling to bioconductor, as\n> opposed to requirements that lie uniquely with the developer.  So the\n> first two priorities are, briefly:\n>\n> 1) Cover the platforms\n> 2) Track performance relative to evolving R\n>\n> Now we know full well that our resources require that package testing\n> be limited to around five minutes.  Is this in itself a value or an\n> obstacle to ensuring project/package reliability?\n>\n> My sense is that this constraint might be a value -- I understand that\n> a very multifaceted package may have many essential tests that can  \n> finish\n> rapidly but the sum of testing times exceeds our limits.  Perhaps that\n> package should be broken up... Perhaps it should get an exception...\n> I don't know.  Other things being equal, I think it is good for the  \n> software\n> that there be cases that are legitimate tests that run quickly.  It  \n> means\n> users can demonstrate the functionality in short order, that the tests\n> can be varied and examined without long delay, and that, probably, we\n> have capacity to do more tests of different facets of the package.\n>\n>> From the project perspective, I feel that the tests we need to be\n> concerned about most involve tests that would indicate problems with\n> respect to priorities 1) and 2).  Portability problems, or  \n> dependencies\n> on ephemeral features of R, might only crop up with certain very long\n> tests ... but I think that would be exceptional.  Thus the deep tests\n> should be done \"at home\" and the light ones left for the project\n> system.\n>\n> Finally, the complexity of the project test/build system has to be\n> kept very manageable -- we have {release, devel} X platform X  \n> {software,\n> experiment, annotation} and introducing a short/long testing stream\n> may be feasible but may not pay off.  The point is that even if we did\n> have a lot more resources I am not sure it would be sound to allow\n> indefinite test return times.\n>\n> I am open to correction or criticism on any point made above.  I am\n> trying to articulate some points about testing in the project that\n> are probably quite superficial from the perspective of serious  \n> software\n> development and engineering -- yet the breadth of testing\n> accomplished and the necessity of release/devel branches is not very\n> widely appreciated among some of my contacts in other domains ...\n> so I have taken this opportunity to articulate these views to the  \n> devel\n> group.\n>\n> The information transmitted in this electronic communica...{{dropped: \n> 10}}\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel",
+      "body_snippet": "This is just a followup to what Vince was asking \"what would we want  \nwith unlimited resources.  I agree with others that there are often  \ntwo tiers of tests I think a package could have. Small quic",
+      "thread_id": "thread-a79e7a287472",
+      "thread_depth": 2,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-3310256afae5",
+      "message_id": "<C475A111.448%Gregory_Warnes@URMC.Rochester.edu>",
+      "from_name": "Warnes, Gregory",
+      "from_email_hash": "1f720c47feaccc3d9963a983dee5e5bef29689edb7738884ee4d91c64295c683",
+      "date": "2008-06-11T15:34:41-04:00",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "subject_clean": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "in_reply_to": "<6D49098A-BEEE-4608-8096-359E7936A884@stat.berkeley.edu>",
+      "references": [],
+      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080611/224498d0/attachment.pl>",
+      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080611/224498d0/attachment.pl>",
+      "thread_id": "thread-a79e7a287472",
+      "thread_depth": 3,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-9ae4263b79fd",
+      "message_id": "<4857B62C.9050107@klinik.uni-regensburg.de>",
+      "from_name": "Christian Kohler",
+      "from_email_hash": "bb310b5427f3c8954326c184947e5587781e6fd42a66f68ee3afa62fae605e77",
+      "date": "2008-06-17T15:03:40+02:00",
+      "subject": "[Bioc-devel] RFC - annotation packages and ExpressionSets",
+      "subject_clean": "[Bioc-devel] RFC - annotation packages and ExpressionSets",
+      "in_reply_to": "<46E96517.5020404@fhcrc.org>",
+      "references": [
+        "<46E96517.5020404@fhcrc.org>"
+      ],
+      "body_plain": "Robert Gentleman wrote:\n> Hi all,\n>    As most of you are probably aware in the 2.1 release we will be \n> introducing new variants of (almost) all annotation packages.  For the \n> 2.1 release, at least the naming scheme will be\n>    hgu95av2, for environment based packages\n>    hgu95av2.db, for database variants.\n>\n>   But, we have no intention of maintaining the environment based \n> variants (and they may indeed go away by 2.2).\n>\n>    So this suggests that in the 2.2 release we would then move to\n>\n>   hgu95av2, for database variants\n>   hgu95av2.env for environment based ones.\n>\n>   An alternative is to simply retain the hgu95av2.db scheme (but that \n> gets a bit ugly).\n>\n>   Where things might become problematic is the interaction with \n> ExpressionSets, where we have (and often use) the annotation slot.\n>   I propose that we modify the accessor function to return the .db name, \n> for this release and that we try and track down all direct access via @ \n> in the code base and replace it with use of the accessor function.\n>\n>   Comments?\n>\n>   Robert\n>\n>   \n\nDear list,\n\nsorry for reviving this rather old post, but I am interested in how the\nfuture plan concerning the notation of annotation packages will look like.\n\nAt the moment, a 'Deprecation warning' appears while loading the\nenvironment based annotation packages and the use of the *.db*\nequivalent is recommended.\n\nWill the *.db* nomenclature endure or will the *.env* notation be\nintroduced in one of the upcoming releases?\n\nI mean, it is a bit cumbersome to change your analysis-scripts over and\nover again :-)\n\nThanks a lot for any advice.\n\nBest\n    Christian\n\n-- \n\nChristian Kohler\nInstitute of Functional Genomics\nComputational Diagnostics\nUniversity of Regensburg (BioPark I)\nD-93147 Regensburg (Germany)\n\nTel. +49 941 943 5055\nFax  +49 941 943 5020\nchristian.kohler at klinik.uni-regensburg.de",
+      "body_snippet": "Robert Gentleman wrote:\n> Hi all,\n>    As most of you are probably aware in the 2.1 release we will be \n> introducing new variants of (almost) all annotation packages.  For the \n> 2.1 release, at leas",
+      "thread_id": "thread-9ae4263b79fd",
+      "thread_depth": 0,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-1d7b26e1ad0a",
+      "message_id": "<4857EF13.70501@fhcrc.org>",
+      "from_name": "Marc Carlson",
+      "from_email_hash": "63182bae9b15df223407341203cb8ed095d4cf2c8e9f0f84a8b7320bd591907d",
+      "date": "2008-06-17T10:06:27-07:00",
+      "subject": "[Bioc-devel] RFC - annotation packages and ExpressionSets",
+      "subject_clean": "[Bioc-devel] RFC - annotation packages and ExpressionSets",
+      "in_reply_to": "<4857B62C.9050107@klinik.uni-regensburg.de>",
+      "references": [
+        "<46E96517.5020404@fhcrc.org>",
+        "<4857B62C.9050107@klinik.uni-regensburg.de>"
+      ],
+      "body_plain": "Christian Kohler wrote:\n> Robert Gentleman wrote:\n>   \n>> Hi all,\n>>    As most of you are probably aware in the 2.1 release we will be \n>> introducing new variants of (almost) all annotation packages.  For the \n>> 2.1 release, at least the naming scheme will be\n>>    hgu95av2, for environment based packages\n>>    hgu95av2.db, for database variants.\n>>\n>>   But, we have no intention of maintaining the environment based \n>> variants (and they may indeed go away by 2.2).\n>>\n>>    So this suggests that in the 2.2 release we would then move to\n>>\n>>   hgu95av2, for database variants\n>>   hgu95av2.env for environment based ones.\n>>\n>>   An alternative is to simply retain the hgu95av2.db scheme (but that \n>> gets a bit ugly).\n>>\n>>   Where things might become problematic is the interaction with \n>> ExpressionSets, where we have (and often use) the annotation slot.\n>>   I propose that we modify the accessor function to return the .db name, \n>> for this release and that we try and track down all direct access via @ \n>> in the code base and replace it with use of the accessor function.\n>>\n>>   Comments?\n>>\n>>   Robert\n>>\n>>   \n>>     \n>\n> Dear list,\n>\n> sorry for reviving this rather old post, but I am interested in how the\n> future plan concerning the notation of annotation packages will look like.\n>\n> At the moment, a 'Deprecation warning' appears while loading the\n> environment based annotation packages and the use of the *.db*\n> equivalent is recommended.\n>\n> Will the *.db* nomenclature endure or will the *.env* notation be\n> introduced in one of the upcoming releases?\n>\n> I mean, it is a bit cumbersome to change your analysis-scripts over and\n> over again :-)\n>\n> Thanks a lot for any advice.\n>\n> Best\n>     Christian\n>\n>   \n\nWow that is an old post.\n\nFor the foreseeable future, I believe that the plan is to keep the new \n*.db* nomenclature. \n\nI think it could be pretty confusing for people if we started calling \nthe new packages by the old names right after we just got rid of the old \nones.  Whenever possible, I think that we want to simply phase out the \nolder environment style packages as their existence is largely redundant \nat this time.  It also creates a lot of overhead for us to generate two \nstyles of each package produced here.  The newer packages emulate the \nold ones so the changes should be transparent for most people.  It also \nseems that having a *.db * extension conveniently \"labels\" a package as \nbeing an \"annotation\" package so I don't think that it is really so \nterrible to have that extension on there. \n\n\n    Marc",
+      "body_snippet": "Christian Kohler wrote:\n> Robert Gentleman wrote:\n>   \n>> Hi all,\n>>    As most of you are probably aware in the 2.1 release we will be \n>> introducing new variants of (almost) all annotation packages",
+      "thread_id": "thread-9ae4263b79fd",
+      "thread_depth": 1,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-71e4f3eb91f9",
+      "message_id": "<485F5A36.8050308@ibe.med.uni-muenchen.de>",
+      "from_name": "Markus Schmidberger",
+      "from_email_hash": "f8bfa84297de571d104d5331872fd43189cf7e374fa9dc4c24b6e4212d13663a",
+      "date": "2008-06-23T10:09:26+02:00",
+      "subject": "[Bioc-devel] normalize.loess effizient method",
+      "subject_clean": "[Bioc-devel] normalize.loess effizient method",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hello,\n\nI parallelized the normalize loess function (see affyPara package). \nThereby I found a memory inefficient implementation of normalize.loess.\nThe matrices fs and newdata are of the size of the complete intensity \nmatrix and not necessary.  I removed this two matrices and the oldfs \nmatrix. Attached the changed code.\n\nBest\nMarkus\n\n\nnormalize.loess <- function(mat, subset=sample(1:(dim(mat)[1]), \nmin(c(5000, nrow(mat)))),\n        epsilon=10^-2, maxit=1, log.it=TRUE, verbose=TRUE, span=2/3,\n        family.loess=\"symmetric\"){\n   \n    J <- dim(mat)[2]\n    II <- dim(mat)[1]\n    if(log.it)\n        mat <- log2(mat)\n   \n    change <- epsilon +1\n    iter <- 0\n    w <- c(0, rep(1,length(subset)), 0) ##this way we give 0 weight to the\n    ##extremes added so that we can interpolate\n   \n    while(iter < maxit){\n        iter <- iter + 1\n        means <- matrix(0,II,J) ##contains temp of what we substract\n       \n        for (j in 1:(J-1)){\n            for (k in (j+1):J){\n                y <- mat[,j] - mat[,k]\n                x <- (mat[,j] + mat[,k]) / 2\n                index <- c(order(x)[1], subset, order(-x)[1])\n                ##put endpoints in so we can interpolate\n                xx <- x[index]\n                yy <- y[index]\n                aux <-loess(yy~xx, span=span, degree=1, weights=w, \nfamily=family.loess)\n                aux <- predict(aux, data.frame(xx=x)) / J\n                means[, j] <- means[, j] + aux\n                means[, k] <- means[, k] - aux\n                if (verbose)\n                    cat(\"Done with\",j,\"vs\",k,\" in iteration \",iter,\"\\n\")\n            }\n        }\n        mat <- mat - means\n        change <- max(colMeans((means[subset,])^2))\n       \n        if(verbose)\n            cat(iter, change,\"\\n\")\n   \n    }\n   \n    if ((change > epsilon) & (maxit > 1))\n        warning(paste(\"No convergence after\", maxit, \"iterations.\\n\"))\n   \n    if(log.it) {\n        return(2^mat)\n    } else\n        return(mat)\n}\n\n-- \nDipl.-Tech. Math. Markus Schmidberger\n\nLudwig-Maximilians-Universit?t M?nchen\nIBE - Institut f?r medizinische Informationsverarbeitung,\nBiometrie und Epidemiologie\nMarchioninistr. 15, D-81377 Muenchen\nURL: http://ibe.web.med.uni-muenchen.de \nMail: Markus.Schmidberger [at] ibe.med.uni-muenchen.de",
+      "body_snippet": "Hello,\n\nI parallelized the normalize loess function (see affyPara package). \nThereby I found a memory inefficient implementation of normalize.loess.\nThe matrices fs and newdata are of the size of the ",
+      "thread_id": "thread-71e4f3eb91f9",
+      "thread_depth": 0,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-e042d352c632",
+      "message_id": "<57511.90.27.82.241.1214318400.squirrel@www.altern.org>",
+      "from_name": "lgautier at altern.org",
+      "from_email_hash": "02e2040eede17e7c50ab0701d42bb115faf28a941ba5af1845072549f75ba8c2",
+      "date": "2008-06-24T16:40:00+02:00",
+      "subject": "[Bioc-devel] normalize.loess effizient method",
+      "subject_clean": "[Bioc-devel] normalize.loess effizient method",
+      "in_reply_to": "<485F5A36.8050308@ibe.med.uni-muenchen.de>",
+      "references": [
+        "<485F5A36.8050308@ibe.med.uni-muenchen.de>"
+      ],
+      "body_plain": "Thanks a lot Markus.\n\nTo facilitate our work (review and inclusion), could you directly post a\npatch for your changes ?\n\n(Something like svn diff > fixnormalizeloess.patch should make it).\n\n\nThanks,\n\n\nL.\n\n\n\n\n\n> Hello,\n>\n> I parallelized the normalize loess function (see affyPara package).\n> Thereby I found a memory inefficient implementation of normalize.loess.\n> The matrices fs and newdata are of the size of the complete intensity\n> matrix and not necessary.  I removed this two matrices and the oldfs\n> matrix. Attached the changed code.\n>\n> Best\n> Markus\n>\n>\n> normalize.loess <- function(mat, subset=sample(1:(dim(mat)[1]),\n> min(c(5000, nrow(mat)))),\n>         epsilon=10^-2, maxit=1, log.it=TRUE, verbose=TRUE, span=2/3,\n>         family.loess=\"symmetric\"){\n>\n>     J <- dim(mat)[2]\n>     II <- dim(mat)[1]\n>     if(log.it)\n>         mat <- log2(mat)\n>\n>     change <- epsilon +1\n>     iter <- 0\n>     w <- c(0, rep(1,length(subset)), 0) ##this way we give 0 weight to the\n>     ##extremes added so that we can interpolate\n>\n>     while(iter < maxit){\n>         iter <- iter + 1\n>         means <- matrix(0,II,J) ##contains temp of what we substract\n>\n>         for (j in 1:(J-1)){\n>             for (k in (j+1):J){\n>                 y <- mat[,j] - mat[,k]\n>                 x <- (mat[,j] + mat[,k]) / 2\n>                 index <- c(order(x)[1], subset, order(-x)[1])\n>                 ##put endpoints in so we can interpolate\n>                 xx <- x[index]\n>                 yy <- y[index]\n>                 aux <-loess(yy~xx, span=span, degree=1, weights=w,\n> family=family.loess)\n>                 aux <- predict(aux, data.frame(xx=x)) / J\n>                 means[, j] <- means[, j] + aux\n>                 means[, k] <- means[, k] - aux\n>                 if (verbose)\n>                     cat(\"Done with\",j,\"vs\",k,\" in iteration \",iter,\"\\n\")\n>             }\n>         }\n>         mat <- mat - means\n>         change <- max(colMeans((means[subset,])^2))\n>\n>         if(verbose)\n>             cat(iter, change,\"\\n\")\n>\n>     }\n>\n>     if ((change > epsilon) & (maxit > 1))\n>         warning(paste(\"No convergence after\", maxit, \"iterations.\\n\"))\n>\n>     if(log.it) {\n>         return(2^mat)\n>     } else\n>         return(mat)\n> }\n>\n> --\n> Dipl.-Tech. Math. Markus Schmidberger\n>\n> Ludwig-Maximilians-Universit?t M?nchen\n> IBE - Institut f?r medizinische Informationsverarbeitung,\n> Biometrie und Epidemiologie\n> Marchioninistr. 15, D-81377 Muenchen\n> URL: http://ibe.web.med.uni-muenchen.de\n> Mail: Markus.Schmidberger [at] ibe.med.uni-muenchen.de\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>",
+      "body_snippet": "Thanks a lot Markus.\n\nTo facilitate our work (review and inclusion), could you directly post a\npatch for your changes ?\n\n(Something like svn diff > fixnormalizeloess.patch should make it).\n\n\nThanks,\n\n",
+      "thread_id": "thread-71e4f3eb91f9",
+      "thread_depth": 1,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-82460d3a0006",
+      "message_id": "<Pine.WNT.4.64.0806261200020.5848@PC602.alpha.wehi.edu.au>",
+      "from_name": "Gordon K Smyth",
+      "from_email_hash": "a978abba6e869c142fda92319a9ab9659112ab762e437af84e6581fe4481f132",
+      "date": "2008-06-26T12:04:31+10:00",
+      "subject": "[Bioc-devel] (no subject)",
+      "subject_clean": "[Bioc-devel] (no subject)",
+      "in_reply_to": "<mailman.23.1214388005.9851.bioc-devel@stat.math.ethz.ch>",
+      "references": [
+        "<mailman.23.1214388005.9851.bioc-devel@stat.math.ethz.ch>"
+      ],
+      "body_plain": "Hi Markus,\n\nIf you're worried about efficiency, you might try the loessFit() function \nin the limma package.  I suspect it might be faster, as well as more \naccurate, because it would avoid the need to subset and interpolate.\n\nCheers\nGordon\n\n> Date: Tue, 24 Jun 2008 16:40:00 +0200 (CEST)\n> From: lgautier at altern.org\n> Subject: Re: [Bioc-devel] normalize.loess effizient method\n> To: schmidb at ibe.med.uni-muenchen.de\n> Cc: bioc-devel at stat.math.ethz.ch\n> Message-ID: <57511.90.27.82.241.1214318400.squirrel at www.altern.org>\n> Content-Type: text/plain;charset=iso-8859-1\n>\n>\n> Thanks a lot Markus.\n>\n> To facilitate our work (review and inclusion), could you directly post a\n> patch for your changes ?\n>\n> (Something like svn diff > fixnormalizeloess.patch should make it).\n>\n>\n> Thanks,\n>\n>\n> L.\n>\n>\n>\n>\n>\n>> Hello,\n>>\n>> I parallelized the normalize loess function (see affyPara package).\n>> Thereby I found a memory inefficient implementation of normalize.loess.\n>> The matrices fs and newdata are of the size of the complete intensity\n>> matrix and not necessary.  I removed this two matrices and the oldfs\n>> matrix. Attached the changed code.\n>>\n>> Best\n>> Markus\n>>\n>>\n>> normalize.loess <- function(mat, subset=sample(1:(dim(mat)[1]),\n>> min(c(5000, nrow(mat)))),\n>>         epsilon=10^-2, maxit=1, log.it=TRUE, verbose=TRUE, span=2/3,\n>>         family.loess=\"symmetric\"){\n>>\n>>     J <- dim(mat)[2]\n>>     II <- dim(mat)[1]\n>>     if(log.it)\n>>         mat <- log2(mat)\n>>\n>>     change <- epsilon +1\n>>     iter <- 0\n>>     w <- c(0, rep(1,length(subset)), 0) ##this way we give 0 weight to the\n>>     ##extremes added so that we can interpolate\n>>\n>>     while(iter < maxit){\n>>         iter <- iter + 1\n>>         means <- matrix(0,II,J) ##contains temp of what we substract\n>>\n>>         for (j in 1:(J-1)){\n>>             for (k in (j+1):J){\n>>                 y <- mat[,j] - mat[,k]\n>>                 x <- (mat[,j] + mat[,k]) / 2\n>>                 index <- c(order(x)[1], subset, order(-x)[1])\n>>                 ##put endpoints in so we can interpolate\n>>                 xx <- x[index]\n>>                 yy <- y[index]\n>>                 aux <-loess(yy~xx, span=span, degree=1, weights=w,\n>> family=family.loess)\n>>                 aux <- predict(aux, data.frame(xx=x)) / J\n>>                 means[, j] <- means[, j] + aux\n>>                 means[, k] <- means[, k] - aux\n>>                 if (verbose)\n>>                     cat(\"Done with\",j,\"vs\",k,\" in iteration \",iter,\"\\n\")\n>>             }\n>>         }\n>>         mat <- mat - means\n>>         change <- max(colMeans((means[subset,])^2))\n>>\n>>         if(verbose)\n>>             cat(iter, change,\"\\n\")\n>>\n>>     }\n>>\n>>     if ((change > epsilon) & (maxit > 1))\n>>         warning(paste(\"No convergence after\", maxit, \"iterations.\\n\"))\n>>\n>>     if(log.it) {\n>>         return(2^mat)\n>>     } else\n>>         return(mat)\n>> }\n>>\n>> --\n>> Dipl.-Tech. Math. Markus Schmidberger\n>>\n>> Ludwig-Maximilians-Universit?t M?nchen\n>> IBE - Institut f?r medizinische Informationsverarbeitung,\n>> Biometrie und Epidemiologie\n>> Marchioninistr. 15, D-81377 Muenchen\n>> URL: http://ibe.web.med.uni-muenchen.de\n>> Mail: Markus.Schmidberger [at] ibe.med.uni-muenchen.de",
+      "body_snippet": "Hi Markus,\n\nIf you're worried about efficiency, you might try the loessFit() function \nin the limma package.  I suspect it might be faster, as well as more \naccurate, because it would avoid the need t",
+      "thread_id": "thread-82460d3a0006",
+      "thread_depth": 0,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-4b691ae21bc6",
+      "message_id": "<Pine.WNT.4.64.0806281221250.768@PC602.alpha.wehi.edu.au>",
+      "from_name": "Gordon K Smyth",
+      "from_email_hash": "a978abba6e869c142fda92319a9ab9659112ab762e437af84e6581fe4481f132",
+      "date": "2008-06-28T12:31:56+10:00",
+      "subject": "[Bioc-devel] Can't set featureNames on naive ExpressionSet object",
+      "subject_clean": "[Bioc-devel] Can't set featureNames on naive ExpressionSet object",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Why can't I set featureNames?  Why is sampleNames() called internally \nwhen the user has not asked for it?\n\nGordon\n\n> narrays <- 4\n> nprobes <- 100\n> eset <- new(\"ExpressionSet\")\n> exprs(eset) <- matrix(rnorm(nprobes*narrays),nprobes,narrays)\n> featureNames(eset) <- paste(\"Gene\",1:nprobes,sep=\"\")\nError in `sampleNames<-`(`*tmp*`, value = c(\"Gene1\", \"Gene2\", \"Gene3\",  :\n   number of new names (100) should equal number of rows in \nAnnotatedDataFrame (0)\n\n\n> sessionInfo()\nR version 2.7.1 (2008-06-23)\ni386-pc-mingw32\n\nlocale:\nLC_COLLATE=English_Australia.1252;LC_CTYPE=English_Australia.1252;LC_MONETARY=English_Australia.1252;LC_NUMERIC=C;LC_TIME=English_Australia.1252\n\nattached base packages:\n[1] tools     stats     graphics  grDevices utils     datasets  methods \nbase\n\nother attached packages:\n[1] Biobase_2.0.0",
+      "body_snippet": "Why can't I set featureNames?  Why is sampleNames() called internally \nwhen the user has not asked for it?\n\nGordon\n\n> narrays <- 4\n> nprobes <- 100\n> eset <- new(\"ExpressionSet\")\n> exprs(eset) <- matr",
+      "thread_id": "thread-4b691ae21bc6",
+      "thread_depth": 0,
+      "month": "2008-06"
+    },
+    {
+      "id": "msg-46d8b8810219",
+      "message_id": "<6phwskatelp.fsf@lamprey.fhcrc.org>",
+      "from_name": "Martin Morgan",
+      "from_email_hash": "9f5a643078023be7f11cfed10069ce2b31d0a2cc98705fa84c2ae0e157a1fb93",
+      "date": "2008-06-27T20:36:50-07:00",
+      "subject": "[Bioc-devel] Can't set featureNames on naive ExpressionSet object",
+      "subject_clean": "[Bioc-devel] Can't set featureNames on naive ExpressionSet object",
+      "in_reply_to": "<Pine.WNT.4.64.0806281221250.768@PC602.alpha.wehi.edu.au> (Gordon K. Smyth's message of \"Sat, 28 Jun 2008 12:31:56 +1000 (E. Australia Standard Time)\")",
+      "references": [
+        "<Pine.WNT.4.64.0806281221250.768@PC602.alpha.wehi.edu.au>"
+      ],
+      "body_plain": "Gordon K Smyth <smyth at wehi.EDU.AU> writes:\n\n> Why can't I set featureNames?  \n\nTry\n\nnarrays <- 4\nnprobes <- 100\nexprs <- matrix(rnorm(nprobes*narrays),nprobes,narrays,\n                dimnames=list(\n                  paste(\"Gene\", 1:nprobes, sep=\"\"),\n                  NULL))\neset <- new(\"ExpressionSet\", exprs=exprs)\n\nor\n\neset <- new(\"ExpressionSet\",\n            exprs=matrix(rnorm(nprobes*narrays),nprobes,narrays))\nfeatureNames(eset) <- paste(\"Gene\",1:nprobes,sep=\"\")\n\nor the solution below. The recommended pattern for eSet-like objects\nis to construct the components and then assemble into the complete\nobject with a call to 'new'.\n\n'why' is because exprs<-,ExpressionSet,matrix-method creates an\ninvalid object\n\n> eset <- new(\"ExpressionSet\")\n> exprs(eset) <- matrix(rnorm(nprobes*narrays),nprobes,narrays)\n> validObject(eset)\nError in validObject(eset) : \n  invalid class \"ExpressionSet\" object: 1: feature numbers differ between assayData and featureData\ninvalid class \"ExpressionSet\" object: 2: sample numbers differ between assayData and phenoData\n\nthat featureNames<- then correctly objects to.  The thought was that\ntransiently invalid objects like this were sometimes necessary in the\nS4 world, e.g., as here, where the exprs, phenoData and featureData\nslots all need to be updated for a correct object:\n\nnarrays <- 4\nnprobes <- 100\neset <- new(\"ExpressionSet\")\n\nexprs(eset) <- matrix(rnorm(nprobes*narrays),nprobes,narrays)\n\nfData <- data.frame(row.names=paste(\"Gene\", 1:nprobes, sep=\"\"))\nfeatureData(eset) <- new(\"AnnotatedDataFrame\", data=fData)\n\npData <- data.frame(row.names=paste(letters[1:narrays]))\nphenoData(eset) <- new(\"AnnotatedDataFrame\", data=pData)\n\nObviously too much of the class structure and implementation detail\nare being exposed to the user.\n\n> Why is sampleNames() called internally when the user has not asked\n> for it?\n\nbecause featureNames<- is trying to update featureData (an\nAnnotatedDataFrame) using\nsampleNames<-,AnnotatedDataFrame,character-method to make a consistent\nobject (AnnotatedDataFrame has both featureNames<- and sampleNames<-\nfor both historical and not entirely implausible user interface\nreasons).\n\nMartin\n\n> Gordon\n>\n>> narrays <- 4\n>> nprobes <- 100\n>> eset <- new(\"ExpressionSet\")\n>> exprs(eset) <- matrix(rnorm(nprobes*narrays),nprobes,narrays)\n>> featureNames(eset) <- paste(\"Gene\",1:nprobes,sep=\"\")\n> Error in `sampleNames<-`(`*tmp*`, value = c(\"Gene1\", \"Gene2\", \"Gene3\",  :\n>    number of new names (100) should equal number of rows in\n>    AnnotatedDataFrame (0)\n>\n>\n>> sessionInfo()\n> R version 2.7.1 (2008-06-23)\n> i386-pc-mingw32\n>\n> locale:\n> LC_COLLATE=English_Australia.1252;LC_CTYPE=English_Australia.1252;LC_MONETARY=English_Australia.1252;LC_NUMERIC=C;LC_TIME=English_Australia.1252\n>\n> attached base packages:\n> [1] tools     stats     graphics  grDevices utils     datasets\n> methods base\n>\n> other attached packages:\n> [1] Biobase_2.0.0\n>\n> _______________________________________________\n> Bioc-devel at stat.math.ethz.ch mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n-- \nMartin Morgan\nComputational Biology / Fred Hutchinson Cancer Research Center\n1100 Fairview Ave. N.\nPO Box 19024 Seattle, WA 98109\n\nLocation: Arnold Building M2 B169\nPhone: (206) 667-2793",
+      "body_snippet": "Gordon K Smyth <smyth at wehi.EDU.AU> writes:\n\n> Why can't I set featureNames?  \n\nTry\n\nnarrays <- 4\nnprobes <- 100\nexprs <- matrix(rnorm(nprobes*narrays),nprobes,narrays,\n                dimnames=list",
+      "thread_id": "thread-4b691ae21bc6",
+      "thread_depth": 1,
+      "month": "2008-06"
+    }
+  ],
+  "threads": [
+    {
+      "id": "thread-f0d0d2dd9ee2",
+      "subject": "[Bioc-devel] Views of a MaskedDNAstring in Biostrings",
+      "message_count": 3,
+      "participants": [
+        "Herve Pages",
+        "Sean Davis"
+      ],
+      "started": "2008-06-04T07:23:46-04:00",
+      "last_reply": "2008-06-04T16:17:22-04:00",
+      "root_message_id": "msg-f0d0d2dd9ee2"
+    },
+    {
+      "id": "thread-2bf5dd966541",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "message_count": 4,
+      "participants": [
+        "Kevin R. Coombes",
+        "Laurent Gautier"
+      ],
+      "started": "2008-06-10T06:41:33-05:00",
+      "last_reply": "2008-06-10T16:37:17+02:00",
+      "root_message_id": "msg-2bf5dd966541"
+    },
+    {
+      "id": "thread-63b29eb1f1c6",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "message_count": 4,
+      "participants": [
+        "Kevin R. Coombes",
+        "Robert Gentleman",
+        "Wolfgang Huber"
+      ],
+      "started": "2008-06-10T10:20:36-07:00",
+      "last_reply": "2008-06-10T21:33:17+01:00",
+      "root_message_id": "msg-63b29eb1f1c6"
+    },
+    {
+      "id": "thread-a79e7a287472",
+      "subject": "[Bioc-devel] R cmd check time limits for BioConductor",
+      "message_count": 5,
+      "participants": [
+        "Herve Pages",
+        "Kasper Daniel Hansen",
+        "Kevin R. Coombes",
+        "Vincent Carey 525-2265",
+        "Warnes, Gregory"
+      ],
+      "started": "2008-06-10T11:00:26-07:00",
+      "last_reply": "2008-06-11T15:34:41-04:00",
+      "root_message_id": "msg-a79e7a287472"
+    },
+    {
+      "id": "thread-9ae4263b79fd",
+      "subject": "[Bioc-devel] RFC - annotation packages and ExpressionSets",
+      "message_count": 2,
+      "participants": [
+        "Christian Kohler",
+        "Marc Carlson"
+      ],
+      "started": "2008-06-17T15:03:40+02:00",
+      "last_reply": "2008-06-17T10:06:27-07:00",
+      "root_message_id": "msg-9ae4263b79fd"
+    },
+    {
+      "id": "thread-71e4f3eb91f9",
+      "subject": "[Bioc-devel] normalize.loess effizient method",
+      "message_count": 2,
+      "participants": [
+        "Markus Schmidberger",
+        "lgautier at altern.org"
+      ],
+      "started": "2008-06-23T10:09:26+02:00",
+      "last_reply": "2008-06-24T16:40:00+02:00",
+      "root_message_id": "msg-71e4f3eb91f9"
+    },
+    {
+      "id": "thread-82460d3a0006",
+      "subject": "[Bioc-devel] (no subject)",
+      "message_count": 1,
+      "participants": [
+        "Gordon K Smyth"
+      ],
+      "started": "2008-06-26T12:04:31+10:00",
+      "last_reply": "2008-06-26T12:04:31+10:00",
+      "root_message_id": "msg-82460d3a0006"
+    },
+    {
+      "id": "thread-4b691ae21bc6",
+      "subject": "[Bioc-devel] Can't set featureNames on naive ExpressionSet object",
+      "message_count": 2,
+      "participants": [
+        "Gordon K Smyth",
+        "Martin Morgan"
+      ],
+      "started": "2008-06-28T12:31:56+10:00",
+      "last_reply": "2008-06-27T20:36:50-07:00",
+      "root_message_id": "msg-4b691ae21bc6"
+    }
+  ]
+}

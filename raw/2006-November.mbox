@@ -1,0 +1,2399 @@
+From bembom at gmail.com  Wed Nov  1 05:34:08 2006
+From: bembom at gmail.com (Oliver Bembom)
+Date: Tue, 31 Oct 2006 20:34:08 -0800
+Subject: [Bioc-devel] Licensing question
+Message-ID: <bb9caf670610312034g5069405bl203999e4fc3e318@mail.gmail.com>
+
+Hi all,
+
+I am working on an R package that I'd like to submit to BioConductor
+and have run into the following licensing problem. I am using the C
+function donlp2() written by Peter Spellucci, whose license contains
+the following:
+
+
+4. The use of donlp2 must be acknowledged, in any publication
+which contains results obtained with it or parts of it.
+Citation of the authors o8name and netlib-source is suitable.
+
+5. The free use of donlp2 and parts of it is restricted for
+research purposes commercial uses require permission and
+licensing from P. Spellucci.
+
+
+Number 4 could be addressed through an acknowledgment in the vignette,
+but number 5 seems incompatible with the LGPL license I had originally
+thought of using. Does anybody have suggestions for what other license
+might solve this problem without having to get submission from the
+author to use it under the LGPL? Would the GPL work? Or maybe the
+Artistic License Version 2.0? Thanks!
+
+Oliver
+
+
+From rgentlem at fhcrc.org  Wed Nov  1 07:25:25 2006
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Tue, 31 Oct 2006 22:25:25 -0800
+Subject: [Bioc-devel] Licensing question
+In-Reply-To: <bb9caf670610312034g5069405bl203999e4fc3e318@mail.gmail.com>
+References: <bb9caf670610312034g5069405bl203999e4fc3e318@mail.gmail.com>
+Message-ID: <45483DD5.5000700@fhcrc.org>
+
+
+
+Oliver Bembom wrote:
+> Hi all,
+> 
+> I am working on an R package that I'd like to submit to BioConductor
+> and have run into the following licensing problem. I am using the C
+> function donlp2() written by Peter Spellucci, whose license contains
+> the following:
+> 
+> 
+> 4. The use of donlp2 must be acknowledged, in any publication
+> which contains results obtained with it or parts of it.
+> Citation of the authors o8name and netlib-source is suitable.
+
+   Actually, you would need to make it clear to any user of this 
+functionality that such a citation is needed. That is, if someone uses 
+your interface they are bound by this requirement. I suspect you would 
+need to print something every time the function is invoked that made the 
+requirement explicit.
+
+> 
+> 5. The free use of donlp2 and parts of it is restricted for
+> research purposes commercial uses require permission and
+> licensing from P. Spellucci.
+> 
+> 
+> Number 4 could be addressed through an acknowledgment in the vignette,
+> but number 5 seems incompatible with the LGPL license I had originally
+> thought of using. Does anybody have suggestions for what other license
+> might solve this problem without having to get submission from the
+> author to use it under the LGPL? Would the GPL work? Or maybe the
+> Artistic License Version 2.0? Thanks!
+
+   Nope, none of these will work for you, AFAIK. You will have to choose 
+something that restricts use of that part of your package for research 
+purposes (what ever that might mean).
+
+   You could ask the original author for an exception, and see if there 
+is a license they do favor.
+
+   You could split this code out into a separate package with such a 
+license and then release the rest of your code under some other license.
+
+   Best wishes
+     Robert
+> 
+> Oliver
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From maechler at stat.math.ethz.ch  Wed Nov  1 09:57:01 2006
+From: maechler at stat.math.ethz.ch (Martin Maechler)
+Date: Wed, 1 Nov 2006 09:57:01 +0100
+Subject: [Bioc-devel] Nasty function collision
+In-Reply-To: <4547C074.1070808@med.umich.edu>
+References: <45473477.47B0.00EE.0@med.umich.edu> <m23b94gztw.fsf@ziti.local>
+	<45478FAF.7060703@fhcrc.org> <45479F15.20809@med.umich.edu>
+	<9AF40DC5-B4B6-4DA1-810A-A9DB41B2175F@colinsmith.org>
+	<m264e0dx8g.fsf@ziti.local> <4547C074.1070808@med.umich.edu>
+Message-ID: <17736.24925.688073.570811@stat.math.ethz.ch>
+
+>>>>> "JimMcD" == James W MacDonald <jmacdon at med.umich.edu>
+>>>>>     on Tue, 31 Oct 2006 16:30:28 -0500 writes:
+
+    JimMcD> Seth Falcon wrote:
+    >> Code that does the optional generic definition really needs to go away
+    >> at this point (I know it was needed at some point, so I'm not trying
+    >> to point a finger or anything).  To be specific, I'm referring to any
+    >> code that does something along the lines of:
+    >> 
+    >> if (!isGeneric("foo"))
+    >> setGeneric("foo") ...
+
+Hmm, am I understanding correctly?
+This is "bad" because it can destroy consistent behavior in the
+case when there's already a non-S4 function foo() present?
+Whereas  when not doing setGeneric(), the non-S4 function foo() will become
+the default method as soon as the first setMethod("foo", ....)
+happens?
+But if that's true, it seems to me, setGeneric() should never be
+used anymore, and I somehow doubt that..
+
+Maybe this part of the discussion should really be done on
+R-devel rather than bioc-devel.
+
+
+    JimMcD> I tried removing the if(!isGeneric("foo")) lines from annaffy and 
+    JimMcD> re-installed, and it didn't make a difference. However, re-setting the 
+    JimMcD> method as Colin suggested:
+
+    JimMcD> setMethod("getURL", "ANY", function(object) {
+    JimMcD> RCurl::getURL(object)
+    JimMcD> })
+
+    JimMcD> did work, do it appears to me that the real cause of the collision is 
+    JimMcD> this particular method rather than co-opting an existing generic.
+
+Thanks, gentlemen, for the interesting discussion, to which I'm
+chiming in late.
+
+I tend to agree with Jim here that I think it's a pretty
+``impolite'' inter-package-citizenship behavior to ever define
+
+  setMethod("SomeGeneric", "ANY", function(......) ......)
+
+because you do trash other method definitions for
+"SomeGeneric" at your package load time.
+
+I'd say a good R-izen has at least one of his/her own classes in
+every signature (s)he defines methods for.
+
+Martin Maechler, ETH Zurich
+
+
+From sfalcon at fhcrc.org  Wed Nov  1 16:23:42 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 01 Nov 2006 07:23:42 -0800
+Subject: [Bioc-devel] Nasty function collision
+In-Reply-To: <17736.24925.688073.570811@stat.math.ethz.ch> (Martin Maechler's
+	message of "Wed, 1 Nov 2006 09:57:01 +0100")
+References: <45473477.47B0.00EE.0@med.umich.edu> <m23b94gztw.fsf@ziti.local>
+	<45478FAF.7060703@fhcrc.org> <45479F15.20809@med.umich.edu>
+	<9AF40DC5-B4B6-4DA1-810A-A9DB41B2175F@colinsmith.org>
+	<m264e0dx8g.fsf@ziti.local> <4547C074.1070808@med.umich.edu>
+	<17736.24925.688073.570811@stat.math.ethz.ch>
+Message-ID: <m2lkmv6vi9.fsf@ziti.local>
+
+Martin Maechler <maechler at stat.math.ethz.ch> writes:
+
+>     JimMcD> Seth Falcon wrote:
+>     >> Code that does the optional generic definition really needs to go away
+>     >> at this point (I know it was needed at some point, so I'm not trying
+>     >> to point a finger or anything).  To be specific, I'm referring to any
+>     >> code that does something along the lines of:
+>     >> 
+>     >> if (!isGeneric("foo"))
+>     >> setGeneric("foo") ...
+>
+> Hmm, am I understanding correctly?
+> This is "bad" because it can destroy consistent behavior in the
+> case when there's already a non-S4 function foo() present?
+
+Uh, here's where I'm confused.  The check isGeneric("foo") tells you,
+AFAIK, if foo is an S4 generic, not whether there is a foo function
+already defined that could "volunteer" to be the default method for a
+new generic.  Am I missing something?
+
+> Whereas  when not doing setGeneric(), the non-S4 function foo() will become
+> the default method as soon as the first setMethod("foo", ....)
+> happens?
+> But if that's true, it seems to me, setGeneric() should never be
+> used anymore, and I somehow doubt that..
+
+I don't think I understand what you are getting at.  So let me explain
+further my concern about the following coding idiom:
+
+     if (!isGeneric("foo"))
+         setGeneric("foo", ...)
+
+If you put this code in your package, you are saying, "Someone else
+somewhere might have defined a generic and I will use it if I can find
+it".  And I think this makes _no_ sense.  How would one know what the
+formal arguments are, for example?  [the common idion is to next
+define a generic without any introspection of the possibly
+pre-existing generic].
+
+It turns out that this isn't as dangerous as it could be because
+packages with S4 code use SaveImage: Yes.  This means the package code
+isn't executed at load time so it won't get confused, for example, by
+a call to setGeneric at the global level prior to package loading.
+But it also means the code is pointless.  If you can't pick up any old
+generic out there, then you can _only_ pickup ones you should know
+about.  Therefore, you should either know it is there and use it or
+define your own.  I just don't understand the conditional logic.
+
+IMO, you should either define your own generic or attach a method to a
+_specific_ and _known_ generic defined elsewhere.  And for the latter,
+I really like the recent changes that allow you to very clearly
+specify the generic you are talking about:
+
+    setMethod(Biobase::exprs, ...)
+
+> I tend to agree with Jim here that I think it's a pretty
+> ``impolite'' inter-package-citizenship behavior to ever define
+>
+>   setMethod("SomeGeneric", "ANY", function(......) ......)
+>
+> because you do trash other method definitions for
+> "SomeGeneric" at your package load time.
+
+It is perfectly fine behavior, IMO, as long as SomeGeneric is defined
+in the package's name space.  [I'm not going to press this argument
+too far; It seems like an odd way to code, but I haven't looked
+closely and there may be a good use case for it].
+
+> I'd say a good R-izen has at least one of his/her own classes in
+> every signature (s)he defines methods for.
+
+I'm pretty sure that is bogus.  If I define a plain old function, by definition
+it has signature "ANY" and that doesn't bother you, does it?  If I
+define my own generic and it has a defualt method, then you get
+behavior for "ANY"...  And to be more particular, it is _perfectly_
+reasonable to define methods for other peoples classes (but I bet that
+isn't what you meant in the first place ;-)!
+
++ seth, FHCRC Seattle
+
+
+From bembom at gmail.com  Wed Nov  1 23:25:06 2006
+From: bembom at gmail.com (Oliver Bembom)
+Date: Wed, 1 Nov 2006 14:25:06 -0800
+Subject: [Bioc-devel] Licensing question
+In-Reply-To: <45483DD5.5000700@fhcrc.org>
+References: <bb9caf670610312034g5069405bl203999e4fc3e318@mail.gmail.com>
+	<45483DD5.5000700@fhcrc.org>
+Message-ID: <bb9caf670611011425le1103e9n86373bac366e5adb@mail.gmail.com>
+
+Hi Robert,
+
+Thanks for your help.I have contacted the author of the donlp2() code,
+and he says that I can in fact incorporate his code as long as I
+restrict the use of my package to research purposes only. Would it be
+sufficient to use as license the following modified version of the
+original donlp2() license?
+
+**********************************************************************************
+1. cosmo is under the exclusive copyright of Oliver Bembom
+    (bembom at berkeley.edu) and Peter Spellucci
+    (spellucci at mathematik.tu-darmstadt.de).
+   		     					
+2. cosmo and its constituent parts come with no warranty, whether ex-
+    pressed or implied, that it is free of errors or suitable for any
+    specific purpose. It must not be used to solve any problem, whose
+    incorrect solution could result in injury to a person, institution
+    or property. It is at the user's own risk to use cosmo or parts of
+    it and the author disclaims all liability for such use.
+	   		     					
+3. cosmo is distributed "as is". In particular, no maintenance, support
+    or trouble-shooting or subsequent upgrade is implied.
+	   		     					
+4. If you use this software in your research, please cite
+	   		     					
+   O. Bembom, S. Keles, M.J. van der Laan (2006). Supervised Detection
+   of Conserved Motifs in DNA Sequences with cosmo. UC Berkeley
+   Division of Biostatistics Working Paper Series. Working Paper 209.
+   http://www.bepress.com/ucbbiostat/paper209.
+ 		     					
+   cosmo makes use of the donlp2() function by Peter Spellucci.
+   The use of donlp2 must be acknowledged, in any publication which
+   contains results obtained with cosmo or parts of it. Citation of the
+   author's name and netlib-source is suitable.
+
+5. The free use of cosmo and parts of it is restricted for research
+    purposes. Commercial uses require permission and licensing from
+    Oliver Bembom and Peter Spellucci.
+
+**********************************************************************************
+
+>From your perspective, is there anything I might want to add or
+change? Also, to address number 4 of this license, would it be
+sufficient to have the following message printed each time the package
+is loaded?
+
+   cosmo makes use of the donlp2() function by Peter Spellucci.
+   The use of donlp2 must be acknowledged, in any publication which
+   contains results obtained with cosmo or parts of it. Citation of the
+   author's name and netlib-source is suitable.
+
+Thanks again.
+
+Oliver
+
+
+From blindglobe at gmail.com  Thu Nov  2 12:11:06 2006
+From: blindglobe at gmail.com (A.J. Rossini)
+Date: Thu, 2 Nov 2006 12:11:06 +0100
+Subject: [Bioc-devel] Bioc-devel Digest, Vol 32, Issue 2
+In-Reply-To: <mailman.0.1162465201.4561.bioc-devel@stat.math.ethz.ch>
+References: <mailman.0.1162465201.4561.bioc-devel@stat.math.ethz.ch>
+Message-ID: <1abe3fa90611020311h9c97f9ahc4677bc6be198035@mail.gmail.com>
+
+> From: "Oliver Bembom" <bembom at gmail.com>
+> Subject: Re: [Bioc-devel] Licensing question
+
+
+Another more painful approach would be to separate out DONLP2 into a
+general constrained optimization package, provide a common API, and
+then
+you could distribute your components as you feel fit.
+
+Then cosmo could be licensed any which way, and DONLP2 could
+eventually be replaced by an open source constrained optimizer.
+
+This is just a suggestion, not a recommendation!
+
+best,
+-tony
+
+blindglobe at gmail.com
+Muttenz, Switzerland.
+"Commit early,commit often, and commit in a repository from which we can easily
+roll-back your mistakes" (AJR, 4Jan05).
+
+
+From rgentlem at fhcrc.org  Thu Nov  2 17:12:52 2006
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Thu, 02 Nov 2006 08:12:52 -0800
+Subject: [Bioc-devel] Licensing question
+In-Reply-To: <bb9caf670611011425le1103e9n86373bac366e5adb@mail.gmail.com>
+References: <bb9caf670610312034g5069405bl203999e4fc3e318@mail.gmail.com>	
+	<45483DD5.5000700@fhcrc.org>
+	<bb9caf670611011425le1103e9n86373bac366e5adb@mail.gmail.com>
+Message-ID: <454A1904.7050506@fhcrc.org>
+
+Hi Oliver,
+   I am not trying to give you advice on how to license your package, 
+but rather to explain the restrictions that you will have to live 
+within. How you chose to do that is up to you. In R licenses, at least 
+to date, have applied to whole packages and need to be short enough to 
+read (fit in the description field, and what is below if far too long 
+IMHO, but could be put elsewhere such as README.LICENSE or similar). 
+Hence, you are going to have your code restricted in the same way that 
+donlp2 is, unless you split that code out into a separate package.
+
+   Given the odd restrictions and the citation requirements you may want 
+to seriously consider some sort of banner that prints out explicit 
+requirements and restrictions for users.
+
+   best wishes
+     Robert
+
+
+
+Oliver Bembom wrote:
+> Hi Robert,
+> 
+> Thanks for your help.I have contacted the author of the donlp2() code,
+> and he says that I can in fact incorporate his code as long as I
+> restrict the use of my package to research purposes only. Would it be
+> sufficient to use as license the following modified version of the
+> original donlp2() license?
+> 
+> ********************************************************************************** 
+> 
+> 1. cosmo is under the exclusive copyright of Oliver Bembom
+>    (bembom at berkeley.edu) and Peter Spellucci
+>    (spellucci at mathematik.tu-darmstadt.de).
+>                                   
+> 2. cosmo and its constituent parts come with no warranty, whether ex-
+>    pressed or implied, that it is free of errors or suitable for any
+>    specific purpose. It must not be used to solve any problem, whose
+>    incorrect solution could result in injury to a person, institution
+>    or property. It is at the user's own risk to use cosmo or parts of
+>    it and the author disclaims all liability for such use.
+>                                        
+> 3. cosmo is distributed "as is". In particular, no maintenance, support
+>    or trouble-shooting or subsequent upgrade is implied.
+>                                        
+> 4. If you use this software in your research, please cite
+>                                        
+>   O. Bembom, S. Keles, M.J. van der Laan (2006). Supervised Detection
+>   of Conserved Motifs in DNA Sequences with cosmo. UC Berkeley
+>   Division of Biostatistics Working Paper Series. Working Paper 209.
+>   http://www.bepress.com/ucbbiostat/paper209.
+>                                 
+>   cosmo makes use of the donlp2() function by Peter Spellucci.
+>   The use of donlp2 must be acknowledged, in any publication which
+>   contains results obtained with cosmo or parts of it. Citation of the
+>   author's name and netlib-source is suitable.
+> 
+> 5. The free use of cosmo and parts of it is restricted for research
+>    purposes. Commercial uses require permission and licensing from
+>    Oliver Bembom and Peter Spellucci.
+> 
+> ********************************************************************************** 
+> 
+> 
+>> From your perspective, is there anything I might want to add or
+> change? Also, to address number 4 of this license, would it be
+> sufficient to have the following message printed each time the package
+> is loaded?
+> 
+>   cosmo makes use of the donlp2() function by Peter Spellucci.
+>   The use of donlp2 must be acknowledged, in any publication which
+>   contains results obtained with cosmo or parts of it. Citation of the
+>   author's name and netlib-source is suitable.
+> 
+> Thanks again.
+> 
+> Oliver
+> 
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From bembom at gmail.com  Thu Nov  2 19:42:21 2006
+From: bembom at gmail.com (Oliver Bembom)
+Date: Thu, 2 Nov 2006 10:42:21 -0800
+Subject: [Bioc-devel] Licensing question
+In-Reply-To: <454A1904.7050506@fhcrc.org>
+References: <bb9caf670610312034g5069405bl203999e4fc3e318@mail.gmail.com>
+	<45483DD5.5000700@fhcrc.org>
+	<bb9caf670611011425le1103e9n86373bac366e5adb@mail.gmail.com>
+	<454A1904.7050506@fhcrc.org>
+Message-ID: <bb9caf670611021042i4f952130ib5cd0ceea774ca15@mail.gmail.com>
+
+Hi Robert,
+
+Maybe I could put a summary of the license in the DESCRIPTION file
+that refers to README.LICENSE and/or an R function, something like:
+
+"Free for research purposes only. For more details, see README.LICENSE
+or type license.cosmo() in R"
+
+Similarly, I could print out each time the package is attached something like
+
+"Cosmo is free for research purposes only. For more details, type
+license.cosmo(). Type citation.cosmo() for details on how to cite
+cosmo in publications."
+
+Oliver
+
+On 11/2/06, Robert Gentleman <rgentlem at fhcrc.org> wrote:
+> Hi Oliver,
+>    I am not trying to give you advice on how to license your package,
+> but rather to explain the restrictions that you will have to live
+> within. How you chose to do that is up to you. In R licenses, at least
+> to date, have applied to whole packages and need to be short enough to
+> read (fit in the description field, and what is below if far too long
+> IMHO, but could be put elsewhere such as README.LICENSE or similar).
+> Hence, you are going to have your code restricted in the same way that
+> donlp2 is, unless you split that code out into a separate package.
+>
+>    Given the odd restrictions and the citation requirements you may want
+> to seriously consider some sort of banner that prints out explicit
+> requirements and restrictions for users.
+>
+>    best wishes
+>      Robert
+>
+>
+>
+> Oliver Bembom wrote:
+> > Hi Robert,
+> >
+> > Thanks for your help.I have contacted the author of the donlp2() code,
+> > and he says that I can in fact incorporate his code as long as I
+> > restrict the use of my package to research purposes only. Would it be
+> > sufficient to use as license the following modified version of the
+> > original donlp2() license?
+> >
+> > **********************************************************************************
+> >
+> > 1. cosmo is under the exclusive copyright of Oliver Bembom
+> >    (bembom at berkeley.edu) and Peter Spellucci
+> >    (spellucci at mathematik.tu-darmstadt.de).
+> >
+> > 2. cosmo and its constituent parts come with no warranty, whether ex-
+> >    pressed or implied, that it is free of errors or suitable for any
+> >    specific purpose. It must not be used to solve any problem, whose
+> >    incorrect solution could result in injury to a person, institution
+> >    or property. It is at the user's own risk to use cosmo or parts of
+> >    it and the author disclaims all liability for such use.
+> >
+> > 3. cosmo is distributed "as is". In particular, no maintenance, support
+> >    or trouble-shooting or subsequent upgrade is implied.
+> >
+> > 4. If you use this software in your research, please cite
+> >
+> >   O. Bembom, S. Keles, M.J. van der Laan (2006). Supervised Detection
+> >   of Conserved Motifs in DNA Sequences with cosmo. UC Berkeley
+> >   Division of Biostatistics Working Paper Series. Working Paper 209.
+> >   http://www.bepress.com/ucbbiostat/paper209.
+> >
+> >   cosmo makes use of the donlp2() function by Peter Spellucci.
+> >   The use of donlp2 must be acknowledged, in any publication which
+> >   contains results obtained with cosmo or parts of it. Citation of the
+> >   author's name and netlib-source is suitable.
+> >
+> > 5. The free use of cosmo and parts of it is restricted for research
+> >    purposes. Commercial uses require permission and licensing from
+> >    Oliver Bembom and Peter Spellucci.
+> >
+> > **********************************************************************************
+> >
+> >
+> >> From your perspective, is there anything I might want to add or
+> > change? Also, to address number 4 of this license, would it be
+> > sufficient to have the following message printed each time the package
+> > is loaded?
+> >
+> >   cosmo makes use of the donlp2() function by Peter Spellucci.
+> >   The use of donlp2 must be acknowledged, in any publication which
+> >   contains results obtained with cosmo or parts of it. Citation of the
+> >   author's name and netlib-source is suitable.
+> >
+> > Thanks again.
+> >
+> > Oliver
+> >
+>
+> --
+> Robert Gentleman, PhD
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M2-B876
+> PO Box 19024
+> Seattle, Washington 98109-1024
+> 206-667-7700
+> rgentlem at fhcrc.org
+>
+
+
+From bembom at gmail.com  Thu Nov  2 19:46:41 2006
+From: bembom at gmail.com (Oliver Bembom)
+Date: Thu, 2 Nov 2006 10:46:41 -0800
+Subject: [Bioc-devel] Bioc-devel Digest, Vol 32, Issue 2
+In-Reply-To: <1abe3fa90611020311h9c97f9ahc4677bc6be198035@mail.gmail.com>
+References: <mailman.0.1162465201.4561.bioc-devel@stat.math.ethz.ch>
+	<1abe3fa90611020311h9c97f9ahc4677bc6be198035@mail.gmail.com>
+Message-ID: <bb9caf670611021046p6ce4a59fsb039eec141cca2ee@mail.gmail.com>
+
+Hi Tony,
+
+I agree that that solution would be optimal in some sense. If I wrote
+an API to donlp2, the user would have to supply R functions for
+evaluating the objective function, its gradient, the constraint
+functions, and their gradients. I haven't worked much with calling R
+functions from within C, but I would be concerned that the many calls
+to these R functions from within C would slow down the function quite
+a bit.
+
+Apart from that, it would be a good amount of work, since my R package
+is basically a wrapper to a C function I wrote first which
+incorporates the optimizer. So disentangling the optimization from
+that wouldn't be trivial.
+
+Oliver
+
+On 11/2/06, A.J. Rossini <blindglobe at gmail.com> wrote:
+> > From: "Oliver Bembom" <bembom at gmail.com>
+> > Subject: Re: [Bioc-devel] Licensing question
+>
+>
+> Another more painful approach would be to separate out DONLP2 into a
+> general constrained optimization package, provide a common API, and
+> then
+> you could distribute your components as you feel fit.
+>
+> Then cosmo could be licensed any which way, and DONLP2 could
+> eventually be replaced by an open source constrained optimizer.
+>
+> This is just a suggestion, not a recommendation!
+>
+> best,
+> -tony
+>
+> blindglobe at gmail.com
+> Muttenz, Switzerland.
+> "Commit early,commit often, and commit in a repository from which we can easily
+> roll-back your mistakes" (AJR, 4Jan05).
+>
+
+
+From mtmorgan at fhcrc.org  Thu Nov  2 23:04:41 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 02 Nov 2006 14:04:41 -0800
+Subject: [Bioc-devel] new function in Biobase
+In-Reply-To: <45470394.7080609@fhcrc.org> (Robert Gentleman's message of
+	"Tue, 31 Oct 2006 00:04:36 -0800")
+References: <45470394.7080609@fhcrc.org>
+Message-ID: <6phslh1ec92.fsf@gopher4.fhcrc.org>
+
+For those interested, this has been made a generic, renamed as
+makeDataPackage, with a method for ExpressionSet (defined in
+methods-ExpressionSet.R).
+
+Martin
+
+Robert Gentleman <rgentlem at fhcrc.org> writes:
+
+> Hi,
+>    I have added some code to Biobase so that a valid R package can be 
+> generated from an instance of the ExpressionSet class. The function is
+> called makeExpressionSetPackage  (I am currently trying to compete with 
+> Seth for the longest function name).
+>
+>   Comments (or the brave can just commit changes) welcome
+>
+>   Robert
+>
+>
+> -- 
+> Robert Gentleman, PhD
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M2-B876
+> PO Box 19024
+> Seattle, Washington 98109-1024
+> 206-667-7700
+> rgentlem at fhcrc.org
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Martin T. Morgan
+Bioconductor / Computational Biology
+http://bioconductor.org
+
+
+From rscharpf at jhsph.edu  Fri Nov  3 13:58:00 2006
+From: rscharpf at jhsph.edu (Rob Scharpf)
+Date: Fri, 3 Nov 2006 07:58:00 -0500
+Subject: [Bioc-devel] SNPscan -> SNPchip
+Message-ID: <EE052468-825B-4B88-978B-1E7A97414761@jhsph.edu>
+
+Hi,
+
+We changed the name of the R package SNPscan to SNPchip to avoid  
+confusion with the SNPscan web-tool.
+
+SNPchip contains classes and methods for organizing and visualizing  
+high throughput SNP data.  The classes are indirect extensions of  
+eSet.  In particular, we define classes for copy number estimates and  
+confidence scores, genotype calls and confidence scores, and a third  
+class that contains both copy number and genotype calls.  This third  
+class inherits methods from the other two.   We hope that SNPchip  
+will provide a useful forum for continued discussion and development  
+of these classes.  We will continue to work with Seth and Martin on  
+the pros and cons of this setup, hopefully with feedback from other  
+bioc-developers.  This feedback may also be useful for improving the  
+classes defined in Biobase for SNP data.
+
+As of right now, we provide static tables for SNP- and chromosome- 
+level annotation as .RData files.  Annotation packages for Affymetrix  
+SNP chips need more discussion.  The wiki for the SNP annotation  
+packages is still here: http://wiki.fhcrc.org/bioc/ 
+SNP_Annotation_Package_Discussion
+
+Thank you-
+
+Rob and Ingo
+
+rscharpf at jhsph.edu
+iruczins at jhsph.edu
+
+
+From khansen at stat.Berkeley.EDU  Tue Nov  7 08:26:52 2006
+From: khansen at stat.Berkeley.EDU (Kasper Daniel Hansen)
+Date: Mon, 6 Nov 2006 23:26:52 -0800
+Subject: [Bioc-devel] bugfix for affxparser in BioC 1.9
+Message-ID: <48C380B8-5973-4851-99E7-0F0AE54D665D@stat.berkeley.edu>
+
+Bugfixes:
+* Memory bug in the Fusion SDK when reading many
+   small chunks of a cdf file
+   (affected file: fusion_sdk/file/CDFFileData.cpp
+* Problems when reading non-null terminated strings
+   (affected file: R_affx_cdf_extras.cpp)
+* Small problem when using readCdfUnits with the argument
+   stratifyBy = "mm" - it returned pm values instead of mm.
+
+This brings affxparser to version 1.6.2 in Bioconductor 1.9 and the  
+update is recommended for all users.
+
+Kasper
+
+
+From khansen at stat.Berkeley.EDU  Tue Nov  7 08:30:28 2006
+From: khansen at stat.Berkeley.EDU (Kasper Daniel Hansen)
+Date: Mon, 6 Nov 2006 23:30:28 -0800
+Subject: [Bioc-devel] svn pages
+Message-ID: <971570AF-9603-4A84-82EB-AB70A18B5BFE@stat.berkeley.edu>
+
+There are two documents in the developer's howto about updating the  
+release branch. I suggest merging them into one.
+
+http://wiki.fhcrc.org/bioc/SvnHowTo  <- seems to be newest
+http://wiki.fhcrc.org/bioc/HowTo/Update_Release_Branch
+
+I believe that all we need to do these days is bumping the version  
+number, and then it gets build automatically - right?
+
+Also, only one of the docs mention sending an email to bioc-devel. I  
+would guess that the relevant place is the main bioc list?
+
+Kasper
+
+
+From sfalcon at fhcrc.org  Tue Nov  7 15:57:58 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 07 Nov 2006 06:57:58 -0800
+Subject: [Bioc-devel] bugfix for affxparser in BioC 1.9
+In-Reply-To: <48C380B8-5973-4851-99E7-0F0AE54D665D@stat.berkeley.edu> (Kasper
+	Daniel Hansen's message of "Mon, 6 Nov 2006 23:26:52 -0800")
+References: <48C380B8-5973-4851-99E7-0F0AE54D665D@stat.berkeley.edu>
+Message-ID: <m2y7qncnih.fsf@ziti.local>
+
+Kasper Daniel Hansen <khansen at stat.berkeley.edu> writes:
+
+> Bugfixes:
+> * Memory bug in the Fusion SDK when reading many
+>    small chunks of a cdf file
+>    (affected file: fusion_sdk/file/CDFFileData.cpp
+> * Problems when reading non-null terminated strings
+>    (affected file: R_affx_cdf_extras.cpp)
+> * Small problem when using readCdfUnits with the argument
+>    stratifyBy = "mm" - it returned pm values instead of mm.
+>
+> This brings affxparser to version 1.6.2 in Bioconductor 1.9 and the  
+> update is recommended for all users.
+
+You should send a copy of this message to the bioconductor list.
+
++ seth
+
+
+From sfalcon at fhcrc.org  Tue Nov  7 16:04:07 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 07 Nov 2006 07:04:07 -0800
+Subject: [Bioc-devel] svn pages
+In-Reply-To: <971570AF-9603-4A84-82EB-AB70A18B5BFE@stat.berkeley.edu> (Kasper
+	Daniel Hansen's message of "Mon, 6 Nov 2006 23:30:28 -0800")
+References: <971570AF-9603-4A84-82EB-AB70A18B5BFE@stat.berkeley.edu>
+Message-ID: <m2psbzcn88.fsf@ziti.local>
+
+Kasper Daniel Hansen <khansen at stat.berkeley.edu> writes:
+
+> There are two documents in the developer's howto about updating the  
+> release branch. I suggest merging them into one.
+>
+> http://wiki.fhcrc.org/bioc/SvnHowTo  <- seems to be newest
+> http://wiki.fhcrc.org/bioc/HowTo/Update_Release_Branch
+
+Please merge away :-)
+
+> I believe that all we need to do these days is bumping the version  
+> number, and then it gets build automatically - right?
+
+Yes... But it is important to emphasize that developers should run R
+CMD check and should do their best to test any packages that depend on
+their package.  
+
+We run a regular build of the release and push out packages that
+pass check _and_ have a version bump.
+
+> Also, only one of the docs mention sending an email to bioc-devel. I  
+> would guess that the relevant place is the main bioc list?
+
+I should have read this one first -- I just replied to your post
+saying, "send this to the main bioc list" :-)
+
+
++ seth
+
+
+From jmacdon at med.umich.edu  Tue Nov  7 18:51:15 2006
+From: jmacdon at med.umich.edu (James MacDonald)
+Date: Tue, 07 Nov 2006 12:51:15 -0500
+Subject: [Bioc-devel] NEWS October 2006
+Message-ID: <45508130.47B0.00EE.0@med.umich.edu>
+
+	October 2006
+
+affycoretools
+	Added vennSelectFC() which emulates vennSelect() for those
+	cases where there is no replication
+	
+affyPLM
+	Added preprocess() which does normalization and background
+	correction only
+
+affyQCReport
+	Added affyQAReport(), which will create a pdf containing
+	various QA plots for an AffyBatch
+
+AnnBuilder
+	Exported resolveMaps() from namespace per user's request
+	Fixed bug in YEASTGENENAME that was not correctly reporting the
+name
+	
+annotate
+	Added filterGOByOntology() helper function that takes a vector
+	of GO IDs and returns a logical vector indicating which are in
+	the specified ontology (MF, BP, CC)
+	
+Biobase
+	Deprecated exprSet and phenoData classes. Methods with exprSet
+	and phenoData in their signature have been deprecated
+	
+	Updated biocReposList to Bioc 2.0 repositories
+
+	Added lcsuff() to compute the longest common suffix of a set
+	of character strings - this will help to shorten the names of
+	some things like microarray names
+
+	Added code to make a package from an ExpressionSet
+
+biomaRt
+	Fixed exportFASTA() so it works with the data.frame output of
+	getSequence()
+	
+	Enabled use of archived BioMart databases in MySQL mode
+	
+	Fixed a bug in simple biomaRt functions when used on a local
+	BioMart database
+
+BSgenome
+	Added the [[ method for BSgenome objects
+	
+	Added the 'length' method for BSgenome objects
+
+BufferedMatrix
+	Made as.BufferedMatrix() do more at the C code level to speed
+	things up
+
+	Added colRanges, colMedians
+	
+	Added filenames(), memory.usage(), disk.usage() methods
+
+Category
+	Added DatPkg class to provide abstract interface to annotation
+	data
+
+	Use filterGOByOntology() for hyperGTest() - this avoids the
+	use of the GOTERM env and should be faster and use less memory
+
+	Added methods to use humanLLMapping as annotation package
+
+	Fixed bug in expected count for hyperGTest()
+	
+cellHTS
+	Changed the output of imageScreen(obj) to integer. Added
+	vertical lines to the boxplot and controls plot to separate
+	different batches
+
+flowcore
+	New Package:
+		Provides S4 data structures flow cytometry data.
+	Maintainer:
+		Nolwenn Le Meur
+
+genefilter
+	Fixed bug in pAUC computation
+
+	Fixed bug in rowpAUCs and added class and methods to deal with
+	ROC objects. Added generic and methods for rowFtests
+
+GOstats
+	Added helpers for GOHyperGResult objects; sigCategories() -
+	list GO IDs that are significant, selectedGenes() - list genes
+	from selected gene list for given GO ID, plotTermGraphs() -
+	plot connected components of significang GO terms
+
+limma
+	read.maimages() with dource = "quantarray" now sets annotation
+	columns
+
+	Added a namespace to the package. All functions not starting
+	with "." are exported
+
+	Changed column header for topTable. M renamed logFC, A renamed
+	AveExpr
+
+	lmFit() not supports ExpressionSet objects, volcanoplot() now
+	allows NULL for names argument
+
+	New function strsplit2(), which replaces splitName()
+
+macat
+	Added warning regarding permutations with small sample sizes
+
+makePlatformDesign
+	Fixed bug for NGS parser
+
+	Fixed problem when generating PDEnvs for NGS Tiling arrays
+
+pcaMethods
+	Added parameter 'completeObs' to all pca methods, so end users
+	can choose if the complete observations should be returned
+
+	Added parameter 'center' to pca methods 
+
+	Changed threshold in ppca() to 1e-5, which will lead to more
+	stable results
+
+SNPscan
+	Added a namespace
+	
+	Added accessors for snpcopynumberset
+	
+	Fixed bug in plotSnp
+
+	Added plotChromosome method
+
+	plotSnp() is now a wrapper for plotChromosome(). Updated
+	plotCytoband()
+	
+	Renamed SNPscan --> SNPchip
+
+
+
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.
+
+
+From smckinney at bccrc.ca  Wed Nov  8 21:39:28 2006
+From: smckinney at bccrc.ca (Steven McKinney)
+Date: Wed, 8 Nov 2006 12:39:28 -0800
+Subject: [Bioc-devel] stale link to reposTools in BioC FAQ?
+Message-ID: <0BE438149FF2254DB4199E2682C8DFEB0235F9C1@crcmail1.BCCRC.CA>
+
+
+Where has reposTools web page moved to?
+
+I just attempted to review reposTools
+while browsing the BioC FAQ
+
+http://www.bioconductor.org/docs/faq/
+
+reposTools 	Tools for dealing with file repositories and allow users to easily install, update, and distribute packages, vignettes, and other files.
+
+Clicking on the reposTools link (linked to the following URL)
+http://www.bioconductor.org/packages/bioc/stable/src/contrib/html/reposTools.html
+
+yields
+
+Object not found!
+
+The requested URL was not found on this server. The link on the referring page seems to be wrong or outdated. Please inform the author of that page about the error.
+
+If you think this is a server error, please contact the webmaster.
+Error 404
+www.bioconductor.org
+Wed Nov 8 12:32:25 2006
+Apache/2.0.49 (Linux/SuSE) 
+
+
+
+Any info appreciated.
+
+
+Steven McKinney
+
+Statistician
+Molecular Oncology and Breast Cancer Program
+British Columbia Cancer Research Centre
+
+email: smckinney at bccrc.ca
+
+tel: 604-675-8000 x7561
+
+BCCRC
+Molecular Oncology
+675 West 10th Ave, Floor 4
+Vancouver B.C. 
+V5Z 1L3
+Canada
+
+
+From jmacdon at med.umich.edu  Wed Nov  8 22:07:33 2006
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Wed, 08 Nov 2006 16:07:33 -0500
+Subject: [Bioc-devel] stale link to reposTools in BioC FAQ?
+In-Reply-To: <0BE438149FF2254DB4199E2682C8DFEB0235F9C1@crcmail1.BCCRC.CA>
+References: <0BE438149FF2254DB4199E2682C8DFEB0235F9C1@crcmail1.BCCRC.CA>
+Message-ID: <45524715.1060801@med.umich.edu>
+
+Hi Steven,
+
+reposTools is now defunct (see #5):
+
+Packages in 1.8 that didn't make it to 1.9
+==========================================
+
+1. exprExternal (depends on externalVector)
+2. externalVector (unable to pass check)
+3. goCluster (removed at maintainer request)
+4. MiPP (unable to pass check)
+5. reposTools (defunct)
+6. rfcdmin (moved to experiment data repository)
+7. RLMM (version < 0.99.0)
+8. SNAData (moved to experiment data repository)
+9. y2hStat (defunct, replaced by more general ppiStats)
+
+The functionality that allowed for downloading depencies was moved to 
+install.packages(), so this package was no longer needed. For instance, 
+biocLite() is really just a wrapper that figures out which version of R 
+you are using, so it can feed the correct repository information to 
+install.packages().
+
+Best,
+
+Jim
+
+
+
+Steven McKinney wrote:
+> Where has reposTools web page moved to?
+> 
+> I just attempted to review reposTools
+> while browsing the BioC FAQ
+> 
+> http://www.bioconductor.org/docs/faq/
+> 
+> reposTools 	Tools for dealing with file repositories and allow users to easily install, update, and distribute packages, vignettes, and other files.
+> 
+> Clicking on the reposTools link (linked to the following URL)
+> http://www.bioconductor.org/packages/bioc/stable/src/contrib/html/reposTools.html
+> 
+> yields
+> 
+> Object not found!
+> 
+> The requested URL was not found on this server. The link on the referring page seems to be wrong or outdated. Please inform the author of that page about the error.
+> 
+> If you think this is a server error, please contact the webmaster.
+> Error 404
+> www.bioconductor.org
+> Wed Nov 8 12:32:25 2006
+> Apache/2.0.49 (Linux/SuSE) 
+> 
+> 
+> 
+> Any info appreciated.
+> 
+> 
+> Steven McKinney
+> 
+> Statistician
+> Molecular Oncology and Breast Cancer Program
+> British Columbia Cancer Research Centre
+> 
+> email: smckinney at bccrc.ca
+> 
+> tel: 604-675-8000 x7561
+> 
+> BCCRC
+> Molecular Oncology
+> 675 West 10th Ave, Floor 4
+> Vancouver B.C. 
+> V5Z 1L3
+> Canada
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Affymetrix and cDNA Microarray Core
+University of Michigan Cancer Center
+1500 E. Medical Center Drive
+7410 CCGC
+Ann Arbor MI 48109
+734-647-5623
+
+
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.
+
+
+From hpages at fhcrc.org  Wed Nov  8 23:05:08 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Wed, 08 Nov 2006 14:05:08 -0800
+Subject: [Bioc-devel] stale link to reposTools in BioC FAQ?
+In-Reply-To: <45524715.1060801@med.umich.edu>
+References: <0BE438149FF2254DB4199E2682C8DFEB0235F9C1@crcmail1.BCCRC.CA>
+	<45524715.1060801@med.umich.edu>
+Message-ID: <45525494.3070505@fhcrc.org>
+
+James W. MacDonald wrote:
+> Hi Steven,
+> 
+> reposTools is now defunct (see #5):
+
+Right, and the FAQ needs an update. Thanks for pointing this out!
+
+Regards,
+
+H.
+
+
+From smckinney at bccrc.ca  Wed Nov  8 23:23:51 2006
+From: smckinney at bccrc.ca (Steven McKinney)
+Date: Wed, 8 Nov 2006 14:23:51 -0800
+Subject: [Bioc-devel] stale link to reposTools in BioC FAQ?
+References: <0BE438149FF2254DB4199E2682C8DFEB0235F9C1@crcmail1.BCCRC.CA>
+	<45524715.1060801@med.umich.edu> <45525494.3070505@fhcrc.org>
+Message-ID: <0BE438149FF2254DB4199E2682C8DFEB0235F9C3@crcmail1.BCCRC.CA>
+
+Hi Herve,
+
+[First things first - I want to thank all the
+maintainers of update methods - installing and
+updating packages is noticeably easier than
+even 4 or 5 months ago.  Dependencies are more
+reliably identified and installed in order,
+etc.]
+
+Thanks to you and James for the update
+info.  
+
+It seems quite a few things in the documented
+method for updating packages have changed, so
+there are several stale/outdated links and 
+info items in the FAQ and elsewhere in the
+BioC web site.
+
+I just ran an update using
+
+update.packages(ask = FALSE) ## CRAN updates
+update.packages(repos = getOption("BioC.Repos"), ask = FALSE) ## BioC updates
+
+Am I missing anything doing it this way?
+
+Any update suggestions/recommendations/pointers
+to documentation I've missed would be appreciated.
+
+
+
+
+Steven McKinney
+
+Statistician
+Molecular Oncology and Breast Cancer Program
+British Columbia Cancer Research Centre
+
+email: smckinney at bccrc.ca
+
+tel: 604-675-8000 x7561
+
+BCCRC
+Molecular Oncology
+675 West 10th Ave, Floor 4
+Vancouver B.C. 
+V5Z 1L3
+Canada
+
+
+
+
+-----Original Message-----
+From: Herve Pages [mailto:hpages at fhcrc.org]
+Sent: Wed 11/8/2006 2:05 PM
+To: Steven McKinney
+Cc: Bioc-devel at stat.math.ethz.ch
+Subject: Re: [Bioc-devel] stale link to reposTools in BioC FAQ?
+ 
+James W. MacDonald wrote:
+> Hi Steven,
+> 
+> reposTools is now defunct (see #5):
+
+Right, and the FAQ needs an update. Thanks for pointing this out!
+
+Regards,
+
+H.
+
+
+From hpages at fhcrc.org  Thu Nov  9 01:02:38 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Wed, 08 Nov 2006 16:02:38 -0800
+Subject: [Bioc-devel] stale link to reposTools in BioC FAQ?
+In-Reply-To: <0BE438149FF2254DB4199E2682C8DFEB0235F9C3@crcmail1.BCCRC.CA>
+References: <0BE438149FF2254DB4199E2682C8DFEB0235F9C1@crcmail1.BCCRC.CA>
+	<45524715.1060801@med.umich.edu> <45525494.3070505@fhcrc.org>
+	<0BE438149FF2254DB4199E2682C8DFEB0235F9C3@crcmail1.BCCRC.CA>
+Message-ID: <4552701E.2030002@fhcrc.org>
+
+Hi Steven,
+
+Steven McKinney wrote:
+> Hi Herve,
+> 
+[...]
+> 
+> It seems quite a few things in the documented
+> method for updating packages have changed, so
+> there are several stale/outdated links and 
+> info items in the FAQ and elsewhere in the
+> BioC web site.
+
+Can you please provide the URLs?
+
+> 
+> I just ran an update using
+> 
+> update.packages(ask = FALSE) ## CRAN updates
+> update.packages(repos = getOption("BioC.Repos"), ask = FALSE) ## BioC updates
+
+Where did you get this code from? Did it work for you?
+On my system it doesn't:
+> getOption("BioC.Repos")
+NULL
+
+If you are using R >= 2.3.0, you can try this instead:
+> library(Biobase)
+> update.packages(rep=biocReposList(), ask = FALSE)
+
+Cheers,
+
+H.
+
+
+From smckinney at bccrc.ca  Thu Nov  9 03:22:05 2006
+From: smckinney at bccrc.ca (Steven McKinney)
+Date: Wed, 8 Nov 2006 18:22:05 -0800
+Subject: [Bioc-devel] stale link to reposTools in BioC FAQ?
+References: <0BE438149FF2254DB4199E2682C8DFEB0235F9C1@crcmail1.BCCRC.CA>
+	<45524715.1060801@med.umich.edu> <45525494.3070505@fhcrc.org>
+	<0BE438149FF2254DB4199E2682C8DFEB0235F9C3@crcmail1.BCCRC.CA>
+	<4552701E.2030002@fhcrc.org>
+Message-ID: <0BE438149FF2254DB4199E2682C8DFEB0235F9C8@crcmail1.BCCRC.CA>
+
+Hi Herve,
+
+
+> -----Original Message-----
+> From: Herve Pages [mailto:hpages at fhcrc.org]
+> Sent: Wed 11/8/2006 4:02 PM
+> To: Steven McKinney
+> Cc: Bioc-devel at stat.math.ethz.ch
+> Subject: Re: [Bioc-devel] stale link to reposTools in BioC FAQ?
+>  
+> Hi Steven,
+> 
+> Steven McKinney wrote:
+> > Hi Herve,
+> > 
+> [...]
+> > 
+> > It seems quite a few things in the documented
+> > method for updating packages have changed, so
+> > there are several stale/outdated links and 
+> > info items in the FAQ and elsewhere in the
+> > BioC web site.
+> 
+> Can you please provide the URLs?
+
+-------------------------------------------------------------
+reposTools link is on this page:
+http://www.bioconductor.org/docs/faq/
+
+reposTools 	Tools for dealing with file repositories and allow users to easily install, update, and distribute packages, vignettes, and other files.
+
+-------------------------------------------------------------
+
+Another link is on this page:
+http://www.bioconductor.org/whatisit
+
+The vignettes are generated using the Sweave function from the R package tools. They are documents that intermix text, code, and output (textual and graphical) and can be regenerated automatically whenever the data or analyses change. Additional supporting software for vignettes will aid users in obtaining data and sample code, step through specific analyses, and apply these analyses to their own data (reposTools package).
+
+-------------------------------------------------------------
+
+This page still refers to reposTools:
+http://www.bioconductor.org/docs/install-howto.html
+
+In an R command window, type the following:
+
+source("http://www.bioconductor.org/biocLite.R")
+biocLite()
+
+This will install the following subset of packages by default:
+affy 	affydata 	affyPLM
+annaffy 	annotate 	Biobase
+Biostrings 	DynDoc 	gcrma
+genefilter 	geneplotter 	hgu95av2
+limma 	marray 	matchprobes
+multtest 	reposTools 	ROC
+vsn 	xtable
+-------------------------------------------------------------
+
+Although this page/node states that packages can be updated with bioClite and getBioC,
+the sections describing bioClite and getBioC only discuss installing new
+packages, not updating packages periodically to keep up with changes.
+
+http://www.bioconductor.org/docs/faq/index.html#For%20Unix/Linux
+
+Users are encouraged to use biocLite.R or getBioC to obtain, install and update their packages. Information on how to use these functions can be found in the biocLite and getBioC sections of this document.
+
+
+
+-------------------------------------------------------------
+
+
+
+> 
+> > 
+> > I just ran an update using
+> > 
+> > update.packages(ask = FALSE) ## CRAN updates
+> > update.packages(repos = getOption("BioC.Repos"), ask = FALSE) ## BioC updates
+> 
+> Where did you get this code from? Did it work for you?
+
+I tried various combinations of calls to update.packages, looked in the
+internals of getBioC, getOption, install.packages, etc.  The
+above calls seemed to work best.  Your suggestion below looks better.
+
+I have not yet determined which function set up list item BioC.Repos
+in my options, information from anyone who knows this would be appreciated.
+
+> getOption("BioC.Repos")
+[1] "http://www.bioconductor.org/packages/1.9/bioc"            "http://www.bioconductor.org/packages/1.9/data/annotation"
+[3] "http://www.bioconductor.org/packages/1.9/data/experiment" "http://www.bioconductor.org/packages/1.9/omegahat"       
+> options()$BioC.Repos
+[1] "http://www.bioconductor.org/packages/1.9/bioc"            "http://www.bioconductor.org/packages/1.9/data/annotation"
+[3] "http://www.bioconductor.org/packages/1.9/data/experiment" "http://www.bioconductor.org/packages/1.9/omegahat"       
+> 
+
+
+> On my system it doesn't:
+> > getOption("BioC.Repos")
+> NULL
+> 
+> If you are using R >= 2.3.0, you can try this instead:
+> > library(Biobase)
+> > update.packages(rep=biocReposList(), ask = FALSE)
+
+Yes, I have close to the latest and greatest.
+> sessionInfo()
+R version 2.4.0 Patched (2006-10-31 r39758) 
+powerpc-apple-darwin8.8.0 
+
+locale:
+en_CA.UTF-8/en_CA.UTF-8/en_CA.UTF-8/C/en_CA.UTF-8/en_CA.UTF-8
+
+attached base packages:
+[1] "methods"   "stats"     "graphics"  "grDevices" "utils"     "datasets"  "base"     
+
+other attached packages:
+polycor mvtnorm ellipse 
+"0.7-2" "0.7-5" "0.3-2" 
+> 
+
+
+
+> 
+> Cheers,
+> 
+> H.
+>
+
+
+From hpages at fhcrc.org  Thu Nov  9 03:53:48 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Wed, 08 Nov 2006 18:53:48 -0800
+Subject: [Bioc-devel] stale link to reposTools in BioC FAQ?
+In-Reply-To: <0BE438149FF2254DB4199E2682C8DFEB0235F9C8@crcmail1.BCCRC.CA>
+References: <0BE438149FF2254DB4199E2682C8DFEB0235F9C1@crcmail1.BCCRC.CA>
+	<45524715.1060801@med.umich.edu> <45525494.3070505@fhcrc.org>
+	<0BE438149FF2254DB4199E2682C8DFEB0235F9C3@crcmail1.BCCRC.CA>
+	<4552701E.2030002@fhcrc.org>
+	<0BE438149FF2254DB4199E2682C8DFEB0235F9C8@crcmail1.BCCRC.CA>
+Message-ID: <4552983C.7090400@fhcrc.org>
+
+Steven McKinney wrote:
+> Hi Herve,
+> 
+> 
+>> -----Original Message-----
+>> From: Herve Pages [mailto:hpages at fhcrc.org]
+[...]
+>> Can you please provide the URLs?
+> 
+> -------------------------------------------------------------
+> reposTools link is on this page:
+> http://www.bioconductor.org/docs/faq/
+> 
+> reposTools 	Tools for dealing with file repositories and allow users to easily install, update, and distribute packages, vignettes, and other files.
+> 
+> -------------------------------------------------------------
+> 
+> Another link is on this page:
+> http://www.bioconductor.org/whatisit
+> 
+> The vignettes are generated using the Sweave function from the R package tools. They are documents that intermix text, code, and output (textual and graphical) and can be regenerated automatically whenever the data or analyses change. Additional supporting software for vignettes will aid users in obtaining data and sample code, step through specific analyses, and apply these analyses to their own data (reposTools package).
+> 
+> -------------------------------------------------------------
+> 
+> This page still refers to reposTools:
+> http://www.bioconductor.org/docs/install-howto.html
+> 
+> In an R command window, type the following:
+> 
+> source("http://www.bioconductor.org/biocLite.R")
+> biocLite()
+> 
+> This will install the following subset of packages by default:
+> affy 	affydata 	affyPLM
+> annaffy 	annotate 	Biobase
+> Biostrings 	DynDoc 	gcrma
+> genefilter 	geneplotter 	hgu95av2
+> limma 	marray 	matchprobes
+> multtest 	reposTools 	ROC
+> vsn 	xtable
+> -------------------------------------------------------------
+> 
+> Although this page/node states that packages can be updated with bioClite and getBioC,
+> the sections describing bioClite and getBioC only discuss installing new
+> packages, not updating packages periodically to keep up with changes.
+> 
+> http://www.bioconductor.org/docs/faq/index.html#For%20Unix/Linux
+> 
+> Users are encouraged to use biocLite.R or getBioC to obtain, install and update their packages. Information on how to use these functions can be found in the biocLite and getBioC sections of this document.
+> 
+> 
+> 
+> -------------------------------------------------------------
+> 
+
+Thanks Steven for the useful feedback! I will try to update those pages ASAP.
+
+> 
+> 
+>>> I just ran an update using
+>>>
+>>> update.packages(ask = FALSE) ## CRAN updates
+>>> update.packages(repos = getOption("BioC.Repos"), ask = FALSE) ## BioC updates
+>> Where did you get this code from? Did it work for you?
+> 
+> I tried various combinations of calls to update.packages, looked in the
+> internals of getBioC, getOption, install.packages, etc.  The
+> above calls seemed to work best.  Your suggestion below looks better.
+> 
+> I have not yet determined which function set up list item BioC.Repos
+> in my options, information from anyone who knows this would be appreciated.
+> 
+>> getOption("BioC.Repos")
+> [1] "http://www.bioconductor.org/packages/1.9/bioc"            "http://www.bioconductor.org/packages/1.9/data/annotation"
+> [3] "http://www.bioconductor.org/packages/1.9/data/experiment" "http://www.bioconductor.org/packages/1.9/omegahat"       
+
+
+This should be OK too. The CRAN and monograph repos are missing
+compared to biocReposList() but, if you don't have any package
+from the monograph repo, then doing (in this order):
+
+  > update.packages()
+
+followed by
+
+  > update.packages(getOption("BioC.Repos"))
+
+should be equivalent to
+
+  > update.packages(rep=biocReposList())
+
+Cheers,
+
+H.
+
+
+From keith at wehi.EDU.AU  Thu Nov  9 04:59:34 2006
+From: keith at wehi.EDU.AU (Keith Satterley)
+Date: Thu, 09 Nov 2006 14:59:34 +1100
+Subject: [Bioc-devel] update.packages query -was stale link to reposTools in
+	BioC FAQ?
+In-Reply-To: <4552983C.7090400@fhcrc.org>
+References: <0BE438149FF2254DB4199E2682C8DFEB0235F9C1@crcmail1.BCCRC.CA>	<45524715.1060801@med.umich.edu>
+	<45525494.3070505@fhcrc.org>	<0BE438149FF2254DB4199E2682C8DFEB0235F9C3@crcmail1.BCCRC.CA>	<4552701E.2030002@fhcrc.org>	<0BE438149FF2254DB4199E2682C8DFEB0235F9C8@crcmail1.BCCRC.CA>
+	<4552983C.7090400@fhcrc.org>
+Message-ID: <4552A7A6.9090108@wehi.edu.au>
+
+Hi Herve
+
+I have been following the thread regarding reposTools and was interestred in the 
+update.packages comments near the end of this interchange. In particular:
+ >   > update.packages()
+ >
+ > followed by
+ >
+ >   > update.packages(getOption("BioC.Repos"))
+ >
+ > should be equivalent to
+ >
+ >   > update.packages(rep=biocReposList())
+ >
+I have R2.4.0 on Windows. They are not equivalent for me.
+I run
+ > library(Biobase)
+ > update.packages()
+and I'm prompted to select a CRAN mirror, which I do (Australia VIC has been a 
+good mirror for me).
+I am not prompted to update any packages.
+I run
+ > update.packages(getOption("BioC.Repos"))
+and I'm not prompted to update any packages.
+I run
+ > update.packages(rep=biocReposList())
+and I'm prompted to update 7 packages; Biostrings, GO, humanCHRLOC, 
+humanLLMappings, KEGG, mouseCHRLOC and mouseLLMappings. I responded N for now so 
+I can test further.
+
+biocReposList() responds with 6 repositories(5 bioc + 1 cran) as shown below.
+getOption("BioC.Repos") responds with NULL.
+getOption("repos") responds with the CRAN and CRANextra repositories.
+
+Hence, for me the procedures are not equivalent. Should they be?
+
+NB. I automatically load up biocLite from my .Rprofile in "My Documents" each 
+time I start R. It contains:
+tryCatch({
+     source("http://bioconductor.org/biocLite.R")
+}, error=function(e) invisible(NULL),
+          warning=function(w) cat("Not connected to the net\n"))
+
+Below is a copy and paste from my Rgui window.
+============================
+ > library(Biobase)
+Loading required package: tools
+
+Welcome to Bioconductor
+
+     Vignettes contain introductory material. To view, type
+     'openVignette()' or start with 'help(Biobase)'. For details
+     on reading vignettes, see the openVignette help page.
+
+ > sessionInfo()
+R version 2.4.0 (2006-10-03)
+i386-pc-mingw32
+
+locale:
+LC_COLLATE=English_Australia.1252;LC_CTYPE=English_Australia.1252;LC_MONETARY=English_Australia.1252;LC_NUMERIC=C;LC_TIME=English_Australia.1252
+
+attached base packages:
+[1] "tools"     "methods"   "stats"     "graphics"  "grDevices" "utils" 
+"datasets"  "base"
+
+other attached packages:
+  Biobase
+"1.12.2"
+ > ls()
+[1] "biocLite" "getBioC"
+ > ge<-getOption("BioC.Repos")
+ > ge
+NULL
+ > update.packages()
+--- Please select a CRAN mirror for use in this session ---
+ > update.packages()
+ > update.packages(getOption("BioC.Repos"))
+ > update.packages(rep=biocReposList())
+Biostrings :
+  Version 2.2.0 installed in C:/R/R-2.4.0/library
+  Version 2.2.1 available at http://bioconductor.org/packages/1.9/bioc
+Update (y/N/c)?  n
+GO :
+  Version 1.14.0 installed in C:/R/R-2.4.0/library
+  Version 1.14.1 available at http://bioconductor.org/packages/1.9/data/annotation
+Update (y/N/c)?  n
+humanCHRLOC :
+  Version 1.14.0 installed in C:/R/R-2.4.0/library
+  Version 1.14.1 available at http://bioconductor.org/packages/1.9/data/annotation
+Update (y/N/c)?  n
+humanLLMappings :
+  Version 1.14.0 installed in C:/R/R-2.4.0/library
+  Version 1.14.2 available at http://bioconductor.org/packages/1.9/data/annotation
+Update (y/N/c)?  n
+KEGG :
+  Version 1.14.0 installed in C:/R/R-2.4.0/library
+  Version 1.14.1 available at http://bioconductor.org/packages/1.9/data/annotation
+Update (y/N/c)?  n
+mouseCHRLOC :
+  Version 1.14.0 installed in C:/R/R-2.4.0/library
+  Version 1.14.1 available at http://bioconductor.org/packages/1.9/data/annotation
+Update (y/N/c)?  n
+mouseLLMappings :
+  Version 1.14.0 installed in C:/R/R-2.4.0/library
+  Version 1.14.2 available at http://bioconductor.org/packages/1.9/data/annotation
+Update (y/N/c)?  n
+ > biocReposList()
+                                                   bioc
+            "http://bioconductor.org/packages/1.9/bioc"
+                                                  aData
+"http://bioconductor.org/packages/1.9/data/annotation"
+                                                  eData
+"http://bioconductor.org/packages/1.9/data/experiment"
+                                                     oh
+        "http://bioconductor.org/packages/1.9/omegahat"
+                                                     mo
+       "http://bioconductor.org/packages/1.9/monograph"
+                                                   cran
+                                "http://cran.fhcrc.org"
+ > getOption("BioC.Repos")
+NULL
+ >
+ > getOption("repos")
+                                 CRAN                            CRANextra
+      "http://cran.ms.unimelb.edu.au" "http://www.stats.ox.ac.uk/pub/RWin"
+ >
+
+==============================
+
+cheers,
+
+Keith
+
+========================
+Keith Satterley
+Bioinformatics Division
+The Walter and Eliza Hall Institute of Medical Research
+Parkville, Melbourne,
+Victoria, Australia
+=======================
+
+Herve Pages wrote:
+> Steven McKinney wrote:
+cut ---
+
+>>
+>>>>I just ran an update using
+>>>>
+>>>>update.packages(ask = FALSE) ## CRAN updates
+>>>>update.packages(repos = getOption("BioC.Repos"), ask = FALSE) ## BioC updates
+>>>
+>>>Where did you get this code from? Did it work for you?
+>>
+>>I tried various combinations of calls to update.packages, looked in the
+>>internals of getBioC, getOption, install.packages, etc.  The
+>>above calls seemed to work best.  Your suggestion below looks better.
+>>
+>>I have not yet determined which function set up list item BioC.Repos
+>>in my options, information from anyone who knows this would be appreciated.
+>>
+>>
+>>>getOption("BioC.Repos")
+>>
+>>[1] "http://www.bioconductor.org/packages/1.9/bioc"            "http://www.bioconductor.org/packages/1.9/data/annotation"
+>>[3] "http://www.bioconductor.org/packages/1.9/data/experiment" "http://www.bioconductor.org/packages/1.9/omegahat"       
+> 
+> 
+> 
+> This should be OK too. The CRAN and monograph repos are missing
+> compared to biocReposList() but, if you don't have any package
+> from the monograph repo, then doing (in this order):
+> 
+>   > update.packages()
+> 
+> followed by
+> 
+>   > update.packages(getOption("BioC.Repos"))
+> 
+> should be equivalent to
+> 
+>   > update.packages(rep=biocReposList())
+> 
+> Cheers,
+> 
+> H.
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From hpages at fhcrc.org  Thu Nov  9 18:45:45 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Thu, 09 Nov 2006 09:45:45 -0800
+Subject: [Bioc-devel] update.packages query -was stale link to
+	reposTools in BioC FAQ?
+In-Reply-To: <4552A7A6.9090108@wehi.edu.au>
+References: <0BE438149FF2254DB4199E2682C8DFEB0235F9C1@crcmail1.BCCRC.CA>	<45524715.1060801@med.umich.edu>
+	<45525494.3070505@fhcrc.org>	<0BE438149FF2254DB4199E2682C8DFEB0235F9C3@crcmail1.BCCRC.CA>	<4552701E.2030002@fhcrc.org>	<0BE438149FF2254DB4199E2682C8DFEB0235F9C8@crcmail1.BCCRC.CA>
+	<4552983C.7090400@fhcrc.org> <4552A7A6.9090108@wehi.edu.au>
+Message-ID: <45536949.2010301@fhcrc.org>
+
+Hi Keith,
+
+Of course they are not equivalent for you, or for me, or
+for anybody who doesn't have the "BioC.Repos" option set like
+Steven.
+
+Steven has:
+  > getOption("BioC.Repos")
+  [1] "http://www.bioconductor.org/packages/1.9/bioc"
+  [2] "http://www.bioconductor.org/packages/1.9/data/annotation"
+  [3] "http://www.bioconductor.org/packages/1.9/data/experiment"
+  [4] "http://www.bioconductor.org/packages/1.9/omegahat"
+
+So in _his_ case (and only if he doesn't have any package from
+the monograph repo), this
+  > update.packages()
+  > update.packages(getOption("BioC.Repos"))
+should be equivalent to
+  > update.packages(rep=biocReposList())
+
+Anyway, the recommended way to update all BioC + CRAN packages is
+to use the latter command.
+
+Cheers,
+H.
+
+
+
+Keith Satterley wrote:
+> Hi Herve
+> 
+> I have been following the thread regarding reposTools and was
+> interestred in the update.packages comments near the end of this
+> interchange. In particular:
+>>   > update.packages()
+>>
+>> followed by
+>>
+>>   > update.packages(getOption("BioC.Repos"))
+>>
+>> should be equivalent to
+>>
+>>   > update.packages(rep=biocReposList())
+>>
+> I have R2.4.0 on Windows. They are not equivalent for me.
+> I run
+>> library(Biobase)
+>> update.packages()
+> and I'm prompted to select a CRAN mirror, which I do (Australia VIC has
+> been a good mirror for me).
+> I am not prompted to update any packages.
+> I run
+>> update.packages(getOption("BioC.Repos"))
+> and I'm not prompted to update any packages.
+> I run
+>> update.packages(rep=biocReposList())
+> and I'm prompted to update 7 packages; Biostrings, GO, humanCHRLOC,
+> humanLLMappings, KEGG, mouseCHRLOC and mouseLLMappings. I responded N
+> for now so I can test further.
+> 
+> biocReposList() responds with 6 repositories(5 bioc + 1 cran) as shown
+> below.
+> getOption("BioC.Repos") responds with NULL.
+> getOption("repos") responds with the CRAN and CRANextra repositories.
+> 
+> Hence, for me the procedures are not equivalent. Should they be?
+> 
+> NB. I automatically load up biocLite from my .Rprofile in "My Documents"
+> each time I start R. It contains:
+> tryCatch({
+>     source("http://bioconductor.org/biocLite.R")
+> }, error=function(e) invisible(NULL),
+>          warning=function(w) cat("Not connected to the net\n"))
+> 
+> Below is a copy and paste from my Rgui window.
+> ============================
+>> library(Biobase)
+> Loading required package: tools
+> 
+> Welcome to Bioconductor
+> 
+>     Vignettes contain introductory material. To view, type
+>     'openVignette()' or start with 'help(Biobase)'. For details
+>     on reading vignettes, see the openVignette help page.
+> 
+>> sessionInfo()
+> R version 2.4.0 (2006-10-03)
+> i386-pc-mingw32
+> 
+> locale:
+> LC_COLLATE=English_Australia.1252;LC_CTYPE=English_Australia.1252;LC_MONETARY=English_Australia.1252;LC_NUMERIC=C;LC_TIME=English_Australia.1252
+> 
+> 
+> attached base packages:
+> [1] "tools"     "methods"   "stats"     "graphics"  "grDevices" "utils"
+> "datasets"  "base"
+> 
+> other attached packages:
+>  Biobase
+> "1.12.2"
+>> ls()
+> [1] "biocLite" "getBioC"
+>> ge<-getOption("BioC.Repos")
+>> ge
+> NULL
+>> update.packages()
+> --- Please select a CRAN mirror for use in this session ---
+>> update.packages()
+>> update.packages(getOption("BioC.Repos"))
+>> update.packages(rep=biocReposList())
+> Biostrings :
+>  Version 2.2.0 installed in C:/R/R-2.4.0/library
+>  Version 2.2.1 available at http://bioconductor.org/packages/1.9/bioc
+> Update (y/N/c)?  n
+> GO :
+>  Version 1.14.0 installed in C:/R/R-2.4.0/library
+>  Version 1.14.1 available at
+> http://bioconductor.org/packages/1.9/data/annotation
+> Update (y/N/c)?  n
+> humanCHRLOC :
+>  Version 1.14.0 installed in C:/R/R-2.4.0/library
+>  Version 1.14.1 available at
+> http://bioconductor.org/packages/1.9/data/annotation
+> Update (y/N/c)?  n
+> humanLLMappings :
+>  Version 1.14.0 installed in C:/R/R-2.4.0/library
+>  Version 1.14.2 available at
+> http://bioconductor.org/packages/1.9/data/annotation
+> Update (y/N/c)?  n
+> KEGG :
+>  Version 1.14.0 installed in C:/R/R-2.4.0/library
+>  Version 1.14.1 available at
+> http://bioconductor.org/packages/1.9/data/annotation
+> Update (y/N/c)?  n
+> mouseCHRLOC :
+>  Version 1.14.0 installed in C:/R/R-2.4.0/library
+>  Version 1.14.1 available at
+> http://bioconductor.org/packages/1.9/data/annotation
+> Update (y/N/c)?  n
+> mouseLLMappings :
+>  Version 1.14.0 installed in C:/R/R-2.4.0/library
+>  Version 1.14.2 available at
+> http://bioconductor.org/packages/1.9/data/annotation
+> Update (y/N/c)?  n
+>> biocReposList()
+>                                                   bioc
+>            "http://bioconductor.org/packages/1.9/bioc"
+>                                                  aData
+> "http://bioconductor.org/packages/1.9/data/annotation"
+>                                                  eData
+> "http://bioconductor.org/packages/1.9/data/experiment"
+>                                                     oh
+>        "http://bioconductor.org/packages/1.9/omegahat"
+>                                                     mo
+>       "http://bioconductor.org/packages/1.9/monograph"
+>                                                   cran
+>                                "http://cran.fhcrc.org"
+>> getOption("BioC.Repos")
+> NULL
+>>
+>> getOption("repos")
+>                                 CRAN                            CRANextra
+>      "http://cran.ms.unimelb.edu.au" "http://www.stats.ox.ac.uk/pub/RWin"
+>>
+> 
+> ==============================
+> 
+> cheers,
+> 
+> Keith
+> 
+> ========================
+> Keith Satterley
+> Bioinformatics Division
+> The Walter and Eliza Hall Institute of Medical Research
+> Parkville, Melbourne,
+> Victoria, Australia
+> =======================
+> 
+> Herve Pages wrote:
+>> Steven McKinney wrote:
+> cut ---
+> 
+>>>
+>>>>> I just ran an update using
+>>>>>
+>>>>> update.packages(ask = FALSE) ## CRAN updates
+>>>>> update.packages(repos = getOption("BioC.Repos"), ask = FALSE) ##
+>>>>> BioC updates
+>>>>
+>>>> Where did you get this code from? Did it work for you?
+>>>
+>>> I tried various combinations of calls to update.packages, looked in the
+>>> internals of getBioC, getOption, install.packages, etc.  The
+>>> above calls seemed to work best.  Your suggestion below looks better.
+>>>
+>>> I have not yet determined which function set up list item BioC.Repos
+>>> in my options, information from anyone who knows this would be
+>>> appreciated.
+>>>
+>>>
+>>>> getOption("BioC.Repos")
+>>>
+>>> [1] "http://www.bioconductor.org/packages/1.9/bioc"           
+>>> "http://www.bioconductor.org/packages/1.9/data/annotation"
+>>> [3] "http://www.bioconductor.org/packages/1.9/data/experiment"
+>>> "http://www.bioconductor.org/packages/1.9/omegahat"       
+>>
+>>
+>>
+>> This should be OK too. The CRAN and monograph repos are missing
+>> compared to biocReposList() but, if you don't have any package
+>> from the monograph repo, then doing (in this order):
+>>
+>>   > update.packages()
+>>
+>> followed by
+>>
+>>   > update.packages(getOption("BioC.Repos"))
+>>
+>> should be equivalent to
+>>
+>>   > update.packages(rep=biocReposList())
+>>
+>> Cheers,
+>>
+>> H.
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From f.hahne at dkfz-heidelberg.de  Mon Nov 13 14:36:13 2006
+From: f.hahne at dkfz-heidelberg.de (Florian Hahne)
+Date: Mon, 13 Nov 2006 14:36:13 +0100
+Subject: [Bioc-devel] developers page offline?
+Message-ID: <455874CD.7090302@dkfz-heidelberg.de>
+
+Hi all,
+when following the link from the bioC homepage to the developers page I
+get this:
+
+*This page does not exist yet. You can create a new empty page, or use
+one of the page templates. Before creating the page, please check if a
+similar page already exists.
+
+***Is this just a temporary problem or are the wiki pages really dead?
+Best wishes,
+Florian
+
+**
+
+-- 
+Florian Hahne
+Abt. Molekulare Genomanalyse (B050)
+Deutsches Krebsforschungszentrum (DKFZ)
+Im Neuenheimer Feld 580
+D-69120 Heidelberg
+phone: 0049 6221 424764
+fax: 0049 6221 423454
+web: www.dkfz.de/mga
+
+
+From sfalcon at fhcrc.org  Mon Nov 13 16:10:28 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 13 Nov 2006 07:10:28 -0800
+Subject: [Bioc-devel] BioC webserver issues (was: developers page offline?)
+In-Reply-To: <455874CD.7090302@dkfz-heidelberg.de> (Florian Hahne's message of
+	"Mon, 13 Nov 2006 14:36:13 +0100")
+References: <455874CD.7090302@dkfz-heidelberg.de>
+Message-ID: <m2fycnmlgb.fsf@ziti.local>
+
+Hi Florian, all,
+
+We had some web server troubles last night.  bioconductor.org was down
+for 4 hours and it seems the wiki configuration needs fixing.
+
+The wiki (developer pages) should be back online in a few hours.
+
++ seth
+
+
+Florian Hahne <f.hahne at dkfz-heidelberg.de> writes:
+
+> Hi all,
+> when following the link from the bioC homepage to the developers page I
+> get this:
+>
+> *This page does not exist yet. You can create a new empty page, or use
+> one of the page templates. Before creating the page, please check if a
+> similar page already exists.
+>
+> ***Is this just a temporary problem or are the wiki pages really dead?
+> Best wishes,
+> Florian
+>
+> **
+>
+> -- 
+> Florian Hahne
+> Abt. Molekulare Genomanalyse (B050)
+> Deutsches Krebsforschungszentrum (DKFZ)
+> Im Neuenheimer Feld 580
+> D-69120 Heidelberg
+> phone: 0049 6221 424764
+> fax: 0049 6221 423454
+> web: www.dkfz.de/mga
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From Peder.Worning at astrazeneca.com  Tue Nov 21 10:44:48 2006
+From: Peder.Worning at astrazeneca.com (Worning, Peder )
+Date: Tue, 21 Nov 2006 10:44:48 +0100
+Subject: [Bioc-devel] FW: I have a problem with GO:0000087 "M phase of
+	mitotic cell cycle"
+Message-ID: <BBAA79351011B546BEE22C45E6D65F03018408@SELURDEMBX01.rd.astrazeneca.net>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+Url: https://stat.ethz.ch/pipermail/bioc-devel/attachments/20061121/110cd968/attachment.pl 
+
+From J.J.Goeman at lumc.nl  Tue Nov 21 11:00:03 2006
+From: J.J.Goeman at lumc.nl (Goeman, J.J. (MSTAT))
+Date: Tue, 21 Nov 2006 11:00:03 +0100
+Subject: [Bioc-devel] FW: I have a problem with GO:0000087 "M phase
+	ofmitotic cell cycle"
+In-Reply-To: <BBAA79351011B546BEE22C45E6D65F03018408@SELURDEMBX01.rd.astrazeneca.net>
+Message-ID: <68735E80D5EB7C4F8477BF00C450D38ECA26B4@mailc.lumcnet.prod.intern>
+
+ Dear Peder,
+
+Try using as.list(hgu133aGO2ALLPROBES). This gives all genes annotated
+to a GO term, while as.list(hgu133aGO2PROBE) gives the genes annotated
+to the term but not to its children.
+
+By the way: I think this question would have been better put to the
+ordinary bioconductor at stat.math.ethz.ch mailing list.
+
+Jelle
+
+> -----Original Message-----
+> From: bioc-devel-bounces at stat.math.ethz.ch 
+> [mailto:bioc-devel-bounces at stat.math.ethz.ch] On Behalf Of 
+> Worning, Peder 
+> Sent: 21 November 2006 10:45
+> To: bioc-devel at stat.math.ethz.ch
+> Subject: [Bioc-devel] FW: I have a problem with GO:0000087 "M 
+> phase ofmitotic cell cycle"
+> 
+> > Hello
+> > 
+> > I have been using the GOstats package for analysis of my 
+> expession data and it has provided a great help to understand 
+> what is going on in my experiments. But I have a problem with 
+> one of the GO cathegories.
+> > 
+> > The output from GOstats using data from the U133A chip 
+> concerning the two cathegories GO:0000087 and GO:0007067
+> > GO.ID	Term	p.value	No.of.Genes	Total.number	
+> > GO:0000087	BP: M phase of mitotic cell cycle	
+> 3.14E-22	57	134	
+> > GO:0007067	BP: mitosis	8.61E-22	56	132	
+> > 
+> > But when I look into the probeset annotated to these two 
+> classes I get 
+> > a very strange result for GO:0000087 Here follows the R 
+> code I have used:
+> > 
+> > library(GOstats)
+> > library(hgu133a)
+> > go.a <- as.list(hgu133aGO2PROBE)
+> > 
+> > GO.a.list <- unlist(go.a[["GO:0007067"]])
+> > length(GO.a.list)
+> > [1] 177
+> > 
+> > GO.a.list2 <- unlist(go.a[["GO:0000087"]])
+> > length(GO.a.list2)
+> > [1] 10
+> > 
+> > Why are these lists of so different lengths? When I look 
+> them up in AmiGO I get 730 for GO:0000087 and 715 for 
+> GO:0007067. The total number in my output represent the 
+> number of genes annotated to the GO cathegory in the A chip. 
+> I understand the results for GO:0007067; 177 is the number of 
+> probes and 132 the number of genes on the A chip.
+> > What is wrong with the annotation of the GO:0000087 
+> cathegory, is there a fix to it, or have I just made a silly mistake?
+> > 
+> > Sincerly yours
+> > 
+> > Peder
+> > 
+> > PS I haven't recieved any list mails the last couple of days
+> > 
+> > ________________________________________________
+> > Peder Worning, PhD
+> > 
+> > Senior Scientist, Bioinformatics
+> > AstraZeneca R&D Lund
+> > S-221 87 Lund, Sweden
+> > 
+> > Tel:     +46 46 33 72 93
+> > Fax:    +46 46 33 71 64
+> > Email:  peder.worning at astrazeneca.com
+> > 
+> > 
+> > 
+> 
+> 	[[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list 
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From mtmorgan at fhcrc.org  Mon Nov 27 19:33:36 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Mon, 27 Nov 2006 10:33:36 -0800
+Subject: [Bioc-devel] affy creates ExpressionSet-based AffyBatch
+Message-ID: <6phhcwkrb7j.fsf@gopher4.fhcrc.org>
+
+The development version of affy has been modified to create
+ExpressionSet-based (actually, eSet) AffyBatch objects, rather than
+exprSet.
+
+Packages depending on affy need to be updated accordingly. Usually the
+key is to identify appropriate methods (e.g., exprs(obj)) for what
+before might have been direct slot access.
+
+Instances of AffyBatch can be updated with updateObject(oldAffyBatch)
+
+The changes are substantial, so please do not hesitate to let me know
+of bugs.
+-- 
+Martin T. Morgan
+Bioconductor / Computational Biology
+http://bioconductor.org
+
+
+From rgentlem at fhcrc.org  Mon Nov 27 21:21:50 2006
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Mon, 27 Nov 2006 12:21:50 -0800
+Subject: [Bioc-devel] heads up
+Message-ID: <456B48DE.6010204@fhcrc.org>
+
+Hi,
+   You may have missed the discussion on R-devel, as it was never clear 
+that it was likely to have a direct impact on your work, but there is a 
+change to Sweave in R-devel that is likely to affect most vignettes, 
+papers and other work that relies on Sweave.
+
+   Duncan Murdoch in a series of posts with:
+    Re: [Rd] Source references from the parser
+
+   has changed the default behavior of parsing R code into Sweave, for 
+the 2.5 candidate version of R.
+
+  This change has some benefits and addresses issues that some have 
+raised, but it seems that the decision to make the new behavior the 
+default (rather than optional) seems less than kind to those of us that 
+make extensive use of Sweave.
+
+   I strongly suggest that you voice some opinion on this unless you 
+want to review all your vigenttes, papers, books and find places where 
+the new behavior clashes with the old.
+
+   best wishes
+     Robert
+
+
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From stvjc at channing.harvard.edu  Tue Nov 28 06:19:33 2006
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Tue, 28 Nov 2006 00:19:33 -0500 (EST)
+Subject: [Bioc-devel] heads up
+In-Reply-To: <456B48DE.6010204@fhcrc.org>
+References: <456B48DE.6010204@fhcrc.org>
+Message-ID: <Pine.GSO.4.58.0611280012230.22706@capecod.bwh.harvard.edu>
+
+>
+>   This change has some benefits and addresses issues that some have
+> raised, but it seems that the decision to make the new behavior the
+> default (rather than optional) seems less than kind to those of us that
+> make extensive use of Sweave.
+>
+>    I strongly suggest that you voice some opinion on this unless you
+> want to review all your vigenttes, papers, books and find places where
+> the new behavior clashes with the old.
+
+Based on the Seth-Duncan exchange it sounds like this is up in
+the air and the conservative default may well be adopted.  I do
+agree that affecting thousands of documents to help find bugs
+is less than kind, so it would seem that the time to change the
+default back to the conservative value is now.
+
+Any data on the impact on the devel builds?  Any vignettes that
+are notably badly affected?
+
+
+From sfalcon at fhcrc.org  Tue Nov 28 06:43:49 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 27 Nov 2006 21:43:49 -0800
+Subject: [Bioc-devel] heads up
+In-Reply-To: <456B48DE.6010204@fhcrc.org> (Robert Gentleman's message of "Mon,
+	27 Nov 2006 12:21:50 -0800")
+References: <456B48DE.6010204@fhcrc.org>
+Message-ID: <m2k61g2kiy.fsf@ziti.fhcrc.org>
+
+Hi all,
+
+I'm forwarding this for Duncan M.
+
+> From: Duncan Murdoch <murdoch at stats.uwo.ca>
+> Subject: Re: heads up
+> To: Robert Gentleman <rgentlem at fhcrc.org>
+> CC: bioc-devel at stat.math.ethz.ch
+> Date: Mon Nov 27 13:42:36 2006 -0800
+> 
+> Thanks for getting the bioc people involved.  I'm not currently
+> subscribed to that list, so please cc me on discussions there, or post
+> to the r-devel list.  (I'm not sure if this message will be allowed on
+> the list, coming from a non-subscriber; if not, could you (Robert)
+> please forward it?  Thanks.)
+> 
+> Here is a quick summary of the current state:
+> 
+> - Up to R 2.4.x, source(echo=T) and the equivalent code in Sweave()
+> destroy formatting, and delete comments.  This is a bad thing.  See
+> the Sweave FAQ 17.
+> 
+>  - I've committed changes to R-devel (which will become 2.5.0
+> eventually) that allow this problem to be fixed.  I'd like
+> people to use them:  I think it's a good idea to format your code for
+> readability, and to insert comments into it.
+> 
+>  - The changes I committed are also designed to allow a lot of other
+> things in the future, such as a source-based (rather than
+> deparse-based) debugger.
+> 
+>  - I understand that changing the way examples and vignettes look will
+> cause short term trouble for people, and I'd like to minimize it, but
+> without completely turning off the new behaviour (at least for now;
+> I'll certainly review this decision before R-devel goes into alpha).
+> I have put in place a scheme that means turning off the new behaviour
+> is a one-line  modification to each vignette; I'd welcome suggestions
+> for something that is even less work.
+> 
+>  - The reason not to make the old behaviour the default now is that
+> the new code needs to be exercised to find the bugs.  I don't want
+> 2.5.0 to contain buggy versions when it is released.  Whether the old
+> behaviour is made the default later will depend on input from users,
+> how easy it is to turn it on and off, etc.
+> 
+> Duncan Murdoch
+
+
+From sfalcon at fhcrc.org  Tue Nov 28 06:45:13 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 27 Nov 2006 21:45:13 -0800
+Subject: [Bioc-devel] heads up
+In-Reply-To: <Pine.GSO.4.58.0611280012230.22706@capecod.bwh.harvard.edu>
+	(Vincent Carey's message of "Tue,
+	28 Nov 2006 00:19:33 -0500 (EST)")
+References: <456B48DE.6010204@fhcrc.org>
+	<Pine.GSO.4.58.0611280012230.22706@capecod.bwh.harvard.edu>
+Message-ID: <m2fyc42kgm.fsf@ziti.fhcrc.org>
+
+Vincent Carey 525-2265 <stvjc at channing.harvard.edu> writes:
+> Any data on the impact on the devel builds?  Any vignettes that
+> are notably badly affected?
+
+Not yet.  We don't move that quickly in building against the latest R
+devel.  We will update sometime next week.
+
++ seth
+
+
+From znmeb at cesmail.net  Tue Nov 28 07:22:20 2006
+From: znmeb at cesmail.net (M. Edward (Ed) Borasky)
+Date: Mon, 27 Nov 2006 22:22:20 -0800
+Subject: [Bioc-devel] heads up
+In-Reply-To: <456B48DE.6010204@fhcrc.org>
+References: <456B48DE.6010204@fhcrc.org>
+Message-ID: <456BD59C.6090608@cesmail.net>
+
+Robert Gentleman wrote:
+> Hi,
+>    You may have missed the discussion on R-devel, as it was never clear 
+> that it was likely to have a direct impact on your work, but there is a 
+> change to Sweave in R-devel that is likely to affect most vignettes, 
+> papers and other work that relies on Sweave.
+>
+>    Duncan Murdoch in a series of posts with:
+>     Re: [Rd] Source references from the parser
+>
+>    has changed the default behavior of parsing R code into Sweave, for 
+> the 2.5 candidate version of R.
+>
+>   This change has some benefits and addresses issues that some have 
+> raised, but it seems that the decision to make the new behavior the 
+> default (rather than optional) seems less than kind to those of us that 
+> make extensive use of Sweave.
+>
+>    I strongly suggest that you voice some opinion on this unless you 
+> want to review all your vigenttes, papers, books and find places where 
+> the new behavior clashes with the old.
+>
+>    best wishes
+>      Robert
+>   
+I'm moderately interested in this -- what's the thread I should search 
+for in the R-Devel archives?
+
+-- 
+M. Edward (Ed) Borasky, FBG, AB, PTA, PGS, MS, MNLP, NST, ACMC(P)
+http://borasky-research.blogspot.com/
+
+If God had meant for carrots to be eaten cooked, He would have given rabbits fire.
+
+
+From sfalcon at fhcrc.org  Tue Nov 28 16:08:10 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue, 28 Nov 2006 07:08:10 -0800
+Subject: [Bioc-devel] heads up
+In-Reply-To: <456BD59C.6090608@cesmail.net> (M. Edward Borasky's message of
+	"Mon, 27 Nov 2006 22:22:20 -0800")
+References: <456B48DE.6010204@fhcrc.org> <456BD59C.6090608@cesmail.net>
+Message-ID: <m2slg31ued.fsf@ziti.fhcrc.org>
+
+"M. Edward (Ed) Borasky" <znmeb at cesmail.net> writes:
+> I'm moderately interested in this -- what's the thread I should search 
+> for in the R-Devel archives?
+
+The thread starts here:
+
+https://stat.ethz.ch/pipermail/r-devel/2006-November/043744.html
+
+Sweave doesn't come up right away.
+
++ seth
+
+

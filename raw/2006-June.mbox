@@ -1,0 +1,1603 @@
+From sfalcon at fhcrc.org  Thu Jun  1 20:27:46 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 01 Jun 2006 11:27:46 -0700
+Subject: [Bioc-devel] The devel package repository and passing R CMD check
+Message-ID: <m2lksgenod.fsf@ziti.local>
+
+Greetings BioC developers,
+
+This post is directed at all package maintainers/developers.
+
+As the number of contributed packages grows in the Bioconductor
+repository, it is important for developers to work together to make
+use of existing code when possible.  This requires taking an active
+role in seeking out collaborations and taking a slightly different
+view of the devel repository.
+
+A number of you have already formed fruitful collaborations that have
+led to the use of standard data structures that are easier to use and
+maintain.  I would like to encourage more of this, but it requires
+treating the devel repository with more care.
+
+If other developers are going to use your code, the head revision in
+svn needs to be in working order as often as possible (this means
+passing R CMD check, among other things).
+
+So I would like to encourage the following:
+
+* Before making an svn commit, test the changes you have made by
+  running R CMD check and any other tests that you may have.  If there
+  are any errors, don't commit.
+
+* On a regular basis, take a look at the check results for your
+  package: http://www.bioconductor.org/checkResults/1.9/
+
+* If there are error messages that you cannot reproduce, send a note
+  to this list and ask for some help (providing as much extra detail
+  as possible).
+
+
+Best Wishes,
+
++ seth
+
+
+From jmacdon at med.umich.edu  Thu Jun  1 22:57:43 2006
+From: jmacdon at med.umich.edu (James MacDonald)
+Date: Thu, 01 Jun 2006 16:57:43 -0400
+Subject: [Bioc-devel] SnpFeatureSet validity error in oligo
+Message-ID: <s47f1ca4.099@med-gwia-02a.med.umich.edu>
+
+I don't know if this is a question for Benilton or Martin Morgan (or
+someone else?). Anyway, I am getting an error when I try to create a
+SnpFeatureSet with some Affy SNP array data. Following is the code and
+error:
+
+> dat <- read.celfiles(filenames=list.celfiles())
+Incompatible phenoData object. Created a new one.
+Loading pdmapping50kxba240 
+Package loaded.
+Error in if (!all(featureNames(assayData(object)) ==
+featureNames(object))) msg <- paste(msg,  : 
+	missing value where TRUE/FALSE needed
+
+
+> traceback()
+14: validityMethod(as(object, superClass))
+13: identical(x, TRUE)
+12: anyStrings(validityMethod(as(object, superClass)))
+11: validObject(.Object)
+10: .local(.Object, ...)
+9: .nextMethod(.Object, assayData = assayDataNew(storage.mode = "list", 
+       exprs = exprs, sd = sd, npixels = npixels), phenoData =
+phenoData, 
+       experimentData = experimentData, annotation = annotation)
+8: eval(expr, envir, enclos)
+7: eval(call, callEnv)
+6: callNextMethod(.Object, assayData = assayDataNew(storage.mode =
+"list", 
+       exprs = exprs, sd = sd, npixels = npixels), phenoData =
+phenoData, 
+       experimentData = experimentData, annotation = annotation)
+5: .local(.Object, ...)
+4: initialize(value, ...)
+3: initialize(value, ...)
+2: new(TheClass, exprs = tmpExprs, sd = tmpSD, npixels = tmpNP, 
+       platform = pkgname, manufacturer = "Affymetrix", phenoData =
+tmp$phenoData, 
+       experimentData = tmp$description)
+1: read.celfiles(filenames = list.celfiles())
+> sessionInfo()
+R version 2.4.0 Under development (unstable) (2006-05-01 r37954) 
+x86_64-unknown-linux-gnu 
+
+attached base packages:
+[1] "tools"     "methods"   "stats"     "graphics"  "grDevices" "utils" 
+  
+[7] "datasets"  "base"     
+
+other attached packages:
+pdmapping50kxba240              oligo             affyio           
+Biobase 
+           "0.5.0"          "0.99.10"            "1.1.0"         
+"1.11.12" 
+
+Any takers?
+
+Best,
+
+Jim
+
+
+
+James W. MacDonald, M.S.
+Biostatistician
+Affymetrix and cDNA Microarray Core
+University of Michigan Cancer Center
+1500 E. Medical Center Drive
+7410 CCGC
+Ann Arbor MI 48109
+734-647-5623
+
+
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.
+
+
+From bcarvalh at jhsph.edu  Thu Jun  1 23:33:19 2006
+From: bcarvalh at jhsph.edu (Benilton Carvalho)
+Date: Thu, 1 Jun 2006 17:33:19 -0400 (EDT)
+Subject: [Bioc-devel] SnpFeatureSet validity error in oligo
+In-Reply-To: <s47f1ca4.099@med-gwia-02a.med.umich.edu>
+References: <s47f1ca4.099@med-gwia-02a.med.umich.edu>
+Message-ID: <Pine.LNX.4.61.0606011732060.20507@enigma.local>
+
+Hi Jim,
+
+it's the pdenv... i had to put some 'fake names' in the pdenv to pass the 
+validation.
+
+i'll give you a new pdenv, ok?
+
+thanks,
+
+b
+
+On Thu, 1 Jun 2006, James MacDonald wrote:
+
+> I don't know if this is a question for Benilton or Martin Morgan (or
+> someone else?). Anyway, I am getting an error when I try to create a
+> SnpFeatureSet with some Affy SNP array data. Following is the code and
+> error:
+>
+>> dat <- read.celfiles(filenames=list.celfiles())
+> Incompatible phenoData object. Created a new one.
+> Loading pdmapping50kxba240
+> Package loaded.
+> Error in if (!all(featureNames(assayData(object)) ==
+> featureNames(object))) msg <- paste(msg,  :
+> 	missing value where TRUE/FALSE needed
+>
+>
+>> traceback()
+> 14: validityMethod(as(object, superClass))
+> 13: identical(x, TRUE)
+> 12: anyStrings(validityMethod(as(object, superClass)))
+> 11: validObject(.Object)
+> 10: .local(.Object, ...)
+> 9: .nextMethod(.Object, assayData = assayDataNew(storage.mode = "list",
+>       exprs = exprs, sd = sd, npixels = npixels), phenoData =
+> phenoData,
+>       experimentData = experimentData, annotation = annotation)
+> 8: eval(expr, envir, enclos)
+> 7: eval(call, callEnv)
+> 6: callNextMethod(.Object, assayData = assayDataNew(storage.mode =
+> "list",
+>       exprs = exprs, sd = sd, npixels = npixels), phenoData =
+> phenoData,
+>       experimentData = experimentData, annotation = annotation)
+> 5: .local(.Object, ...)
+> 4: initialize(value, ...)
+> 3: initialize(value, ...)
+> 2: new(TheClass, exprs = tmpExprs, sd = tmpSD, npixels = tmpNP,
+>       platform = pkgname, manufacturer = "Affymetrix", phenoData =
+> tmp$phenoData,
+>       experimentData = tmp$description)
+> 1: read.celfiles(filenames = list.celfiles())
+>> sessionInfo()
+> R version 2.4.0 Under development (unstable) (2006-05-01 r37954)
+> x86_64-unknown-linux-gnu
+>
+> attached base packages:
+> [1] "tools"     "methods"   "stats"     "graphics"  "grDevices" "utils"
+>
+> [7] "datasets"  "base"
+>
+> other attached packages:
+> pdmapping50kxba240              oligo             affyio
+> Biobase
+>           "0.5.0"          "0.99.10"            "1.1.0"
+> "1.11.12"
+>
+> Any takers?
+>
+> Best,
+>
+> Jim
+>
+>
+>
+> James W. MacDonald, M.S.
+> Biostatistician
+> Affymetrix and cDNA Microarray Core
+> University of Michigan Cancer Center
+> 1500 E. Medical Center Drive
+> 7410 CCGC
+> Ann Arbor MI 48109
+> 734-647-5623
+>
+>
+> **********************************************************
+> Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From mtmorgan at fhcrc.org  Fri Jun  2 04:20:02 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Thu, 01 Jun 2006 19:20:02 -0700
+Subject: [Bioc-devel] SnpFeatureSet validity error in oligo
+References: <s47f1ca4.099@med-gwia-02a.med.umich.edu>
+Message-ID: <6phpshse1t9.fsf@gopher1.fhcrc.org>
+
+I have partly corrected this in Biobase.
+
+The check was non-sensical (featureNames(assayData(object)) and
+featureNames(object) return the same thing). There is now a better
+check to ensure that all assayData elements have the same featureNames
+(rownames).
+
+This doesn't really help, though, with the error. I think
+featureNames(object) is returning 'NA', perhaps assigned during
+read.celfiles in oligo.
+
+Martin
+
+
+
+"James MacDonald" <jmacdon at med.umich.edu> writes:
+
+> I don't know if this is a question for Benilton or Martin Morgan (or
+> someone else?). Anyway, I am getting an error when I try to create a
+> SnpFeatureSet with some Affy SNP array data. Following is the code and
+> error:
+>
+>> dat <- read.celfiles(filenames=list.celfiles())
+> Incompatible phenoData object. Created a new one.
+> Loading pdmapping50kxba240 
+> Package loaded.
+> Error in if (!all(featureNames(assayData(object)) ==
+> featureNames(object))) msg <- paste(msg,  : 
+> 	missing value where TRUE/FALSE needed
+>
+>
+>> traceback()
+> 14: validityMethod(as(object, superClass))
+> 13: identical(x, TRUE)
+> 12: anyStrings(validityMethod(as(object, superClass)))
+> 11: validObject(.Object)
+> 10: .local(.Object, ...)
+> 9: .nextMethod(.Object, assayData = assayDataNew(storage.mode = "list", 
+>        exprs = exprs, sd = sd, npixels = npixels), phenoData =
+> phenoData, 
+>        experimentData = experimentData, annotation = annotation)
+> 8: eval(expr, envir, enclos)
+> 7: eval(call, callEnv)
+> 6: callNextMethod(.Object, assayData = assayDataNew(storage.mode =
+> "list", 
+>        exprs = exprs, sd = sd, npixels = npixels), phenoData =
+> phenoData, 
+>        experimentData = experimentData, annotation = annotation)
+> 5: .local(.Object, ...)
+> 4: initialize(value, ...)
+> 3: initialize(value, ...)
+> 2: new(TheClass, exprs = tmpExprs, sd = tmpSD, npixels = tmpNP, 
+>        platform = pkgname, manufacturer = "Affymetrix", phenoData =
+> tmp$phenoData, 
+>        experimentData = tmp$description)
+> 1: read.celfiles(filenames = list.celfiles())
+>> sessionInfo()
+> R version 2.4.0 Under development (unstable) (2006-05-01 r37954) 
+> x86_64-unknown-linux-gnu 
+>
+> attached base packages:
+> [1] "tools"     "methods"   "stats"     "graphics"  "grDevices" "utils" 
+>   
+> [7] "datasets"  "base"     
+>
+> other attached packages:
+> pdmapping50kxba240              oligo             affyio           
+> Biobase 
+>            "0.5.0"          "0.99.10"            "1.1.0"         
+> "1.11.12" 
+>
+> Any takers?
+>
+> Best,
+>
+> Jim
+>
+>
+>
+> James W. MacDonald, M.S.
+> Biostatistician
+> Affymetrix and cDNA Microarray Core
+> University of Michigan Cancer Center
+> 1500 E. Medical Center Drive
+> 7410 CCGC
+> Ann Arbor MI 48109
+> 734-647-5623
+>
+>
+> **********************************************************
+> Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From sfalcon at fhcrc.org  Fri Jun  2 08:11:20 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu, 01 Jun 2006 23:11:20 -0700
+Subject: [Bioc-devel] SnpFeatureSet validity error in oligo
+In-Reply-To: <Pine.LNX.4.61.0606011732060.20507@enigma.local> (Benilton
+	Carvalho's message of "Thu, 1 Jun 2006 17:33:19 -0400 (EDT)")
+References: <s47f1ca4.099@med-gwia-02a.med.umich.edu>
+	<Pine.LNX.4.61.0606011732060.20507@enigma.local>
+Message-ID: <m27j40axyv.fsf@ziti.local>
+
+Benilton Carvalho <bcarvalh at jhsph.edu> writes:
+
+> Hi Jim,
+>
+> it's the pdenv... i had to put some 'fake names' in the pdenv to pass the 
+> validation.
+
+It would be great to have some further discussion of your needs for
+SnpFeatureSet.  Putting in fake names seems like an unpleasant
+solution.
+
+
+From stephen.park at ucd.ie  Thu Jun  1 23:28:30 2006
+From: stephen.park at ucd.ie (Stephen Park)
+Date: Thu, 01 Jun 2006 22:28:30 +0100
+Subject: [Bioc-devel] Appropriate linear model analysis for microarray time
+	course comparison
+Message-ID: <007301c685c2$5430ed00$a0782b89@sparkdesktop>
+
+Dear Bioconductor users,
+
+I'm looking to use linear modelling in Limma (all new to me) to identify
+genes responding differently to infection in two different cattle breeds,
+and would welcome advice on the correct model to use.
+
+Our experiment took eight animals from each of two genetically distinct
+breeds of cattle varying in susceptibility to a parasite and infected them
+with the parasite. RNA was isolated pre-infection and at five time-points
+post-infection and hybridised to two-colour oligo arrays. A common reference
+RNA obtained by pooling samples from both breeds and all timepoints was
+labelled with the second dye and hybridised to each array.
+
+We're interested in seeing which genes respond differently to infection in
+the different breeds. I believe the model we should be using is something
+like 
+Gene expression level = intercept + (breed effect) + (time effect) + (time *
+breed interaction effect)
+
+Assuming this is the appropriate model, I would like to correct for innate
+pre-infection differences between breeds and effects due to infection that
+are common to both breeds so that I can find those genes that respond
+differently to infection between breeds, either at a given time-point or
+across the entire timecourse. 
+
+I'd like to know if I ought to set up a different design matrix from that
+generated automatically using the modelMatrix function on my targets and
+identifying the reference 
+
+i.e. modelMatrix(targets,ref="Ref")
+
+which generates
+
+		T0_B1	T0_B2	...	T0_B2	...
+T0_B1_A1	1	0	...	0	...
+T0_B1_A2	1	0	...	0	...
+...
+T1_B1_A1	0	1	...	0	...
+...
+T0_B2_A9	0	0	...	1	...
+....
+
+where T=time, B=breed, A=animal
+
+
+If this is OK, am I right in thinking that contrasts 
+(T1_B1 - T0_B1) - (T1_B2 - T0_B2)
+will remove both the breed component of the model for each breed (within
+brackets) and the component due to infection common to both breeds, leaving
+me with the interaction component?
+
+Alternatively, should the design matrix contain additional coefficients to
+account for time, breed and interaction components?
+
+I'd be very grateful for any advice you could offer.
+
+Thanks,
+
+Stephen 
+
+------------------------------------------------------   
+Dr. Stephen Park   
+Animal Genomics Lab   
+School of Agriculture, Food Science & Vet. Medicine   
+University College Dublin   
+Dublin 4   
+Ireland   
+   
+Tel: +353 (0)1 716 7767   
+Fax: +353 (0)1 716 1103   
+Mob: +353 (0)87 7666850   
+E-mail: stephen.park at ucd.ie   
+Web: http://animalgenomics.ucd.ie/sdepark/
+
+
+From sdavis2 at mail.nih.gov  Fri Jun  2 12:40:19 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Fri, 02 Jun 2006 06:40:19 -0400
+Subject: [Bioc-devel] Appropriate linear model analysis for microarray
+ time course comparison
+In-Reply-To: <007301c685c2$5430ed00$a0782b89@sparkdesktop>
+Message-ID: <C0A58DD3.C5A5%sdavis2@mail.nih.gov>
+
+Stephen,
+
+I think this probably belongs on the bioconductor users list, rather than
+the development list.  I am cross-posting to there.
+
+Sean
+
+
+On 6/1/06 5:28 PM, "Stephen Park" <stephen.park at ucd.ie> wrote:
+
+> Dear Bioconductor users,
+> 
+> I'm looking to use linear modelling in Limma (all new to me) to identify
+> genes responding differently to infection in two different cattle breeds,
+> and would welcome advice on the correct model to use.
+> 
+> Our experiment took eight animals from each of two genetically distinct
+> breeds of cattle varying in susceptibility to a parasite and infected them
+> with the parasite. RNA was isolated pre-infection and at five time-points
+> post-infection and hybridised to two-colour oligo arrays. A common reference
+> RNA obtained by pooling samples from both breeds and all timepoints was
+> labelled with the second dye and hybridised to each array.
+> 
+> We're interested in seeing which genes respond differently to infection in
+> the different breeds. I believe the model we should be using is something
+> like 
+> Gene expression level = intercept + (breed effect) + (time effect) + (time *
+> breed interaction effect)
+> 
+> Assuming this is the appropriate model, I would like to correct for innate
+> pre-infection differences between breeds and effects due to infection that
+> are common to both breeds so that I can find those genes that respond
+> differently to infection between breeds, either at a given time-point or
+> across the entire timecourse.
+> 
+> I'd like to know if I ought to set up a different design matrix from that
+> generated automatically using the modelMatrix function on my targets and
+> identifying the reference
+> 
+> i.e. modelMatrix(targets,ref="Ref")
+> 
+> which generates
+> 
+> T0_B1 T0_B2 ... T0_B2 ...
+> T0_B1_A1 1 0 ... 0 ...
+> T0_B1_A2 1 0 ... 0 ...
+> ...
+> T1_B1_A1 0 1 ... 0 ...
+> ...
+> T0_B2_A9 0 0 ... 1 ...
+> ....
+> 
+> where T=time, B=breed, A=animal
+> 
+> 
+> If this is OK, am I right in thinking that contrasts
+> (T1_B1 - T0_B1) - (T1_B2 - T0_B2)
+> will remove both the breed component of the model for each breed (within
+> brackets) and the component due to infection common to both breeds, leaving
+> me with the interaction component?
+> 
+> Alternatively, should the design matrix contain additional coefficients to
+> account for time, breed and interaction components?
+> 
+> I'd be very grateful for any advice you could offer.
+> 
+> Thanks,
+> 
+> Stephen 
+> 
+> ------------------------------------------------------
+> Dr. Stephen Park 
+> Animal Genomics Lab
+> School of Agriculture, Food Science & Vet. Medicine
+> University College Dublin
+> Dublin 4   
+> Ireland   
+>    
+> Tel: +353 (0)1 716 7767
+> Fax: +353 (0)1 716 1103
+> Mob: +353 (0)87 7666850
+> E-mail: stephen.park at ucd.ie
+> Web: http://animalgenomics.ucd.ie/sdepark/
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From huber at ebi.ac.uk  Fri Jun  2 14:47:33 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Fri, 02 Jun 2006 13:47:33 +0100
+Subject: [Bioc-devel] eSet class and two color arrays
+Message-ID: <44803365.3090608@ebi.ac.uk>
+
+Hi Martin, Seth, & others,
+
+one of the basic features of the eSet class is that
+- it has exactly one phenoData slot, and >=1 assayData slots
+- the rows of the dataframe in phenoData correspond 1:1 to the columns
+  of each the assayData matrices.
+
+I was wondering whether there is interest in a class that has
+- one or several phenoData slots, and the same number of assayData slots
+- there is a 1:1 correspondence between these
+- the rows of each phenoData correspond to the columns
+  of the corresponding assayData matrix.
+
+Andreas Buness from arrayMagic has a use case where such a class could
+be used to represent raw two-color microarray data.
+
+Alternatively, it is also possible to put two-color data into the
+existing eSet design, if a convention is used that each array is
+represented by two rows in phenoData (corresponding to the two colors)
+and two columns in assayData. This is essentially what now happens in
+the exprSetRG class of arrayMagic. So a useful eSet-based class for
+two-color data (formalizing the convention) could still be derived from
+the existing eSet definition. But I wanted to put up this for
+discussion: do other people have a need/wish for "multiple phenoData"
+design?
+
+Cheers
+ Wolfgang
+
+-- 
+------------------------------------------------------------------
+Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber
+
+
+From huber at ebi.ac.uk  Fri Jun  2 14:55:36 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Fri, 02 Jun 2006 13:55:36 +0100
+Subject: [Bioc-devel] eSet class and two color arrays
+In-Reply-To: <44803365.3090608@ebi.ac.uk>
+References: <44803365.3090608@ebi.ac.uk>
+Message-ID: <44803548.9050602@ebi.ac.uk>
+
+
+sorry, I used inexact language in the previous mail: of course there is
+always exactly one assayData slot, but that may contain one or several
+matrices of equal dimensions.
+-- 
+------------------------------------------------------------------
+Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber
+
+
+
+Wolfgang Huber wrote:
+> Hi Martin, Seth, & others,
+> 
+> one of the basic features of the eSet class is that
+> - it has exactly one phenoData slot, and >=1 assayData slots
+> - the rows of the dataframe in phenoData correspond 1:1 to the columns
+>   of each the assayData matrices.
+> 
+> I was wondering whether there is interest in a class that has
+> - one or several phenoData slots, and the same number of assayData slots
+> - there is a 1:1 correspondence between these
+> - the rows of each phenoData correspond to the columns
+>   of the corresponding assayData matrix.
+> 
+> Andreas Buness from arrayMagic has a use case where such a class could
+> be used to represent raw two-color microarray data.
+> 
+> Alternatively, it is also possible to put two-color data into the
+> existing eSet design, if a convention is used that each array is
+> represented by two rows in phenoData (corresponding to the two colors)
+> and two columns in assayData. This is essentially what now happens in
+> the exprSetRG class of arrayMagic. So a useful eSet-based class for
+> two-color data (formalizing the convention) could still be derived from
+> the existing eSet definition. But I wanted to put up this for
+> discussion: do other people have a need/wish for "multiple phenoData"
+> design?
+> 
+> Cheers
+>  Wolfgang
+>
+
+
+From sfalcon at fhcrc.org  Fri Jun  2 18:01:38 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 02 Jun 2006 09:01:38 -0700
+Subject: [Bioc-devel] eSet class and two color arrays
+In-Reply-To: <44803548.9050602@ebi.ac.uk> (Wolfgang Huber's message of "Fri,
+	02 Jun 2006 13:55:36 +0100")
+References: <44803365.3090608@ebi.ac.uk> <44803548.9050602@ebi.ac.uk>
+Message-ID: <m2mzcva6n1.fsf@ziti.local>
+
+Wolfgang Huber <huber at ebi.ac.uk> writes:
+
+> sorry, I used inexact language in the previous mail: of course there is
+> always exactly one assayData slot, but that may contain one or several
+> matrices of equal dimensions.
+
+:-)
+
+>> one of the basic features of the eSet class is that
+>> - it has exactly one phenoData slot, and >=1 assayData slots
+>> - the rows of the dataframe in phenoData correspond 1:1 to the columns
+>>   of each the assayData matrices.
+>> 
+>> I was wondering whether there is interest in a class that has
+>> - one or several phenoData slots, and the same number of assayData slots
+>> - there is a 1:1 correspondence between these
+>> - the rows of each phenoData correspond to the columns
+>>   of the corresponding assayData matrix.
+>> 
+>> Andreas Buness from arrayMagic has a use case where such a class could
+>> be used to represent raw two-color microarray data.
+
+So the use case is that one wants to subset all phenoData and
+assayData components simultaneously?
+
+I want to understand what features are desired beyond those provided
+by a list of ExpressionSet instances (at first glance, a list seems
+quite close to what you are asking for).
+
++ seth
+
+
+From sdavis2 at mail.nih.gov  Fri Jun  2 18:08:21 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Fri, 02 Jun 2006 12:08:21 -0400
+Subject: [Bioc-devel] eSet class and two color arrays
+In-Reply-To: <m2mzcva6n1.fsf@ziti.local>
+Message-ID: <C0A5DAB5.C607%sdavis2@mail.nih.gov>
+
+
+
+
+On 6/2/06 12:01 PM, "Seth Falcon" <sfalcon at fhcrc.org> wrote:
+
+> Wolfgang Huber <huber at ebi.ac.uk> writes:
+> 
+>> sorry, I used inexact language in the previous mail: of course there is
+>> always exactly one assayData slot, but that may contain one or several
+>> matrices of equal dimensions.
+> 
+> :-)
+> 
+>>> one of the basic features of the eSet class is that
+>>> - it has exactly one phenoData slot, and >=1 assayData slots
+>>> - the rows of the dataframe in phenoData correspond 1:1 to the columns
+>>>   of each the assayData matrices.
+>>> 
+>>> I was wondering whether there is interest in a class that has
+>>> - one or several phenoData slots, and the same number of assayData slots
+>>> - there is a 1:1 correspondence between these
+>>> - the rows of each phenoData correspond to the columns
+>>>   of the corresponding assayData matrix.
+>>> 
+>>> Andreas Buness from arrayMagic has a use case where such a class could
+>>> be used to represent raw two-color microarray data.
+> 
+> So the use case is that one wants to subset all phenoData and
+> assayData components simultaneously?
+> 
+> I want to understand what features are desired beyond those provided
+> by a list of ExpressionSet instances (at first glance, a list seems
+> quite close to what you are asking for).
+
+I think the point Wolfgang is trying to make (feel free to clarify,
+Wolfgang) is that the current phenoData and assayData constructs are
+"Array-centric" while biologic questions can be asked that are
+"sample-centric".  In other words, one often wants to treat the two channels
+on a single array as "separate samples" in a sense (of course linked to each
+other by array).  Currently, one can't get at the information associated
+with a single sample (or channel) easily, only the information for a single
+array.  
+
+Sean
+
+
+From huber at ebi.ac.uk  Fri Jun  2 18:34:03 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Fri, 02 Jun 2006 17:34:03 +0100
+Subject: [Bioc-devel] eSet class and two color arrays
+In-Reply-To: <m2mzcva6n1.fsf@ziti.local>
+References: <44803365.3090608@ebi.ac.uk> <44803548.9050602@ebi.ac.uk>
+	<m2mzcva6n1.fsf@ziti.local>
+Message-ID: <4480687B.2010704@ebi.ac.uk>
+
+Hi Seth, Sean
+
+> So the use case is that one wants to subset all phenoData and
+> assayData components simultaneously?
+> 
+> I want to understand what features are desired beyond those provided
+> by a list of ExpressionSet instances (at first glance, a list seems
+> quite close to what you are asking for).
+
+More than a list:
+- simultaneous subsetting
+- consistency of dimensions and their content
+
+
+Sean Davis wrote:
+> I think the point Wolfgang is trying to make (feel free to clarify,
+> Wolfgang) is that the current phenoData and assayData constructs are
+> "Array-centric" while biologic questions can be asked that are
+> "sample-centric".  In other words, one often wants to treat
+> the two channels > on a single array as "separate samples" in a sense
+> (of course linked to each  other by array).
+
+Yes. An easy way out is to switch completely from array-centric to
+sample-centric (that's e.g. what arrayMagic does), but really one often
+wants to have both.
+
+Of course this whole discussion is not about what is possible to do
+(everything is possible with R) but how convenient it is.
+
+ Cheers W.
+
+
+
+-- 
+------------------------------------------------------------------
+Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber
+
+
+From rgentlem at fhcrc.org  Fri Jun  2 19:01:37 2006
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Fri, 02 Jun 2006 10:01:37 -0700
+Subject: [Bioc-devel] eSet class and two color arrays
+In-Reply-To: <44803365.3090608@ebi.ac.uk>
+References: <44803365.3090608@ebi.ac.uk>
+Message-ID: <44806EF1.8060900@fhcrc.org>
+
+Hi,
+
+Wolfgang Huber wrote:
+> Hi Martin, Seth, & others,
+> 
+> one of the basic features of the eSet class is that
+> - it has exactly one phenoData slot, and >=1 assayData slots
+> - the rows of the dataframe in phenoData correspond 1:1 to the columns
+>   of each the assayData matrices.
+> 
+> I was wondering whether there is interest in a class that has
+> - one or several phenoData slots, and the same number of assayData slots
+> - there is a 1:1 correspondence between these
+> - the rows of each phenoData correspond to the columns
+>   of the corresponding assayData matrix.
+
+  Why not a list of eSets? Why do you want to put these together in this 
+way?
+
+> 
+> Andreas Buness from arrayMagic has a use case where such a class could
+> be used to represent raw two-color microarray data.
+> 
+> Alternatively, it is also possible to put two-color data into the
+> existing eSet design, if a convention is used that each array is
+> represented by two rows in phenoData (corresponding to the two colors)
+> and two columns in assayData. This is essentially what now happens in
+> the exprSetRG class of arrayMagic. So a useful eSet-based class for
+> two-color data (formalizing the convention) could still be derived from
+> the existing eSet definition. But I wanted to put up this for
+> discussion: do other people have a need/wish for "multiple phenoData"
+> design?
+
+   We decided not to deal with preprocessed data (I think). And that 
+eSet corresponds to expression, not raw data. So when you get here, you 
+do not have red or green channels, you have expression (relative?) not 
+raw data. Packages like limma, marray etc, I believe have their own 
+internal formats for the raw (two channel data) and the goal of the eSet 
+classes in Biobase is to provide a uniform data structure for downstream 
+analysis. While one can see obvious similarities; one channel data also 
+has different, but similar, structures for preprocessed data than 
+processed data -- there too we decided not to get involved at the 
+preprocessing stage -- eSet and friends are for post-processed data so 
+that it can be treated uniformly by tools for differential expression, 
+machine learning etc.
+
+  If a special preprocessed data class is wanted, then I think it would 
+be better to define it on its own and not try to leverage the eSet class 
+into double duty.
+
+  Now, you might want to use, phenoData, AssayData and other building 
+blocks in Biobase, to construct the classes you describe, just not eSet, 
+it has a role in life.
+
+
+   best wishes
+     Robert
+
+
+
+
+> 
+> Cheers
+>  Wolfgang
+> 
+
+-- 
+Robert Gentleman, PhD
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-7700
+rgentlem at fhcrc.org
+
+
+From sfalcon at fhcrc.org  Fri Jun  2 19:05:29 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 02 Jun 2006 10:05:29 -0700
+Subject: [Bioc-devel] eSet class and two color arrays
+In-Reply-To: <4480687B.2010704@ebi.ac.uk> (Wolfgang Huber's message of "Fri,
+	02 Jun 2006 17:34:03 +0100")
+References: <44803365.3090608@ebi.ac.uk> <44803548.9050602@ebi.ac.uk>
+	<m2mzcva6n1.fsf@ziti.local> <4480687B.2010704@ebi.ac.uk>
+Message-ID: <m2mzcv8p46.fsf@ziti.local>
+
+Wolfgang Huber <huber at ebi.ac.uk> writes:
+> More than a list:
+> - simultaneous subsetting
+> - consistency of dimensions and their content
+
+Got it.
+
+> Sean Davis wrote:
+> I think the point Wolfgang is trying to make (feel free to clarify,
+> Wolfgang) is that the current phenoData and assayData constructs are
+> "Array-centric" while biologic questions can be asked that are
+> "sample-centric".  In other words, one often wants to treat the two
+> channels on a single array as "separate samples" in a sense (of
+> course linked to each other by array).  Currently, one can't get at
+> the information associated with a single sample (or channel) easily,
+> only the information for a single array.
+
+Here's my mental model (please help me improve it ;-):
+
+   You have a collection of samples and for each sample you have a
+   foreground and a background measurement each in two different
+   colors (say red and green for discussion).
+
+   So would think you'd want an assayData slot containing four
+   matrices:
+       
+       Rb  Red background
+       Rf  Red foreground
+       Gb  Green background
+       Gf  Green foreground
+
+   Each matrix has dim genes (rows) by samples (coloumns).  A column
+   in any of these matrices refers to the same biological sample and
+   corresponds to a single row in phenoData.
+
+I'm guessing the above described structure is not sufficient, but
+I don't yet understand why.  
+
+> Of course this whole discussion is not about what is possible to do
+> (everything is possible with R) but how convenient it is.
+
+Or what "it" is :-)
+
+Best,
+
++ seth
+
+
+From huber at ebi.ac.uk  Fri Jun  2 19:37:47 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Fri, 02 Jun 2006 18:37:47 +0100
+Subject: [Bioc-devel] eSet class and two color arrays
+In-Reply-To: <m2mzcv8p46.fsf@ziti.local>
+References: <44803365.3090608@ebi.ac.uk>
+	<44803548.9050602@ebi.ac.uk>	<m2mzcva6n1.fsf@ziti.local>
+	<4480687B.2010704@ebi.ac.uk> <m2mzcv8p46.fsf@ziti.local>
+Message-ID: <4480776B.7090806@ebi.ac.uk>
+
+Hi Seth,
+
+> Here's my mental model (please help me improve it ;-):
+> 
+>    You have a collection of samples and for each sample you have a
+>    foreground and a background measurement each in two different
+>    colors (say red and green for discussion).
+> 
+>    So would think you'd want an assayData slot containing four
+>    matrices:
+>        
+>        Rb  Red background
+>        Rf  Red foreground
+>        Gb  Green background
+>        Gf  Green foreground
+> 
+>    Each matrix has dim genes (rows) by samples (coloumns).  A column
+>    in any of these matrices refers to the same biological sample and
+>    corresponds to a single row in phenoData.
+
+No, different samples are on the red and green channels (so these four
+matrices correspond to two phenoData object rows).
+
+One way to close this thread is Robert's answer, and I do not object.
+
+(Still it sticks that "raw" data is not always that different from
+"processed" data, whereever you draw the line, and reusing what is there
+as much as possible could, in an ideal world, where people care, be
+better than making up, maintaining and making people learn completely
+different data structures. AffyBatch/exprSet is an example where that
+worked, even though arguably the difference between GeneChip "raw" data
+and processed is not smaller than between two-color raw data and processed.)
+
+Best wishes
+ Wolfgang
+
+------------------------------------------------------------------
+Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber
+
+
+From mtmorgan at FHCRC.ORG  Fri Jun  2 19:37:40 2006
+From: mtmorgan at FHCRC.ORG (Martin Morgan)
+Date: Fri, 02 Jun 2006 10:37:40 -0700
+Subject: [Bioc-devel] eSet class and two color arrays
+In-Reply-To: <4480687B.2010704@ebi.ac.uk> (Wolfgang Huber's message of "Fri,
+	02 Jun 2006 17:34:03 +0100")
+References: <44803365.3090608@ebi.ac.uk> <44803548.9050602@ebi.ac.uk>
+	<m2mzcva6n1.fsf@ziti.local> <4480687B.2010704@ebi.ac.uk>
+Message-ID: <6ph4pz3o3vf.fsf@gopher1.fhcrc.org>
+
+I guess I need some more info on the use case. As it is, there can be
+several assayData elements. Each sample can have a corresponding
+description in phenoData. phenoData can in turn have several columns
+of variables, including variables that are only relevant to one of the
+assayData elements. Subsetting works across assayData and phenoData in
+a consistent way.
+
+This seems to be sub-optimal if assayData elements are identically
+dimensioned, but refer to different samples (??) or different parts of
+phenoData refer to different assayData elements (??) . Is the issue
+that, in these cases having separate columns of phenoData, one for
+each set of assayData samples, seems artificial (though subsetting,
+etc., work)?
+
+Martin
+
+> library(Biobase)
+> data(sample.eSet) # old-style eSet
+> mSet <- as(sample.eSet,"MultiSet")
+Warning messages:
+1: creating assayData colnames from phenoData sampleNames in:
+updateOldESet(sample.eSet, "MultiSet")
+2: creating assayData featureNames from reporterNames in:
+updateOldESet(sample.eSet, "MultiSet")
+> mSet
+Instance of MultiSet 
+
+assayData
+  Storage mode: list 
+  featureNames: geno2, geno3, 3XSSC, ..., 26-M5, 26-M9 (500 total)
+  Dimensions:
+          R   G  Rb  Gb
+Rows    500 500 500 500
+Samples   4   4   4   4
+
+phenoData
+  sampleNames: a, b, c, d
+  varLabels:
+    SlideNumber: number
+    FileName: name
+    Cy3: genotype labelled Cy3
+    Cy5: genotype labelled Cy5
+    Date: date
+
+Experiment data
+  Experimenter name:  
+  Laboratory:  
+  Contact information:  
+  Title:  
+  URL:  
+  No abstract available.
+
+Annotation character(0)
+> mSet[1:10,c(1,4)]
+Instance of MultiSet 
+
+assayData
+  Storage mode: list 
+  featureNames: geno2, geno3, 3XSSC, ..., 3XSSC, 3XSSC (10 total)
+  Dimensions:
+         R  G Rb Gb
+Rows    10 10 10 10
+Samples  2  2  2  2
+
+phenoData
+  sampleNames: a, d
+  varLabels:
+    SlideNumber: number
+    FileName: name
+    Cy3: genotype labelled Cy3
+    Cy5: genotype labelled Cy5
+    Date: date
+
+Experiment data
+  Experimenter name:  
+  Laboratory:  
+  Contact information:  
+  Title:  
+  URL:  
+  No abstract available.
+
+Annotation character(0)
+> nSet <- mSet
+> assayData(nSet) <- assayDataNew(R=assayData(mSet)[["R"]], Rb = assayData(mSet)[["Rb"]])
+> phenoData(nSet) <- phenoData(nSet)[,c("SlideNumber", "Cy3")]
+> nSet
+Instance of MultiSet 
+
+assayData
+  Storage mode: lockedEnvironment 
+  featureNames: geno2, geno3, 3XSSC, ..., 26-M5, 26-M9 (500 total)
+  Dimensions:
+         Rb   R
+Rows    500 500
+Samples   4   4
+
+phenoData
+  sampleNames: a, b, c, d
+  varLabels:
+    SlideNumber: number
+    Cy3: genotype labelled Cy3
+
+Experiment data
+  Experimenter name:  
+  Laboratory:  
+  Contact information:  
+  Title:  
+  URL:  
+  No abstract available.
+
+Annotation character(0)
+> exprs(mSet) # which element of assayData should be the 'exprs'?
+Error in exprs(mSet) : no direct or inherited method for function 'exprs' for this call
+
+Wolfgang Huber <huber at ebi.ac.uk> writes:
+
+> Hi Seth, Sean
+>
+>> So the use case is that one wants to subset all phenoData and
+>> assayData components simultaneously?
+>> 
+>> I want to understand what features are desired beyond those provided
+>> by a list of ExpressionSet instances (at first glance, a list seems
+>> quite close to what you are asking for).
+>
+> More than a list:
+> - simultaneous subsetting
+> - consistency of dimensions and their content
+>
+>
+> Sean Davis wrote:
+>> I think the point Wolfgang is trying to make (feel free to clarify,
+>> Wolfgang) is that the current phenoData and assayData constructs are
+>> "Array-centric" while biologic questions can be asked that are
+>> "sample-centric".  In other words, one often wants to treat
+>> the two channels > on a single array as "separate samples" in a sense
+>> (of course linked to each  other by array).
+>
+> Yes. An easy way out is to switch completely from array-centric to
+> sample-centric (that's e.g. what arrayMagic does), but really one often
+> wants to have both.
+>
+> Of course this whole discussion is not about what is possible to do
+> (everything is possible with R) but how convenient it is.
+>
+>  Cheers W.
+>
+>
+>
+> -- 
+> ------------------------------------------------------------------
+> Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From sfalcon at fhcrc.org  Mon Jun  5 16:31:02 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Mon, 05 Jun 2006 07:31:02 -0700
+Subject: [Bioc-devel] eSet class and two color arrays
+In-Reply-To: <4480776B.7090806@ebi.ac.uk> (Wolfgang Huber's message of "Fri,
+	02 Jun 2006 18:37:47 +0100")
+References: <44803365.3090608@ebi.ac.uk> <44803548.9050602@ebi.ac.uk>
+	<m2mzcva6n1.fsf@ziti.local> <4480687B.2010704@ebi.ac.uk>
+	<m2mzcv8p46.fsf@ziti.local> <4480776B.7090806@ebi.ac.uk>
+Message-ID: <m2pshn1xp5.fsf@ziti.local>
+
+Wolfgang Huber <huber at ebi.ac.uk> writes:
+>>    So would think you'd want an assayData slot containing four
+>>    matrices:
+>>        
+>>        Rb  Red background
+>>        Rf  Red foreground
+>>        Gb  Green background
+>>        Gf  Green foreground
+>> 
+>>    Each matrix has dim genes (rows) by samples (coloumns).  A column
+>>    in any of these matrices refers to the same biological sample and
+>>    corresponds to a single row in phenoData.
+>
+> No, different samples are on the red and green channels (so these four
+> matrices correspond to two phenoData object rows).
+
+Thanks.  That along with some offline conversations give me a much
+clearer picture of what is needed here.
+
+> One way to close this thread is Robert's answer, and I do not
+> object.
+>
+> (Still it sticks that "raw" data is not always that different from
+> "processed" data, whereever you draw the line, and reusing what is there
+> as much as possible could, in an ideal world, where people care, be
+> better than making up, maintaining and making people learn completely
+> different data structures. 
+
+I don't disagree that reusing code is a good goal, but as Robert
+explained, the eSet class is intended for processed, not raw, data.
+
+I think a good approach would be for an interested party to consider
+building a rawSet class that made use of some of the same component
+objects as eSet (AnnotatedDataFrame and AssayData).  I'm pretty sure
+one does not want a subclass of eSet because the behaviors one will
+want, even in terms of subsetting, I think are quite different.
+
++ seth
+
+
+From raffaele.calogero at unito.it  Wed Jun  7 15:49:46 2006
+From: raffaele.calogero at unito.it (rcaloger)
+Date: Wed, 07 Jun 2006 15:49:46 +0200
+Subject: [Bioc-devel] Error loading, on Bioconductor 1.8,
+ exprSet generated with bioconductor 1.7
+Message-ID: <4486D97A.8050808@unito.it>
+
+Hi,
+today I was working on an Affy exprSet I saved before the new release of 
+Bioconductor (1.8).
+I loaded it but I got the following error when I tried to show it:
+library(affy)
+load("tr7.rma.rda")
+tr7.rma
+Error in slot(object, what) : no slot of name "pubMedIds" for this 
+object of class "MIAME"
+
+Furthermore, if I issue the command:
+str(tr7.rma)
+I got this error:
+Error in FUN(X[[6]], ...) : no slot of name "reporterInfo" for this 
+object of class "exprSet"
+
+The error comes using the  Biobase Version: 1.10.0. Everythink run 
+smootly if I run the same commands on Bioconductor 1.7 installed under 
+R.2.3.0
+
+I was expecting that there should be some sort of back compatibility 
+with  at least the previous release of the exprSet. There is any way to 
+convert old instances of exprSet in the new one?
+Best
+Raffaele
+
+-- 
+
+----------------------------------------
+Prof. Raffaele A. Calogero
+Bioinformatics and Genomics Unit
+Dipartimento di Scienze Cliniche e Biologiche
+c/o Az. Ospedaliera S. Luigi
+Regione Gonzole 10, Orbassano
+10043 Torino
+tel.   ++39 0116705420
+Lab.   ++39 0116705408
+Fax    ++39 0119038639
+Mobile ++39 3333827080
+email: raffaele.calogero at unito.it
+www:   www.bioinformatica.unito.it
+
+
+From sfalcon at fhcrc.org  Thu Jun  8 02:16:53 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Wed, 07 Jun 2006 17:16:53 -0700
+Subject: [Bioc-devel] Error loading, on Bioconductor 1.8,
+	exprSet generated with bioconductor 1.7
+In-Reply-To: <4486D97A.8050808@unito.it> (rcaloger's message of "Wed,
+	07 Jun 2006 15:49:46 +0200")
+References: <4486D97A.8050808@unito.it>
+Message-ID: <m2ejy0pklm.fsf@ziti.local>
+
+Hi Raffaele,
+
+rcaloger <raffaele.calogero at unito.it> writes:
+> The error comes using the  Biobase Version: 1.10.0. Everythink run 
+> smootly if I run the same commands on Bioconductor 1.7 installed under 
+> R.2.3.0
+>
+> I was expecting that there should be some sort of back compatibility 
+> with  at least the previous release of the exprSet. There is any way to 
+> convert old instances of exprSet in the new one?
+
+I think Martin already responded to your question as you posted it on
+the bioconductor list.  So for the archive, please look there:
+https://stat.ethz.ch/pipermail/bioconductor/2006-June/013285.html
+
+The issue of dealing with serialized instances of classes when the
+definitions of those classes get updated is a difficult one.  We have
+some improvement in the devel version of Biobase that should go a long
+ways to easing these issues.  For the interim, we will try to post a
+helper function that you can use to update your saved data sets.
+
+Best,
+
++ seth
+
+
+From huber at ebi.ac.uk  Thu Jun  8 10:50:46 2006
+From: huber at ebi.ac.uk (Wolfgang Huber)
+Date: Thu, 08 Jun 2006 09:50:46 +0100
+Subject: [Bioc-devel] Developers Day 2. Aug 2006
+Message-ID: <4487E4E6.1020809@ebi.ac.uk>
+
+(Please excuse if you receive this email twice due to double-posting:)
+
+
+Dear Bioconductor developers and prospective developers,
+
+on 2 August, the day before the Bioconductor workshop, we will have a
+Developers Day. Its program is linked from this page:
+https://cobra.fhcrc.org/BioC2006
+
+Invited are people who play an active role in the development or
+deployment of Bioconductor or who want to do so in the future.
+
+There is no need for formal registration, but in order to plan the
+catering, adapt the program etc. it would be great to have some idea how
+many people are attending.
+
+If there is a non-zero probability for you to come, please drop me a
+short note (off-list) including the probability.
+
+ Best wishes
+
+------------------------------------------------------------------
+Wolfgang Huber  EBI/EMBL  Cambridge UK  http://www.ebi.ac.uk/huber
+
+
+From sfalcon at fhcrc.org  Fri Jun  9 23:09:56 2006
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri, 09 Jun 2006 14:09:56 -0700
+Subject: [Bioc-devel] Update on exprSet to ExpressionSet transition
+Message-ID: <m2y7w6f32z.fsf@ziti.local>
+
+Hello all,
+
+We've updated the experiment data packages in our 1.9 devel repository
+and converted all saved exprSet instances to saved ExpressionSet
+instances.
+
+http://bioconductor.org/packages/1.9/data/experiment/
+
+I expect a number of packages to fail check in the 1.9 devel branch
+because of a lack of methods for handling ExpressionSet objects.  
+
+If this affects one of your packages, please accept our apologies for
+the inconvenience and please consider adding a fix as soon as you can
+:-)
+
+The fixes should be easy: if you have a method for exprSets, add a
+similar method for ExpressionSets.  For the most part, you can treat
+ExpressionSet instances the same: exprs(), phenoData(), annotation(),
+subsetting via "[" all work for both.
+
+We would like to hear about any issues or questions here on this list.
+
+
+Best Wishes,
+
++ seth
+
+
+From nli at fhcrc.org  Wed Jun 14 18:40:52 2006
+From: nli at fhcrc.org (Nianhua Li)
+Date: Wed, 14 Jun 2006 09:40:52 -0700
+Subject: [Bioc-devel] ag and ath1121501
+Message-ID: <44903C14.1080602@fhcrc.org>
+
+Hi,
+
+I did a close look at the athPkgBuilder function in AnnBuilder (the 
+function to generate ath1121501 and ag) and have some questions about 
+the data source of ath1121501 and ag:
+
+1. probeset id to gene mapping:
+The current mapping strategy was
+1) map probe id to "Representative.Public.ID" by using Affymetrix 
+GeneChip annotation data
+2) use "Representative.Public.ID" as if it was AGI locus id to get other 
+annotations (pathway, go, etc) from TAIR
+
+It seems that the "Representative.Publid.ID is a mix of AGI locus id, 
+UniGene Cluster and a small part of other sources. In the affymetrix 
+annotation file, there is another column called "Transcript ID (Array 
+Design)", which has almost the same value as 
+"Prepresentative.Public.ID". I feel it was originated from 
+ftp://ftp.tigr.org/pub/data/a_thaliana/Affymetrix/. Not sure whether 
+affymetrix update those two columns on a regular basis or not.
+
+But if all the annotations (chromosome, go, pathway) come from TAIR, 
+maybe we should use TAIR's mapping of  probeset id to AGI locus id: 
+ftp://ftp.arabidopsis.org/home/tair/Microarrays/Affymetrix/ :
+    "The oligonucleotide sequences of the probes were mapped to the 
+Arabidopsis
+Transcripts dataset from the Arabidopsis genome TAIR6 version (released 
+November 11, 2005).
+The dataset included mitochondria and chloroplast genes, as well as 
+pseudogenes and non-
+coding RNAs. The mapping to the TAIR6 Transcripts was performed using 
+the BLASTN program
+with e-value cutoff < 9.9e-6. For the 25-mer oligo probes used on the 
+Affy chips, the
+required match length to achieve this e-value is 23 or more identical 
+nucleotides. To
+assign a probe set to a given locus, at least 9 of the probes included 
+in the probe set
+were required to match a transcript at that locus."
+
+Not all probeset ids have matching AGI locus ids. Do we need to provide 
+mapping to other gene identifiers such as GenBank Accession number or 
+Entrez Gene IDs to make annoations more complete? Affymetrix starts to 
+provide probeset id to Entrez Gene ID mappings in their annotation 
+files. Should we include that information? Also, I can see three 
+possible ways to get probe-to-GenBank mapping: 1) from affymetrix 
+annotation file directly, 2)probe to AGI locus and then AGI locus to 
+GenBank accession, all from TAIR, 3)probe to Entrez Gene from affy, and 
+then Entrez Gene to GenBank from NCBI. Which way is the best? or should 
+we use the "voting" algorithm used by ABPkgBuilder?
+
+2. chromosome location
+The current package get chromosome locations from 
+ftp://ftp.arabidopsis.org/home/tair/Genes/est_mapping/est.Assignment.Locus
+Even though the file seems being updated very often, the directory it 
+locates in and the README file were not. So, it is not clear for me how 
+it was generated/updated. Any hint on that? Will 
+ftp://ftp.arabidopsis.org/home/tair/Microarrays/Affymetrix/ be a better 
+source? The meaning of chromosome location in those two sources may be 
+different though. The former means the location of a GenBank EST, and 
+the later means "chromosome coordinates of the best probe set match to 
+the Transcripts
+dataset".
+
+3. gene description (ath1121501GENENAME)
+The current package (1.12.1) get the description from 
+ftp://ftp.arabidopsis.org/home/tair/Genes/TAIR_sequenced_genes The 
+descriptions are the same as 
+ftp://ftp.arabidopsis.org/home/tair/Microarrays/Affymetrix/ Both of them 
+means the description of the AGI locus corresponding to a affy probeset. 
+In the Affymetrix annotation file, there is a column called "Target 
+Description". It is the description of the gene that a probeset is 
+targeting to. All probesets have descriptions, therefore we get a better 
+coverage than getting description from TAIR. When the "Representative 
+Public ID" (or "Transcript ID") is a AGI locus id, it seems the 
+description was retrieved from TAIR. However, it is not clear how this 
+information is updated, and whether it is synchronized with TAIR's 
+update or not. Another possible source of description is Entrez Gene, 
+since Affymetrix maps probeset to Entrez Gene.
+
+4. pathway
+Pathway information is currently obtained from AraCyc, a pathway tool in 
+TAIR: http://www.arabidopsis.org/tools/aracyc/introduction.jsp . I feel 
+it only contains metabolic pathways (it can be wrong as I only read the 
+introduction). KEGG contains regulatory pathways as well, and it is also 
+manually curated. Those two sources are independant from each other. 
+Shall we include both of them?
+
+5. pubmed
+Probeset to pubmed mapping is currently obtained from 
+ftp://ftp.arabidopsis.org/home/tair/Ontologies/Plant_Ontology/stru-060309.txt 
+. The pubmed ids represents the publications that TAIR used to map a AGI 
+locus id to a concept in Plant Ontology. But I think environment like 
+ath1121501PUBMED should represent the publications about the matching 
+gene of a probeset. I didn't find AGI locus to pubmed mapping in TAIR. 
+So, we have to get it from either Entrez Gene id or GenBank accession. 
+This gets back to the frist question: what is the best way to map 
+probeset to GenBank/Entrez Gene?
+
+Hope this email is not too long. Any feedback will be highly 
+appreciated. If we decide to use a better data source, I will be happy 
+to do the implementation.
+
+many thanks
+
+Nianhua Li
+computational biology, public health, FHCRC
+
+
+From sdavis2 at mail.nih.gov  Mon Jun 19 16:52:21 2006
+From: sdavis2 at mail.nih.gov (Sean Davis)
+Date: Mon, 19 Jun 2006 10:52:21 -0400
+Subject: [Bioc-devel] ReporterInfo and ExpressionSet
+Message-ID: <C0BC3265.D0EE%sdavis2@mail.nih.gov>
+
+Just a quick question--is there a reason not to include a reporterInfo slot
+in an ExpressionSet class?  It needn't be fleshed out too much, I don't
+think, but I thought that the addition of it for the 'eSet' class was quite
+useful.  I realize that the best way to go is to build an annotation
+package, but I don't think that many users would prefer to use a simple data
+frame instead.  Any thoughts on adding that back in?
+
+Thanks,
+Sean
+
+
+From hpages at fhcrc.org  Mon Jun 19 22:05:06 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Mon, 19 Jun 2006 13:05:06 -0700
+Subject: [Bioc-devel] bioconductor.org down on Tuesday June 20th
+ 2:00pm-2:10pm Pacific Time
+Message-ID: <44970372.90407@fhcrc.org>
+
+Dear Bioconductor users,
+
+
+Our bioconductor.org server will be down for maintainance
+tomorrow Tuesday June 20th from 2:00pm to 2:10pm Pacific Time.
+
+During those 10 minutes, the following services won't be available:
+
+  - Access to our Plone website http://bioconductor.org/
+
+  - Access to our package repostitories
+      http://bioconductor.org/packages/1.8/BiocViews.html
+      http://bioconductor.org/packages/1.9/BiocViews.html
+
+    This means that package installation through
+      install.packages(..., repos="http://bioconductor.org")
+    or via biocLite() or getBioC() won't work.
+
+  - Access to our rsync server (for those mirroring us).
+
+  - and probably a few more ;-)
+
+During this time, please consider using one of the following mirrors:
+  http://inn.weizmann.ac.il/bioconductor/  (Israel)
+  http://microarrays.unife.it/bioconductor/  (Italy)
+  http://www.bioinformatics.csiro.au/mirrors.shtml  (Australia)
+
+If things go as expected, everything should be back to normal at 2:10pm
+Pacific Time. Let us apologize in advance for the inconvenience.
+Regards,
+
+H.
+
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+Phone: (206) 667-5791
+Fax: (206) 667-1319
+
+
+From hpages at fhcrc.org  Mon Jun 19 22:14:22 2006
+From: hpages at fhcrc.org (Herve Pages)
+Date: Mon, 19 Jun 2006 13:14:22 -0700
+Subject: [Bioc-devel] BioC wiki down on Tuesday June 20th 2:00pm-2:10pm
+	Pacific Time
+Message-ID: <4497059E.1080903@fhcrc.org>
+
+Hi BioC developpers,
+
+In addition to bioconductor.org, our wiki (http://wiki.fhcrc.org/bioc/)
+will also be down for maintainance tomorrow Tuesday
+June 20th from 2:00pm to 2:10pm Pacific Time.
+Sorry in advance for the inconvenience.
+
+Best,
+
+H.
+
+-- 
+------------------------
+Herv? Pag?s
+E-mail: hpages at fhcrc.org
+ Phone: (206) 667-5791
+   Fax: (206) 667-1319
+
+
+From mtmorgan at fhcrc.org  Wed Jun 21 01:39:48 2006
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Tue, 20 Jun 2006 16:39:48 -0700
+Subject: [Bioc-devel] ReporterInfo and ExpressionSet
+In-Reply-To: <C0BC3265.D0EE%sdavis2@mail.nih.gov> (Sean Davis's message of
+	"Mon, 19 Jun 2006 10:52:21 -0400")
+References: <C0BC3265.D0EE%sdavis2@mail.nih.gov>
+Message-ID: <6phy7vre6rf.fsf@gopher1.fhcrc.org>
+
+I haven't heard from seth on this, so...
+
+The feeling was that this would be useful in some specific
+circumstances, but not always, and hence should be delegated to a
+subclass, i.e., a class created by individual developers or included
+in Biobase at some point when it became clear how this class would
+behave. 
+
+If it were included in ExpressionSet but not used in most
+circumstances, then there would be a bunch of 'zombie' methods that
+expected something useful in reporterInfo, but found nothing. This
+would confuse users ('why does this method return an error about an
+empty data.frame? I don't even know what a reporterInfo is') and
+burden developers ('I'd better return an error about an empty
+data.frame, in case the user thought they'd put something useful
+here').
+
+Here's the essential subclass:
+
+setClass("ReporterSet", contains="ExpressionSet",
+         representation=representation(reporterData="data.frame"))
+
+setMethod("initialize", signature(.Object="ReporterSet"),
+          function(.Object, reporterData, ...) {
+              .Object <- callNextMethod(.Object, ...)
+              .Object at reporterData <- reporterData
+              .Object
+          })
+          
+setMethod("show", signature(object="ReporterSet"),
+          function(object) {
+              callNextMethod()
+              cat("\nReporter Data\n  dim:", dim(object at reporterData), "\n")
+          })
+
+ReporterSet instances would behave as ExpressionSets. Methods for
+ReporterSet would be sure to find something useful in the reporterData
+slot.
+
+Martin
+
+
+Sean Davis <sdavis2 at mail.nih.gov> writes:
+
+> Just a quick question--is there a reason not to include a reporterInfo slot
+> in an ExpressionSet class?  It needn't be fleshed out too much, I don't
+> think, but I thought that the addition of it for the 'eSet' class was quite
+> useful.  I realize that the best way to go is to build an annotation
+> package, but I don't think that many users would prefer to use a simple data
+> frame instead.  Any thoughts on adding that back in?
+>
+> Thanks,
+> Sean
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+

@@ -1,0 +1,1019 @@
+From fhahne at fhcrc.org  Tue Sep  2 20:09:53 2008
+From: fhahne at fhcrc.org (Florian Hahne)
+Date: Tue, 02 Sep 2008 11:09:53 -0700
+Subject: [Bioc-devel] biocViews preprocessing term
+Message-ID: <48BD8171.2050708@fhcrc.org>
+
+Hi Vince,
+the cellHTS and cellHTS2 package provide (mostly) preprocessing 
+functionality for cell-based assays, and assigning the biocViews term 
+"Preprocessing" seems to be reasonable. However, in the ontology this is 
+defined as "Microarray -> Preprocessing;", and that's not really what we 
+want. Shouldn't there be a general "Preprocessing" term independent of 
+micro arrays. I guess this will also become interesting for many of the 
+other emerging new technologies like deep sequencing. With the current 
+design, it seems this is not possible, since terms have to be 
+unambiguous. Is there any reasonable way of dealing with this problem 
+other than adding a new term like "General Preprocessing"? And wouldn't 
+it be useful to allow for terms like "Technology -> FlowCytometry 
+->Preprocessing;"
+
+Florian
+
+-- 
+Florian Hahne, PhD
+Computational Biology Program
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+PO Box 19024
+Seattle, Washington 98109-1024
+206-667-3148
+fhahne at fhcrc.org
+
+
+From stvjc at channing.harvard.edu  Tue Sep  2 20:12:40 2008
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Tue, 2 Sep 2008 14:12:40 -0400 (EDT)
+Subject: [Bioc-devel] biocViews preprocessing term
+In-Reply-To: <48BD8171.2050708@fhcrc.org>
+References: <48BD8171.2050708@fhcrc.org>
+Message-ID: <Pine.GSO.4.58.0809021411040.26397@capecod.bwh.harvard.edu>
+
+yes in specific, and although you did not ask it does
+appear that we need some renovation of the biocViews
+vocabulary.
+
+alas i am not really clear on how modifications to the
+vocabulary impact the build system.  i will take a look
+at this and make a proposal momentarily.
+
+---
+Vince Carey, PhD
+Assoc. Prof Med (Biostatistics)
+Harvard Medical School
+Channing Laboratory - ph 6175252265 fa 6177311541
+181 Longwood Ave Boston MA 02115 USA
+stvjc at channing.harvard.edu
+
+On Tue, 2 Sep 2008, Florian Hahne wrote:
+
+> Hi Vince,
+> the cellHTS and cellHTS2 package provide (mostly) preprocessing
+> functionality for cell-based assays, and assigning the biocViews term
+> "Preprocessing" seems to be reasonable. However, in the ontology this is
+> defined as "Microarray -> Preprocessing;", and that's not really what we
+> want. Shouldn't there be a general "Preprocessing" term independent of
+> micro arrays. I guess this will also become interesting for many of the
+> other emerging new technologies like deep sequencing. With the current
+> design, it seems this is not possible, since terms have to be
+> unambiguous. Is there any reasonable way of dealing with this problem
+> other than adding a new term like "General Preprocessing"? And wouldn't
+> it be useful to allow for terms like "Technology -> FlowCytometry
+> ->Preprocessing;"
+>
+> Florian
+>
+> --
+> Florian Hahne, PhD
+> Computational Biology Program
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M2-B876
+> PO Box 19024
+> Seattle, Washington 98109-1024
+> 206-667-3148
+> fhahne at fhcrc.org
+>
+>
+
+
+From stvjc at channing.harvard.edu  Wed Sep  3 12:42:10 2008
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Wed, 3 Sep 2008 06:42:10 -0400 (EDT)
+Subject: [Bioc-devel] biocViews preprocessing term
+In-Reply-To: <20080903010749.js4662wf5wowgsgc@webmail.fhcrc.org>
+References: <20080903010749.js4662wf5wowgsgc@webmail.fhcrc.org>
+Message-ID: <Pine.GSO.4.58.0809030635000.606@capecod.bwh.harvard.edu>
+
+Thanks for carrying on this thread, Patrick,
+looks like I got distracted.
+
+Now I see how the vocabulary is maintained.
+biocViews/inst/dot has a nice human-readable rendering
+of the vocabulary in biocViewsVocab.dot
+
+Each node reference in the dot is a topic, and any
+node in that dot file can be used as a biocViews
+field value in the package.
+
+Florian, would you like to make the changes to
+biocViews/inst/dot that reflect your desired vocabulary
+modifications, rebuild the vocabulary using biocViews/updateVocab.sh,
+and then commit the modified biocViews package (with a bump to the
+version tag in DESCRIPTION)?  It would be nice to have some
+mechanism of testing that the build system will survive such
+a change (perhaps testing some validity conditions on the new
+graph, such as 1 connected component, all nodes are syntactic
+atoms, checking the correspondence between biocViews fields
+present in the repository and the nodes in the graph).
+
+I will do the changes mentioned in Florian's e-mail and commit
+if people want to funnel this through me ...
+
+---
+Vince Carey, PhD
+Assoc. Prof Med (Biostatistics)
+Harvard Medical School
+Channing Laboratory - ph 6175252265 fa 6177311541
+181 Longwood Ave Boston MA 02115 USA
+stvjc at channing.harvard.edu
+
+On Wed, 3 Sep 2008, Patrick Aboyoun wrote:
+
+> On the second point, the build system uses the ontology in biocViews and
+> will adapt accordingly when biocViews is changed. Any vocabulary term
+> that is not recognized by biocViews will be ignored and an internal
+> build warning will be issued. Periodically I check the ignored terms to
+> see if this is due to misspellings (which I correct), but in some
+> situations packages include categories that don't exist. If changes are
+> made to the ontology, package authors can modify their biocViews
+> DESCRIPTION field prior to changes being made to biocViews without any
+> adverse build outcome.
+>
+>
+> Patrick
+>
+>
+>
+> Vincent Carey 525-2265 wrote:
+> > yes in specific, and although you did not ask it does
+> > appear that we need some renovation of the biocViews
+> > vocabulary.
+> >
+> > alas i am not really clear on how modifications to the
+> > vocabulary impact the build system.  i will take a look
+> > at this and make a proposal momentarily.
+> >
+> > ---
+> > Vince Carey, PhD
+> > Assoc. Prof Med (Biostatistics)
+> > Harvard Medical School
+> > Channing Laboratory - ph 6175252265 fa 6177311541
+> > 181 Longwood Ave Boston MA 02115 USA
+> > stvjc at channing.harvard.edu
+> >
+> > On Tue, 2 Sep 2008, Florian Hahne wrote:
+> >
+> >
+> >> Hi Vince,
+> >> the cellHTS and cellHTS2 package provide (mostly) preprocessing
+> >> functionality for cell-based assays, and assigning the biocViews term
+> >> "Preprocessing" seems to be reasonable. However, in the ontology this is
+> >> defined as "Microarray -> Preprocessing;", and that's not really what we
+> >> want. Shouldn't there be a general "Preprocessing" term independent of
+> >> micro arrays. I guess this will also become interesting for many of the
+> >> other emerging new technologies like deep sequencing. With the current
+> >> design, it seems this is not possible, since terms have to be
+> >> unambiguous. Is there any reasonable way of dealing with this problem
+> >> other than adding a new term like "General Preprocessing"? And wouldn't
+> >> it be useful to allow for terms like "Technology -> FlowCytometry
+> >> ->Preprocessing;"
+> >>
+> >> Florian
+> >>
+> >> --
+> >> Florian Hahne, PhD
+> >> Computational Biology Program
+> >> Division of Public Health Sciences
+> >> Fred Hutchinson Cancer Research Center
+> >> 1100 Fairview Ave. N, M2-B876
+> >> PO Box 19024
+> >> Seattle, Washington 98109-1024
+> >> 206-667-3148
+> >> fhahne at fhcrc.org
+> >>
+> >>
+> >>
+> >
+> > _______________________________________________
+> > Bioc-devel at stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >
+>
+>
+>
+>
+>
+>
+
+
+From hb at stat.berkeley.edu  Sat Sep  6 02:22:53 2008
+From: hb at stat.berkeley.edu (Henrik Bengtsson)
+Date: Fri, 5 Sep 2008 17:22:53 -0700
+Subject: [Bioc-devel] Please,
+	minimize your package dependencies (Was: Re: [BioC] Running R
+	without X11?)
+Message-ID: <59d7961d0809051722x748f7aeer13a4acd7a240e7c5@mail.gmail.com>
+
+Hi,
+
+the PDPU ("Package Dependency Police Unit") here:
+
+On Fri, Sep 5, 2008 at 2:37 PM, Amy Johnson <a7johnson at gmail.com> wrote:
+> Hi, I'm trying to run batch R scripts that is triggered online with PHP code:
+>
+> exec(R --no-save -q < myscript.r > output.txt 2>&1);
+>
+> However, as there are some R libraries, e.g. qvalue, webbioc needs X11
+> (tcltk) loaded, I got the following errors:
+>
+> Loading Tcl/Tk interface ... Error in dyn.load(file, DLLpath = DLLpath, ...)
+> :
+>  unable to load shared library
+> '/usr/local/lib/R/library/tcltk/libs/tcltk.so':
+>  /usr/lib/libXft.so.2: undefined symbol: FT_GlyphSlot_Embolden
+> Error : .onLoad failed in 'loadNamespace' for 'tcltk'
+> Error: package/namespace load failed for 'tcltk'
+> Execution halted
+>
+> I have no problem to run the script on the shell when X11 is lauched. How do
+> I launch X11 before running R scripts in batch from the web? Is there a way
+> to avoid loading tcltk when loading R libraries like qvalue and webbioc? As
+> far as I remember, the old versions of qvalue and webbioc do not require
+> tcltk.
+
+First, 'webbioc' does not load 'tcltk' itself, but via 'qvalue'.
+
+The qvalue package loads tcltk because it is declared in the
+'Depends:' field of qvalue's DESCRIPTION.  However, looking at what
+qvalue provides, it does not look as if tcltk is a major component,
+but only used in qvalue.gui().  I would recommend the maintainer of
+qvalue (BCC:ed) to move 'tcltk' from the Depends: field to the
+Suggests: field of DESCRIPTION and add:
+
+  require("tcltk") || stop("Package not loaded: tcltk");
+
+to the top of qvalue.gui().  That way, tcltk will only be loaded if
+really needed.
+
+The same approach should be used for package dependencies that are
+rarely used.  It also lower the number of packages a user has to
+download and installed.
+
+Over and out!
+
+/Henrik
+
+
+>
+> Thanks
+>
+> Amy.
+>
+> _______________________________________________
+> Bioconductor mailing list
+> Bioconductor at stat.math.ethz.ch
+> https://stat.ethz.ch/mailman/listinfo/bioconductor
+> Search the archives: http://news.gmane.org/gmane.science.biology.informatics.conductor
+>
+
+
+From maechler at stat.math.ethz.ch  Sat Sep  6 10:47:49 2008
+From: maechler at stat.math.ethz.ch (Martin Maechler)
+Date: Sat, 6 Sep 2008 10:47:49 +0200
+Subject: [Bioc-devel] Please,
+	minimize your package dependencies (Was: Re: [BioC] Running R
+	without X11?)
+In-Reply-To: <59d7961d0809051722x748f7aeer13a4acd7a240e7c5@mail.gmail.com>
+References: <59d7961d0809051722x748f7aeer13a4acd7a240e7c5@mail.gmail.com>
+Message-ID: <18626.17333.958093.910962@cmath-5.math.ethz.ch>
+
+>>>>> "HenrikB" == Henrik Bengtsson <hb at stat.berkeley.edu>
+>>>>>     on Fri, 5 Sep 2008 17:22:53 -0700 writes:
+
+    HenrikB> Hi,
+    HenrikB> the PDPU ("Package Dependency Police Unit") here:
+
+    HenrikB> On Fri, Sep 5, 2008 at 2:37 PM, Amy Johnson <a7johnson at gmail.com> wrote:
+    >> Hi, I'm trying to run batch R scripts that is triggered online with PHP code:
+    >> 
+    >> exec(R --no-save -q < myscript.r > output.txt 2>&1);
+    >> 
+    >> However, as there are some R libraries, e.g. qvalue, webbioc needs X11
+    >> (tcltk) loaded, I got the following errors:
+    >> 
+    >> Loading Tcl/Tk interface ... Error in dyn.load(file, DLLpath = DLLpath, ...)
+    >> :
+    >> unable to load shared library
+    >> '/usr/local/lib/R/library/tcltk/libs/tcltk.so':
+    >> /usr/lib/libXft.so.2: undefined symbol: FT_GlyphSlot_Embolden
+    >> Error : .onLoad failed in 'loadNamespace' for 'tcltk'
+    >> Error: package/namespace load failed for 'tcltk'
+    >> Execution halted
+    >> 
+    >> I have no problem to run the script on the shell when X11 is lauched. How do
+    >> I launch X11 before running R scripts in batch from the web? Is there a way
+    >> to avoid loading tcltk when loading R libraries like qvalue and webbioc? As
+    >> far as I remember, the old versions of qvalue and webbioc do not require
+    >> tcltk.
+
+    HenrikB> First, 'webbioc' does not load 'tcltk' itself, but via 'qvalue'.
+
+    HenrikB> The qvalue package loads tcltk because it is declared in the
+    HenrikB> 'Depends:' field of qvalue's DESCRIPTION.  However, looking at what
+    HenrikB> qvalue provides, it does not look as if tcltk is a major component,
+    HenrikB> but only used in qvalue.gui().  I would recommend the maintainer of
+    HenrikB> qvalue (BCC:ed) to move 'tcltk' from the Depends: field to the
+    HenrikB> Suggests: field of DESCRIPTION and add:
+
+    HenrikB> require("tcltk") || stop("Package not loaded: tcltk");
+
+    HenrikB> to the top of qvalue.gui().  That way, tcltk will only be loaded if
+    HenrikB> really needed.
+
+    HenrikB> The same approach should be used for package dependencies that are
+    HenrikB> rarely used.  It also lower the number of packages a user has to
+    HenrikB> download and installed.
+
+I very much agree with you, Henrik, about the general principle
+(and the Subject line you've chosen).
+
+However, 'tcltk' is a *standard*  R package that never needs to
+be installed in a "valid" installation of R,
+so I don't see any harm to depend on it.  It's like depending on
+'grid', i.e. not a problem.
+
+Martin
+
+
+From fhahne at fhcrc.org  Sun Sep  7 18:38:14 2008
+From: fhahne at fhcrc.org (Florian Hahne)
+Date: Sun, 7 Sep 2008 09:38:14 -0700
+Subject: [Bioc-devel] biocViews preprocessing term
+In-Reply-To: <Pine.GSO.4.58.0809030635000.606@capecod.bwh.harvard.edu>
+References: <20080903010749.js4662wf5wowgsgc@webmail.fhcrc.org>
+	<Pine.GSO.4.58.0809030635000.606@capecod.bwh.harvard.edu>
+Message-ID: <ACB0C245-E558-440B-B230-0E9E847F903B@fhcrc.org>
+
+Sure, I can do that. Just need to figure out if there is an easy way  
+to parse through the whole repository, I hope that Patrick can help  
+with that. However, I still don't see how one would specify a term  
+like flow cytometry -> preprocessing in the DESCRIPTION file. Or do yo  
+mean unique node names by syntactic atoms? So far, only the leaf node  
+seems to be used to assign a package to a category.
+Florian
+
+
+On 03.09.2008, at 03:42, Vincent Carey 525-2265 wrote:
+
+> Thanks for carrying on this thread, Patrick,
+> looks like I got distracted.
+>
+> Now I see how the vocabulary is maintained.
+> biocViews/inst/dot has a nice human-readable rendering
+> of the vocabulary in biocViewsVocab.dot
+>
+> Each node reference in the dot is a topic, and any
+> node in that dot file can be used as a biocViews
+> field value in the package.
+>
+> Florian, would you like to make the changes to
+> biocViews/inst/dot that reflect your desired vocabulary
+> modifications, rebuild the vocabulary using biocViews/updateVocab.sh,
+> and then commit the modified biocViews package (with a bump to the
+> version tag in DESCRIPTION)?  It would be nice to have some
+> mechanism of testing that the build system will survive such
+> a change (perhaps testing some validity conditions on the new
+> graph, such as 1 connected component, all nodes are syntactic
+> atoms, checking the correspondence between biocViews fields
+> present in the repository and the nodes in the graph).
+>
+> I will do the changes mentioned in Florian's e-mail and commit
+> if people want to funnel this through me ...
+>
+> ---
+> Vince Carey, PhD
+> Assoc. Prof Med (Biostatistics)
+> Harvard Medical School
+> Channing Laboratory - ph 6175252265 fa 6177311541
+> 181 Longwood Ave Boston MA 02115 USA
+> stvjc at channing.harvard.edu
+>
+> On Wed, 3 Sep 2008, Patrick Aboyoun wrote:
+>
+>> On the second point, the build system uses the ontology in  
+>> biocViews and
+>> will adapt accordingly when biocViews is changed. Any vocabulary term
+>> that is not recognized by biocViews will be ignored and an internal
+>> build warning will be issued. Periodically I check the ignored  
+>> terms to
+>> see if this is due to misspellings (which I correct), but in some
+>> situations packages include categories that don't exist. If changes  
+>> are
+>> made to the ontology, package authors can modify their biocViews
+>> DESCRIPTION field prior to changes being made to biocViews without  
+>> any
+>> adverse build outcome.
+>>
+>>
+>> Patrick
+>>
+>>
+>>
+>> Vincent Carey 525-2265 wrote:
+>>> yes in specific, and although you did not ask it does
+>>> appear that we need some renovation of the biocViews
+>>> vocabulary.
+>>>
+>>> alas i am not really clear on how modifications to the
+>>> vocabulary impact the build system.  i will take a look
+>>> at this and make a proposal momentarily.
+>>>
+>>> ---
+>>> Vince Carey, PhD
+>>> Assoc. Prof Med (Biostatistics)
+>>> Harvard Medical School
+>>> Channing Laboratory - ph 6175252265 fa 6177311541
+>>> 181 Longwood Ave Boston MA 02115 USA
+>>> stvjc at channing.harvard.edu
+>>>
+>>> On Tue, 2 Sep 2008, Florian Hahne wrote:
+>>>
+>>>
+>>>> Hi Vince,
+>>>> the cellHTS and cellHTS2 package provide (mostly) preprocessing
+>>>> functionality for cell-based assays, and assigning the biocViews  
+>>>> term
+>>>> "Preprocessing" seems to be reasonable. However, in the ontology  
+>>>> this is
+>>>> defined as "Microarray -> Preprocessing;", and that's not really  
+>>>> what we
+>>>> want. Shouldn't there be a general "Preprocessing" term  
+>>>> independent of
+>>>> micro arrays. I guess this will also become interesting for many  
+>>>> of the
+>>>> other emerging new technologies like deep sequencing. With the  
+>>>> current
+>>>> design, it seems this is not possible, since terms have to be
+>>>> unambiguous. Is there any reasonable way of dealing with this  
+>>>> problem
+>>>> other than adding a new term like "General Preprocessing"? And  
+>>>> wouldn't
+>>>> it be useful to allow for terms like "Technology -> FlowCytometry
+>>>> ->Preprocessing;"
+>>>>
+>>>> Florian
+>>>>
+>>>> --
+>>>> Florian Hahne, PhD
+>>>> Computational Biology Program
+>>>> Division of Public Health Sciences
+>>>> Fred Hutchinson Cancer Research Center
+>>>> 1100 Fairview Ave. N, M2-B876
+>>>> PO Box 19024
+>>>> Seattle, Washington 98109-1024
+>>>> 206-667-3148
+>>>> fhahne at fhcrc.org
+>>>>
+>>>>
+>>>>
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>>
+>>
+>>
+>>
+>>
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From stvjc at channing.harvard.edu  Sun Sep  7 20:46:03 2008
+From: stvjc at channing.harvard.edu (Vincent Carey 525-2265)
+Date: Sun, 7 Sep 2008 14:46:03 -0400 (EDT)
+Subject: [Bioc-devel] biocViews preprocessing term
+In-Reply-To: <ACB0C245-E558-440B-B230-0E9E847F903B@fhcrc.org>
+References: <20080903010749.js4662wf5wowgsgc@webmail.fhcrc.org>
+	<Pine.GSO.4.58.0809030635000.606@capecod.bwh.harvard.edu>
+	<ACB0C245-E558-440B-B230-0E9E847F903B@fhcrc.org>
+Message-ID: <Pine.GSO.4.58.0809071441310.26576@capecod.bwh.harvard.edu>
+
+On Sun, 7 Sep 2008, Florian Hahne wrote:
+
+> Sure, I can do that. Just need to figure out if there is an easy way
+> to parse through the whole repository, I hope that Patrick can help
+> with that. However, I still don't see how one would specify a term
+> like flow cytometry -> preprocessing in the DESCRIPTION file. Or do yo
+> mean unique node names by syntactic atoms? So far, only the leaf node
+> seems to be used to assign a package to a category.
+
+we can certainly do something like flowCytometry -> flowPreprocessing
+[you might even be able to embed a blank; the code was written before backticks
+were well established]
+
+however, sharing "Preprocessing" between view paths isn't going to work
+without additional structure -- either namespaces or a distinction
+between nodename and displayname ... the node names need to be unique,
+not so the display names.  personally i don't want to go down this
+path but repurposing namespace technology would definitely be a fun
+and rewarding project for someone with some time and energy.
+
+> Florian
+>
+>
+> On 03.09.2008, at 03:42, Vincent Carey 525-2265 wrote:
+>
+> > Thanks for carrying on this thread, Patrick,
+> > looks like I got distracted.
+> >
+> > Now I see how the vocabulary is maintained.
+> > biocViews/inst/dot has a nice human-readable rendering
+> > of the vocabulary in biocViewsVocab.dot
+> >
+> > Each node reference in the dot is a topic, and any
+> > node in that dot file can be used as a biocViews
+> > field value in the package.
+> >
+> > Florian, would you like to make the changes to
+> > biocViews/inst/dot that reflect your desired vocabulary
+> > modifications, rebuild the vocabulary using biocViews/updateVocab.sh,
+> > and then commit the modified biocViews package (with a bump to the
+> > version tag in DESCRIPTION)?  It would be nice to have some
+> > mechanism of testing that the build system will survive such
+> > a change (perhaps testing some validity conditions on the new
+> > graph, such as 1 connected component, all nodes are syntactic
+> > atoms, checking the correspondence between biocViews fields
+> > present in the repository and the nodes in the graph).
+> >
+> > I will do the changes mentioned in Florian's e-mail and commit
+> > if people want to funnel this through me ...
+> >
+> > ---
+> > Vince Carey, PhD
+> > Assoc. Prof Med (Biostatistics)
+> > Harvard Medical School
+> > Channing Laboratory - ph 6175252265 fa 6177311541
+> > 181 Longwood Ave Boston MA 02115 USA
+> > stvjc at channing.harvard.edu
+> >
+> > On Wed, 3 Sep 2008, Patrick Aboyoun wrote:
+> >
+> >> On the second point, the build system uses the ontology in
+> >> biocViews and
+> >> will adapt accordingly when biocViews is changed. Any vocabulary term
+> >> that is not recognized by biocViews will be ignored and an internal
+> >> build warning will be issued. Periodically I check the ignored
+> >> terms to
+> >> see if this is due to misspellings (which I correct), but in some
+> >> situations packages include categories that don't exist. If changes
+> >> are
+> >> made to the ontology, package authors can modify their biocViews
+> >> DESCRIPTION field prior to changes being made to biocViews without
+> >> any
+> >> adverse build outcome.
+> >>
+> >>
+> >> Patrick
+> >>
+> >>
+> >>
+> >> Vincent Carey 525-2265 wrote:
+> >>> yes in specific, and although you did not ask it does
+> >>> appear that we need some renovation of the biocViews
+> >>> vocabulary.
+> >>>
+> >>> alas i am not really clear on how modifications to the
+> >>> vocabulary impact the build system.  i will take a look
+> >>> at this and make a proposal momentarily.
+> >>>
+> >>> ---
+> >>> Vince Carey, PhD
+> >>> Assoc. Prof Med (Biostatistics)
+> >>> Harvard Medical School
+> >>> Channing Laboratory - ph 6175252265 fa 6177311541
+> >>> 181 Longwood Ave Boston MA 02115 USA
+> >>> stvjc at channing.harvard.edu
+> >>>
+> >>> On Tue, 2 Sep 2008, Florian Hahne wrote:
+> >>>
+> >>>
+> >>>> Hi Vince,
+> >>>> the cellHTS and cellHTS2 package provide (mostly) preprocessing
+> >>>> functionality for cell-based assays, and assigning the biocViews
+> >>>> term
+> >>>> "Preprocessing" seems to be reasonable. However, in the ontology
+> >>>> this is
+> >>>> defined as "Microarray -> Preprocessing;", and that's not really
+> >>>> what we
+> >>>> want. Shouldn't there be a general "Preprocessing" term
+> >>>> independent of
+> >>>> micro arrays. I guess this will also become interesting for many
+> >>>> of the
+> >>>> other emerging new technologies like deep sequencing. With the
+> >>>> current
+> >>>> design, it seems this is not possible, since terms have to be
+> >>>> unambiguous. Is there any reasonable way of dealing with this
+> >>>> problem
+> >>>> other than adding a new term like "General Preprocessing"? And
+> >>>> wouldn't
+> >>>> it be useful to allow for terms like "Technology -> FlowCytometry
+> >>>> ->Preprocessing;"
+> >>>>
+> >>>> Florian
+> >>>>
+> >>>> --
+> >>>> Florian Hahne, PhD
+> >>>> Computational Biology Program
+> >>>> Division of Public Health Sciences
+> >>>> Fred Hutchinson Cancer Research Center
+> >>>> 1100 Fairview Ave. N, M2-B876
+> >>>> PO Box 19024
+> >>>> Seattle, Washington 98109-1024
+> >>>> 206-667-3148
+> >>>> fhahne at fhcrc.org
+> >>>>
+> >>>>
+> >>>>
+> >>>
+> >>> _______________________________________________
+> >>> Bioc-devel at stat.math.ethz.ch mailing list
+> >>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >>>
+> >>
+> >>
+> >>
+> >>
+> >>
+> >>
+> >
+> > _______________________________________________
+> > Bioc-devel at stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+>
+
+
+From Darlene.Goldstein at epfl.ch  Tue Sep  9 11:04:22 2008
+From: Darlene.Goldstein at epfl.ch (Darlene Goldstein)
+Date: Tue, 09 Sep 2008 11:04:22 +0200
+Subject: [Bioc-devel] Workshop on Statistical Advances in Genome-scale Data
+	Analysis
+Message-ID: <1220951062.48c63c16553e3@webmail.epfl.ch>
+
+
+[Apologies in advance if you receive multiple copies of this email]
+
+This is to announce and invite your participation in a workshop on Statistical
+Advances in Genome-scale Data Analysis, to be held from 3 - 8 May 2009 at
+Ascona in the Italian-speaking part of Switzerland.  The purpose of the
+workshop is to bring together participants from statistics, computational
+sciences, bioinformatics and biology, and to encourage interaction in a relaxed
+and collegial atmosphere.
+
+Confirmed invited speakers include:
+Niko Beerenwinkel (ETH Zurich), Sven Bergmann (University of Lausanne), David
+Clayton (Cambridge University), Christina Kendziorski (University of Wisconsin,
+Madison), Edward Marcotte (University of Texas, Austin), Florian Markowetz
+(Princeton University), with others still pending.
+
+Contributed presentations will also be welcome.
+
+More details and pre-registration instructions are available at
+http://stat.ethz.ch/talks/Ascona_09
+We strongly encourage pre-registration, in previous years places have filled up
+quickly.
+
+Peter B?hlmann
+Anthony Davison
+Darlene Goldstein
+-- 
+Darlene Goldstein
+?cole Polytechnique F?d?rale de Lausanne (EPFL)
+Institut de math?matiques
+B?timent MA, Station 8        Tel: +41 21 693 0528
+CH-1015 Lausanne              Fax: +41 21 693 4303
+SWITZERLAND
+
+
+From rosselldavid at gmail.com  Thu Sep 11 10:37:25 2008
+From: rosselldavid at gmail.com (David Rossell)
+Date: Thu, 11 Sep 2008 10:37:25 +0200
+Subject: [Bioc-devel] INDEX file is not generated automatically
+Message-ID: <376b783d0809110137j5e1482a3i628fd70e7e2a912c@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20080911/cfda84a8/attachment.pl>
+
+From sneumann at ipb-halle.de  Thu Sep 11 13:05:41 2008
+From: sneumann at ipb-halle.de (Steffen Neumann)
+Date: Thu, 11 Sep 2008 13:05:41 +0200
+Subject: [Bioc-devel] Building embedded library on windows [was: header file
+ hierarchy	break some BioC packages]
+In-Reply-To: <1219302431.7682.57.camel@lathan.ipb-sub.ipb-halle.de>
+References: <48A31043.5020001@fhcrc.org>
+	<1218659575.30515.8.camel@lathan.ipb-sub.ipb-halle.de>
+	<1219302431.7682.57.camel@lathan.ipb-sub.ipb-halle.de>
+Message-ID: <1221131141.8326.96.camel@lathan.ipb-sub.ipb-halle.de>
+
+On Thu, 2008-08-21 at 09:07 +0200, Steffen Neumann wrote:
+> On Wed, 2008-08-13 at 22:32 +0200, Steffen Neumann wrote:
+> > >On Wed, 2008-08-13 at 09:48 -0700, Herve Pages wrote:
+> ...
+> > >For these packages, the problem seems to be that a number of include
+> > >directives are missing: #include <stdlib.h>, #include <string.h>,
+> > >etc...
+> Being worked on.
+Fixed. 
+
+There was a thread last year [Bioc-devel CXX on liverpool/lemming]
+which at least helped me get this far with precompiled .dlls, 
+but now Rdisop finishes with a single warning, 
+namely that for executables in Rdisop/src/win/.
+
+There has recently been a post on bioc-devel on a related issue,
+([Bioc-devel] EBImage: Devel version on Windows not building)
+where the suggestion was to compile the required .dll 
+for windows as well, instead of providing precompiled libraries,
+but I am unable to get this work in Rdisop, as I have only 
+limited knowledge in building for Windows.
+
+So I'd love to leave it as is and be able to ignore 
+the warnings in check (just renamed Rdisop/src/win to Rdisop/src/winlibs
+so in 2 days I'll see whether that helps), but if neccessary 
+(and with some help) I can also try to fix the windows build. 
+
+The embedded library imslib is autoconf/automake/libtoolized after all,
+but these tools are already quite complex on multiple Unix dialects, 
+and w/o any windows experience (and local 64bit development environment)
+I won't manage before BioC-2.3 release in October/November.
+
+Is there somebody I can talk to regularly on this, 
+if neccessary off-list ?
+
+Yours,
+Steffen
+
+-- 
+IPB Halle                    AG Massenspektrometrie & Bioinformatik
+Dr. Steffen Neumann          http://www.IPB-Halle.DE
+Weinberg 3                   http://msbi.bic-gh.de
+06120 Halle                  Tel. +49 (0) 345 5582 - 1470
+                                  +49 (0) 345 5582 - 0
+sneumann(at)IPB-Halle.DE     Fax. +49 (0) 345 5582 - 1409
+
+
+From jmacdon at med.umich.edu  Thu Sep 11 19:42:55 2008
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Thu, 11 Sep 2008 13:42:55 -0400
+Subject: [Bioc-devel] INDEX file is not generated automatically
+In-Reply-To: <376b783d0809110137j5e1482a3i628fd70e7e2a912c@mail.gmail.com>
+References: <376b783d0809110137j5e1482a3i628fd70e7e2a912c@mail.gmail.com>
+Message-ID: <48C9589F.4080800@med.umich.edu>
+
+Hi David,
+
+David Rossell wrote:
+> Hi there, I have a beginners question. I'm running into problems with
+> generating the INDEX file automatically for the library gaga. At first I had
+> a manually generated INDEX, but got the warning:
+> 
+> * checking whether 'INDEX' is up-to-date ... NO
+> * use '--force' to overwrite the existing 'INDEX'
+> 
+> Then I deleted the INDEX file, as I thought it would be generated
+> automatically when doing the R CMD BUILD. But this is not the case: if I
+> untar the tar.gz created by R CMD BUILD there's no INDEX file.
+> 
+> Does anyone know how to work around this? Am I doing something wrong? I
+> would greatly appreciate any input!
+
+The only thing you are doing wrong is worrying about having an INDEX 
+file in your package. This is automatically generated by R CMD INSTALL.
+
+Best,
+
+Jim
+
+
+> 
+> David
+> 
+> 	[[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+James W. MacDonald, M.S.
+Biostatistician
+Hildebrandt Lab
+8220D MSRB III
+1150 W. Medical Center Drive
+Ann Arbor MI 48109-0646
+734-936-8662
+
+
+From paboyoun at fhcrc.org  Thu Sep 11 20:37:46 2008
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Thu, 11 Sep 2008 11:37:46 -0700
+Subject: [Bioc-devel] Building embedded library on windows [was: header
+ file hierarchy break some BioC packages]
+In-Reply-To: <1221131141.8326.96.camel@lathan.ipb-sub.ipb-halle.de>
+References: <48A31043.5020001@fhcrc.org>	<1218659575.30515.8.camel@lathan.ipb-sub.ipb-halle.de>	<1219302431.7682.57.camel@lathan.ipb-sub.ipb-halle.de>
+	<1221131141.8326.96.camel@lathan.ipb-sub.ipb-halle.de>
+Message-ID: <48C9657A.3000305@fhcrc.org>
+
+Steffen,
+There are currently four Bioconductor packages (EBImage, fdrame, Rdisop, 
+and Rredland) that include dlls in its source package form. When these 
+packages are checked using R CMD check, they all produce warnings 
+indicating that they include executable file(s). These warnings make 
+sense because they let the user know that this package contains foreign 
+executable file(s) that can not be verified to be secure.
+
+When determining the manifest for the BioC 2.3 release, all warnings are 
+not viewed equally and no package is not going to make the BioC 2.3 
+release solely because it contains dlls. Since the BioC 2.3 release is 
+rapidly approaching
+
+http://wiki.fhcrc.org/bioc/BioC_2.3_Release_Schedule
+
+leaving Rdisop in its current stable state is the prudent choice. We 
+could work together after the BioC 2.3 release, if you want to have the 
+dll generated during the build process. For now, if it ain't broke, 
+don't fix it for dll construction.
+
+
+Patrick
+
+
+
+Steffen Neumann wrote:
+> On Thu, 2008-08-21 at 09:07 +0200, Steffen Neumann wrote:
+>   
+>> On Wed, 2008-08-13 at 22:32 +0200, Steffen Neumann wrote:
+>>     
+>>>> On Wed, 2008-08-13 at 09:48 -0700, Herve Pages wrote:
+>>>>         
+>> ...
+>>     
+>>>> For these packages, the problem seems to be that a number of include
+>>>> directives are missing: #include <stdlib.h>, #include <string.h>,
+>>>> etc...
+>>>>         
+>> Being worked on.
+>>     
+> Fixed. 
+>
+> There was a thread last year [Bioc-devel CXX on liverpool/lemming]
+> which at least helped me get this far with precompiled .dlls, 
+> but now Rdisop finishes with a single warning, 
+> namely that for executables in Rdisop/src/win/.
+>
+> There has recently been a post on bioc-devel on a related issue,
+> ([Bioc-devel] EBImage: Devel version on Windows not building)
+> where the suggestion was to compile the required .dll 
+> for windows as well, instead of providing precompiled libraries,
+> but I am unable to get this work in Rdisop, as I have only 
+> limited knowledge in building for Windows.
+>
+> So I'd love to leave it as is and be able to ignore 
+> the warnings in check (just renamed Rdisop/src/win to Rdisop/src/winlibs
+> so in 2 days I'll see whether that helps), but if neccessary 
+> (and with some help) I can also try to fix the windows build. 
+>
+> The embedded library imslib is autoconf/automake/libtoolized after all,
+> but these tools are already quite complex on multiple Unix dialects, 
+> and w/o any windows experience (and local 64bit development environment)
+> I won't manage before BioC-2.3 release in October/November.
+>
+> Is there somebody I can talk to regularly on this, 
+> if neccessary off-list ?
+>
+> Yours,
+> Steffen
+>
+>
+
+
+From mcarlson at fhcrc.org  Wed Sep 17 20:15:29 2008
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Wed, 17 Sep 2008 11:15:29 -0700
+Subject: [Bioc-devel] Important announcement for all package maintainers.
+Message-ID: <48D14941.7020206@fhcrc.org>
+
+Hello package maintainers,
+
+As everyone is hopefully aware we are coming up on the fall release.  
+This means that we are looking very closely at the current devel branch 
+since a snapshot of that will soon become the next release branch.  We 
+don't want to have to "prune" anyones packages out of the release, but 
+as maintainers we do need you all to please make sure that your packages 
+are in good shape (able to be built and pass check).  To assist with 
+this, I would like to remind you that we have the following website 
+which can let you know at a glance if any of the packages that you 
+maintain are not in good shape:
+
+http://bioconductor.org/checkResults/2.3/bioc-LATEST/
+
+In addition, we have noticed that some of you have not kept a current 
+email in the DESCRIPTION file of your package.  This means that if 
+something goes wrong near to release we have no way of reaching you.  If 
+your package is in bad shape and we have no way to reach you then we 
+will have no choice but to leave you out of the release branch.  So 
+please be sure to look at your packages DESCRIPTION file and update it 
+with a current email address as needed.  Keeping your email address 
+current could save you a lot of trouble.
+
+Thank you for participating,
+
+
+  Marc
+
+
+From paboyoun at fhcrc.org  Tue Sep 23 22:57:56 2008
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Tue, 23 Sep 2008 13:57:56 -0700
+Subject: [Bioc-devel] BioC 2.3 Release Schedule
+Message-ID: <48D95854.4040401@fhcrc.org>
+
+The Bioconductor development wiki now contains an updated release 
+schedule for the BioC 2.3 release:
+
+http://wiki.fhcrc.org/bioc/BioC_2.3_Release_Schedule
+
+BioC 2.3 is projected to be released on 22 October. From a package 
+maintainer standpoint the two biggest dates are
+8 October (package build and check without error) and 15 October 
+(package build and check with no or limited pre-approved warnings). 
+Please check the BioC 2.3: Multiple platform build/check report
+
+http://bioconductor.org/checkResults/2.3/bioc-LATEST/
+
+frequently to ensure your package is meeting these requirements.
+
+There has been a flurry of development activities over the past few 
+weeks that have reduced the number of package build and check warnings 
+and errors. (Thanks for all your efforts!) For those of you who haven't 
+had a chance to bring your packages into the green, please do so at your 
+earliest convenience. There are a relatively large number of warnings 
+related to missing documentation that are easy to correct and now would 
+be a good point to briefly shift your focus from software development to 
+documentation writing.
+
+The Bioconductor development community has been very productive over the 
+past half-year. BioC 2.3 has seen the introduction of 25 packages to its 
+manifest since the BioC 2.2 release (ArrayTools, CGHbase, CGHregions, 
+CMA, DFP, domainsignatures, dualKS, edgeR, HELP, IRanges, ITALICS, 
+iterativeBMA, iterativeBMAsurv, logitT, LPEadj, MEDME, microRNA, minet, 
+miRNApath, multiscan, PLPE, RpsiXML, ShortRead, SIM, spkTools) and more 
+packages will be added before the 1 October deadline. We will easily 
+pass the 27 package increase from BioC 2.1 -> BioC 2.2 releases and 
+could come close to the record 32 package increase from BioC 1.3 -> BioC 
+1.4. Congratulations on all your hard work and let's make this the 
+cleanest Bioconductor release ever.
+
+
+Patrick
+
+
+From mcarlson at fhcrc.org  Sat Sep 27 01:54:15 2008
+From: mcarlson at fhcrc.org (Marc Carlson)
+Date: Fri, 26 Sep 2008 16:54:15 -0700
+Subject: [Bioc-devel] proposed change to arabidopsis mappings for
+ arabidopsis chip annotation packages.
+Message-ID: <48DD7627.5020008@fhcrc.org>
+
+Hello all arabidopsis developers,
+
+In the arabidopsis chip annotation packages (for an example see
+ath1121501.db
+<http://www.bioconductor.org/packages/2.3/data/annotation/html/ath1121501.db.html>),
+there are two mappings that show the relationship between the probe and
+the internal gene ID.  For some probes, there are multiple genes that
+map to a probe, and so for these cases, looking in the ACCNUM mapping
+will give you the answer "multiple" instead of an ID.  For these same
+multiple hit cases, looking in the MULTIHIT mapping will give several IDs.
+
+We would like to do away with MULTIHIT, and instead just have the ACCNUM
+return several IDs when several IDs are appropriate.  But we don't want
+to break anyones world by making changes without consulting you 1st.  So
+now is your chance to let us know if this change is unacceptable to
+you.  If you prefer that things stay the same, please speak up so we can
+know about it.
+
+Thanks in advance for your input,
+
+
+  Marc
+
+

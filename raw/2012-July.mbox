@@ -1,0 +1,1445 @@
+From M.van_iterson.HG at lumc.nl  Tue Jul  3 15:44:36 2012
+From: M.van_iterson.HG at lumc.nl (Maarten van Iterson)
+Date: Tue, 3 Jul 2012 15:44:36 +0200
+Subject: [Bioc-devel] Help on invariantset normalization function
+Message-ID: <1341323076.1669.30.camel@5-hkg-09-0007>
+
+Dear Sophie Lamarre, 
+
+You could have a look a the TurbNorm package. Which among other things
+was developed for normalization using a small subset of invariant
+probes. 
+
+Also see Oshlack et al pubmed id 17204140 or our paper that will appear
+soon in SAGMB van Iterson et al. Both discuss issue in normalization
+using a subset of the data.
+
+Kind regards, 
+Maarten
+ 
+-- 
+Maarten van Iterson
+Center for Human and Clinical Genetics
+Leiden University Medical Center (LUMC)
+Research Building, Einthovenweg 20 
+Room S-04-038
+Phone: 071-526 9439
+E-mail: M.van_iterson.HG at lumc.nl
+---------------
+Postal address:
+Postzone S-04-P
+Postbus 9600
+2300 RC Leiden 
+The Netherlands
+
+
+From juliane.siebourg at bsse.ethz.ch  Wed Jul  4 12:14:11 2012
+From: juliane.siebourg at bsse.ethz.ch (Siebourg  Juliane)
+Date: Wed, 4 Jul 2012 10:14:11 +0000
+Subject: [Bioc-devel] Bioconductor SVN
+Message-ID: <CC19E412.3590%juliane.siebourg@bsse.ethz.ch>
+
+Hi,
+
+I have a question regarding the Bioconductor source control repository. I was wondering whether I should upload the original sources or the built version of a package. I could not find the answer anywhere, and the reason I am asking this is that I get the following warning from the daily BioC 2.11 build/check report during the check:
+
+checking data for ASCII and uncompressed saves ... WARNING
+
+  Note: significantly better compression could be obtained
+        by using R CMD build --resave-data
+
+I currently commit the sources to the SVN before building them. If I build the package using the --resave-data option and then run R CMD check it, the warning does not show anymore. Should I rather commit the built version of the package to the svn, in oder to get rid of the warning, or is this nothing severe anyways?
+
+Thanks,
+
+Juliane
+
+
+From kasperdanielhansen at gmail.com  Wed Jul  4 16:22:08 2012
+From: kasperdanielhansen at gmail.com (Kasper Daniel Hansen)
+Date: Wed, 4 Jul 2012 10:22:08 -0400
+Subject: [Bioc-devel] Bioconductor SVN
+In-Reply-To: <CC19E412.3590%juliane.siebourg@bsse.ethz.ch>
+References: <CC19E412.3590%juliane.siebourg@bsse.ethz.ch>
+Message-ID: <CAC2h7uu2cTJZw6xzZZH8sumvCgG5oU3WdkHfsiCPF4GDJaJk5g@mail.gmail.com>
+
+You should use tools::resaveRdaFiles to fix this.  You do
+
+library(tools)
+save(object, file = "object.rda")
+resaveRdaFiles("object.rda")
+
+then the new rda file is saved as compressed as possible, and you can
+commit this rda file to the source repository.
+
+Kasper
+
+
+On Wed, Jul 4, 2012 at 6:14 AM, Siebourg  Juliane
+<juliane.siebourg at bsse.ethz.ch> wrote:
+> Hi,
+>
+> I have a question regarding the Bioconductor source control repository. I was wondering whether I should upload the original sources or the built version of a package. I could not find the answer anywhere, and the reason I am asking this is that I get the following warning from the daily BioC 2.11 build/check report during the check:
+>
+> checking data for ASCII and uncompressed saves ... WARNING
+>
+>   Note: significantly better compression could be obtained
+>         by using R CMD build --resave-data
+>
+> I currently commit the sources to the SVN before building them. If I build the package using the --resave-data option and then run R CMD check it, the warning does not show anymore. Should I rather commit the built version of the package to the svn, in oder to get rid of the warning, or is this nothing severe anyways?
+>
+> Thanks,
+>
+> Juliane
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From kasperdanielhansen at gmail.com  Fri Jul  6 17:51:14 2012
+From: kasperdanielhansen at gmail.com (Kasper Daniel Hansen)
+Date: Fri, 6 Jul 2012 11:51:14 -0400
+Subject: [Bioc-devel] findOverlaps and mclapply
+Message-ID: <CAC2h7uvm5MOG3NMEifzzZsbqNBfWe26_4Gkrvh3tbaAupa_6MQ@mail.gmail.com>
+
+This is about the findOverlaps method for (query = "GenomicRanges",
+subject = "GenomicRanges") in GenomicRanges.
+
+This function is really slow when the set of distinct seqnames is
+really big.  Example
+
+library(BSgenome.Amellifera.BeeBase.assembly4)
+Un <- Amellifera$GroupUn
+gr <- GRanges(seqnames = names(Un),
+              ranges= IRanges(start = 1 , width = width(Un)))
+length(gr)
+
+## Only 9244 in length
+
+system.time(findOverlaps(gr[1], gr))
+  user  system elapsed
+ 297.202   0.021 297.279
+
+Pretty slow for finding overlaps between a Granges with length 1 and a
+Granges with length roughly 10000.
+
+This is because the function essentially does an lapply over distinct
+seqnames.  I raised this issue a while ago, and Michael said that he
+might consider building an IntervalTree over both seqnames and ranges.
+ So this is really only an issue in organisms with many small contigs.
+ However, in the mean time, I would appreciate making the function
+mclapply-aware, which is pretty simple and at least makes the function
+roughly #cores faster.
+
+My fix (which I have been using for a while) adds
+  mc.cores = 1, mc.preschedule = TRUE
+to the specific method as well as
+
+        matchMatrix <- do.call(rbind, mclapply(commonSeqnames,
+                                               function(seqnm) {
+<SNIP>
+                                               }, mc.cores = mc.cores,
+mc.preschedule = mc.preschedule))
+
+inside the methods definition.  Also needed is making the package
+depend on parallel.
+
+I am raising this issue because I am submitting a package containing
+this fix, and I felt it might be good to propagate.  I can commit it
+to subversion as well, if there is any interest.
+
+Best,
+Kasper
+
+
+From lawrence.michael at gene.com  Fri Jul  6 22:33:02 2012
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Fri, 6 Jul 2012 13:33:02 -0700
+Subject: [Bioc-devel] findOverlaps and mclapply
+In-Reply-To: <CAC2h7uvm5MOG3NMEifzzZsbqNBfWe26_4Gkrvh3tbaAupa_6MQ@mail.gmail.com>
+References: <CAC2h7uvm5MOG3NMEifzzZsbqNBfWe26_4Gkrvh3tbaAupa_6MQ@mail.gmail.com>
+Message-ID: <CAOQ5Nyf5GYso+Jt4=MRWivxzVW=2mxBup=MxLdQm2EAjrmNthg@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120706/6f7eaa68/attachment.pl>
+
+From stvjc at channing.harvard.edu  Sat Jul  7 09:11:25 2012
+From: stvjc at channing.harvard.edu (Vincent Carey)
+Date: Sat, 7 Jul 2012 09:11:25 +0200
+Subject: [Bioc-devel] findOverlaps and mclapply
+In-Reply-To: <CAOQ5Nyf5GYso+Jt4=MRWivxzVW=2mxBup=MxLdQm2EAjrmNthg@mail.gmail.com>
+References: <CAC2h7uvm5MOG3NMEifzzZsbqNBfWe26_4Gkrvh3tbaAupa_6MQ@mail.gmail.com>
+	<CAOQ5Nyf5GYso+Jt4=MRWivxzVW=2mxBup=MxLdQm2EAjrmNthg@mail.gmail.com>
+Message-ID: <CAANT7+V=D3OSpROvx4Uy4ojOD-zfjysTdm_GQFX1ew64F-xhxA@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120707/1bfc1e3d/attachment.pl>
+
+From stvjc at channing.harvard.edu  Sat Jul  7 09:21:06 2012
+From: stvjc at channing.harvard.edu (Vincent Carey)
+Date: Sat, 7 Jul 2012 09:21:06 +0200
+Subject: [Bioc-devel] findOverlaps and mclapply
+In-Reply-To: <CAANT7+V=D3OSpROvx4Uy4ojOD-zfjysTdm_GQFX1ew64F-xhxA@mail.gmail.com>
+References: <CAC2h7uvm5MOG3NMEifzzZsbqNBfWe26_4Gkrvh3tbaAupa_6MQ@mail.gmail.com>
+	<CAOQ5Nyf5GYso+Jt4=MRWivxzVW=2mxBup=MxLdQm2EAjrmNthg@mail.gmail.com>
+	<CAANT7+V=D3OSpROvx4Uy4ojOD-zfjysTdm_GQFX1ew64F-xhxA@mail.gmail.com>
+Message-ID: <CAANT7+UvfqvCjZZZVuptDJ2dS6mbVqEw04hPfB-FnPRNfQ17xw@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120707/53b1a3e7/attachment.pl>
+
+From florian.hahne at novartis.com  Tue Jul 10 11:19:16 2012
+From: florian.hahne at novartis.com (Hahne, Florian)
+Date: Tue, 10 Jul 2012 09:19:16 +0000
+Subject: [Bioc-devel] runmean and NAs
+Message-ID: <CC21BFB8.5378%david.heard@novartis.com>
+
+Hi all,
+I was asking a while ago whether it would be possible for the runmean
+function to deal with NA values. Is that still on somebody's radar?
+Something similar to na.rm would be great. Haven't checked the source code
+for Rle_runsum yet, but ignoring Nas seems to be a straightforward thing
+to do. Currently I get
+
+> runmean(Rle(c(1:100, NA)), 10)
+Error in .Call2("Rle_runsum", x, as.integer(k), PACKAGE = "IRanges") :
+  some values are NA
+
+
+On a related note, why is this not working?
+> runmean(Rle(c(1:100, Inf)), 10)
+Error in .Call2("Rle_runsum", x, as.integer(k), PACKAGE = "IRanges")
+some values are NA, NaN, +/-Inf
+
+
+Shouldn't that simply return Inf for the respective vector elements?
+
+
+Thanks,
+Florian
+
+
+From vobencha at fhcrc.org  Tue Jul 10 22:31:38 2012
+From: vobencha at fhcrc.org (Valerie Obenchain)
+Date: Tue, 10 Jul 2012 13:31:38 -0700
+Subject: [Bioc-devel] runmean and NAs
+In-Reply-To: <CC21BFB8.5378%david.heard@novartis.com>
+References: <CC21BFB8.5378%david.heard@novartis.com>
+Message-ID: <4FFC912A.3090909@fhcrc.org>
+
+Hi Florian,
+
+It has been on my TODO and II've just started working on this.
+
+On 07/10/2012 02:19 AM, Hahne, Florian wrote:
+> Hi all,
+> I was asking a while ago whether it would be possible for the runmean
+> function to deal with NA values. Is that still on somebody's radar?
+> Something similar to na.rm would be great. Haven't checked the source code
+> for Rle_runsum yet, but ignoring Nas seems to be a straightforward thing
+> to do. Currently I get
+>
+>> runmean(Rle(c(1:100, NA)), 10)
+> Error in .Call2("Rle_runsum", x, as.integer(k), PACKAGE = "IRanges") :
+>    some values are NA
+>
+>
+> On a related note, why is this not working?
+>> runmean(Rle(c(1:100, Inf)), 10)
+> Error in .Call2("Rle_runsum", x, as.integer(k), PACKAGE = "IRanges")
+> some values are NA, NaN, +/-Inf
+>
+>
+> Shouldn't that simply return Inf for the respective vector elements?
+
+Currently no. The Inf creates a numeric Rle
+
+ > Rle(c(1:100, Inf))
+'numeric' Rle of length 101 with 101 runs
+   Lengths:   1   1   1   1   1   1   1   1 ...   1   1   1   1   1   
+1   1   1
+   Values :   1   2   3   4   5   6   7   8 ...  94  95  96  97  98  99 
+100 Inf
+
+so the code executed is Rle_real_runsum which has this check,
+
+// calculate stat
+if (i == 0) {
+     if (!R_FINITE(*curr_value))
+         error("some values are NA, NaN, +/-Inf");
+
+While I am in there I will address this Inf issue too.
+
+Valerie
+>
+> Thanks,
+> Florian
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From aheider at trm.uni-leipzig.de  Wed Jul 11 10:01:11 2012
+From: aheider at trm.uni-leipzig.de (Andreas Heider)
+Date: Wed, 11 Jul 2012 10:01:11 +0200
+Subject: [Bioc-devel] virtualArray problems reported by the "Build/check
+ report" for BioC 2.10
+In-Reply-To: <20120711061112.253FF15F567@lamb2.fhcrc.org>
+References: <20120711061112.253FF15F567@lamb2.fhcrc.org>
+Message-ID: <CANHV6YADSkJ19mifg5XopMMjJvdA4cY58OVBKEj5Yb6j5H8AOQ@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120711/db0806fe/attachment.pl>
+
+From aheider at trm.uni-leipzig.de  Wed Jul 11 10:07:12 2012
+From: aheider at trm.uni-leipzig.de (Andreas Heider)
+Date: Wed, 11 Jul 2012 10:07:12 +0200
+Subject: [Bioc-devel] virtualArray problems reported by the "Build/check
+ report" for BioC 2.10
+In-Reply-To: <CANHV6YADSkJ19mifg5XopMMjJvdA4cY58OVBKEj5Yb6j5H8AOQ@mail.gmail.com>
+References: <20120711061112.253FF15F567@lamb2.fhcrc.org>
+	<CANHV6YADSkJ19mifg5XopMMjJvdA4cY58OVBKEj5Yb6j5H8AOQ@mail.gmail.com>
+Message-ID: <CANHV6YAKx2sTpk9Smd3TuTC4VwG44X8KO6uwKLWgkEvcV-s9Yg@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120711/2a7d0780/attachment.pl>
+
+From florian.hahne at novartis.com  Wed Jul 11 12:17:28 2012
+From: florian.hahne at novartis.com (Hahne, Florian)
+Date: Wed, 11 Jul 2012 10:17:28 +0000
+Subject: [Bioc-devel] runmean and NAs
+In-Reply-To: <4FFC912A.3090909@fhcrc.org>
+Message-ID: <CC231F44.5485%florian.hahne@novartis.com>
+
+Great, thanks a bunch!
+-- 
+
+
+
+
+
+
+On 7/10/12 10:31 PM, "Valerie Obenchain" <vobencha at fhcrc.org> wrote:
+
+>Hi Florian,
+>
+>It has been on my TODO and II've just started working on this.
+>
+>On 07/10/2012 02:19 AM, Hahne, Florian wrote:
+>> Hi all,
+>> I was asking a while ago whether it would be possible for the runmean
+>> function to deal with NA values. Is that still on somebody's radar?
+>> Something similar to na.rm would be great. Haven't checked the source
+>>code
+>> for Rle_runsum yet, but ignoring Nas seems to be a straightforward thing
+>> to do. Currently I get
+>>
+>>> runmean(Rle(c(1:100, NA)), 10)
+>> Error in .Call2("Rle_runsum", x, as.integer(k), PACKAGE = "IRanges") :
+>>    some values are NA
+>>
+>>
+>> On a related note, why is this not working?
+>>> runmean(Rle(c(1:100, Inf)), 10)
+>> Error in .Call2("Rle_runsum", x, as.integer(k), PACKAGE = "IRanges")
+>> some values are NA, NaN, +/-Inf
+>>
+>>
+>> Shouldn't that simply return Inf for the respective vector elements?
+>
+>Currently no. The Inf creates a numeric Rle
+>
+> > Rle(c(1:100, Inf))
+>'numeric' Rle of length 101 with 101 runs
+>   Lengths:   1   1   1   1   1   1   1   1 ...   1   1   1   1   1
+>1   1   1
+>   Values :   1   2   3   4   5   6   7   8 ...  94  95  96  97  98  99
+>100 Inf
+>
+>so the code executed is Rle_real_runsum which has this check,
+>
+>// calculate stat
+>if (i == 0) {
+>     if (!R_FINITE(*curr_value))
+>         error("some values are NA, NaN, +/-Inf");
+>
+>While I am in there I will address this Inf issue too.
+>
+>Valerie
+>>
+>> Thanks,
+>> Florian
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From laurent.gatto at gmail.com  Wed Jul 11 12:30:19 2012
+From: laurent.gatto at gmail.com (Laurent Gatto)
+Date: Wed, 11 Jul 2012 11:30:19 +0100
+Subject: [Bioc-devel] commit changes to data packages
+Message-ID: <CA+uNOzhxdUw2HSoYYDgEUUgup9aGaGFeysYquKvQ-LQ8yxkxfA@mail.gmail.com>
+
+Dear all,
+
+I have checked a complete working copy of a data package out, as
+described in [1]. After updating infrastructure files (DESCRIPTION and
+NEWS) and the actual data, svn status tells me the following
+?       data
+M       DESCRIPTION
+M       NEWS
+?       inst/extdata
+
+Should I 'svn add data inst/data' and then commit, as usual, or is
+there an alternative way to explicitly commit  data files to the
+external data_store separately?
+
+Thank you in advance,
+
+Best wishes,
+
+Laurent
+
+
+[1] http://www.bioconductor.org/developers/source-control/
+
+
+From stvjc at channing.harvard.edu  Wed Jul 11 12:39:12 2012
+From: stvjc at channing.harvard.edu (Vincent Carey)
+Date: Wed, 11 Jul 2012 12:39:12 +0200
+Subject: [Bioc-devel] commit changes to data packages
+In-Reply-To: <CA+uNOzhxdUw2HSoYYDgEUUgup9aGaGFeysYquKvQ-LQ8yxkxfA@mail.gmail.com>
+References: <CA+uNOzhxdUw2HSoYYDgEUUgup9aGaGFeysYquKvQ-LQ8yxkxfA@mail.gmail.com>
+Message-ID: <CAANT7+UsVTPLUiy=AnnBg+fysBwd8ovrp8fFU0WdVuEC4Cwxvg@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120711/2c376456/attachment.pl>
+
+From stvjc at channing.harvard.edu  Wed Jul 11 12:42:14 2012
+From: stvjc at channing.harvard.edu (Vincent Carey)
+Date: Wed, 11 Jul 2012 12:42:14 +0200
+Subject: [Bioc-devel] commit changes to data packages
+In-Reply-To: <CAANT7+UsVTPLUiy=AnnBg+fysBwd8ovrp8fFU0WdVuEC4Cwxvg@mail.gmail.com>
+References: <CA+uNOzhxdUw2HSoYYDgEUUgup9aGaGFeysYquKvQ-LQ8yxkxfA@mail.gmail.com>
+	<CAANT7+UsVTPLUiy=AnnBg+fysBwd8ovrp8fFU0WdVuEC4Cwxvg@mail.gmail.com>
+Message-ID: <CAANT7+WzPn5af5t3yyO2jCASj_0FjGMDhBP2CNukAC7ejOOEWg@mail.gmail.com>
+
+README.txt should be accessible in experiment/pkgs folder; attached if not
+(and if not scrubbed...) ... use  a file called external_data_store.txt in
+package top folder to specify which pieces come out of separate data_store
+svn folder.
+
+On Wed, Jul 11, 2012 at 12:39 PM, Vincent Carey
+<stvjc at channing.harvard.edu>wrote:
+
+> alternative way.  i will find the doc.  basically there is a data_store
+> folder parallel to pkgs and the add_data.py utility works with that
+> so that software and doc can be maintained separately from voluminous data.
+>
+>
+> On Wed, Jul 11, 2012 at 12:30 PM, Laurent Gatto <laurent.gatto at gmail.com>wrote:
+>
+>> Dear all,
+>>
+>> I have checked a complete working copy of a data package out, as
+>> described in [1]. After updating infrastructure files (DESCRIPTION and
+>> NEWS) and the actual data, svn status tells me the following
+>> ?       data
+>> M       DESCRIPTION
+>> M       NEWS
+>> ?       inst/extdata
+>>
+>> Should I 'svn add data inst/data' and then commit, as usual, or is
+>> there an alternative way to explicitly commit  data files to the
+>> external data_store separately?
+>>
+>> Thank you in advance,
+>>
+>> Best wishes,
+>>
+>> Laurent
+>>
+>>
+>> [1] http://www.bioconductor.org/developers/source-control/
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>
+>
+-------------- next part --------------
+========================================
+ BioC Experiment Data Package SVN Repos
+========================================
+
+:Date: 2006-08-10
+:Author: S. Falcon
+:svn URL: https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/pkgs
+
+
+Background
+==========
+
+This svn directory contains BioC experiment data packages.  Data
+packages contain potentially large binary files that do not change
+often.  Most updates to these packages involve the package
+infrastructure files.
+
+Obtaining a working copy of a data package over a slow connection can
+be frustrating, especially when all that is needed is the
+infrastructure files and not the actual data.  We have implemented a
+scheme that allows separate checkout of infrastructure files and data
+files.  This document describes the scheme and provides instructions
+for checkout and update of existing data packages as well as for
+adding new packages.
+
+
+How to Create an Infrastructure-Only Workingcopy
+================================================
+
+You can obtain a checkout of all experiment data package
+infrastructure files as follows::
+
+    svn checkout \
+      https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/pkgs
+
+To obtain the files for a particular package, say ``ALL``::
+
+    svn checkout \
+      https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/pkgs/ALL
+
+If you want to preview what is available, you might try the
+following::
+
+    # get the top-level scripts, but don't recurse into subdirs        
+    svn checkout -N \
+      https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/pkgs
+
+    # see what is there
+    svn ls https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/pkgs
+
+    # get a particular package's infrastructure files
+    cd pkgs
+    svn up ALL
+    # see next section for getting complete working copy w/ data
+
+
+How to Create a Complete Workingcopy
+====================================
+
+First create a workingcopy of the infrastructure files as described
+above.
+
+Next use the helper script ``add_data.py`` (you will need Python).  It
+is located here:
+
+    https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/pkgs/add_data.py
+
+Here's a complete example for ``ALL``::
+
+    svn checkout \
+      https://hedgehog.fhcrc.org/bioc-data/trunk/experiment/pkgs/ALL
+
+    python add_data.py ALL
+
+This will add the big data directories (usually data/, but sometimes
+also dirs under inst/) to your working copy.  Usually, the svn:ignore
+property has been set so that you won't accidentally add these dirs
+when working with the package, but please take care anyway.
+
+
+A note about committing changes to the data
+-------------------------------------------
+
+If you want to modify the actual data, cd into the appropriate dir
+after having run add_data.py and do your commit from there.  The
+script adds a full working copy inside the infrastructure working
+copy.
+
+
+How to Add a New Data Package
+=============================
+
+1. Add the infrastructure files under ``pkgs``.
+
+2. Add any large data directories to ../data_store/PKGNAME/.  For
+   example, if there is large data in PKGNAME/data and
+   PKGNAME/inst/extdata, you would add PKGNAME/data and
+   PKGNAME/inst/extdata to ../data_store.
+
+3. Create a file 'external_data_store.txt' listing each dir that is
+   stored externally (each on a separate line).  Contining the example
+   above, the file would contain::
+
+        data
+        inst/extdata
+
+   This should go in the top-level of the package dir.
+
+4. Add svn ignore properties.  Continuing the example::
+
+       cd PKGNAME
+       svn propset svn:ignore '*' ./data/ ## property 'svn:ignore' set on '.'
+       	   	   	      	  	  ## in the data folder 
+       svn propset svn:ignore '*' ./inst/
+
+       or (this might not work anymore)
+       svn propedit svn:ignore .   ## add 'data' here
+       svn propedit svn:ignore inst  ## add 'extdata' here
+
+5. Commit.
+
+
+Details of Storage Scheme
+=========================
+
+Experiment data package infrastructure files live in
+``experiment/pkgs``.  Package subdirectories that contain large files
+are stored under ``experiment/data_store``.  There is no mechanism to
+support separate storage of individual files.
+
+Here is an example of how data for the ``davidTiling`` package is
+stored::
+
+    experiment/pkgs/davidTiling/
+                                 DESCRIPTION
+                                 NAMESPACE
+                                 R/
+                                 external_data_store.txt
+                                 inst/
+                                 man/
+
+    experiment/data_store/davidTiling/
+                                 data/
+                                 inst/
+                                      celfiles/
+                                      website/
+
+The ``davidTiling`` package contains large data in the ``data/``,
+``inst/celfiles/``, and ``inst/website/`` subdirectories.  As you can
+see, each of these is stored separately from the package
+infrastructure files.  The file ``external_data_store.txt`` lists the
+location of the externally stored data.  Here is the contents for
+``davidTiling``::
+
+    data
+    inst/website
+    inst/celfiles
+
+To create a complete directory containing both infrastructure and
+data, one first does a checkout of the infrastructure and then does a
+checkout of each individual externally stored subdir.  This can be
+done inside the infrastructure working copy.  There is a helper script
+to automate the required svn commands.  One option that might be worth
+adding to the script is to do an export instead of checkout.
+Additionally, the ``svn:ignore`` property has been set in the
+infrastructure dir to help prevent folks from accidentally adding the
+external data to the infrastructure dir itself.
+
+From laurent.gatto at gmail.com  Wed Jul 11 13:55:45 2012
+From: laurent.gatto at gmail.com (Laurent Gatto)
+Date: Wed, 11 Jul 2012 12:55:45 +0100
+Subject: [Bioc-devel] commit changes to data packages
+In-Reply-To: <CAANT7+WzPn5af5t3yyO2jCASj_0FjGMDhBP2CNukAC7ejOOEWg@mail.gmail.com>
+References: <CA+uNOzhxdUw2HSoYYDgEUUgup9aGaGFeysYquKvQ-LQ8yxkxfA@mail.gmail.com>
+	<CAANT7+UsVTPLUiy=AnnBg+fysBwd8ovrp8fFU0WdVuEC4Cwxvg@mail.gmail.com>
+	<CAANT7+WzPn5af5t3yyO2jCASj_0FjGMDhBP2CNukAC7ejOOEWg@mail.gmail.com>
+Message-ID: <CA+uNOzi4VPPwBeFarGrwAouL0c9hSePvsZhJzUHRRZMQdev3tQ@mail.gmail.com>
+
+Ok, thanks for the clarification.
+
+Laurent
+
+On 11 July 2012 11:42, Vincent Carey <stvjc at channing.harvard.edu> wrote:
+> README.txt should be accessible in experiment/pkgs folder; attached if not
+> (and if not scrubbed...) ... use  a file called external_data_store.txt in
+> package top folder to specify which pieces come out of separate data_store
+> svn folder.
+>
+>
+> On Wed, Jul 11, 2012 at 12:39 PM, Vincent Carey <stvjc at channing.harvard.edu>
+> wrote:
+>>
+>> alternative way.  i will find the doc.  basically there is a data_store
+>> folder parallel to pkgs and the add_data.py utility works with that
+>> so that software and doc can be maintained separately from voluminous
+>> data.
+>>
+>>
+>> On Wed, Jul 11, 2012 at 12:30 PM, Laurent Gatto <laurent.gatto at gmail.com>
+>> wrote:
+>>>
+>>> Dear all,
+>>>
+>>> I have checked a complete working copy of a data package out, as
+>>> described in [1]. After updating infrastructure files (DESCRIPTION and
+>>> NEWS) and the actual data, svn status tells me the following
+>>> ?       data
+>>> M       DESCRIPTION
+>>> M       NEWS
+>>> ?       inst/extdata
+>>>
+>>> Should I 'svn add data inst/data' and then commit, as usual, or is
+>>> there an alternative way to explicitly commit  data files to the
+>>> external data_store separately?
+>>>
+>>> Thank you in advance,
+>>>
+>>> Best wishes,
+>>>
+>>> Laurent
+>>>
+>>>
+>>> [1] http://www.bioconductor.org/developers/source-control/
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>
+
+
+From dtenenba at fhcrc.org  Wed Jul 11 18:21:48 2012
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Wed, 11 Jul 2012 09:21:48 -0700
+Subject: [Bioc-devel] commit changes to data packages
+In-Reply-To: <30015_1342002655_4FFD55DE_30015_18249_1_CA+uNOzhxdUw2HSoYYDgEUUgup9aGaGFeysYquKvQ-LQ8yxkxfA@mail.gmail.com>
+References: <30015_1342002655_4FFD55DE_30015_18249_1_CA+uNOzhxdUw2HSoYYDgEUUgup9aGaGFeysYquKvQ-LQ8yxkxfA@mail.gmail.com>
+Message-ID: <CAF42j21p3VGsp223VJQDN8JmPbhGtCjrDHqGyq7mViRXUpszeg@mail.gmail.com>
+
+On Wed, Jul 11, 2012 at 3:30 AM, Laurent Gatto <laurent.gatto at gmail.com> wrote:
+> Dear all,
+>
+> I have checked a complete working copy of a data package out, as
+> described in [1]. After updating infrastructure files (DESCRIPTION and
+> NEWS) and the actual data, svn status tells me the following
+> ?       data
+> M       DESCRIPTION
+> M       NEWS
+> ?       inst/extdata
+>
+> Should I 'svn add data inst/data' and then commit, as usual, or is
+> there an alternative way to explicitly commit  data files to the
+> external data_store separately?
+>
+
+Yes, cd to data and then do your commit there.
+The svn status above seems to indicate that 'data' is not part of svn,
+but actually it is. It is part of a different svn repository than your
+current directory.
+
+Dan
+
+
+
+> Thank you in advance,
+>
+> Best wishes,
+>
+> Laurent
+>
+>
+> [1] http://www.bioconductor.org/developers/source-control/
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From dtenenba at fhcrc.org  Wed Jul 11 18:31:46 2012
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Wed, 11 Jul 2012 09:31:46 -0700
+Subject: [Bioc-devel] virtualArray problems reported by the "Build/check
+ report" for BioC 2.10
+In-Reply-To: <30015_1341994088_4FFD3468_30015_16620_1_CANHV6YAKx2sTpk9Smd3TuTC4VwG44X8KO6uwKLWgkEvcV-s9Yg@mail.gmail.com>
+References: <20120711061112.253FF15F567@lamb2.fhcrc.org>
+	<CANHV6YADSkJ19mifg5XopMMjJvdA4cY58OVBKEj5Yb6j5H8AOQ@mail.gmail.com>
+	<30015_1341994088_4FFD3468_30015_16620_1_CANHV6YAKx2sTpk9Smd3TuTC4VwG44X8KO6uwKLWgkEvcV-s9Yg@mail.gmail.com>
+Message-ID: <CAF42j20RiN+CLr8F+HDT6zk4S4TuyyGAgoB5kxiivQ3y8U5Ayw@mail.gmail.com>
+
+On Wed, Jul 11, 2012 at 1:07 AM, Andreas Heider
+<aheider at trm.uni-leipzig.de> wrote:
+> Oh, I'm sorry!
+> I just saw, that GEOquery itself failed to built!
+>
+
+Yes, and this looks to be due to continuing problems with NCBI/GEO.
+This has been reported before
+(https://stat.ethz.ch/pipermail/bioconductor/2012-February/043247.html)
+and the suggestion was to wait a while; however this has been going on
+for a couple of days, so maybe contacting NCBI would be constructive.
+
+Dan
+
+
+> 2012/7/11 Andreas Heider <aheider at trm.uni-leipzig.de>
+>
+>> Dear mailing list,
+>> I recieved the following error from compilaltion on lamb:
+>>
+>> "Error in function (type, msg, asError = TRUE)  :
+>>   Server denied you to change to the given directory
+>> Execution halted"
+>>
+>> Seems, that the compilation stops at chunk 3 of the vignette, however, I did not do any changes to my code in the last weeks.
+>> The chunk uses the GEOquery package, were there any fundamental changes to that package?
+>>
+>>
+>> Thanks,
+>> Andreas
+>>
+>>
+>>
+>> 2012/7/11 <BBS-noreply at bioconductor.org>
+>>
+>> [This is an automatically generated email. Please don't reply.]
+>>>
+>>> Hi virtualArray maintainer,
+>>>
+>>> According to the "Build/check report" for BioC 2.10,
+>>> the virtualArray package has the following problem(s):
+>>>
+>>>   o ERROR for 'R CMD build' on lamb2. See the details here:
+>>>
+>>> http://bioconductor.org/checkResults/2.10/bioc-LATEST/virtualArray/lamb2-buildsrc.html
+>>>
+>>> Please take the time to address this then use your Subversion account
+>>> when you are ready to commit a fix to your package.
+>>>
+>>> Notes:
+>>>
+>>>   * This was the status of your package at the time this email was sent
+>>> to you.
+>>>     Given that the online report is updated daily (in normal conditions)
+>>> you
+>>>     could see something different when you visit the URL(s) above,
+>>> especially if
+>>>     you do so several days after you received this email.
+>>>
+>>>   * It is possible that the problems reported in this report are false
+>>> positives,
+>>>     either because another package (from CRAN or Bioconductor) breaks your
+>>>     package (if yours depends on it) or because of a Build System problem.
+>>>     If this is the case, then you can ignore this email.
+>>>
+>>>   * Please check the report again 24h after you've committed your changes
+>>> to the
+>>>     package and make sure that all the problems have gone.
+>>>
+>>>   * If you have questions about this report or need help with the
+>>>     maintenance of your package, please use the Bioc-devel mailing list:
+>>>
+>>>       http://bioconductor.org/help/mailing-list/
+>>>
+>>>     (all package maintainers are requested to subscribe to this list)
+>>>
+>>> Thanks for contributing to the Bioconductor project!
+>>>
+>>
+>>
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From dtenenba at fhcrc.org  Wed Jul 11 18:39:52 2012
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Wed, 11 Jul 2012 09:39:52 -0700
+Subject: [Bioc-devel] commit changes to data packages
+In-Reply-To: <CAF42j21p3VGsp223VJQDN8JmPbhGtCjrDHqGyq7mViRXUpszeg@mail.gmail.com>
+References: <30015_1342002655_4FFD55DE_30015_18249_1_CA+uNOzhxdUw2HSoYYDgEUUgup9aGaGFeysYquKvQ-LQ8yxkxfA@mail.gmail.com>
+	<CAF42j21p3VGsp223VJQDN8JmPbhGtCjrDHqGyq7mViRXUpszeg@mail.gmail.com>
+Message-ID: <CAF42j21NQr0RGvj9zMtUA=0UBxoQOtXAcG91_=YFnbk8TSzX_g@mail.gmail.com>
+
+On Wed, Jul 11, 2012 at 9:21 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:
+> On Wed, Jul 11, 2012 at 3:30 AM, Laurent Gatto <laurent.gatto at gmail.com> wrote:
+>> Dear all,
+>>
+>> I have checked a complete working copy of a data package out, as
+>> described in [1]. After updating infrastructure files (DESCRIPTION and
+>> NEWS) and the actual data, svn status tells me the following
+>> ?       data
+>> M       DESCRIPTION
+>> M       NEWS
+>> ?       inst/extdata
+>>
+>> Should I 'svn add data inst/data' and then commit, as usual, or is
+>> there an alternative way to explicitly commit  data files to the
+>> external data_store separately?
+>>
+>
+> Yes, cd to data and then do your commit there.
+> The svn status above seems to indicate that 'data' is not part of svn,
+> but actually it is. It is part of a different svn repository than your
+> current directory.
+>
+
+Just to clarify, do NOT 'svn add data inst/data'.
+Instead, cd to those directories and do the commit there. 'svn info'
+will show you that data and inst/data are working copies from a
+repository that is separate from your package's top-level directory.
+Sorry for any confusion.
+Dan
+
+
+
+> Dan
+>
+>
+>
+>> Thank you in advance,
+>>
+>> Best wishes,
+>>
+>> Laurent
+>>
+>>
+>> [1] http://www.bioconductor.org/developers/source-control/
+>>
+>> _______________________________________________
+>> Bioc-devel at r-project.org mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From mtmorgan at fhcrc.org  Fri Jul 13 15:41:30 2012
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Fri, 13 Jul 2012 06:41:30 -0700
+Subject: [Bioc-devel] Bioc 2012 Schedule
+Message-ID: <5000258A.4020901@fhcrc.org>
+
+Bioconductors!
+
+Tentative Bioc 2012 Speaker and Lab schedules are posted.
+
+   https://secure.bioconductor.org/BioC2012/
+
+This is a really exciting line-up, with the workshops in particular 
+providing very broad training opportunities.
+
+Hope to see you at Bioc 2012!
+
+Martin
+-- 
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From S.Berri at leeds.ac.uk  Mon Jul 16 16:20:39 2012
+From: S.Berri at leeds.ac.uk (Stefano Berri)
+Date: Mon, 16 Jul 2012 15:20:39 +0100
+Subject: [Bioc-devel] can't reproduce build error
+In-Reply-To: <5000258A.4020901@fhcrc.org>
+Message-ID: <CC29E1C7.4554%s.berri@leeds.ac.uk>
+
+Hi.
+
+I have discovered that the last submission of the package I maintain
+(CNAnorm) could not build properly and returned error.
+
+The problem is that it builds nice on my machine (MacOSX 10.6.8) with R
+2.15.1
+
+here the error
+
+http://bioconductor.org/checkResults/devel/bioc-LATEST/CNAnorm/perceval-buil
+dsrc.html
+
+Also, the error seem to have something to do with FRORTAN code, which I have
+not touched (as far as I know)
+It might be that the problem is a tab instead of a space, but I'd like to be
+able to reproduce the error first.
+
+Any suggestion?
+
+Thanks
+
+
+On 7/13/12 2:41 PM, "Martin Morgan" <mtmorgan at fhcrc.org> wrote:
+
+> Bioconductors!
+> 
+> Tentative Bioc 2012 Speaker and Lab schedules are posted.
+> 
+>    https://secure.bioconductor.org/BioC2012/
+> 
+> This is a really exciting line-up, with the workshops in particular
+> providing very broad training opportunities.
+> 
+> Hope to see you at Bioc 2012!
+> 
+> Martin
+
+
+From dtenenba at fhcrc.org  Mon Jul 16 16:36:48 2012
+From: dtenenba at fhcrc.org (Dan Tenenbaum)
+Date: Mon, 16 Jul 2012 07:36:48 -0700
+Subject: [Bioc-devel] can't reproduce build error
+In-Reply-To: <28237_1342448515_50042382_28237_3484_1_CC29E1C7.4554%s.berri@leeds.ac.uk>
+References: <5000258A.4020901@fhcrc.org>
+	<28237_1342448515_50042382_28237_3484_1_CC29E1C7.4554%s.berri@leeds.ac.uk>
+Message-ID: <CAF42j23P=gsDFaKDqytt8OMS69_3Oj7DgMLKWdJS+=D=gUgBBw@mail.gmail.com>
+
+On Mon, Jul 16, 2012 at 7:20 AM, Stefano Berri <S.Berri at leeds.ac.uk> wrote:
+> Hi.
+>
+> I have discovered that the last submission of the package I maintain
+> (CNAnorm) could not build properly and returned error.
+>
+> The problem is that it builds nice on my machine (MacOSX 10.6.8) with R
+> 2.15.1
+>
+> here the error
+>
+> http://bioconductor.org/checkResults/devel/bioc-LATEST/CNAnorm/perceval-buil
+> dsrc.html
+>
+> Also, the error seem to have something to do with FRORTAN code, which I have
+> not touched (as far as I know)
+> It might be that the problem is a tab instead of a space, but I'd like to be
+> able to reproduce the error first.
+
+The error is tha a file seems to be missing. Do 'svn st' and make sure
+everything is checked in. Looks like maybe
+R/makeDefaultGraphParamteres.R is not checked in.
+
+Dan
+
+>
+> Any suggestion?
+>
+> Thanks
+>
+>
+> On 7/13/12 2:41 PM, "Martin Morgan" <mtmorgan at fhcrc.org> wrote:
+>
+>> Bioconductors!
+>>
+>> Tentative Bioc 2012 Speaker and Lab schedules are posted.
+>>
+>>    https://secure.bioconductor.org/BioC2012/
+>>
+>> This is a really exciting line-up, with the workshops in particular
+>> providing very broad training opportunities.
+>>
+>> Hope to see you at Bioc 2012!
+>>
+>> Martin
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From mailinglist.honeypot at gmail.com  Thu Jul 19 23:33:10 2012
+From: mailinglist.honeypot at gmail.com (Steve Lianoglou)
+Date: Thu, 19 Jul 2012 17:33:10 -0400
+Subject: [Bioc-devel] Some suggestion DEXSeq
+Message-ID: <CAHA9McNjfhcC3kmdx659gbN330Xe4r77DgGFdfivq5iXYh2W8w@mail.gmail.com>
+
+Hi,
+
+=== 1: set rownames() on the countData object in `newExonCountSet` ===
+I've built my own ExonCountSet by stitching the required pieces
+together for a successful call to `newExonCountSet`.
+
+Everything has been fine and dandy up until a call to
+`estimatelog2FoldChanges`. At some point during its run, I am greeted
+with:
+
+Error in toadd[rownames(alleffects), colnames(alleffects)] <- alleffects :
+  subscript out of bounds
+
+So I've been stepping through this function to debug and I realize
+that the problem is that my original `countData` matrix I passed into
+`newExonCountSet` didn't have its rownames set, and it appears that
+w/in the `estimatelog2FoldChanges` function, you expect it to via a
+call to:
+
+rownames(toadd) <- featureNames(ecs)
+
+So, would it be a good idea to add some code in `newExonCountSet` to
+fix this from the get go? Eg. if `is.null(rownames(countData))`, then
+`rownames(countData) <- paste(geneIDs, exonIDs, sep=":")`
+
+And add a check in the validity function for an ExonCountSet that
+ensures `all(rownames(countData) == paste(geneIDs, exonIDs, sep=":"))`
+
+=== 2: Guard against user error in exon ID names ===
+
+As I constructed my ExounCountSet, I made a mistake in my `exonIDs`
+that took me a while to figure out. I essentially did A Dumb Thing
+(tm) and somehow magically had some duplicate exonIDs for the same
+geneIDs.
+
+Perhaps another check in ExonCountSet validity function to ensure that:
+
+`all(tapply(eid, gid, function(x) length(x) == length(unique(x))))`
+
+Thanks,
+-steve
+
+-- 
+Steve Lianoglou
+Graduate Student: Computational Systems Biology
+ | Memorial Sloan-Kettering Cancer Center
+ | Weill Medical College of Cornell University
+Contact Info: http://cbio.mskcc.org/~lianos/contact
+
+
+From alejandro.reyes at embl.de  Fri Jul 20 13:23:24 2012
+From: alejandro.reyes at embl.de (Alejandro Reyes)
+Date: Fri, 20 Jul 2012 13:23:24 +0200
+Subject: [Bioc-devel] Some suggestion DEXSeq
+In-Reply-To: <CAHA9McNjfhcC3kmdx659gbN330Xe4r77DgGFdfivq5iXYh2W8w@mail.gmail.com>
+References: <CAHA9McNjfhcC3kmdx659gbN330Xe4r77DgGFdfivq5iXYh2W8w@mail.gmail.com>
+Message-ID: <50093FAC.1040308@embl.de>
+
+Hi Steve,
+
+Thanks for your email and advice, I added the next code in newExonCountSet:
+
+rownames(countData) <- paste(geneIDs, exonIDs, sep=":")
+
+if( any( duplicated(rownames(countData) ) ) ) {
+    stop("The geneIDs or exonIDs are not unique")
+}
+
+And in the validity function:
+
+if( ! all(featureNames(object) == paste(geneIDs(object), 
+exonIDs(object), sep=":") ) )
+    return( "The featureNames do not match with the geneIDs:exonIDs" )
+if( ! all(rownames( counts(object) ) == featureNames(object) ) )
+    return( "The rownames of the count matrix do not coincide with the 
+featureNames" )
+if( ! all(rownames( fData( object ) ) == featureNames( object ) ) )
+    return( "The rownames of the featureData do not coincide with the 
+featureNames" )
+
+I think this would handle any possible problem!
+Thanks again,
+
+Alejandro
+
+
+> Hi,
+>
+> === 1: set rownames() on the countData object in `newExonCountSet` ===
+> I've built my own ExonCountSet by stitching the required pieces
+> together for a successful call to `newExonCountSet`.
+>
+> Everything has been fine and dandy up until a call to
+> `estimatelog2FoldChanges`. At some point during its run, I am greeted
+> with:
+>
+> Error in toadd[rownames(alleffects), colnames(alleffects)]<- alleffects :
+>    subscript out of bounds
+>
+> So I've been stepping through this function to debug and I realize
+> that the problem is that my original `countData` matrix I passed into
+> `newExonCountSet` didn't have its rownames set, and it appears that
+> w/in the `estimatelog2FoldChanges` function, you expect it to via a
+> call to:
+>
+> rownames(toadd)<- featureNames(ecs)
+>
+> So, would it be a good idea to add some code in `newExonCountSet` to
+> fix this from the get go? Eg. if `is.null(rownames(countData))`, then
+> `rownames(countData)<- paste(geneIDs, exonIDs, sep=":")`
+>
+> And add a check in the validity function for an ExonCountSet that
+> ensures `all(rownames(countData) == paste(geneIDs, exonIDs, sep=":"))`
+>
+> === 2: Guard against user error in exon ID names ===
+>
+> As I constructed my ExounCountSet, I made a mistake in my `exonIDs`
+> that took me a while to figure out. I essentially did A Dumb Thing
+> (tm) and somehow magically had some duplicate exonIDs for the same
+> geneIDs.
+>
+> Perhaps another check in ExonCountSet validity function to ensure that:
+>
+> `all(tapply(eid, gid, function(x) length(x) == length(unique(x))))`
+>
+> Thanks,
+> -steve
+>
+
+
+From mailinglist.honeypot at gmail.com  Fri Jul 20 15:13:41 2012
+From: mailinglist.honeypot at gmail.com (Steve Lianoglou)
+Date: Fri, 20 Jul 2012 09:13:41 -0400
+Subject: [Bioc-devel] Some suggestion DEXSeq
+In-Reply-To: <50093FAC.1040308@embl.de>
+References: <CAHA9McNjfhcC3kmdx659gbN330Xe4r77DgGFdfivq5iXYh2W8w@mail.gmail.com>
+	<50093FAC.1040308@embl.de>
+Message-ID: <CAHA9McNAiviOZuXkeBhfgYYEwpdahBoQJ_f5hXBDG6LKoVvAgw@mail.gmail.com>
+
+Hi Alejandro,
+
+Thanks for the quick response.
+
+Perhaps you might like to add your
+`any(duplicated(rownames(countData)))` check to the validty function
+as well, since, I guess technically that's what it is?
+
+Or not ... up to you, obviously.
+
+Thanks again!
+
+-steve
+
+On Fri, Jul 20, 2012 at 7:23 AM, Alejandro Reyes
+<alejandro.reyes at embl.de> wrote:
+> Hi Steve,
+>
+> Thanks for your email and advice, I added the next code in newExonCountSet:
+>
+>
+> rownames(countData) <- paste(geneIDs, exonIDs, sep=":")
+>
+> if( any( duplicated(rownames(countData) ) ) ) {
+>    stop("The geneIDs or exonIDs are not unique")
+> }
+>
+> And in the validity function:
+>
+> if( ! all(featureNames(object) == paste(geneIDs(object), exonIDs(object),
+> sep=":") ) )
+>    return( "The featureNames do not match with the geneIDs:exonIDs" )
+> if( ! all(rownames( counts(object) ) == featureNames(object) ) )
+>    return( "The rownames of the count matrix do not coincide with the
+> featureNames" )
+> if( ! all(rownames( fData( object ) ) == featureNames( object ) ) )
+>    return( "The rownames of the featureData do not coincide with the
+> featureNames" )
+>
+> I think this would handle any possible problem!
+> Thanks again,
+>
+> Alejandro
+>
+>
+>
+>> Hi,
+>>
+>> === 1: set rownames() on the countData object in `newExonCountSet` ===
+>> I've built my own ExonCountSet by stitching the required pieces
+>> together for a successful call to `newExonCountSet`.
+>>
+>> Everything has been fine and dandy up until a call to
+>> `estimatelog2FoldChanges`. At some point during its run, I am greeted
+>> with:
+>>
+>> Error in toadd[rownames(alleffects), colnames(alleffects)]<- alleffects :
+>>    subscript out of bounds
+>>
+>> So I've been stepping through this function to debug and I realize
+>> that the problem is that my original `countData` matrix I passed into
+>> `newExonCountSet` didn't have its rownames set, and it appears that
+>> w/in the `estimatelog2FoldChanges` function, you expect it to via a
+>> call to:
+>>
+>> rownames(toadd)<- featureNames(ecs)
+>>
+>> So, would it be a good idea to add some code in `newExonCountSet` to
+>> fix this from the get go? Eg. if `is.null(rownames(countData))`, then
+>> `rownames(countData)<- paste(geneIDs, exonIDs, sep=":")`
+>>
+>> And add a check in the validity function for an ExonCountSet that
+>> ensures `all(rownames(countData) == paste(geneIDs, exonIDs, sep=":"))`
+>>
+>> === 2: Guard against user error in exon ID names ===
+>>
+>> As I constructed my ExounCountSet, I made a mistake in my `exonIDs`
+>> that took me a while to figure out. I essentially did A Dumb Thing
+>> (tm) and somehow magically had some duplicate exonIDs for the same
+>> geneIDs.
+>>
+>> Perhaps another check in ExonCountSet validity function to ensure that:
+>>
+>> `all(tapply(eid, gid, function(x) length(x) == length(unique(x))))`
+>>
+>> Thanks,
+>> -steve
+>>
+>
+
+
+
+-- 
+Steve Lianoglou
+Graduate Student: Computational Systems Biology
+ | Memorial Sloan-Kettering Cancer Center
+ | Weill Medical College of Cornell University
+Contact Info: http://cbio.mskcc.org/~lianos/contact
+
+
+From lawrence.michael at gene.com  Sun Jul 22 12:53:22 2012
+From: lawrence.michael at gene.com (Michael Lawrence)
+Date: Sun, 22 Jul 2012 03:53:22 -0700
+Subject: [Bioc-devel] best practices for callGeneric()
+Message-ID: <CAOQ5NydWOpbUpHSsEtTzUb5dw9W5JsmFjrRWVLcXzQbkMtFf4g@mail.gmail.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120722/a1135f95/attachment.pl>
+
+From florian.hahne at novartis.com  Sun Jul 22 19:49:07 2012
+From: florian.hahne at novartis.com (Hahne, Florian)
+Date: Sun, 22 Jul 2012 17:49:07 +0000
+Subject: [Bioc-devel] best practices for callGeneric()
+In-Reply-To: <CAOQ5NydWOpbUpHSsEtTzUb5dw9W5JsmFjrRWVLcXzQbkMtFf4g@mail.gmail.com>
+Message-ID: <AABAAB0B27AF5C418FE809F352FB7BA401B4BD72@023-DB3MPN1-081.023d.mgd.msft.net>
+
+Hi Michael,
+I have some examples where I delegate by first casting the dispatched
+argument and then directly calling the generic again. I assume that is
+more or less equivalent to what you are doing, avoiding the readability
+issues. The problem with the somewhat obscure argument list remains,
+however (unless you explicitly list all formal arguments, but then you
+might have to extract them from ?). When reading through the code this
+still looks odd because you get the impression that you method is somewhat
+recursive. So not sure whether that solution is any better than
+callGeneric?
+Florian
+-- 
+
+
+
+
+
+
+On 7/22/12 11:53 AM, "Michael Lawrence" <lawrence.michael at gene.com> wrote:
+
+>Hi guys,
+>
+>We often use callGeneric in wrapper methods when delegating. In some ways,
+>this is nice, because it conveys the wrapper semantic. However, it can
+>also
+>be problematic e.g. when searching the code for all calls to a generic,
+>since the actual name of the generic is obscured. It's also maybe a little
+>tougher to read, because when I see "callGeneric" I have to recall the
+>name
+>of the generic for the current method. Also, we sometimes use
+>callGeneric(), i.e., with no arguments. This is kind of a cool shortcut,
+>but it also hurts readability, since it is drawing the arguments from the
+>current frame, which we have to construct in our head. Are we having too
+>much fun with this function?
+>
+>Michael
+>
+>	[[alternative HTML version deleted]]
+>
+>_______________________________________________
+>Bioc-devel at r-project.org mailing list
+>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From hpages at fhcrc.org  Mon Jul 23 07:42:38 2012
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Sun, 22 Jul 2012 22:42:38 -0700
+Subject: [Bioc-devel] best practices for callGeneric()
+In-Reply-To: <CAOQ5NydWOpbUpHSsEtTzUb5dw9W5JsmFjrRWVLcXzQbkMtFf4g@mail.gmail.com>
+References: <CAOQ5NydWOpbUpHSsEtTzUb5dw9W5JsmFjrRWVLcXzQbkMtFf4g@mail.gmail.com>
+Message-ID: <500CE44E.3020503@fhcrc.org>
+
+Hi Michael,
+
+I'm not fond of callGeneric() because of what you mentioned and
+also because that makes the code not "relocatable" i.e. if I want to
+move it to a helper function, then I have to remember to replace
+callGeneric by the real name of the generic.
+
+H.
+
+On 07/22/2012 03:53 AM, Michael Lawrence wrote:
+> Hi guys,
+>
+> We often use callGeneric in wrapper methods when delegating. In some ways,
+> this is nice, because it conveys the wrapper semantic. However, it can also
+> be problematic e.g. when searching the code for all calls to a generic,
+> since the actual name of the generic is obscured. It's also maybe a little
+> tougher to read, because when I see "callGeneric" I have to recall the name
+> of the generic for the current method. Also, we sometimes use
+> callGeneric(), i.e., with no arguments. This is kind of a cool shortcut,
+> but it also hurts readability, since it is drawing the arguments from the
+> current frame, which we have to construct in our head. Are we having too
+> much fun with this function?
+>
+> Michael
+>
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M1-B514
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From suri_ghani at yahoo.com  Mon Jul 23 13:23:00 2012
+From: suri_ghani at yahoo.com (suri ghani)
+Date: Mon, 23 Jul 2012 04:23:00 -0700 (PDT)
+Subject: [Bioc-devel] unsunscribe
+Message-ID: <1343042580.40350.YahooMailNeo@web120004.mail.ne1.yahoo.com>
+
+An embedded and charset-unspecified text was scrubbed...
+Name: not available
+URL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120723/8e25bd75/attachment.pl>
+
+From jmacdon at uw.edu  Mon Jul 23 18:37:19 2012
+From: jmacdon at uw.edu (James W. MacDonald)
+Date: Mon, 23 Jul 2012 12:37:19 -0400
+Subject: [Bioc-devel] unsunscribe
+In-Reply-To: <1343042580.40350.YahooMailNeo@web120004.mail.ne1.yahoo.com>
+References: <1343042580.40350.YahooMailNeo@web120004.mail.ne1.yahoo.com>
+Message-ID: <500D7DBF.6030307@uw.edu>
+
+https://stat.ethz.ch/mailman/listinfo/bioconductor
+
+On 7/23/12 7:23 AM, suri ghani wrote:
+>
+>   
+> Suresh Vijay
+> 	[[alternative HTML version deleted]]
+>
+>
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+

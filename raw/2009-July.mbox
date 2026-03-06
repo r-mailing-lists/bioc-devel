@@ -1,0 +1,2004 @@
+From jmacdon at med.umich.edu  Wed Jul  1 04:38:12 2009
+From: jmacdon at med.umich.edu (James MacDonald)
+Date: Tue, 30 Jun 2009 22:38:12 -0400
+Subject: [Bioc-devel] Importing get() method from GO.db
+Message-ID: <4A4A93D4020000EE0007C84A@gwia01x.med.umich.edu>
+
+Hi,
+
+My package is erroring out on a call to get(goid, GOTERM) because it doesn't know about the 'GOTermsAnnDbBimap' method for get(), and I am not sure how to import it. The error can be created by
+
+library(affycoretools)
+debug(affycoretools:::houtSel)
+source("tmp.r")
+
+using the attached file. Nothing but affycoretools is required for the tmp.r file.
+
+On a clean start of R, I get:
+
+> library(GO.db)
+> showMethods(get)
+Function: get (package base)
+x="ANY", pos="ANY", envir="ANY"
+x="ANY", pos="ANY", envir="AnnDbBimap"
+x="ANY", pos="AnnDbBimap", envir="missing"
+x="character", pos="character", envir="missing"
+    (inherited from: x="ANY", pos="ANY", envir="ANY")
+x="character", pos="missing", envir="environment"
+    (inherited from: x="ANY", pos="ANY", envir="ANY")
+
+> get(Lkeys(GOTERM)[5], GOTERM)
+GOID: GO:0000007
+Term: low-affinity zinc ion transmembrane transporter activity
+Ontology: MF
+Definition: Catalysis of the transfer of a solute or solutes from one
+    side of a membrane to the other according to the reaction: Zn2+ =
+    Zn2+, probably powered by proton motive force. In low affinity
+    transport the transporter is able to bind the solute only if it is
+    present at very high concentrations.
+> showMethods(get)
+Function: get (package base)
+x="ANY", pos="ANY", envir="ANY"
+x="ANY", pos="ANY", envir="AnnDbBimap"
+x="ANY", pos="AnnDbBimap", envir="missing"
+x="character", pos="GOTermsAnnDbBimap", envir="missing"
+    (inherited from: x="ANY", pos="AnnDbBimap", envir="missing")
+x="character", pos="character", envir="missing"
+    (inherited from: x="ANY", pos="ANY", envir="ANY")
+x="character", pos="missing", envir="environment"
+    (inherited from: x="ANY", pos="ANY", envir="ANY")
+
+But even trying the above trick to get the GOTermsAnnDbBimap method from within a function in my package results in the error:
+
+Error in get(Lkeys(GOTERM)[5], GOTERM) : 
+  use of NULL environment is defunct
+
+TIA,
+
+Jim
+
+
+
+James W. MacDonald, M.S.
+Biostatistician
+Douglas Lab
+5912 Buhl
+1241 E. Catherine St.
+Ann Arbor MI 48109-5618
+734-615-7826
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues
+
+
+From hpages at fhcrc.org  Thu Jul  2 02:02:01 2009
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Wed, 01 Jul 2009 17:02:01 -0700
+Subject: [Bioc-devel] Importing get() method from GO.db
+In-Reply-To: <4A4A93D4020000EE0007C84A@gwia01x.med.umich.edu>
+References: <4A4A93D4020000EE0007C84A@gwia01x.med.umich.edu>
+Message-ID: <4A4BF8F9.8010704@fhcrc.org>
+
+Hi Jim,
+
+James MacDonald wrote:
+> Hi,
+> 
+> My package is erroring out on a call to get(goid, GOTERM) because it doesn't know about the 'GOTermsAnnDbBimap' method for get(), and I am not sure how to import it. The error can be created by
+> 
+> library(affycoretools)
+> debug(affycoretools:::houtSel)
+> source("tmp.r")
+> 
+> using the attached file. Nothing but affycoretools is required for the tmp.r file.
+
+I didn't get any attached file. Are you sure this mailing list allows them?
+
+> 
+> On a clean start of R, I get:
+> 
+>> library(GO.db)
+>> showMethods(get)
+> Function: get (package base)
+> x="ANY", pos="ANY", envir="ANY"
+> x="ANY", pos="ANY", envir="AnnDbBimap"
+> x="ANY", pos="AnnDbBimap", envir="missing"
+> x="character", pos="character", envir="missing"
+>     (inherited from: x="ANY", pos="ANY", envir="ANY")
+> x="character", pos="missing", envir="environment"
+>     (inherited from: x="ANY", pos="ANY", envir="ANY")
+> 
+>> get(Lkeys(GOTERM)[5], GOTERM)
+> GOID: GO:0000007
+> Term: low-affinity zinc ion transmembrane transporter activity
+> Ontology: MF
+> Definition: Catalysis of the transfer of a solute or solutes from one
+>     side of a membrane to the other according to the reaction: Zn2+ =
+>     Zn2+, probably powered by proton motive force. In low affinity
+>     transport the transporter is able to bind the solute only if it is
+>     present at very high concentrations.
+>> showMethods(get)
+> Function: get (package base)
+> x="ANY", pos="ANY", envir="ANY"
+> x="ANY", pos="ANY", envir="AnnDbBimap"
+> x="ANY", pos="AnnDbBimap", envir="missing"
+> x="character", pos="GOTermsAnnDbBimap", envir="missing"
+>     (inherited from: x="ANY", pos="AnnDbBimap", envir="missing")
+> x="character", pos="character", envir="missing"
+>     (inherited from: x="ANY", pos="ANY", envir="ANY")
+> x="character", pos="missing", envir="environment"
+>     (inherited from: x="ANY", pos="ANY", envir="ANY")
+> 
+> But even trying the above trick to get the GOTermsAnnDbBimap method from within a function in my package results in the error:
+> 
+> Error in get(Lkeys(GOTERM)[5], GOTERM) : 
+>   use of NULL environment is defunct
+> 
+
+I don't know why but it looks like you are calling the get() function
+defined in base:
+
+   > base::get(keys(GOTERM)[5], GOTERM)
+   Error in base::get(keys(GOTERM)[5], GOTERM) :
+     use of NULL environment is defunct
+
+which is not a generic function:
+
+   > base::get
+   function (x, pos = -1, envir = as.environment(pos), mode = "any",
+       inherits = TRUE)
+   .Internal(get(x, envir, mode, inherits))
+   <environment: namespace:base>
+
+Try calling the get() defined in AnnotationDbi:
+
+   > AnnotationDbi::get(keys(GOTERM)[5], GOTERM)
+   GOID: GO:0000007
+   Term: low-affinity zinc ion transmembrane transporter activity
+   Ontology: MF
+   Definition: Catalysis of the transfer of a solute or solutes from one
+       side of a membrane to the other according to the reaction: Zn2+ =
+       Zn2+, probably powered by proton motive force. In low affinity
+       transport the transporter is able to bind the solute only if it is
+       present at very high concentrations.
+
+This one is the generic function that knows about the 'GOTermsAnnDbBimap'
+method:
+
+   > AnnotationDbi::get
+   standardGeneric for "get" defined from package "base"
+
+   function (x, pos = -1, envir = as.environment(pos), mode = "any",
+       inherits = TRUE)
+   standardGeneric("get")
+   <environment: 0xe72d88>
+   Methods may be defined for arguments: x, pos, envir, mode, inherits
+   Use  showMethods("get")  for currently available ones.
+
+   > showMethods("get")
+   Function: get (package base)
+   x="ANY", pos="AnnDbBimap", envir="missing"
+   x="ANY", pos="ANY", envir="AnnDbBimap"
+   x="ANY", pos="ANY", envir="ANY"
+   x="ANY", pos="GOTermsAnnDbBimap", envir="ANY"
+       (inherited from: x="ANY", pos="ANY", envir="ANY")
+   x="character", pos="GOTermsAnnDbBimap", envir="missing"
+       (inherited from: x="ANY", pos="AnnDbBimap", envir="missing")
+   x="character", pos="missing", envir="environment"
+       (inherited from: x="ANY", pos="ANY", envir="ANY")
+
+Cheers,
+
+H.
+
+ > sessionInfo()
+R version 2.10.0 Under development (unstable) (2009-06-15 r48781)
+x86_64-unknown-linux-gnu
+
+locale:
+  [1] LC_CTYPE=en_CA.UTF-8       LC_NUMERIC=C
+  [3] LC_TIME=en_CA.UTF-8        LC_COLLATE=en_CA.UTF-8
+  [5] LC_MONETARY=C              LC_MESSAGES=en_CA.UTF-8
+  [7] LC_PAPER=en_CA.UTF-8       LC_NAME=C
+  [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base
+
+other attached packages:
+[1] GO.db_2.3.0         RSQLite_0.7-1       DBI_0.2-4
+[4] AnnotationDbi_1.7.7 Biobase_2.5.4
+
+
+
+> TIA,
+> 
+> Jim
+> 
+> 
+> 
+> James W. MacDonald, M.S.
+> Biostatistician
+> Douglas Lab
+> 5912 Buhl
+> 1241 E. Catherine St.
+> Ann Arbor MI 48109-5618
+> 734-615-7826
+> **********************************************************
+> Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From hpages at fhcrc.org  Thu Jul  2 02:11:29 2009
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Wed, 01 Jul 2009 17:11:29 -0700
+Subject: [Bioc-devel] Importing get() method from GO.db
+In-Reply-To: <4A4BF8F9.8010704@fhcrc.org>
+References: <4A4A93D4020000EE0007C84A@gwia01x.med.umich.edu>
+	<4A4BF8F9.8010704@fhcrc.org>
+Message-ID: <4A4BFB31.7010700@fhcrc.org>
+
+Herv? Pag?s wrote:
+[...]
+> 
+>   > showMethods("get")
+>   Function: get (package base)
+>   x="ANY", pos="AnnDbBimap", envir="missing"
+>   x="ANY", pos="ANY", envir="AnnDbBimap"
+>   x="ANY", pos="ANY", envir="ANY"
+>   x="ANY", pos="GOTermsAnnDbBimap", envir="ANY"
+>       (inherited from: x="ANY", pos="ANY", envir="ANY")
+>   x="character", pos="GOTermsAnnDbBimap", envir="missing"
+>       (inherited from: x="ANY", pos="AnnDbBimap", envir="missing")
+>   x="character", pos="missing", envir="environment"
+>       (inherited from: x="ANY", pos="ANY", envir="ANY")
+
+Oops, this is more appropriate here:
+
+   > showMethods(AnnotationDbi::get)
+   Function: get (package base)
+   x="ANY", pos="AnnDbBimap", envir="missing"
+   x="ANY", pos="ANY", envir="AnnDbBimap"
+   x="ANY", pos="ANY", envir="ANY"
+   x="ANY", pos="GOTermsAnnDbBimap", envir="ANY"
+       (inherited from: x="ANY", pos="ANY", envir="ANY")
+   x="character", pos="GOTermsAnnDbBimap", envir="missing"
+       (inherited from: x="ANY", pos="AnnDbBimap", envir="missing")
+   x="character", pos="missing", envir="environment"
+       (inherited from: x="ANY", pos="ANY", envir="ANY")
+
+just to make sure we are passing the generic we want to list the methods
+for...
+
+H.
+
+> 
+> Cheers,
+> 
+> H.
+> 
+>  > sessionInfo()
+> R version 2.10.0 Under development (unstable) (2009-06-15 r48781)
+> x86_64-unknown-linux-gnu
+> 
+> locale:
+>  [1] LC_CTYPE=en_CA.UTF-8       LC_NUMERIC=C
+>  [3] LC_TIME=en_CA.UTF-8        LC_COLLATE=en_CA.UTF-8
+>  [5] LC_MONETARY=C              LC_MESSAGES=en_CA.UTF-8
+>  [7] LC_PAPER=en_CA.UTF-8       LC_NAME=C
+>  [9] LC_ADDRESS=C               LC_TELEPHONE=C
+> [11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C
+> 
+> attached base packages:
+> [1] stats     graphics  grDevices utils     datasets  methods   base
+> 
+> other attached packages:
+> [1] GO.db_2.3.0         RSQLite_0.7-1       DBI_0.2-4
+> [4] AnnotationDbi_1.7.7 Biobase_2.5.4
+> 
+> 
+> 
+>> TIA,
+>>
+>> Jim
+>>
+>>
+>>
+>> James W. MacDonald, M.S.
+>> Biostatistician
+>> Douglas Lab
+>> 5912 Buhl
+>> 1241 E. Catherine St.
+>> Ann Arbor MI 48109-5618
+>> 734-615-7826
+>> **********************************************************
+>> Electronic Mail is not secure, may not be read every day, and should 
+>> not be used for urgent or sensitive issues
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From whuber at embl.de  Thu Jul 16 12:09:42 2009
+From: whuber at embl.de (Wolfgang Huber)
+Date: Thu, 16 Jul 2009 12:09:42 +0200
+Subject: [Bioc-devel] rfc - rowttests in genefilter package
+Message-ID: <4A5EFC66.8020602@embl.de>
+
+Hi,
+
+I noted in this function (which I wrote) that if the number of samples 
+in each group is large (more than, say, 1000), floating point errors 
+become significant, to the point of invalidating the results. 
+Essentially, the reason is that I compute the within group variances via
+
+    ss - s * s / n
+
+where ss is the sum of squared values, s is the sum of values, and n the 
+sample size [1].
+
+I've added a warning to the man page asking people only to use the 
+function when the number of samples is dozens to a few hundred. I can 
+think of a few obvious ways to make the code less vulnerable to the 
+finite precision of floating point arithmetic, but I am sure this 
+problem has been solved many times before and would like to ask for 
+pointers or suggestions.
+
+Best wishes
+      Wolfgang
+
+[1] 
+https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/genefilter/src/rowttests.c
+
+-------------------------------------------------------
+Wolfgang Huber
+EMBL
+http://www.embl.de/research/units/genome_biology/huber
+
+
+From smckinney at bccrc.ca  Thu Jul 16 21:31:01 2009
+From: smckinney at bccrc.ca (Steven McKinney)
+Date: Thu, 16 Jul 2009 12:31:01 -0700
+Subject: [Bioc-devel] rfc - rowttests in genefilter package
+In-Reply-To: <28357_1247739134_1247739134_4A5EFC66.8020602@embl.de>
+References: <28357_1247739134_1247739134_4A5EFC66.8020602@embl.de>
+Message-ID: <DCE81E14EB74504B971DAD4D2DB0356B0210B70D@crcmail4.BCCRC.CA>
+
+Hi Wolfgang, 
+
+Two issues:
+
+1) The style of the formula you show below is known
+to have numerical accuracy problems.
+
+Why not just use the R var() function
+on the data that you used to calculate
+ss and s with? (or the C code that 
+implements it?)  I believe this issue
+has been adequately handled there, though
+I haven't read the source code.
+
+2) Is that the correct formula?
+An unbiased variance calculation would be
+
+(ss - s * s / n)/(n-1)
+ 
+
+ 
+
+Steven McKinney, Ph.D.
+
+Statistician
+Molecular Oncology and Breast Cancer Program
+British Columbia Cancer Research Centre
+
+email: smckinney at bccrc.ca
+tel: 604-675-8000 x7561
+
+BCCRC
+Molecular Oncology
+675 West 10th Ave, Floor 4
+Vancouver B.C. 
+V5Z 1L3
+
+Canada
+
+
+ 
+
+ 
+
+
+> -----Original Message-----
+> From: bioc-devel-bounces at stat.math.ethz.ch [mailto:bioc-devel-
+> bounces at stat.math.ethz.ch] On Behalf Of Wolfgang Huber
+> Sent: Thursday, July 16, 2009 3:10 AM
+> To: Bioconductor Developers
+> Subject: [Bioc-devel] rfc - rowttests in genefilter package
+> 
+> Hi,
+> 
+> I noted in this function (which I wrote) that if the number of samples
+> in each group is large (more than, say, 1000), floating point errors
+> become significant, to the point of invalidating the results.
+> Essentially, the reason is that I compute the within group variances
+> via
+> 
+>     ss - s * s / n
+> 
+> where ss is the sum of squared values, s is the sum of values, and n
+> the sample size [1].
+> 
+> I've added a warning to the man page asking people only to use the
+> function when the number of samples is dozens to a few hundred. I can
+> think of a few obvious ways to make the code less vulnerable to the
+> finite precision of floating point arithmetic, but I am sure this
+> problem has been solved many times before and would like to ask for
+> pointers or suggestions.
+> 
+> Best wishes
+>       Wolfgang
+> 
+> [1]
+> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/genefilter/
+> src/rowttests.c
+> 
+> -------------------------------------------------------
+> Wolfgang Huber
+> EMBL
+> http://www.embl.de/research/units/genome_biology/huber
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From paboyoun at fhcrc.org  Thu Jul 16 21:45:27 2009
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Thu, 16 Jul 2009 12:45:27 -0700
+Subject: [Bioc-devel] rfc - rowttests in genefilter package
+In-Reply-To: <DCE81E14EB74504B971DAD4D2DB0356B0210B70D@crcmail4.BCCRC.CA>
+References: <28357_1247739134_1247739134_4A5EFC66.8020602@embl.de>
+	<DCE81E14EB74504B971DAD4D2DB0356B0210B70D@crcmail4.BCCRC.CA>
+Message-ID: <4A5F8357.4070300@fhcrc.org>
+
+Wolfgang,
+There are robust one-pass algorithms for calculating variances, if that 
+is what you are interested in. Wikipedia has a nice summary of 
+algorithms for calculating variance. Here is the link to the robust 
+one-pass algorithm:
+
+http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#On-line_algorithm
+
+
+Patrick
+
+
+Steven McKinney wrote:
+> Hi Wolfgang, 
+>
+> Two issues:
+>
+> 1) The style of the formula you show below is known
+> to have numerical accuracy problems.
+>
+> Why not just use the R var() function
+> on the data that you used to calculate
+> ss and s with? (or the C code that 
+> implements it?)  I believe this issue
+> has been adequately handled there, though
+> I haven't read the source code.
+>
+> 2) Is that the correct formula?
+> An unbiased variance calculation would be
+>
+> (ss - s * s / n)/(n-1)
+>  
+>
+>  
+>
+> Steven McKinney, Ph.D.
+>
+> Statistician
+> Molecular Oncology and Breast Cancer Program
+> British Columbia Cancer Research Centre
+>
+> email: smckinney at bccrc.ca
+> tel: 604-675-8000 x7561
+>
+> BCCRC
+> Molecular Oncology
+> 675 West 10th Ave, Floor 4
+> Vancouver B.C. 
+> V5Z 1L3
+>
+> Canada
+>
+>
+>  
+>
+>  
+>
+>
+>   
+>> -----Original Message-----
+>> From: bioc-devel-bounces at stat.math.ethz.ch [mailto:bioc-devel-
+>> bounces at stat.math.ethz.ch] On Behalf Of Wolfgang Huber
+>> Sent: Thursday, July 16, 2009 3:10 AM
+>> To: Bioconductor Developers
+>> Subject: [Bioc-devel] rfc - rowttests in genefilter package
+>>
+>> Hi,
+>>
+>> I noted in this function (which I wrote) that if the number of samples
+>> in each group is large (more than, say, 1000), floating point errors
+>> become significant, to the point of invalidating the results.
+>> Essentially, the reason is that I compute the within group variances
+>> via
+>>
+>>     ss - s * s / n
+>>
+>> where ss is the sum of squared values, s is the sum of values, and n
+>> the sample size [1].
+>>
+>> I've added a warning to the man page asking people only to use the
+>> function when the number of samples is dozens to a few hundred. I can
+>> think of a few obvious ways to make the code less vulnerable to the
+>> finite precision of floating point arithmetic, but I am sure this
+>> problem has been solved many times before and would like to ask for
+>> pointers or suggestions.
+>>
+>> Best wishes
+>>       Wolfgang
+>>
+>> [1]
+>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/genefilter/
+>> src/rowttests.c
+>>
+>> -------------------------------------------------------
+>> Wolfgang Huber
+>> EMBL
+>> http://www.embl.de/research/units/genome_biology/huber
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>     
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From whuber at embl.de  Thu Jul 16 23:45:50 2009
+From: whuber at embl.de (Wolfgang Huber)
+Date: Thu, 16 Jul 2009 23:45:50 +0200
+Subject: [Bioc-devel] rfc - rowttests in genefilter package
+In-Reply-To: <4A5F8357.4070300@fhcrc.org>
+References: <28357_1247739134_1247739134_4A5EFC66.8020602@embl.de>
+	<DCE81E14EB74504B971DAD4D2DB0356B0210B70D@crcmail4.BCCRC.CA>
+	<4A5F8357.4070300@fhcrc.org>
+Message-ID: <4A5F9F8E.8050403@embl.de>
+
+
+Dear Patrick
+
+thank you! What Wikipedia calls Welford's/Knuth's one-pass algorithm 
+(and the apparent absence of even cleverer ones) is just what I was 
+looking for.
+
+Implementation is always a trade-off of choosing between algorithms with 
+different computational cost, implementation effort and performance 
+characteristics. Needless to say, I did not have groups with thousands 
+of samples in mind when I made the "fast & simple" rowttests function 
+public many years ago. However, Welford's/Knuth's algorithm is uniformly 
+better on all three of the above criteria.
+
+	Thanks again and best wishes
+	Wolfgang
+
+> Wolfgang,
+> There are robust one-pass algorithms for calculating variances, if that 
+> is what you are interested in. Wikipedia has a nice summary of 
+> algorithms for calculating variance. Here is the link to the robust 
+> one-pass algorithm:
+> 
+> http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#On-line_algorithm 
+> 
+> 
+> 
+> Patrick
+> 
+> 
+> Steven McKinney wrote:
+>> Hi Wolfgang,
+>> Two issues:
+>>
+>> 1) The style of the formula you show below is known
+>> to have numerical accuracy problems.
+>>
+>> Why not just use the R var() function
+>> on the data that you used to calculate
+>> ss and s with? (or the C code that implements it?)  I believe this issue
+>> has been adequately handled there, though
+>> I haven't read the source code.
+>>
+>> 2) Is that the correct formula?
+>> An unbiased variance calculation would be
+>>
+>> (ss - s * s / n)/(n-1)
+>>  
+>>
+>>  
+>>
+>> Steven McKinney, Ph.D.
+>>
+>> Statistician
+>> Molecular Oncology and Breast Cancer Program
+>> British Columbia Cancer Research Centre
+>>
+>> email: smckinney at bccrc.ca
+>> tel: 604-675-8000 x7561
+>>
+>> BCCRC
+>> Molecular Oncology
+>> 675 West 10th Ave, Floor 4
+>> Vancouver B.C. V5Z 1L3
+>>
+>> Canada
+>>
+>>
+>>  
+>>
+>>  
+>>
+>>
+>>  
+>>> -----Original Message-----
+>>> From: bioc-devel-bounces at stat.math.ethz.ch [mailto:bioc-devel-
+>>> bounces at stat.math.ethz.ch] On Behalf Of Wolfgang Huber
+>>> Sent: Thursday, July 16, 2009 3:10 AM
+>>> To: Bioconductor Developers
+>>> Subject: [Bioc-devel] rfc - rowttests in genefilter package
+>>>
+>>> Hi,
+>>>
+>>> I noted in this function (which I wrote) that if the number of samples
+>>> in each group is large (more than, say, 1000), floating point errors
+>>> become significant, to the point of invalidating the results.
+>>> Essentially, the reason is that I compute the within group variances
+>>> via
+>>>
+>>>     ss - s * s / n
+>>>
+>>> where ss is the sum of squared values, s is the sum of values, and n
+>>> the sample size [1].
+>>>
+>>> I've added a warning to the man page asking people only to use the
+>>> function when the number of samples is dozens to a few hundred. I can
+>>> think of a few obvious ways to make the code less vulnerable to the
+>>> finite precision of floating point arithmetic, but I am sure this
+>>> problem has been solved many times before and would like to ask for
+>>> pointers or suggestions.
+>>>
+>>> Best wishes
+>>>       Wolfgang
+>>>
+>>> [1]
+>>> https://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/genefilter/
+>>> src/rowttests.c
+>>>
+>>> -------------------------------------------------------
+>>> Wolfgang Huber
+>>> EMBL
+>>> http://www.embl.de/research/units/genome_biology/huber
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>     
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>   
+> 
+
+-- 
+
+Best wishes
+      Wolfgang
+
+-------------------------------------------------------
+Wolfgang Huber
+EMBL
+http://www.embl.de/research/units/genome_biology/huber
+
+
+From whuber at embl.de  Fri Jul 17 14:32:41 2009
+From: whuber at embl.de (Wolfgang Huber)
+Date: Fri, 17 Jul 2009 14:32:41 +0200
+Subject: [Bioc-devel] rfc - rowttests in genefilter package
+In-Reply-To: <4A5F9F8E.8050403@embl.de>
+References: <28357_1247739134_1247739134_4A5EFC66.8020602@embl.de>	<DCE81E14EB74504B971DAD4D2DB0356B0210B70D@crcmail4.BCCRC.CA>	<4A5F8357.4070300@fhcrc.org>
+	<4A5F9F8E.8050403@embl.de>
+Message-ID: <4A606F69.4040200@embl.de>
+
+
+Just for the record, this is fixed in genefilter >= 1.25.7
+
+  Best wishes
+	Wolfgang
+
+Wolfgang Huber ha scritto:
+> 
+> Dear Patrick
+> 
+> thank you! What Wikipedia calls Welford's/Knuth's one-pass algorithm 
+> (and the apparent absence of even cleverer ones) is just what I was 
+> looking for.
+> 
+> Implementation is always a trade-off of choosing between algorithms with 
+> different computational cost, implementation effort and performance 
+> characteristics. Needless to say, I did not have groups with thousands 
+> of samples in mind when I made the "fast & simple" rowttests function 
+> public many years ago. However, Welford's/Knuth's algorithm is uniformly 
+> better on all three of the above criteria.
+> 
+>     Thanks again and best wishes
+>     Wolfgang
+> 
+>> Wolfgang,
+>> There are robust one-pass algorithms for calculating variances, if 
+>> that is what you are interested in. Wikipedia has a nice summary of 
+>> algorithms for calculating variance. Here is the link to the robust 
+>> one-pass algorithm:
+>>
+>> http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#On-line_algorithm 
+>>
+>>
+>>
+>> Patrick
+>>
+>>
+
+-------------------------------------------------------
+Wolfgang Huber
+EMBL
+http://www.embl.de/research/units/genome_biology/huber
+
+
+From raffaele.calogero at gmail.com  Tue Jul 21 08:50:35 2009
+From: raffaele.calogero at gmail.com (rcaloger)
+Date: Tue, 21 Jul 2009 08:50:35 +0200
+Subject: [Bioc-devel] Bug in metaArray package
+Message-ID: <4A65653B.5060107@unito.it>
+
+Hi,
+I am the maintainer of oneChannleGUI. For data mining in my package I 
+have an implementation of  IC coefficient derived from metaArray package.
+To run intcor function I use an Object of class mergeExpressionSet 
+created with two expression sets and the function mergeExprs:
+ > metaData
+ExpressionSet (storageMode: list)
+assayData: 31 features, 200 samples
+  element names: exprs
+phenoData
+  sampleNames: GSM282373, GSM282374, ..., GSM282572  (200 total)
+  varLabels and varMetadata description:
+    Name: Name
+    FileName: FileName
+    Target: Target
+featureData
+  featureNames: 200737_at, 200738_s_at, ..., AFFX-HUMGAPDH/M33197_M_at  
+(31 total)
+  fvarLabels and fvarMetadata description: none
+experimentData: use 'experimentData(object)'
+Annotation: hgu133a.db
+ExpressionSet (storageMode: list)
+assayData: 31 features, 204 samples
+  element names: exprs
+phenoData
+  sampleNames: GSM308256, GSM308257, ..., GSM308460  (204 total)
+  varLabels and varMetadata description:
+    FileName: FileName
+    Target: Target
+featureData
+  featureNames: 200737_at, 200738_s_at, ..., AFFX-HUMGAPDH/M33197_M_at  
+(31 total)
+  fvarLabels and fvarMetadata description: none
+experimentData: use 'experimentData(object)'
+Annotation: 
+
+to run intcor I use the metaArray function intcor:
+merged.cor <- intcor(metaData)
+At this point I get the following error:
+Error in .C("intcor", as.double(unlist(expr)), as.integer(unlist(cl)),  :
+  C symbol name "intcor" not in DLL for package "metaArray"
+
+If I run intCor from the MergeMaid package:
+merged.cor <- intCor(metaData)
+No errors are encountered.
+It seems to me a problem in call of the C function.
+Cheers
+raffaele
+
+ >sessionInfo()
+R version 2.9.0 (2009-04-17)
+i386-pc-mingw32
+
+locale:
+LC_COLLATE=Italian_Italy.1252;LC_CTYPE=Italian_Italy.1252;LC_MONETARY=Italian_Italy.1252;LC_NUMERIC=C;LC_TIME=Italian_Italy.1252
+
+attached base packages:
+ [1] splines   tools     tcltk     stats     graphics  grDevices utils   
+ [8] datasets  methods   base    
+
+other attached packages:
+ [1] MergeMaid_2.16.0     MASS_7.2-47          survival_2.35-4    
+ [4] metaArray_1.20.0     oneChannelGUI_1.10.8 preprocessCore_1.6.0
+ [7] GOstats_2.10.0       RSQLite_0.7-1        DBI_0.2-4          
+[10] graph_1.22.2         Category_2.10.1      AnnotationDbi_1.6.1
+[13] tkWidgets_1.22.0     DynDoc_1.22.0        widgetTools_1.22.0 
+[16] affylmGUI_1.18.0     affyio_1.12.0        affy_1.22.0        
+[19] limma_2.18.2         Biobase_2.4.1      
+
+loaded via a namespace (and not attached):
+[1] annotate_1.22.0   genefilter_1.24.2 GO.db_2.2.11      GSEABase_1.6.1  
+[5] RBGL_1.20.0       XML_2.5-3         xtable_1.5-5 
+
+
+
+-- 
+
+----------------------------------------
+Prof. Raffaele A. Calogero
+Bioinformatics and Genomics Unit
+Dipartimento di Scienze Cliniche e Biologiche
+c/o Az. Ospedaliera S. Luigi
+Regione Gonzole 10, Orbassano
+10043 Torino
+tel.   ++39 0116705417
+Lab.   ++39 0116705408
+Fax    ++39 0119038639
+Mobile ++39 3333827080
+email: raffaele.calogero at unito.it
+       raffaele[dot]calogero[at]gmail[dot]com
+www:   http://www.bioinformatica.unito.it
+Info: http://publicationslist.org/raffaele.calogero
+
+
+From mtmorgan at fhcrc.org  Tue Jul 21 14:15:26 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Tue, 21 Jul 2009 05:15:26 -0700
+Subject: [Bioc-devel] [BioC] Bug in metaArray package
+In-Reply-To: <4A65653B.5060107@unito.it> (rcaloger's message of "Tue, 21 Jul
+	2009 08:50:35 +0200")
+References: <4A65653B.5060107@unito.it>
+Message-ID: <6phfxcq44gx.fsf@gopher4.fhcrc.org>
+
+Hi Raffael --
+
+No need to cross post; polite to include the package maintainer (e.g.,
+packageDescription('metaArray')) when reporting package bugs.
+
+The problem is that the C code is not loaded -- the NAMESPACE file
+requires the line useDynLib('metaArray').
+
+A workaround until this is fixed is to issue the command
+
+  dyn.load('metaArray')
+
+after loading the package.
+
+Martin
+
+rcaloger <raffaele.calogero at gmail.com> writes:
+
+> Hi,
+> I am the maintainer of oneChannleGUI. For data mining in my package I
+> have an implementation of  IC coefficient derived from metaArray
+> package.
+> To run intcor function I use an Object of class mergeExpressionSet
+> created with two expression sets and the function mergeExprs:
+>  > metaData
+> ExpressionSet (storageMode: list)
+> assayData: 31 features, 200 samples
+>   element names: exprs
+> phenoData
+>   sampleNames: GSM282373, GSM282374, ..., GSM282572  (200 total)
+>   varLabels and varMetadata description:
+>     Name: Name
+>     FileName: FileName
+>     Target: Target
+> featureData
+>   featureNames: 200737_at, 200738_s_at, ..., AFFX-HUMGAPDH/M33197_M_at
+>   (31 total)
+>   fvarLabels and fvarMetadata description: none
+> experimentData: use 'experimentData(object)'
+> Annotation: hgu133a.db
+> ExpressionSet (storageMode: list)
+> assayData: 31 features, 204 samples
+>   element names: exprs
+> phenoData
+>   sampleNames: GSM308256, GSM308257, ..., GSM308460  (204 total)
+>   varLabels and varMetadata description:
+>     FileName: FileName
+>     Target: Target
+> featureData
+>   featureNames: 200737_at, 200738_s_at, ..., AFFX-HUMGAPDH/M33197_M_at
+>   (31 total)
+>   fvarLabels and fvarMetadata description: none
+> experimentData: use 'experimentData(object)'
+> Annotation: 
+>
+> to run intcor I use the metaArray function intcor:
+> merged.cor <- intcor(metaData)
+> At this point I get the following error:
+> Error in .C("intcor", as.double(unlist(expr)), as.integer(unlist(cl)),  :
+>   C symbol name "intcor" not in DLL for package "metaArray"
+>
+> If I run intCor from the MergeMaid package:
+> merged.cor <- intCor(metaData)
+> No errors are encountered.
+> It seems to me a problem in call of the C function.
+> Cheers
+> raffaele
+>
+>  >sessionInfo()
+> R version 2.9.0 (2009-04-17)
+> i386-pc-mingw32
+>
+> locale:
+> LC_COLLATE=Italian_Italy.1252;LC_CTYPE=Italian_Italy.1252;LC_MONETARY=Italian_Italy.1252;LC_NUMERIC=C;LC_TIME=Italian_Italy.1252
+>
+> attached base packages:
+>  [1] splines   tools     tcltk     stats     graphics  grDevices utils
+>  [8] datasets  methods   base    
+>
+> other attached packages:
+>  [1] MergeMaid_2.16.0     MASS_7.2-47          survival_2.35-4    [4]
+>  metaArray_1.20.0     oneChannelGUI_1.10.8 preprocessCore_1.6.0
+>  [7] GOstats_2.10.0       RSQLite_0.7-1        DBI_0.2-4          [10]
+>  graph_1.22.2         Category_2.10.1      AnnotationDbi_1.6.1
+> [13] tkWidgets_1.22.0     DynDoc_1.22.0        widgetTools_1.22.0 [16]
+> affylmGUI_1.18.0     affyio_1.12.0        affy_1.22.0        [19]
+> limma_2.18.2         Biobase_2.4.1      
+>
+> loaded via a namespace (and not attached):
+> [1] annotate_1.22.0   genefilter_1.24.2 GO.db_2.2.11
+> GSEABase_1.6.1  [5] RBGL_1.20.0       XML_2.5-3         xtable_1.5-5 
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From Joern.Toedling at curie.fr  Tue Jul 28 10:39:25 2009
+From: Joern.Toedling at curie.fr (Joern Toedling)
+Date: Tue, 28 Jul 2009 10:39:25 +0200
+Subject: [Bioc-devel] R source code files of package vignettes
+Message-ID: <20090728082201.M7420@curie.fr>
+
+Dear all,
+
+I would welcome your feedback on a small problem regarding vignettes.
+For the data package ccTutorial, I pre-build the vignettes on my machine, as
+building these vignettes takes considerable time. The folder 'inst/doc' only
+contains dummy versions of the two vignettes and a Makefile which copies the
+pre-built vignettes from another directory into 'doc' after running Sweave on
+the dummy files.
+I would also like to provide the source code of the pre-built vignettes
+in the doc directory (as these are also linked on the BioC package web page).
+However, having the *R files copied from the other directory into doc via use
+of the Makefile is pointless as it seems that the command Stangle is run on
+the dummy vignettes afterwards. So the source code files in the directory
+'doc' only contain the non-relevant source code of the dummy files. Do you
+know of a way to avoid having Stangle run on the dummy files? Or is there
+another way to copy files afterwards?
+
+Cheers,
+Joern
+
+---
+Joern Toedling
+Institut Curie -- U900
+26 rue d'Ulm, 75005 Paris, FRANCE
+Tel. +33 (0)156246926
+
+
+From mizanur.khondoker at googlemail.com  Tue Jul 28 11:01:56 2009
+From: mizanur.khondoker at googlemail.com (Mizanur Khondoker)
+Date: Tue, 28 Jul 2009 10:01:56 +0100
+Subject: [Bioc-devel] build/check fails for multiscan package on Mac OSX
+Message-ID: <a3b32af80907280201w67f5c1c5u94337d7bdc30fe66@mail.gmail.com>
+
+Dear list,
+
+The Bioc 2.4 package 'multiscan' was working OK so far on Windows,
+Linux and MacOS X.
+
+I received an automated message today reporting a problem with
+Multiple platform build/check of the package.
+Build/check of the packages fails for Bioc platforms pitt (Mac OS X
+Tiger (10.4.11) / i386) and   pelham  (Mac OS X Leopard (10.5.7) /
+i386).
+
+I  haven't got a clue whether  it is a problem with the package or the
+build system. Any help would be appreciated.
+
+Please see the build/check report below:
+(Same error from both pitt and pelham)
+====================================================================
+* checking for file 'multiscan/DESCRIPTION' ... OK
+* preparing 'multiscan':
+* checking DESCRIPTION meta-information ... OK
+* cleaning src
+* installing the package to re-build vignettes
+* Installing *source* package 'multiscan' ...
+** libs
+** arch - i386
+gcc -arch i386 -std=gnu99
+-I/Library/Frameworks/R.framework/Versions/2.9/Resources/include
+-I/Library/Frameworks/R.framework/Versions/2.9/Resources/include/i386
+-I/usr/local/include    -fPIC  -mtune=core2 -g -O2 -c multiscan.c -o
+multiscan.o
+gcc -arch i386 -std=gnu99 -dynamiclib -Wl,-headerpad_max_install_names
+-mmacosx-version-min=10.4 -undefined dynamic_lookup -single_module
+-multiply_defined suppress -L/usr/local/lib -o multiscan.so
+multiscan.o -F/Library/Frameworks/R.framework/.. -framework R
+-Wl,-framework -Wl,CoreFoundation
+** arch - ppc
+gcc -arch ppc -std=gnu99
+-I/Library/Frameworks/R.framework/Versions/2.9/Resources/include
+-I/Library/Frameworks/R.framework/Versions/2.9/Resources/include/ppc
+-I/usr/local/include    -fPIC  -g -O2 -c multiscan.c -o multiscan.o
+gcc -arch ppc -std=gnu99 -dynamiclib -Wl,-headerpad_max_install_names
+-mmacosx-version-min=10.4 -undefined dynamic_lookup -single_module
+-multiply_defined suppress -L/usr/local/lib -o multiscan.so
+multiscan.o -F/Library/Frameworks/R.framework/.. -framework R
+-Wl,-framework -Wl,CoreFoundation
+** R
+** data
+** inst
+** preparing package for lazy loading
+** help
+*** installing help indices
+ >>> Building/Updating help pages for package 'multiscan'
+     Formats: text html latex example
+  multiscan                         text    html    latex   example
+  murine                            text    html    latex
+  plot.multiscan                    text    html    latex   example
+** building package indices ...
+* DONE (multiscan)
+* creating vignettes ... ERROR
+Error in dyn.load(file, DLLpath = DLLpath, ...) :
+  unable to load shared library
+'/tmp/Rinst2461267252/multiscan/libs/i386/multiscan.so':
+  dlopen(/tmp/Rinst2461267252/multiscan/libs/i386/multiscan.so, 6):
+Library not loaded:
+/Library/Frameworks/R.framework/Versions/2.10/Resources/lib/libR.dylib
+  Referenced from: /tmp/Rinst2461267252/multiscan/libs/i386/multiscan.so
+  Reason: Incompatible library version: multiscan.so requires version
+2.10.0 or later, but libR.dylib provides version 2.9.0
+
+Error: processing vignette 'multiscan.Rnw' failed with diagnostics:
+ chunk 1
+Error : package/namespace load failed for 'multiscan'
+Execution halted
+
+
+-- 
+Mizanur Khondoker
+
+
+From richard.pearson at well.ox.ac.uk  Tue Jul 28 11:22:42 2009
+From: richard.pearson at well.ox.ac.uk (Richard Pearson)
+Date: Tue, 28 Jul 2009 10:22:42 +0100
+Subject: [Bioc-devel] build/check fails for multiscan package on Mac OSX
+In-Reply-To: <a3b32af80907280201w67f5c1c5u94337d7bdc30fe66@mail.gmail.com>
+References: <a3b32af80907280201w67f5c1c5u94337d7bdc30fe66@mail.gmail.com>
+Message-ID: <4A6EC362.40705@well.ox.ac.uk>
+
+It seems the problem is with the build system. If you take a look at
+
+http://bioconductor.org/checkResults/2.4/bioc-LATEST/index.html
+
+There are lots of packages that have failed on the Mac machines. Anyone know what's happened?
+
+Cheers
+
+Richard
+
+Mizanur Khondoker wrote:
+> Dear list,
+> 
+> The Bioc 2.4 package 'multiscan' was working OK so far on Windows,
+> Linux and MacOS X.
+> 
+> I received an automated message today reporting a problem with
+> Multiple platform build/check of the package.
+> Build/check of the packages fails for Bioc platforms pitt (Mac OS X
+> Tiger (10.4.11) / i386) and   pelham  (Mac OS X Leopard (10.5.7) /
+> i386).
+> 
+> I  haven't got a clue whether  it is a problem with the package or the
+> build system. Any help would be appreciated.
+> 
+> Please see the build/check report below:
+> (Same error from both pitt and pelham)
+> ====================================================================
+> * checking for file 'multiscan/DESCRIPTION' ... OK
+> * preparing 'multiscan':
+> * checking DESCRIPTION meta-information ... OK
+> * cleaning src
+> * installing the package to re-build vignettes
+> * Installing *source* package 'multiscan' ...
+> ** libs
+> ** arch - i386
+> gcc -arch i386 -std=gnu99
+> -I/Library/Frameworks/R.framework/Versions/2.9/Resources/include
+> -I/Library/Frameworks/R.framework/Versions/2.9/Resources/include/i386
+> -I/usr/local/include    -fPIC  -mtune=core2 -g -O2 -c multiscan.c -o
+> multiscan.o
+> gcc -arch i386 -std=gnu99 -dynamiclib -Wl,-headerpad_max_install_names
+> -mmacosx-version-min=10.4 -undefined dynamic_lookup -single_module
+> -multiply_defined suppress -L/usr/local/lib -o multiscan.so
+> multiscan.o -F/Library/Frameworks/R.framework/.. -framework R
+> -Wl,-framework -Wl,CoreFoundation
+> ** arch - ppc
+> gcc -arch ppc -std=gnu99
+> -I/Library/Frameworks/R.framework/Versions/2.9/Resources/include
+> -I/Library/Frameworks/R.framework/Versions/2.9/Resources/include/ppc
+> -I/usr/local/include    -fPIC  -g -O2 -c multiscan.c -o multiscan.o
+> gcc -arch ppc -std=gnu99 -dynamiclib -Wl,-headerpad_max_install_names
+> -mmacosx-version-min=10.4 -undefined dynamic_lookup -single_module
+> -multiply_defined suppress -L/usr/local/lib -o multiscan.so
+> multiscan.o -F/Library/Frameworks/R.framework/.. -framework R
+> -Wl,-framework -Wl,CoreFoundation
+> ** R
+> ** data
+> ** inst
+> ** preparing package for lazy loading
+> ** help
+> *** installing help indices
+>  >>> Building/Updating help pages for package 'multiscan'
+>      Formats: text html latex example
+>   multiscan                         text    html    latex   example
+>   murine                            text    html    latex
+>   plot.multiscan                    text    html    latex   example
+> ** building package indices ...
+> * DONE (multiscan)
+> * creating vignettes ... ERROR
+> Error in dyn.load(file, DLLpath = DLLpath, ...) :
+>   unable to load shared library
+> '/tmp/Rinst2461267252/multiscan/libs/i386/multiscan.so':
+>   dlopen(/tmp/Rinst2461267252/multiscan/libs/i386/multiscan.so, 6):
+> Library not loaded:
+> /Library/Frameworks/R.framework/Versions/2.10/Resources/lib/libR.dylib
+>   Referenced from: /tmp/Rinst2461267252/multiscan/libs/i386/multiscan.so
+>   Reason: Incompatible library version: multiscan.so requires version
+> 2.10.0 or later, but libR.dylib provides version 2.9.0
+> 
+> Error: processing vignette 'multiscan.Rnw' failed with diagnostics:
+>  chunk 1
+> Error : package/namespace load failed for 'multiscan'
+> Execution halted
+> 
+> 
+
+-- 
+Richard D Pearson                          richard.pearson at well.ox.ac.uk
+Wellcome Trust Centre for Human Genetics   http://www.well.ox.ac.uk/~rpearson
+University of Oxford                       Tel: +44 (0)1865 287575
+Roosevelt Drive                            Mob: +44 (0)7971 221181
+Oxford OX3 7BN, UK                         Fax: +44 (0)1865 287664
+
+
+From paboyoun at fhcrc.org  Tue Jul 28 16:00:44 2009
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Tue, 28 Jul 2009 07:00:44 -0700
+Subject: [Bioc-devel] R source code files of package vignettes
+In-Reply-To: <20090728082201.M7420@curie.fr>
+References: <20090728082201.M7420@curie.fr>
+Message-ID: <4A6F048C.6090108@fhcrc.org>
+
+Joern,
+The Stangle mechanism is relatively new to the build process and I don't 
+remember the sequence of events that take place. After the BioC 2009 
+conference, I'll take a look into this. I'm hesitant to put too much 
+time into making the build system much smarter than it is for the 
+Stangle operation, because it is a rare request. Perhaps we can work out 
+a file extension tag that would be achieve what you are looking for.
+
+
+Patrick
+
+
+Joern Toedling wrote:
+> Dear all,
+>
+> I would welcome your feedback on a small problem regarding vignettes.
+> For the data package ccTutorial, I pre-build the vignettes on my machine, as
+> building these vignettes takes considerable time. The folder 'inst/doc' only
+> contains dummy versions of the two vignettes and a Makefile which copies the
+> pre-built vignettes from another directory into 'doc' after running Sweave on
+> the dummy files.
+> I would also like to provide the source code of the pre-built vignettes
+> in the doc directory (as these are also linked on the BioC package web page).
+> However, having the *R files copied from the other directory into doc via use
+> of the Makefile is pointless as it seems that the command Stangle is run on
+> the dummy vignettes afterwards. So the source code files in the directory
+> 'doc' only contain the non-relevant source code of the dummy files. Do you
+> know of a way to avoid having Stangle run on the dummy files? Or is there
+> another way to copy files afterwards?
+>
+> Cheers,
+> Joern
+>
+> ---
+> Joern Toedling
+> Institut Curie -- U900
+> 26 rue d'Ulm, 75005 Paris, FRANCE
+> Tel. +33 (0)156246926
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+From paboyoun at fhcrc.org  Tue Jul 28 16:13:45 2009
+From: paboyoun at fhcrc.org (Patrick Aboyoun)
+Date: Tue, 28 Jul 2009 07:13:45 -0700
+Subject: [Bioc-devel] build/check fails for multiscan package on Mac OSX
+In-Reply-To: <4A6EC362.40705@well.ox.ac.uk>
+References: <a3b32af80907280201w67f5c1c5u94337d7bdc30fe66@mail.gmail.com>
+	<4A6EC362.40705@well.ox.ac.uk>
+Message-ID: <4A6F0799.6050507@fhcrc.org>
+
+This was my bad. I had recently updated R-devel on the two Mac OS X 
+build machines and I forgot to change the symbolic link 
+/Library/Frameworks/R.framework/Versions/Current to point to 2.9 rather 
+than 2.10. I made the correction just now and today's BioC 2.4 builds 
+should run much smoother.
+
+
+Patrick
+
+
+
+Richard Pearson wrote:
+> It seems the problem is with the build system. If you take a look at
+>
+> http://bioconductor.org/checkResults/2.4/bioc-LATEST/index.html
+>
+> There are lots of packages that have failed on the Mac machines. 
+> Anyone know what's happened?
+>
+> Cheers
+>
+> Richard
+>
+> Mizanur Khondoker wrote:
+>> Dear list,
+>>
+>> The Bioc 2.4 package 'multiscan' was working OK so far on Windows,
+>> Linux and MacOS X.
+>>
+>> I received an automated message today reporting a problem with
+>> Multiple platform build/check of the package.
+>> Build/check of the packages fails for Bioc platforms pitt (Mac OS X
+>> Tiger (10.4.11) / i386) and   pelham  (Mac OS X Leopard (10.5.7) /
+>> i386).
+>>
+>> I  haven't got a clue whether  it is a problem with the package or the
+>> build system. Any help would be appreciated.
+>>
+>> Please see the build/check report below:
+>> (Same error from both pitt and pelham)
+>> ====================================================================
+>> * checking for file 'multiscan/DESCRIPTION' ... OK
+>> * preparing 'multiscan':
+>> * checking DESCRIPTION meta-information ... OK
+>> * cleaning src
+>> * installing the package to re-build vignettes
+>> * Installing *source* package 'multiscan' ...
+>> ** libs
+>> ** arch - i386
+>> gcc -arch i386 -std=gnu99
+>> -I/Library/Frameworks/R.framework/Versions/2.9/Resources/include
+>> -I/Library/Frameworks/R.framework/Versions/2.9/Resources/include/i386
+>> -I/usr/local/include    -fPIC  -mtune=core2 -g -O2 -c multiscan.c -o
+>> multiscan.o
+>> gcc -arch i386 -std=gnu99 -dynamiclib -Wl,-headerpad_max_install_names
+>> -mmacosx-version-min=10.4 -undefined dynamic_lookup -single_module
+>> -multiply_defined suppress -L/usr/local/lib -o multiscan.so
+>> multiscan.o -F/Library/Frameworks/R.framework/.. -framework R
+>> -Wl,-framework -Wl,CoreFoundation
+>> ** arch - ppc
+>> gcc -arch ppc -std=gnu99
+>> -I/Library/Frameworks/R.framework/Versions/2.9/Resources/include
+>> -I/Library/Frameworks/R.framework/Versions/2.9/Resources/include/ppc
+>> -I/usr/local/include    -fPIC  -g -O2 -c multiscan.c -o multiscan.o
+>> gcc -arch ppc -std=gnu99 -dynamiclib -Wl,-headerpad_max_install_names
+>> -mmacosx-version-min=10.4 -undefined dynamic_lookup -single_module
+>> -multiply_defined suppress -L/usr/local/lib -o multiscan.so
+>> multiscan.o -F/Library/Frameworks/R.framework/.. -framework R
+>> -Wl,-framework -Wl,CoreFoundation
+>> ** R
+>> ** data
+>> ** inst
+>> ** preparing package for lazy loading
+>> ** help
+>> *** installing help indices
+>>  >>> Building/Updating help pages for package 'multiscan'
+>>      Formats: text html latex example
+>>   multiscan                         text    html    latex   example
+>>   murine                            text    html    latex
+>>   plot.multiscan                    text    html    latex   example
+>> ** building package indices ...
+>> * DONE (multiscan)
+>> * creating vignettes ... ERROR
+>> Error in dyn.load(file, DLLpath = DLLpath, ...) :
+>>   unable to load shared library
+>> '/tmp/Rinst2461267252/multiscan/libs/i386/multiscan.so':
+>>   dlopen(/tmp/Rinst2461267252/multiscan/libs/i386/multiscan.so, 6):
+>> Library not loaded:
+>> /Library/Frameworks/R.framework/Versions/2.10/Resources/lib/libR.dylib
+>>   Referenced from: /tmp/Rinst2461267252/multiscan/libs/i386/multiscan.so
+>>   Reason: Incompatible library version: multiscan.so requires version
+>> 2.10.0 or later, but libR.dylib provides version 2.9.0
+>>
+>> Error: processing vignette 'multiscan.Rnw' failed with diagnostics:
+>>  chunk 1
+>> Error : package/namespace load failed for 'multiscan'
+>> Execution halted
+>>
+>>
+>
+
+
+From hpages at fhcrc.org  Tue Jul 28 19:27:50 2009
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Tue, 28 Jul 2009 10:27:50 -0700
+Subject: [Bioc-devel] R source code files of package vignettes
+In-Reply-To: <20090728082201.M7420@curie.fr>
+References: <20090728082201.M7420@curie.fr>
+Message-ID: <4A6F3516.9020800@fhcrc.org>
+
+Hi Joern,
+
+One possible workaround would be to replace the dummy Rnw file by a
+version of the true vignette where all the code chunks are tagged
+with eval=FALSE. Then you would need to keep in sync 2 versions of the
+same file: the eval=TRUE and the eval=FALSE versions. But that can
+easily be achieved on Unix with a 2 line shell script using the sed
+command.
+
+Cheers,
+H.
+
+Joern Toedling wrote:
+> Dear all,
+> 
+> I would welcome your feedback on a small problem regarding vignettes.
+> For the data package ccTutorial, I pre-build the vignettes on my machine, as
+> building these vignettes takes considerable time. The folder 'inst/doc' only
+> contains dummy versions of the two vignettes and a Makefile which copies the
+> pre-built vignettes from another directory into 'doc' after running Sweave on
+> the dummy files.
+> I would also like to provide the source code of the pre-built vignettes
+> in the doc directory (as these are also linked on the BioC package web page).
+> However, having the *R files copied from the other directory into doc via use
+> of the Makefile is pointless as it seems that the command Stangle is run on
+> the dummy vignettes afterwards. So the source code files in the directory
+> 'doc' only contain the non-relevant source code of the dummy files. Do you
+> know of a way to avoid having Stangle run on the dummy files? Or is there
+> another way to copy files afterwards?
+> 
+> Cheers,
+> Joern
+> 
+> ---
+> Joern Toedling
+> Institut Curie -- U900
+> 26 rue d'Ulm, 75005 Paris, FRANCE
+> Tel. +33 (0)156246926
+> 
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From khansen at stat.berkeley.edu  Tue Jul 28 20:33:50 2009
+From: khansen at stat.berkeley.edu (Kasper Daniel Hansen)
+Date: Tue, 28 Jul 2009 11:33:50 -0700
+Subject: [Bioc-devel] R source code files of package vignettes
+In-Reply-To: <4A6F3516.9020800@fhcrc.org>
+References: <20090728082201.M7420@curie.fr> <4A6F3516.9020800@fhcrc.org>
+Message-ID: <7143AFA8-B930-4908-8278-A9972FC38B1C@stat.berkeley.edu>
+
+To make it even easier you can have a
+\SweaveOpts{eval=FALSE}
+in your preamble. This sets eval=FALSE to be the default value for all  
+chunks.
+
+Kasper
+
+On Jul 28, 2009, at 10:27 , Herv? Pag?s wrote:
+
+> Hi Joern,
+>
+> One possible workaround would be to replace the dummy Rnw file by a
+> version of the true vignette where all the code chunks are tagged
+> with eval=FALSE. Then you would need to keep in sync 2 versions of the
+> same file: the eval=TRUE and the eval=FALSE versions. But that can
+> easily be achieved on Unix with a 2 line shell script using the sed
+> command.
+>
+> Cheers,
+> H.
+>
+> Joern Toedling wrote:
+>> Dear all,
+>> I would welcome your feedback on a small problem regarding vignettes.
+>> For the data package ccTutorial, I pre-build the vignettes on my  
+>> machine, as
+>> building these vignettes takes considerable time. The folder 'inst/ 
+>> doc' only
+>> contains dummy versions of the two vignettes and a Makefile which  
+>> copies the
+>> pre-built vignettes from another directory into 'doc' after running  
+>> Sweave on
+>> the dummy files.
+>> I would also like to provide the source code of the pre-built  
+>> vignettes
+>> in the doc directory (as these are also linked on the BioC package  
+>> web page).
+>> However, having the *R files copied from the other directory into  
+>> doc via use
+>> of the Makefile is pointless as it seems that the command Stangle  
+>> is run on
+>> the dummy vignettes afterwards. So the source code files in the  
+>> directory
+>> 'doc' only contain the non-relevant source code of the dummy files.  
+>> Do you
+>> know of a way to avoid having Stangle run on the dummy files? Or is  
+>> there
+>> another way to copy files afterwards?
+>> Cheers,
+>> Joern
+>> ---
+>> Joern Toedling
+>> Institut Curie -- U900
+>> 26 rue d'Ulm, 75005 Paris, FRANCE
+>> Tel. +33 (0)156246926
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> -- 
+> Herv? Pag?s
+>
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M2-B876
+> P.O. Box 19024
+> Seattle, WA 98109-1024
+>
+> E-mail: hpages at fhcrc.org
+> Phone:  (206) 667-5791
+> Fax:    (206) 667-1319
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From fhahne at fhcrc.org  Tue Jul 28 22:43:31 2009
+From: fhahne at fhcrc.org (Florian Hahne)
+Date: Tue, 28 Jul 2009 13:43:31 -0700
+Subject: [Bioc-devel] R source code files of package vignettes
+In-Reply-To: <4A6F3516.9020800@fhcrc.org>
+References: <20090728082201.M7420@curie.fr> <4A6F3516.9020800@fhcrc.org>
+Message-ID: <A28AF602-9935-4E5B-8564-F934D1CA79AE@fhcrc.org>
+
+Hi Joern,
+take a look at the cellHTS2 package where I use Herve's suggestion for  
+the cellHTS2Complete vignette. The only slight nuisance here is that  
+all the code chunks in the .R file will be commented out...
+Also this section of the writing extensions manual might be  
+enlightening:
+
+By default R CMD build will run Sweave on all files in Sweave format.  
+If no Makefile is found in directory inst/doc, then texi2dvi --pdf is  
+run on all vignettes. Whenever a Makefile is found, then R CMD build  
+will try to run make after the Sweave step, so PDF manuals can be  
+created from arbitrary source formats (plain LaTeX files, ...). The  
+first target in the Makefile should take care of both creation of PDF  
+files and cleaning up afterwards, i.e., delete all files that shall  
+not appear in the final package archive. Note that the make step is  
+executed independently from the presence of any files in Sweave format.
+
+As far as I remember, Stangle is called before the Makefile is executed
+Florian
+
+
+
+On 28.07.2009, at 10:27, Herv? Pag?s wrote:
+
+> Hi Joern,
+>
+> One possible workaround would be to replace the dummy Rnw file by a
+> version of the true vignette where all the code chunks are tagged
+> with eval=FALSE. Then you would need to keep in sync 2 versions of the
+> same file: the eval=TRUE and the eval=FALSE versions. But that can
+> easily be achieved on Unix with a 2 line shell script using the sed
+> command.
+>
+> Cheers,
+> H.
+>
+> Joern Toedling wrote:
+>> Dear all,
+>> I would welcome your feedback on a small problem regarding vignettes.
+>> For the data package ccTutorial, I pre-build the vignettes on my  
+>> machine, as
+>> building these vignettes takes considerable time. The folder 'inst/ 
+>> doc' only
+>> contains dummy versions of the two vignettes and a Makefile which  
+>> copies the
+>> pre-built vignettes from another directory into 'doc' after running  
+>> Sweave on
+>> the dummy files.
+>> I would also like to provide the source code of the pre-built  
+>> vignettes
+>> in the doc directory (as these are also linked on the BioC package  
+>> web page).
+>> However, having the *R files copied from the other directory into  
+>> doc via use
+>> of the Makefile is pointless as it seems that the command Stangle  
+>> is run on
+>> the dummy vignettes afterwards. So the source code files in the  
+>> directory
+>> 'doc' only contain the non-relevant source code of the dummy files.  
+>> Do you
+>> know of a way to avoid having Stangle run on the dummy files? Or is  
+>> there
+>> another way to copy files afterwards?
+>> Cheers,
+>> Joern
+>> ---
+>> Joern Toedling
+>> Institut Curie -- U900
+>> 26 rue d'Ulm, 75005 Paris, FRANCE
+>> Tel. +33 (0)156246926
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> -- 
+> Herv? Pag?s
+>
+> Program in Computational Biology
+> Division of Public Health Sciences
+> Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N, M2-B876
+> P.O. Box 19024
+> Seattle, WA 98109-1024
+>
+> E-mail: hpages at fhcrc.org
+> Phone:  (206) 667-5791
+> Fax:    (206) 667-1319
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From hpages at fhcrc.org  Tue Jul 28 23:14:10 2009
+From: hpages at fhcrc.org (=?ISO-8859-1?Q?Herv=E9_Pag=E8s?=)
+Date: Tue, 28 Jul 2009 14:14:10 -0700
+Subject: [Bioc-devel] R source code files of package vignettes
+In-Reply-To: <7143AFA8-B930-4908-8278-A9972FC38B1C@stat.berkeley.edu>
+References: <20090728082201.M7420@curie.fr> <4A6F3516.9020800@fhcrc.org>
+	<7143AFA8-B930-4908-8278-A9972FC38B1C@stat.berkeley.edu>
+Message-ID: <4A6F6A22.2080706@fhcrc.org>
+
+Kasper Daniel Hansen wrote:
+> To make it even easier you can have a
+> \SweaveOpts{eval=FALSE}
+> in your preamble. This sets eval=FALSE to be the default value for all 
+> chunks.
+
+That's indeed really good to know :-) Thanks Kasper!
+
+H.
+
+> 
+> Kasper
+> 
+> On Jul 28, 2009, at 10:27 , Herv? Pag?s wrote:
+> 
+>> Hi Joern,
+>>
+>> One possible workaround would be to replace the dummy Rnw file by a
+>> version of the true vignette where all the code chunks are tagged
+>> with eval=FALSE. Then you would need to keep in sync 2 versions of the
+>> same file: the eval=TRUE and the eval=FALSE versions. But that can
+>> easily be achieved on Unix with a 2 line shell script using the sed
+>> command.
+>>
+>> Cheers,
+>> H.
+>>
+>> Joern Toedling wrote:
+>>> Dear all,
+>>> I would welcome your feedback on a small problem regarding vignettes.
+>>> For the data package ccTutorial, I pre-build the vignettes on my 
+>>> machine, as
+>>> building these vignettes takes considerable time. The folder 
+>>> 'inst/doc' only
+>>> contains dummy versions of the two vignettes and a Makefile which 
+>>> copies the
+>>> pre-built vignettes from another directory into 'doc' after running 
+>>> Sweave on
+>>> the dummy files.
+>>> I would also like to provide the source code of the pre-built vignettes
+>>> in the doc directory (as these are also linked on the BioC package 
+>>> web page).
+>>> However, having the *R files copied from the other directory into doc 
+>>> via use
+>>> of the Makefile is pointless as it seems that the command Stangle is 
+>>> run on
+>>> the dummy vignettes afterwards. So the source code files in the 
+>>> directory
+>>> 'doc' only contain the non-relevant source code of the dummy files. 
+>>> Do you
+>>> know of a way to avoid having Stangle run on the dummy files? Or is 
+>>> there
+>>> another way to copy files afterwards?
+>>> Cheers,
+>>> Joern
+>>> ---
+>>> Joern Toedling
+>>> Institut Curie -- U900
+>>> 26 rue d'Ulm, 75005 Paris, FRANCE
+>>> Tel. +33 (0)156246926
+>>> _______________________________________________
+>>> Bioc-devel at stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>> -- 
+>> Herv? Pag?s
+>>
+>> Program in Computational Biology
+>> Division of Public Health Sciences
+>> Fred Hutchinson Cancer Research Center
+>> 1100 Fairview Ave. N, M2-B876
+>> P.O. Box 19024
+>> Seattle, WA 98109-1024
+>>
+>> E-mail: hpages at fhcrc.org
+>> Phone:  (206) 667-5791
+>> Fax:    (206) 667-1319
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+-- 
+Herv? Pag?s
+
+Program in Computational Biology
+Division of Public Health Sciences
+Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N, M2-B876
+P.O. Box 19024
+Seattle, WA 98109-1024
+
+E-mail: hpages at fhcrc.org
+Phone:  (206) 667-5791
+Fax:    (206) 667-1319
+
+
+From tfrayner at gmail.com  Wed Jul 29 15:11:27 2009
+From: tfrayner at gmail.com (Tim Rayner)
+Date: Wed, 29 Jul 2009 14:11:27 +0100
+Subject: [Bioc-devel] Memory limits for individual objects
+Message-ID: <32698540907290611j32b08876k204007fae742fee8@mail.gmail.com>
+
+Hi,
+
+I'm running R 2.9.0 on Mac OS X, and attempting to import a large
+number of SNP calls into a snp.matrix object as supported by the
+snpMatrix package. I've run into a problem where I'd like the final
+matrix object to contain around 5e9 elements, but of course the
+maximum vector (and matrix) size in R is 2^31-1 (approx. 2e9), and I
+get the dreaded "allocMatrix: too many elements specified" error
+message. An obvious workaround is to split the analysis up into parts
+which will fit within this limit, but I feel I should ask whether
+there's a better way. I'm using a 64-bit build of R and I was
+wondering whether anyone had experience changing the indexing of R
+vectors and matrices from signed 32-bit integers to signed 64-bit
+integers? Or should I just head over to R-devel directly (in which
+case, apologies for the mispost)?
+
+There was a not-terribly-helpful exchange regarding this question on
+the main Bioconductor list last year:
+
+http://www.nabble.com/allocMatrix-limits-td18763791.html
+
+Since the snpMatrix package stores each element as type 'raw', the
+final memory consumption for the snp.matrix object should only be a
+handful of gigabytes, readily available in modern desktop computers.
+It would be nice to be able to use that memory.
+
+Many thanks,
+
+Tim Rayner
+
+
+Bioinformatician - Smith Lab
+Cambridge Institute for Medical Research
+University of Cambridge
+
+
+From mtmorgan at fhcrc.org  Wed Jul 29 17:06:44 2009
+From: mtmorgan at fhcrc.org (Martin Morgan)
+Date: Wed, 29 Jul 2009 08:06:44 -0700
+Subject: [Bioc-devel] Memory limits for individual objects
+In-Reply-To: <32698540907290611j32b08876k204007fae742fee8@mail.gmail.com> (Tim
+	Rayner's message of "Wed, 29 Jul 2009 14:11:27 +0100")
+References: <32698540907290611j32b08876k204007fae742fee8@mail.gmail.com>
+Message-ID: <6ph3a8ffrzv.fsf@gopher4.fhcrc.org>
+
+Hi Tim --
+
+Tim Rayner <tfrayner at gmail.com> writes:
+
+> Hi,
+>
+> I'm running R 2.9.0 on Mac OS X, and attempting to import a large
+> number of SNP calls into a snp.matrix object as supported by the
+> snpMatrix package. I've run into a problem where I'd like the final
+> matrix object to contain around 5e9 elements, but of course the
+> maximum vector (and matrix) size in R is 2^31-1 (approx. 2e9), and I
+> get the dreaded "allocMatrix: too many elements specified" error
+> message. An obvious workaround is to split the analysis up into parts
+> which will fit within this limit, but I feel I should ask whether
+> there's a better way. I'm using a 64-bit build of R and I was
+> wondering whether anyone had experience changing the indexing of R
+> vectors and matrices from signed 32-bit integers to signed 64-bit
+> integers? Or should I just head over to R-devel directly (in which
+> case, apologies for the mispost)?
+>
+> There was a not-terribly-helpful exchange regarding this question on
+> the main Bioconductor list last year:
+>
+> http://www.nabble.com/allocMatrix-limits-td18763791.html
+
+I'm not speaking with too much authority here, not having looked in
+detail into snpMatrix.
+
+It would be a significant task (not impossible, very challenging if
+one aims for portability) to change this limitation in R. The fastest
+way forward is probably to use some on-disk storage (I like the ncdf
+package for large numeric matrices) coupled with access to slices at
+a time.  Alternatively you can manage your own memory via external
+pointers, etc., but this requires that you implement whatever
+matrix-like functionality you want, losing all of the hard work others
+have done. There are packages in the bioc repository that have
+addressed these issues to one degree or another, including
+BufferedMatrix and externalVector.
+
+An interesting activity might augment the snpMatrix package with
+external pointer memory management, because as you say this really is
+a case where the data quickly hit the R limit, and restricting focus
+to snpMatrix delimits the functionality that would need to be provided
+by your code.
+
+Another possibility is to scrap the strict 'matrix' representation;
+maybe the Rle class from IRanges would be a very effective compression
+tool, leading to straight-forward and efficient algorithms for basic
+calculations, and allowing not too expensive expansion of slices of
+the Rle to full vectors for more elaborate computation.
+
+Martin
+
+> Since the snpMatrix package stores each element as type 'raw', the
+> final memory consumption for the snp.matrix object should only be a
+> handful of gigabytes, readily available in modern desktop computers.
+> It would be nice to be able to use that memory.
+>
+> Many thanks,
+>
+> Tim Rayner
+>
+>
+> Bioinformatician - Smith Lab
+> Cambridge Institute for Medical Research
+> University of Cambridge
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+-- 
+Martin Morgan
+Computational Biology / Fred Hutchinson Cancer Research Center
+1100 Fairview Ave. N.
+PO Box 19024 Seattle, WA 98109
+
+Location: Arnold Building M1 B861
+Phone: (206) 667-2793
+
+
+From stvjc at channing.harvard.edu  Wed Jul 29 17:20:53 2009
+From: stvjc at channing.harvard.edu (Vincent Carey)
+Date: Wed, 29 Jul 2009 08:20:53 -0700
+Subject: [Bioc-devel] Memory limits for individual objects
+In-Reply-To: <6ph3a8ffrzv.fsf@gopher4.fhcrc.org>
+References: <32698540907290611j32b08876k204007fae742fee8@mail.gmail.com>
+	<6ph3a8ffrzv.fsf@gopher4.fhcrc.org>
+Message-ID: <2c3c9e80907290820v7ec1e55bx73a1bd5200fb11bf@mail.gmail.com>
+
+GGtools uses snpMatrix snp.matrix instances extensively.  A list of
+chromosome-specific
+snp.matrices is used.  You might be able decompose the data in various
+ways to keep very
+large quantities of genotype data in an object without having a single
+entity with more than
+2e9 elements?  on a machine with adequate ram, list(integer(2e9),
+integer(2e9)) can be constructed.
+
+On Wed, Jul 29, 2009 at 8:06 AM, Martin Morgan<mtmorgan at fhcrc.org> wrote:
+> Hi Tim --
+>
+> Tim Rayner <tfrayner at gmail.com> writes:
+>
+>> Hi,
+>>
+>> I'm running R 2.9.0 on Mac OS X, and attempting to import a large
+>> number of SNP calls into a snp.matrix object as supported by the
+>> snpMatrix package. I've run into a problem where I'd like the final
+>> matrix object to contain around 5e9 elements, but of course the
+>> maximum vector (and matrix) size in R is 2^31-1 (approx. 2e9), and I
+>> get the dreaded "allocMatrix: too many elements specified" error
+>> message. An obvious workaround is to split the analysis up into parts
+>> which will fit within this limit, but I feel I should ask whether
+>> there's a better way. I'm using a 64-bit build of R and I was
+>> wondering whether anyone had experience changing the indexing of R
+>> vectors and matrices from signed 32-bit integers to signed 64-bit
+>> integers? Or should I just head over to R-devel directly (in which
+>> case, apologies for the mispost)?
+>>
+>> There was a not-terribly-helpful exchange regarding this question on
+>> the main Bioconductor list last year:
+>>
+>> http://www.nabble.com/allocMatrix-limits-td18763791.html
+>
+> I'm not speaking with too much authority here, not having looked in
+> detail into snpMatrix.
+>
+> It would be a significant task (not impossible, very challenging if
+> one aims for portability) to change this limitation in R. The fastest
+> way forward is probably to use some on-disk storage (I like the ncdf
+> package for large numeric matrices) coupled with access to slices at
+> a time. ?Alternatively you can manage your own memory via external
+> pointers, etc., but this requires that you implement whatever
+> matrix-like functionality you want, losing all of the hard work others
+> have done. There are packages in the bioc repository that have
+> addressed these issues to one degree or another, including
+> BufferedMatrix and externalVector.
+>
+> An interesting activity might augment the snpMatrix package with
+> external pointer memory management, because as you say this really is
+> a case where the data quickly hit the R limit, and restricting focus
+> to snpMatrix delimits the functionality that would need to be provided
+> by your code.
+>
+> Another possibility is to scrap the strict 'matrix' representation;
+> maybe the Rle class from IRanges would be a very effective compression
+> tool, leading to straight-forward and efficient algorithms for basic
+> calculations, and allowing not too expensive expansion of slices of
+> the Rle to full vectors for more elaborate computation.
+>
+> Martin
+>
+>> Since the snpMatrix package stores each element as type 'raw', the
+>> final memory consumption for the snp.matrix object should only be a
+>> handful of gigabytes, readily available in modern desktop computers.
+>> It would be nice to be able to use that memory.
+>>
+>> Many thanks,
+>>
+>> Tim Rayner
+>>
+>>
+>> Bioinformatician - Smith Lab
+>> Cambridge Institute for Medical Research
+>> University of Cambridge
+>>
+>> _______________________________________________
+>> Bioc-devel at stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+> --
+> Martin Morgan
+> Computational Biology / Fred Hutchinson Cancer Research Center
+> 1100 Fairview Ave. N.
+> PO Box 19024 Seattle, WA 98109
+>
+> Location: Arnold Building M1 B861
+> Phone: (206) 667-2793
+>
+> _______________________________________________
+> Bioc-devel at stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+
+-- 
+Vincent Carey, PhD
+Biostatistics, Channing Lab
+617 525 2265
+
+

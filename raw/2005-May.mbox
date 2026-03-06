@@ -1,0 +1,3359 @@
+From sfalcon at fhcrc.org  Fri May  6 16:07:06 2005
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri May  6 16:07:13 2005
+Subject: [Bioc-devel] Warnings on today's check results page
+Message-ID: <m2r7gkfnxx.fsf@macaroni.local>
+
+Hi all,
+
+We are experiencing some technical difficulties with our build
+process.  The latest symptom is that the check process is happening
+before vignettes are built.  So today's check results [1] show many
+warnings which are false positives.  
+
+Just wanted to let y'all know that we are aware of the issue and
+working to resolve it.
+
+Thanks,
+
++ seth
+
+
+[1] http://www.bioconductor.org/checkResults/checkResults.html
+
+From ch-bioc at bobobeach.com  Thu May 19 00:36:17 2005
+From: ch-bioc at bobobeach.com (Cyrus Harmon)
+Date: Thu May 19 00:36:34 2005
+Subject: [Bioc-devel] widgettools download problem w/ getBioC
+Message-ID: <DD34958A-E303-439C-BF12-7665EC642E71@bobobeach.com>
+
+on both R 2.1.0 and the latest SVN sources, when using getBioC 
+(develOK=TRUE) I get an error attempting to download widgetTools from  
+BIOCRel1.6/src/contrib. I figure there are three possibilities:
+
+1. The repository is in an unstable state as it gets prepped for the  
+1.6 release
+2. somehow widgetTools got messed up
+
+or
+
+3. another operator error on my part
+
+Anyone else seeing this error?
+
+Thanks,
+
+Cyrus
+
+From sfalcon at fhcrc.org  Thu May 19 01:23:40 2005
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu May 19 01:23:52 2005
+Subject: [Bioc-devel] widgettools download problem w/ getBioC
+In-Reply-To: <DD34958A-E303-439C-BF12-7665EC642E71@bobobeach.com> (Cyrus
+	Harmon's message of "Wed, 18 May 2005 15:36:17 -0700")
+References: <DD34958A-E303-439C-BF12-7665EC642E71@bobobeach.com>
+Message-ID: <m2oeb8gltv.fsf@macaroni.local>
+
+I just replied to Cyrus off-list by accident... here's what I said:
+
+Cyrus Harmon <ch-bioc@bobobeach.com> writes:
+
+> on both R 2.1.0 and the latest SVN sources, when using getBioC 
+> (develOK=TRUE) I get an error attempting to download widgetTools from  
+> BIOCRel1.6/src/contrib. I figure there are three possibilities:
+>
+> 1. The repository is in an unstable state as it gets prepped for the  
+> 1.6 release
+
+That would be the issue: getBioC (the current version on the site)
+doesn't know about the updated repository layouts.
+
+Since you asked, please try:
+
+source("http://www.bioconductor.org/getBioC-1.6.R")
+And then
+getBioC(...)  
+
+The script now accepts a pkgs argument that should allow you to
+specify a character vector of Bioconductor packages to install.
+
+if you want the default package set, then getBioC() should do it.
+
+The develOK arg is no longer supported.  The Bioconductor package
+repository you will access depends on the version of R you use.  2.0
+=> Bioc 1.5, 2.1 => Bioc 1.6, and 2.2 => Bioc 1.7 (not yet available).
+
+Would love to hear how this works/doesn't work for you.  And if you
+have time to report back, please indicate sessionInfo() output as
+well.
+
+Thanks!
+
++ seth
+
+From ch-bioc at bobobeach.com  Thu May 19 01:39:17 2005
+From: ch-bioc at bobobeach.com (Cyrus Harmon)
+Date: Thu May 19 01:39:38 2005
+Subject: [Bioc-devel] widgettools download problem w/ getBioC
+In-Reply-To: <m2oeb8gltv.fsf@macaroni.local>
+References: <DD34958A-E303-439C-BF12-7665EC642E71@bobobeach.com>
+	<m2oeb8gltv.fsf@macaroni.local>
+Message-ID: <84E8E8F1-78A3-4ABF-AE84-4956020DD5F4@bobobeach.com>
+
+
+On May 18, 2005, at 4:23 PM, Seth Falcon wrote:
+
+> Cyrus Harmon <ch-bioc@bobobeach.com> writes:
+>> 1. The repository is in an unstable state as it gets prepped for the
+>> 1.6 release
+>
+> That would be the issue: getBioC (the current version on the site)
+> doesn't know about the updated repository layouts.
+
+That's what I figured. The web pages that describe current releases  
+and timelines could use an update. (I think there's one page that  
+says that 1.5 is scheduled for release in Nov. 04 :-) ).
+
+> Since you asked, please try:
+>
+> source("http://www.bioconductor.org/getBioC-1.6.R")
+> And then
+> getBioC(...)
+
+Will do. Before I go off and do this, a couple quick questions:
+
+1. What R versions are supported? I'm happy to do this on both  
+R-2.1.0 and R-SVN-current-as-of-today, but if either is known to not  
+be supported, it will save me time tracking this down. I'm not too  
+interested in pre-2.1.0 releases, although I imagine others might be.
+
+2. What to do about previous bioconductor installations? Do we  
+support getBioC for 1.6 on top of existing packages? Is there an  
+expectation that users blow away there old versions? Either approach  
+seems like it might be reasonable, but I'll skip testing the install- 
+over-previous-bioconductor thing if that's unsupported/known-not-to- 
+work.
+
+> The script now accepts a pkgs argument that should allow you to
+> specify a character vector of Bioconductor packages to install.
+
+Sounds good!
+
+> if you want the default package set, then getBioC() should do it.
+>
+> The develOK arg is no longer supported.  The Bioconductor package
+> repository you will access depends on the version of R you use.  2.0
+> => Bioc 1.5, 2.1 => Bioc 1.6, and 2.2 => Bioc 1.7 (not yet available).
+
+Again, sounds like an improvement.
+
+> Would love to hear how this works/doesn't work for you.  And if you
+> have time to report back, please indicate sessionInfo() output as
+> well.
+>
+> Thanks!
+
+My pleasure! Congrats on the impending (or completed? I'm still not  
+sure...) release!
+
+Cyrus
+
+From ch-bioc at bobobeach.com  Thu May 19 01:55:42 2005
+From: ch-bioc at bobobeach.com (Cyrus Harmon)
+Date: Thu May 19 01:55:54 2005
+Subject: [Bioc-devel] widgettools download problem w/ getBioC
+In-Reply-To: <84E8E8F1-78A3-4ABF-AE84-4956020DD5F4@bobobeach.com>
+References: <DD34958A-E303-439C-BF12-7665EC642E71@bobobeach.com>
+	<m2oeb8gltv.fsf@macaroni.local>
+	<84E8E8F1-78A3-4ABF-AE84-4956020DD5F4@bobobeach.com>
+Message-ID: <96D5B007-9B80-442D-BA0D-90565564065B@bobobeach.com>
+
+
+On May 18, 2005, at 4:39 PM, Cyrus Harmon wrote:
+
+> 1. What R versions are supported? I'm happy to do this on both  
+> R-2.1.0 and R-SVN-current-as-of-today, but if either is known to  
+> not be supported, it will save me time tracking this down. I'm not  
+> too interested in pre-2.1.0 releases, although I imagine others  
+> might be.
+
+I'm getting 404 errors looking for the 2.2 binary release directory  
+when I run getBioC. Perhaps getBioC should check the version and warn  
+if we're using 2.2?
+
+> 2. What to do about previous bioconductor installations? Do we  
+> support getBioC for 1.6 on top of existing packages? Is there an  
+> expectation that users blow away there old versions? Either  
+> approach seems like it might be reasonable, but I'll skip testing  
+> the install-over-previous-bioconductor thing if that's unsupported/ 
+> known-not-to-work.
+
+Is there an easy (or otherwise recommended) way to uninstall a BioC  
+installation?
+
+Thanks again,
+
+Cyrus
+
+From ch-bioc at bobobeach.com  Thu May 19 02:11:35 2005
+From: ch-bioc at bobobeach.com (Cyrus Harmon)
+Date: Thu May 19 02:11:47 2005
+Subject: [Bioc-devel] excessive downloading of packages?
+In-Reply-To: <96D5B007-9B80-442D-BA0D-90565564065B@bobobeach.com>
+References: <DD34958A-E303-439C-BF12-7665EC642E71@bobobeach.com>
+	<m2oeb8gltv.fsf@macaroni.local>
+	<84E8E8F1-78A3-4ABF-AE84-4956020DD5F4@bobobeach.com>
+	<96D5B007-9B80-442D-BA0D-90565564065B@bobobeach.com>
+Message-ID: <7FA03843-B26F-4AF6-B3F0-AB5FBC65364A@bobobeach.com>
+
+
+Perhaps this a user-settable thing I'm missing, but now it seems that  
+every time I call getBioC I download all of the packages. I'm using  
+getBioC v0.1 from the getBioC-1.6.R URL. Isn't there some sort of  
+package cache that can be used for this?
+
+(Also, the fact that the build script is v0.1 and we're using  
+getBioC-1.6 might confuse users a bit)
+
+Thanks,
+
+Cyrus
+
+From sfalcon at fhcrc.org  Thu May 19 02:14:00 2005
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu May 19 02:14:12 2005
+Subject: [Bioc-devel] widgettools download problem w/ getBioC
+In-Reply-To: <84E8E8F1-78A3-4ABF-AE84-4956020DD5F4@bobobeach.com> (Cyrus
+	Harmon's message of "Wed, 18 May 2005 16:39:17 -0700")
+References: <DD34958A-E303-439C-BF12-7665EC642E71@bobobeach.com>
+	<m2oeb8gltv.fsf@macaroni.local>
+	<84E8E8F1-78A3-4ABF-AE84-4956020DD5F4@bobobeach.com>
+Message-ID: <m2ll6cf4xj.fsf@macaroni.local>
+
+Cyrus Harmon <ch-bioc@bobobeach.com> writes:
+
+> Will do. Before I go off and do this, a couple quick questions:
+>
+> 1. What R versions are supported?
+
+2.1.x
+
+and 2.0.x should continue to work as before.
+
+We do not yet have things setup for 2.2.x, but will within a couple
+days for sure.
+
+
+> 2. What to do about previous bioconductor installations? Do we  
+> support getBioC for 1.6 on top of existing packages? 
+
+Well, this would only come up if you have a separate package library.
+It should work to install over existing packages, but I don't know for
+sure.  I will try it!
+
+I think the recommendation will be to install into a clean package
+library.  
+
+> My pleasure! Congrats on the impending (or completed? I'm still not  
+> sure...) release!
+
+Well, we're sneaking it in ;-)
+
+Things are just about there.  We will be testing overnight and plan to
+make an official announcement and website update tomorrow.
+
+Thanks again for your help.
+
++ seth
+
+From sfalcon at fhcrc.org  Thu May 19 02:15:47 2005
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu May 19 02:15:58 2005
+Subject: [Bioc-devel] widgettools download problem w/ getBioC
+In-Reply-To: <96D5B007-9B80-442D-BA0D-90565564065B@bobobeach.com> (Cyrus
+	Harmon's message of "Wed, 18 May 2005 16:55:42 -0700")
+References: <DD34958A-E303-439C-BF12-7665EC642E71@bobobeach.com>
+	<m2oeb8gltv.fsf@macaroni.local>
+	<84E8E8F1-78A3-4ABF-AE84-4956020DD5F4@bobobeach.com>
+	<96D5B007-9B80-442D-BA0D-90565564065B@bobobeach.com>
+Message-ID: <m2hdh0f4uk.fsf@macaroni.local>
+
+Cyrus Harmon <ch-bioc@bobobeach.com> writes:
+
+> On May 18, 2005, at 4:39 PM, Cyrus Harmon wrote:
+>
+>> 1. What R versions are supported? I'm happy to do this on both
+>> R-2.1.0 and R-SVN-current-as-of-today, but if either is known to
+>> not be supported, it will save me time tracking this down. I'm not
+>> too interested in pre-2.1.0 releases, although I imagine others
+>> might be.
+>
+> I'm getting 404 errors looking for the 2.2 binary release directory  
+> when I run getBioC. Perhaps getBioC should check the version and warn  
+> if we're using 2.2?
+
+Well, it does detect 2.2 it is just that the 2.2 appropriate Bioc
+package repositories don't yet exist.  But perhaps you are right that
+until we do have those in place some other message would be friendlier
+:-)
+
+>
+>> 2. What to do about previous bioconductor installations? Do we
+>> support getBioC for 1.6 on top of existing packages? Is there an
+>> expectation that users blow away there old versions? Either
+>> approach seems like it might be reasonable, but I'll skip testing
+>> the install-over-previous-bioconductor thing if that's unsupported/
+>> known-not-to-work.
+>
+> Is there an easy (or otherwise recommended) way to uninstall a BioC  
+> installation?
+
+That depends on how you installed it initially.  I like to install
+into a separate package library directory.  Then I can nuke that to
+uninstall.
+
+HTH,
+
++ seth
+
+From ch-bioc at bobobeach.com  Thu May 19 02:29:34 2005
+From: ch-bioc at bobobeach.com (Cyrus Harmon)
+Date: Thu May 19 02:29:53 2005
+Subject: [Bioc-devel] makecdfenv still broken
+In-Reply-To: <m2hdh0f4uk.fsf@macaroni.local>
+References: <DD34958A-E303-439C-BF12-7665EC642E71@bobobeach.com>
+	<m2oeb8gltv.fsf@macaroni.local>
+	<84E8E8F1-78A3-4ABF-AE84-4956020DD5F4@bobobeach.com>
+	<96D5B007-9B80-442D-BA0D-90565564065B@bobobeach.com>
+	<m2hdh0f4uk.fsf@macaroni.local>
+Message-ID: <632D9BB0-8F2A-488A-B095-A5126DFB281B@bobobeach.com>
+
+
+With getBioC-1.6 on R 2.1.0, I'm still getting makecdfenv 1.5.1 which  
+breaks when compiling with GCC 4 on big-endian machines because of  
+the bogus destination = ~destination line that needs to be commented  
+out. Any chance the package maintainer can apply this change and bump  
+makecdfenv before bioc 1.6 hits the streets?
+
+Thanks,
+
+Cyrus
+
+From sfalcon at fhcrc.org  Thu May 19 03:03:30 2005
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Thu May 19 03:03:45 2005
+Subject: [Bioc-devel] widgettools download problem w/ getBioC
+In-Reply-To: <A289EF2A-F63C-47CE-8086-08182F329E39@bobobeach.com> (Cyrus
+	Harmon's message of "Wed, 18 May 2005 17:23:30 -0700")
+References: <DD34958A-E303-439C-BF12-7665EC642E71@bobobeach.com>
+	<m2oeb8gltv.fsf@macaroni.local>
+	<84E8E8F1-78A3-4ABF-AE84-4956020DD5F4@bobobeach.com>
+	<96D5B007-9B80-442D-BA0D-90565564065B@bobobeach.com>
+	<m2hdh0f4uk.fsf@macaroni.local>
+	<A289EF2A-F63C-47CE-8086-08182F329E39@bobobeach.com>
+Message-ID: <m2ekc4do2l.fsf@macaroni.local>
+
+Cyrus Harmon <cyrus@bobobeach.com> writes:
+
+> Is it reasonable to point a 2.2 installation at the 2.1 repository
+> or is that just crazy?
+
+It isn't crazy, but we make no claims that it will work.
+
+
+>> That depends on how you installed it initially.  I like to install
+>> into a separate package library directory.  Then I can nuke that to
+>> uninstall.
+>
+> I suppose most of the folks on bioc-dev probably know what this means  
+> and how to do this, but can you suggest how to do this?
+
+On unix-a-likes:
+
+shell:
+
+  mkdir bioc1.6
+  export R_LIBS=`pwd`/bioc1.6
+  ## you could have other items in your R_LIBS path if you want
+
+R:
+
+  mypkglib = "/path/to/bioc1.6"
+  ## if it is first in R_LIBS, you can get it like this:
+  ## mypkglib = .libPaths()[1]
+  source("http://www.bioconductor.org/getBioC.R")
+  getBioC(destdir=mypkglib)
+
++ seth
+
+PS: getBioC.R is now a new and improved script that detects your R
+version and sources an appropriate install script.
+
+From fcombes at gmail.com  Thu May 19 15:59:16 2005
+From: fcombes at gmail.com (Florence Combes)
+Date: Thu May 19 15:59:25 2005
+Subject: [Bioc-devel] bioconductor@stat.math.ethz.ch
+Message-ID: <73dae3060505190659525082b5@mail.gmail.com>
+
+Dear R-helpers,
+
+I am running well Perl and R on my Debian Linux, and I tried RSPerl.
+Installation is ok and all simple functions run well. But I have a
+problem to call the "lines" function.
+I would like to draw an histogram with the density curve on. Is is OK
+in R with the command:
+
+>x<-rnorm(1000)
+>hist(x,prob=T)
+>lines(density(x))
+
+for example.
+
+Now, I have a Perl script with which  pars files, and I obtain data in
+a list @distance. I draw an hist with RSPerl command (from Perl):
+
+--------------------------
+(---Perl script---)
+
+&R::initR("--silent");
+&R::library("RSPerl");
+@Rdata=&R::call("as.numeric", \@distance);
+
+&R::callWithNames("hist", {'', \@Rdata, 'main', '', 'xlab',
+"Distribution of the distances between oligo-5' and sequence 3'",
+'br', 15, 'col', 'gray', 'prob', 'T'} );
+
+&R::call("lines", ("density", \@Rdata)) );
+
+sleep(4);
+
+&R::call("dev.off");
+
+exit;
+-----------------------------
+
+All runs well: I obtained the histogram graph, and it seems that the
+density call runs well since I have the message
+"Performed the call, result has length 7"
+and I read the density fuction results in 7 parameters;
+but just after I have a message like "segmentation fault".
+
+I cannot understand what happens ?
+
+Has someone already encountered this problem or know how to abtain an
+histogram and the density line with RSPerl ???
+
+Thanks a lot for your help, caus I tried all I could think of ...
+
+Florence.
+
+From fcombes at gmail.com  Thu May 19 16:00:25 2005
+From: fcombes at gmail.com (Florence Combes)
+Date: Thu May 19 17:00:33 2005
+Subject: [Bioc-devel] R from Perl -- RSPerl and lines function.
+In-Reply-To: <73dae3060505190659525082b5@mail.gmail.com>
+References: <73dae3060505190659525082b5@mail.gmail.com>
+Message-ID: <73dae306050519070077527094@mail.gmail.com>
+
+Dear R-helpers,
+
+I am running well Perl and R on my Debian Linux, and I tried RSPerl.
+Installation is ok and all simple functions run well. But I have a
+problem to call the "lines" function.
+I would like to draw an histogram with the density curve on. Is is OK
+in R with the command:
+
+>x<-rnorm(1000)
+>hist(x,prob=T)
+>lines(density(x))
+
+for example.
+
+Now, I have a Perl script with which  pars files, and I obtain data in
+a list @distance. I draw an hist with RSPerl command (from Perl):
+
+--------------------------
+(---Perl script---)
+
+&R::initR("--silent");
+&R::library("RSPerl");
+@Rdata=&R::call("as.numeric", \@distance);
+
+&R::callWithNames("hist", {'', \@Rdata, 'main', '', 'xlab',
+"Distribution of the distances between oligo-5' and sequence 3'",
+'br', 15, 'col', 'gray', 'prob', 'T'} );
+
+&R::call("lines", ("density", \@Rdata)) );
+
+sleep(4);
+
+&R::call("dev.off");
+
+exit;
+-----------------------------
+
+All runs well: I obtained the histogram graph, and it seems that the
+density call runs well since I have the message
+"Performed the call, result has length 7"
+and I read the density fuction results in 7 parameters;
+but just after I have a message like "segmentation fault".
+
+I cannot understand what happens ?
+
+Has someone already encountered this problem or know how to abtain an
+histogram and the density line with RSPerl ???
+
+Thanks a lot for your help, caus I tried all I could think of ...
+
+Florence.
+
+From johannes.rainer at tugraz.at  Fri May 20 10:52:58 2005
+From: johannes.rainer at tugraz.at (Dipl.-Ing. Johannes Rainer)
+Date: Fri May 20 10:53:06 2005
+Subject: [Bioc-devel] Error during wrapup, what does this mean?
+Message-ID: <20050520105258.mnrai3tc408goc4o@webmail.tugraz.at>
+
+hi,
+i am getting the error message:
+
+> Error during wrapup: Object "Con" not found
+
+in my functions and have no idea from where this message comes (i have 
+renamed some function arguments from 'Con' to 'con', maybe the message 
+comes from there :) ). nevertheless i do not know where i should search 
+for this error (as the functions work like they should...). can anybody 
+tell me more to this error message?
+
+cheers, jo
+
+From sfalcon at fhcrc.org  Fri May 20 15:46:00 2005
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri May 20 15:46:09 2005
+Subject: [Bioc-devel] Error during wrapup, what does this mean?
+In-Reply-To: <20050520105258.mnrai3tc408goc4o@webmail.tugraz.at> (Dipl.'s
+	message of "Fri, 20 May 2005 10:52:58 +0200")
+References: <20050520105258.mnrai3tc408goc4o@webmail.tugraz.at>
+Message-ID: <m2u0kyko2v.fsf@macaroni.local>
+
+Hi Jo,
+
+"Dipl.-Ing. Johannes Rainer" <johannes.rainer@tugraz.at> writes:
+> i am getting the error message:
+>
+>> Error during wrapup: Object "Con" not found
+> in my functions and have no idea from where this message comes
+
+You'll need to post a bit more detail for any of us to have any idea
+what's going on :-)
+
+And since we've linked to it, I can now say, "Have a look at the
+posting guide": 
+http://neelix.molbiol.ox.ac.uk:8080/cgi-bin/ramasamy/wiki.cgi?BioConductor_Posting_Guide
+
+Best,
+
++ seth
+
+From johannes.rainer at tugraz.at  Fri May 20 15:46:04 2005
+From: johannes.rainer at tugraz.at (Dipl.-Ing. Johannes Rainer)
+Date: Fri May 20 15:46:12 2005
+Subject: [Bioc-devel] Error during wrapup, what does this mean?
+Message-ID: <20050520154604.dvaclbz71cc8kgkw@webmail.tugraz.at>
+
+hi, it's again me, but i found the problem...
+as i am working with database connections and if an error occurs in a 
+function call i want to roll back the whole stuff that has been written 
+into a database, i thought to be smart and defined with
+
+> options(error=expression(.rollItBack(Con)))
+
+where .rollItBack is a function that sends the command ROLLBACK 
+TRANSACTION to the database. well, i did not think, that when the error 
+occurs the object Con, which is a local variable in the function does 
+not exist, unless the user has called the connection object also 'Con'.
+
+now i want to ask how i can define a global variable from within a function.
+
+cheers, jo
+
+Quoting "Dipl.-Ing. Johannes Rainer" <johannes.rainer@tugraz.at>:
+
+> hi,
+> i am getting the error message:
+>
+>> Error during wrapup: Object "Con" not found
+>
+> in my functions and have no idea from where this message comes (i 
+> have renamed some function arguments from 'Con' to 'con', maybe the 
+> message comes from there :) ). nevertheless i do not know where i 
+> should search for this error (as the functions work like they 
+> should...). can anybody tell me more to this error message?
+>
+> cheers, jo
+>
+> _______________________________________________
+> Bioc-devel@stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+From jmacdon at med.umich.edu  Fri May 20 16:15:56 2005
+From: jmacdon at med.umich.edu (James W. MacDonald)
+Date: Fri May 20 16:17:51 2005
+Subject: [Bioc-devel] Error during wrapup, what does this mean?
+In-Reply-To: <20050520154604.dvaclbz71cc8kgkw@webmail.tugraz.at>
+References: <20050520154604.dvaclbz71cc8kgkw@webmail.tugraz.at>
+Message-ID: <428DF11C.5020505@med.umich.edu>
+
+Dipl.-Ing. Johannes Rainer wrote:
+> hi, it's again me, but i found the problem...
+> as i am working with database connections and if an error occurs in a 
+> function call i want to roll back the whole stuff that has been written 
+> into a database, i thought to be smart and defined with
+> 
+>> options(error=expression(.rollItBack(Con)))
+> 
+> 
+> where .rollItBack is a function that sends the command ROLLBACK 
+> TRANSACTION to the database. well, i did not think, that when the error 
+> occurs the object Con, which is a local variable in the function does 
+> not exist, unless the user has called the connection object also 'Con'.
+> 
+> now i want to ask how i can define a global variable from within a 
+> function.
+
+See ?"<<-" and ?assign
+
+HTH,
+
+Jim
+
+
+> 
+> cheers, jo
+> 
+> Quoting "Dipl.-Ing. Johannes Rainer" <johannes.rainer@tugraz.at>:
+> 
+>> hi,
+>> i am getting the error message:
+>>
+>>> Error during wrapup: Object "Con" not found
+>>
+>>
+>> in my functions and have no idea from where this message comes (i have 
+>> renamed some function arguments from 'Con' to 'con', maybe the message 
+>> comes from there :) ). nevertheless i do not know where i should 
+>> search for this error (as the functions work like they should...). can 
+>> anybody tell me more to this error message?
+>>
+>> cheers, jo
+>>
+>> _______________________________________________
+>> Bioc-devel@stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+> 
+> _______________________________________________
+> Bioc-devel@stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+-- 
+James W. MacDonald
+Affymetrix and cDNA Microarray Core
+University of Michigan Cancer Center
+1500 E. Medical Center Drive
+7410 CCGC
+Ann Arbor MI 48109
+734-647-5623
+
+From sfalcon at fhcrc.org  Fri May 20 16:24:53 2005
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Fri May 20 16:25:02 2005
+Subject: [Bioc-devel] Error during wrapup, what does this mean?
+In-Reply-To: <20050520154604.dvaclbz71cc8kgkw@webmail.tugraz.at> (Dipl.'s
+	message of "Fri, 20 May 2005 15:46:04 +0200")
+References: <20050520154604.dvaclbz71cc8kgkw@webmail.tugraz.at>
+Message-ID: <m2is1ekma2.fsf@macaroni.local>
+
+"Dipl.-Ing. Johannes Rainer" <johannes.rainer@tugraz.at> writes:
+
+> hi, it's again me, but i found the problem...
+> as i am working with database connections and if an error occurs in a 
+> function call i want to roll back the whole stuff that has been written 
+> into a database, i thought to be smart and defined with
+>
+>> options(error=expression(.rollItBack(Con)))
+
+I thought that was what had happened, but I didn't want to show off my
+ESP so early in the morning ;-)
+
+> now i want to ask how i can define a global variable from within a
+> function.
+
+You can use "<<-" and can also use assign.  You could also use
+environments to pass information around since they do not get copied.
+
+options(error=expression(.rollItBack(dbParams$con)))
+dbParams <- new.env(parent=NULL)
+
+dbParams[["user"]] <- "jo"
+dbParams[["url"]] <- "blah"
+doSomething(dbparams, query)
+
+
+HTH,
+
++ seth
+
+From rgentlem at fhcrc.org  Fri May 20 16:32:09 2005
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Fri May 20 16:32:20 2005
+Subject: [Bioc-devel] Error during wrapup, what does this mean?
+In-Reply-To: <428DF11C.5020505@med.umich.edu>
+References: <20050520154604.dvaclbz71cc8kgkw@webmail.tugraz.at>
+	<428DF11C.5020505@med.umich.edu>
+Message-ID: <428DF4E9.8020400@fhcrc.org>
+
+James W. MacDonald wrote:
+> Dipl.-Ing. Johannes Rainer wrote:
+> 
+>> hi, it's again me, but i found the problem...
+>> as i am working with database connections and if an error occurs in a 
+>> function call i want to roll back the whole stuff that has been 
+>> written into a database, i thought to be smart and defined with
+>>
+>>> options(error=expression(.rollItBack(Con)))
+>>
+>>
+>>
+>> where .rollItBack is a function that sends the command ROLLBACK 
+>> TRANSACTION to the database. well, i did not think, that when the 
+>> error occurs the object Con, which is a local variable in the function 
+>> does not exist, unless the user has called the connection object also 
+>> 'Con'.
+>>
+>> now i want to ask how i can define a global variable from within a 
+>> function.
+> 
+> 
+> See ?"<<-" and ?assign
+> 
+> HTH,
+> 
+> Jim
+> 
+
+Hi,
+
+   But it is generally not a good idea to do it that way. If users have 
+connections that you are using then they should be parameters to the 
+functions that you are using and using try, or tryCatch, will generally 
+be much better. I would also like to point out that if I understand 
+this, then any error the user makes will roll-back a transaction - 
+typing the wrong name for a function etc. That is probably not a good 
+design decision.
+
+   Robert
+
+
+
+> 
+>>
+>> cheers, jo
+>>
+>> Quoting "Dipl.-Ing. Johannes Rainer" <johannes.rainer@tugraz.at>:
+>>
+>>> hi,
+>>> i am getting the error message:
+>>>
+>>>> Error during wrapup: Object "Con" not found
+>>>
+>>>
+>>>
+>>> in my functions and have no idea from where this message comes (i 
+>>> have renamed some function arguments from 'Con' to 'con', maybe the 
+>>> message comes from there :) ). nevertheless i do not know where i 
+>>> should search for this error (as the functions work like they 
+>>> should...). can anybody tell me more to this error message?
+>>>
+>>> cheers, jo
+>>>
+>>> _______________________________________________
+>>> Bioc-devel@stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>> _______________________________________________
+>> Bioc-devel@stat.math.ethz.ch mailing list
+>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> 
+>
+
+From johannes.rainer at tugraz.at  Fri May 20 16:45:29 2005
+From: johannes.rainer at tugraz.at (Dipl.-Ing. Johannes Rainer)
+Date: Fri May 20 16:46:15 2005
+Subject: [Bioc-devel] Error during wrapup, what does this mean?
+In-Reply-To: <428DF4E9.8020400@fhcrc.org>
+References: <20050520154604.dvaclbz71cc8kgkw@webmail.tugraz.at>
+	<428DF11C.5020505@med.umich.edu> <428DF4E9.8020400@fhcrc.org>
+Message-ID: <20050520164529.hlzh3tyztw480o8o@webmail.tugraz.at>
+
+i agree with this. but what if the user types <ctrl>+c during the call? 
+i assume that try and tryCatch will not work in this cases, as i want 
+also roll back a transaction when the user breaks the operation by 
+himself.
+currently i have solved the problem in the following way:
+with options(error=expression(.rollItBack()))
+
+and during the function call i copy the connection parameter to a 
+global variable called 'ErrorConnection' which is used by the 
+rollItBack function. on the 'on.exit' i reset the options(error=NULL) 
+and remove the 'ErrorConnection' from the global environment...
+
+jo
+
+Quoting Robert Gentleman <rgentlem@fhcrc.org>:
+
+> James W. MacDonald wrote:
+>> Dipl.-Ing. Johannes Rainer wrote:
+>>
+>>> hi, it's again me, but i found the problem...
+>>> as i am working with database connections and if an error occurs in 
+>>> a function call i want to roll back the whole stuff that has been 
+>>> written into a database, i thought to be smart and defined with
+>>>
+>>>> options(error=expression(.rollItBack(Con)))
+>>>
+>>>
+>>>
+>>> where .rollItBack is a function that sends the command ROLLBACK 
+>>> TRANSACTION to the database. well, i did not think, that when the 
+>>> error occurs the object Con, which is a local variable in the 
+>>> function does not exist, unless the user has called the connection 
+>>> object also 'Con'.
+>>>
+>>> now i want to ask how i can define a global variable from within a 
+>>> function.
+>>
+>>
+>> See ?"<<-" and ?assign
+>>
+>> HTH,
+>>
+>> Jim
+>>
+>
+> Hi,
+>
+>   But it is generally not a good idea to do it that way. If users 
+> have connections that you are using then they should be parameters to 
+> the functions that you are using and using try, or tryCatch, will 
+> generally be much better. I would also like to point out that if I 
+> understand this, then any error the user makes will roll-back a 
+> transaction - typing the wrong name for a function etc. That is 
+> probably not a good design decision.
+>
+>   Robert
+>
+>
+>
+>>
+>>>
+>>> cheers, jo
+>>>
+>>> Quoting "Dipl.-Ing. Johannes Rainer" <johannes.rainer@tugraz.at>:
+>>>
+>>>> hi,
+>>>> i am getting the error message:
+>>>>
+>>>>> Error during wrapup: Object "Con" not found
+>>>>
+>>>>
+>>>>
+>>>> in my functions and have no idea from where this message comes (i 
+>>>> have renamed some function arguments from 'Con' to 'con', maybe 
+>>>> the message comes from there :) ). nevertheless i do not know 
+>>>> where i should search for this error (as the functions work like 
+>>>> they should...). can anybody tell me more to this error message?
+>>>>
+>>>> cheers, jo
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel@stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>>
+>>> _______________________________________________
+>>> Bioc-devel@stat.math.ethz.ch mailing list
+>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+>>
+>>
+>
+>
+
+From rgentlem at fhcrc.org  Fri May 20 17:00:29 2005
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Fri May 20 17:00:41 2005
+Subject: [Bioc-devel] Error during wrapup, what does this mean?
+In-Reply-To: <20050520164529.hlzh3tyztw480o8o@webmail.tugraz.at>
+References: <20050520154604.dvaclbz71cc8kgkw@webmail.tugraz.at>	<428DF11C.5020505@med.umich.edu>
+	<428DF4E9.8020400@fhcrc.org>
+	<20050520164529.hlzh3tyztw480o8o@webmail.tugraz.at>
+Message-ID: <428DFB8D.7000507@fhcrc.org>
+
+Dipl.-Ing. Johannes Rainer wrote:
+> i agree with this. but what if the user types <ctrl>+c during the call? 
+> i assume that try and tryCatch will not work in this cases, as i want 
+> also roll back a transaction when the user breaks the operation by himself.
+> currently i have solved the problem in the following way:
+> with options(error=expression(.rollItBack()))
+
+Hi,
+  First - why assume, why not just test? Second - pass a connection in 
+and use on.exit? Third, from the man page for tryCatch:
+    User interrupts signal a condition of class 'interrupt' that
+      inherits directly from class 'condition' before executing the
+      default interrupt action.
+
+  Which seems to answer your question.
+
+> 
+> and during the function call i copy the connection parameter to a global 
+> variable called 'ErrorConnection' which is used by the rollItBack 
+> function. on the 'on.exit' i reset the options(error=NULL) and remove 
+> the 'ErrorConnection' from the global environment...
+
+  And as I said - any and every error rolls back a transaction - not 
+really what you would like to have happen. Using global variables is, in 
+my experience, never a good idea. Explicity parameter passing, and 
+encapsulation via lexical scope are much easier to work with.
+
+  And what if I, as many other do, use options(error=recover) for 
+debugging purposes. Your code seems to have a rather unfelicitous effect.
+
+  Robert
+
+> 
+> jo
+> 
+> Quoting Robert Gentleman <rgentlem@fhcrc.org>:
+> 
+>> James W. MacDonald wrote:
+>>
+>>> Dipl.-Ing. Johannes Rainer wrote:
+>>>
+>>>> hi, it's again me, but i found the problem...
+>>>> as i am working with database connections and if an error occurs in 
+>>>> a function call i want to roll back the whole stuff that has been 
+>>>> written into a database, i thought to be smart and defined with
+>>>>
+>>>>> options(error=expression(.rollItBack(Con)))
+>>>>
+>>>>
+>>>>
+>>>>
+>>>> where .rollItBack is a function that sends the command ROLLBACK 
+>>>> TRANSACTION to the database. well, i did not think, that when the 
+>>>> error occurs the object Con, which is a local variable in the 
+>>>> function does not exist, unless the user has called the connection 
+>>>> object also 'Con'.
+>>>>
+>>>> now i want to ask how i can define a global variable from within a 
+>>>> function.
+>>>
+>>>
+>>>
+>>> See ?"<<-" and ?assign
+>>>
+>>> HTH,
+>>>
+>>> Jim
+>>>
+>>
+>> Hi,
+>>
+>>   But it is generally not a good idea to do it that way. If users have 
+>> connections that you are using then they should be parameters to the 
+>> functions that you are using and using try, or tryCatch, will 
+>> generally be much better. I would also like to point out that if I 
+>> understand this, then any error the user makes will roll-back a 
+>> transaction - typing the wrong name for a function etc. That is 
+>> probably not a good design decision.
+>>
+>>   Robert
+>>
+>>
+>>
+>>>
+>>>>
+>>>> cheers, jo
+>>>>
+>>>> Quoting "Dipl.-Ing. Johannes Rainer" <johannes.rainer@tugraz.at>:
+>>>>
+>>>>> hi,
+>>>>> i am getting the error message:
+>>>>>
+>>>>>> Error during wrapup: Object "Con" not found
+>>>>>
+>>>>>
+>>>>>
+>>>>>
+>>>>> in my functions and have no idea from where this message comes (i 
+>>>>> have renamed some function arguments from 'Con' to 'con', maybe the 
+>>>>> message comes from there :) ). nevertheless i do not know where i 
+>>>>> should search for this error (as the functions work like they 
+>>>>> should...). can anybody tell me more to this error message?
+>>>>>
+>>>>> cheers, jo
+>>>>>
+>>>>> _______________________________________________
+>>>>> Bioc-devel@stat.math.ethz.ch mailing list
+>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>>
+>>>>
+>>>> _______________________________________________
+>>>> Bioc-devel@stat.math.ethz.ch mailing list
+>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>>
+>>>
+>>>
+>>
+>>
+> 
+> 
+>
+
+From sfalcon at fhcrc.org  Sat May 21 01:53:15 2005
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Sat May 21 01:53:23 2005
+Subject: [Bioc-devel] Attention Bioconductor Maintainers 
+Message-ID: <m21x811ml0.fsf@macaroni.local>
+
+Package version numbers have been "bumped".
+
+In order to distinguish between the Bioconductor 1.6 release branch
+and the devel version of Bioc packages, I have made the following
+version number change to all packages included in the 1.6 release:
+
+x.y.z  ==>  x.y+1.0
+
+For example, Biobase was released at 1.5.12.  It's new devel version
+is 1.6.0.  This way, patches on the release branch can continue to
+increment the z number without any confusion with the devel version of
+the package.
+
+If you strongly object to this change in your package version number,
+please contact me so that we can work out a compromise.
+
+Thanks,
+
++ seth
+
+From smyth at wehi.EDU.AU  Sat May 21 02:57:54 2005
+From: smyth at wehi.EDU.AU (Gordon K Smyth)
+Date: Sat May 21 02:58:24 2005
+Subject: [Bioc-devel] Attention Bioconductor Maintainers
+In-Reply-To: <m21x811ml0.fsf@macaroni.local>
+References: <m21x811ml0.fsf@macaroni.local>
+Message-ID: <1170.211.31.228.55.1116637074.squirrel@homebase.wehi.edu.au>
+
+Hi Seth,
+
+I agree with you that the distinction between Bioc release and devel can be confusing and needs to
+be clarified, but I don't think that this is the way to do it.  The trouble with incrementing all
+the package numbers is that it breaks the basic principle that version numbers track changes in
+packages.  It implies to a user that the packages have been changed, when they have not.  A user
+will not be able to tell whether they should go to the trouble of converting to the devel version
+or not.  It could even be considered to be a bit dishonest to give the impression that all the
+packages have been updated and (by implication) improved when actually they haven't.
+
+Anyway, this isn't a request for special treatment.  I think whatever you do you should do to all
+the packages, and I'll work-around whatever.
+
+Gordon
+
+On Sat, May 21, 2005 9:53 am, Seth Falcon said:
+> Package version numbers have been "bumped".
+>
+> In order to distinguish between the Bioconductor 1.6 release branch
+> and the devel version of Bioc packages, I have made the following
+> version number change to all packages included in the 1.6 release:
+>
+> x.y.z  ==>  x.y+1.0
+>
+> For example, Biobase was released at 1.5.12.  It's new devel version
+> is 1.6.0.  This way, patches on the release branch can continue to
+> increment the z number without any confusion with the devel version of
+> the package.
+>
+> If you strongly object to this change in your package version number,
+> please contact me so that we can work out a compromise.
+>
+> Thanks,
+>
+> + seth
+
+From rgentlem at fhcrc.org  Sat May 21 03:17:24 2005
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Sat May 21 03:17:38 2005
+Subject: [Bioc-devel] Attention Bioconductor Maintainers
+In-Reply-To: <1170.211.31.228.55.1116637074.squirrel@homebase.wehi.edu.au>
+References: <m21x811ml0.fsf@macaroni.local>
+	<1170.211.31.228.55.1116637074.squirrel@homebase.wehi.edu.au>
+Message-ID: <428E8C24.4040803@fhcrc.org>
+
+Hi Gordon,
+    Do you have an alternative?
+The problem, as I see it is the following:
+   As R changes we track and use, and some times are the reason for, 
+those changes. So packages and developers need to do that on the devel 
+arm, it is going to morph into the next BioC release and be compatible 
+with the next release of R. If they do not bump their version numbers 
+quite substantially, then there are problems with version numbers 
+between release BioC, which must allow bug fixes, and hence must allow 
+version number increments, and those on the devel arm, which we hope 
+will have version number changes because people are active and adding 
+new features etc. I think it would be very confusing to start 
+interlacing these - but we are very happy to see anything that 
+developers want and that will help to provide for both a happier 
+developer experience and a happier user experience.
+
+  This seemed to be the easiest way to achieve that, but certainly not 
+the only one - so please let us know what you think would work better. 
+If we can agree soon then we can implement it before too much divergence.
+
+
+  Thanks
+    Robert
+
+
+Gordon K Smyth wrote:
+> Hi Seth,
+> 
+> I agree with you that the distinction between Bioc release and devel can be confusing and needs to
+> be clarified, but I don't think that this is the way to do it.  The trouble with incrementing all
+> the package numbers is that it breaks the basic principle that version numbers track changes in
+> packages.  It implies to a user that the packages have been changed, when they have not.  A user
+> will not be able to tell whether they should go to the trouble of converting to the devel version
+> or not.  It could even be considered to be a bit dishonest to give the impression that all the
+> packages have been updated and (by implication) improved when actually they haven't.
+> 
+> Anyway, this isn't a request for special treatment.  I think whatever you do you should do to all
+> the packages, and I'll work-around whatever.
+> 
+> Gordon
+> 
+> On Sat, May 21, 2005 9:53 am, Seth Falcon said:
+> 
+>>Package version numbers have been "bumped".
+>>
+>>In order to distinguish between the Bioconductor 1.6 release branch
+>>and the devel version of Bioc packages, I have made the following
+>>version number change to all packages included in the 1.6 release:
+>>
+>>x.y.z  ==>  x.y+1.0
+>>
+>>For example, Biobase was released at 1.5.12.  It's new devel version
+>>is 1.6.0.  This way, patches on the release branch can continue to
+>>increment the z number without any confusion with the devel version of
+>>the package.
+>>
+>>If you strongly object to this change in your package version number,
+>>please contact me so that we can work out a compromise.
+>>
+>>Thanks,
+>>
+>>+ seth
+> 
+> 
+> _______________________________________________
+> Bioc-devel@stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+From blindglobe at gmail.com  Sat May 21 09:42:40 2005
+From: blindglobe at gmail.com (A.J. Rossini)
+Date: Sat May 21 09:42:49 2005
+Subject: [Bioc-devel] Attention Bioconductor Maintainers
+In-Reply-To: <428E8C24.4040803@fhcrc.org>
+References: <m21x811ml0.fsf@macaroni.local>
+	<1170.211.31.228.55.1116637074.squirrel@homebase.wehi.edu.au>
+	<428E8C24.4040803@fhcrc.org>
+Message-ID: <1abe3fa90505210042634e860d@mail.gmail.com>
+
+I think in this case I agree with Seth/Robert -- at the very least, we
+probably should consider bumping the R requirements to track the
+latest R (though NOT until near release).  It would be a complete
+waste of time to backport core pieces of BioC back to the previous
+version of R, for example, especially if dependent on core features
+(or for example, using new features in the packaging files.  So there
+should be minimal changes made, at the least.   Whether this merits
+x.y.z -> x.(y+1).0, I think is more aesthetic than real.
+
+best,
+-tony
+
+
+
+On 5/21/05, Robert Gentleman <rgentlem@fhcrc.org> wrote:
+> Hi Gordon,
+>     Do you have an alternative?
+> The problem, as I see it is the following:
+>    As R changes we track and use, and some times are the reason for,
+> those changes. So packages and developers need to do that on the devel
+> arm, it is going to morph into the next BioC release and be compatible
+> with the next release of R. If they do not bump their version numbers
+> quite substantially, then there are problems with version numbers
+> between release BioC, which must allow bug fixes, and hence must allow
+> version number increments, and those on the devel arm, which we hope
+> will have version number changes because people are active and adding
+> new features etc. I think it would be very confusing to start
+> interlacing these - but we are very happy to see anything that
+> developers want and that will help to provide for both a happier
+> developer experience and a happier user experience.
+> 
+>   This seemed to be the easiest way to achieve that, but certainly not
+> the only one - so please let us know what you think would work better.
+> If we can agree soon then we can implement it before too much divergence.
+> 
+> 
+>   Thanks
+>     Robert
+> 
+> 
+> Gordon K Smyth wrote:
+> > Hi Seth,
+> >
+> > I agree with you that the distinction between Bioc release and devel can be confusing and needs to
+> > be clarified, but I don't think that this is the way to do it.  The trouble with incrementing all
+> > the package numbers is that it breaks the basic principle that version numbers track changes in
+> > packages.  It implies to a user that the packages have been changed, when they have not.  A user
+> > will not be able to tell whether they should go to the trouble of converting to the devel version
+> > or not.  It could even be considered to be a bit dishonest to give the impression that all the
+> > packages have been updated and (by implication) improved when actually they haven't.
+> >
+> > Anyway, this isn't a request for special treatment.  I think whatever you do you should do to all
+> > the packages, and I'll work-around whatever.
+> >
+> > Gordon
+> >
+> > On Sat, May 21, 2005 9:53 am, Seth Falcon said:
+> >
+> >>Package version numbers have been "bumped".
+> >>
+> >>In order to distinguish between the Bioconductor 1.6 release branch
+> >>and the devel version of Bioc packages, I have made the following
+> >>version number change to all packages included in the 1.6 release:
+> >>
+> >>x.y.z  ==>  x.y+1.0
+> >>
+> >>For example, Biobase was released at 1.5.12.  It's new devel version
+> >>is 1.6.0.  This way, patches on the release branch can continue to
+> >>increment the z number without any confusion with the devel version of
+> >>the package.
+> >>
+> >>If you strongly object to this change in your package version number,
+> >>please contact me so that we can work out a compromise.
+> >>
+> >>Thanks,
+> >>
+> >>+ seth
+> >
+> >
+> > _______________________________________________
+> > Bioc-devel@stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >
+> 
+> _______________________________________________
+> Bioc-devel@stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+
+
+-- 
+best,
+-tony
+
+"Commit early,commit often, and commit in a repository from which we can easily
+roll-back your mistakes" (AJR, 4Jan05).
+
+A.J. Rossini
+blindglobe@gmail.com
+
+From blindglobe at gmail.com  Sat May 21 15:45:03 2005
+From: blindglobe at gmail.com (A.J. Rossini)
+Date: Sat May 21 15:45:13 2005
+Subject: [Bioc-devel] Attention Bioconductor Maintainers
+In-Reply-To: <20050521082336.GA27358@carter.kubism.ku.dk>
+References: <m21x811ml0.fsf@macaroni.local>
+	<1170.211.31.228.55.1116637074.squirrel@homebase.wehi.edu.au>
+	<428E8C24.4040803@fhcrc.org>
+	<1abe3fa90505210042634e860d@mail.gmail.com>
+	<20050521082336.GA27358@carter.kubism.ku.dk>
+Message-ID: <1abe3fa905052106453fd83ff9@mail.gmail.com>
+
+It's a matter of control.  Sounds like a system that lots of people
+(like me) will have strong opinions on. I won't share mine. See
+"Bikeshedding" in the Jargon File/Hacker's Dictionary:
+
+http://catb.org/~esr/jargon/html/B/bikeshedding.html
+
+It won't break any version tracking.  But the proposal is incomplete
+in that it isn't clear as to the exact timing for implementing your
+proposal in the actual release cycle, since there ought to be
+increments made when things are changed.
+
+best,
+-tony
+
+
+On 5/21/05, Kasper Daniel Hansen <k.hansen@biostat.ku.dk> wrote:
+> But why not revamp the version number completely. Let
+>   x.y.z.w
+> be the version number. Let x.y correspond to the R version, let z
+> track the development and let w track release version changes. In that
+> way a typical package would be
+>   2.1.0.1
+> at the current R release. Changes to the fourth number would reflect bug
+> fixes, while development would result in an increase in the third
+> number. Once the R version bumps, everything starts from scratch.
+> 
+> Ok, this would break a lot of version tracking (that is a bit of an
+> understatement), but at least it would provide some version tracking in
+> the future, which is consistent with R.
+> 
+> Well, I am just throwing ideas around. Ignore them at will :) But
+> basically I can see the point in bumping version numbers when R/BioC
+> is bumped.
+> 
+> Kasper
+> 
+> On Sat, May 21, 2005 at 09:42:40AM +0200, A.J. Rossini wrote:
+> > I think in this case I agree with Seth/Robert -- at the very least, we
+> > probably should consider bumping the R requirements to track the
+> > latest R (though NOT until near release).  It would be a complete
+> > waste of time to backport core pieces of BioC back to the previous
+> > version of R, for example, especially if dependent on core features
+> > (or for example, using new features in the packaging files.  So there
+> > should be minimal changes made, at the least.   Whether this merits
+> > x.y.z -> x.(y+1).0, I think is more aesthetic than real.
+> >
+> > best,
+> > -tony
+> >
+> >
+> >
+> > On 5/21/05, Robert Gentleman <rgentlem@fhcrc.org> wrote:
+> > > Hi Gordon,
+> > >     Do you have an alternative?
+> > > The problem, as I see it is the following:
+> > >    As R changes we track and use, and some times are the reason for,
+> > > those changes. So packages and developers need to do that on the devel
+> > > arm, it is going to morph into the next BioC release and be compatible
+> > > with the next release of R. If they do not bump their version numbers
+> > > quite substantially, then there are problems with version numbers
+> > > between release BioC, which must allow bug fixes, and hence must allow
+> > > version number increments, and those on the devel arm, which we hope
+> > > will have version number changes because people are active and adding
+> > > new features etc. I think it would be very confusing to start
+> > > interlacing these - but we are very happy to see anything that
+> > > developers want and that will help to provide for both a happier
+> > > developer experience and a happier user experience.
+> > >
+> > >   This seemed to be the easiest way to achieve that, but certainly not
+> > > the only one - so please let us know what you think would work better.
+> > > If we can agree soon then we can implement it before too much divergence.
+> > >
+> > >
+> > >   Thanks
+> > >     Robert
+> > >
+> > >
+> > > Gordon K Smyth wrote:
+> > > > Hi Seth,
+> > > >
+> > > > I agree with you that the distinction between Bioc release and devel can be confusing and needs to
+> > > > be clarified, but I don't think that this is the way to do it.  The trouble with incrementing all
+> > > > the package numbers is that it breaks the basic principle that version numbers track changes in
+> > > > packages.  It implies to a user that the packages have been changed, when they have not.  A user
+> > > > will not be able to tell whether they should go to the trouble of converting to the devel version
+> > > > or not.  It could even be considered to be a bit dishonest to give the impression that all the
+> > > > packages have been updated and (by implication) improved when actually they haven't.
+> > > >
+> > > > Anyway, this isn't a request for special treatment.  I think whatever you do you should do to all
+> > > > the packages, and I'll work-around whatever.
+> > > >
+> > > > Gordon
+> > > >
+> > > > On Sat, May 21, 2005 9:53 am, Seth Falcon said:
+> > > >
+> > > >>Package version numbers have been "bumped".
+> > > >>
+> > > >>In order to distinguish between the Bioconductor 1.6 release branch
+> > > >>and the devel version of Bioc packages, I have made the following
+> > > >>version number change to all packages included in the 1.6 release:
+> > > >>
+> > > >>x.y.z  ==>  x.y+1.0
+> > > >>
+> > > >>For example, Biobase was released at 1.5.12.  It's new devel version
+> > > >>is 1.6.0.  This way, patches on the release branch can continue to
+> > > >>increment the z number without any confusion with the devel version of
+> > > >>the package.
+> > > >>
+> > > >>If you strongly object to this change in your package version number,
+> > > >>please contact me so that we can work out a compromise.
+> > > >>
+> > > >>Thanks,
+> > > >>
+> > > >>+ seth
+> > > >
+> > > >
+> > > > _______________________________________________
+> > > > Bioc-devel@stat.math.ethz.ch mailing list
+> > > > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> > > >
+> > >
+> > > _______________________________________________
+> > > Bioc-devel@stat.math.ethz.ch mailing list
+> > > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> > >
+> >
+> >
+> > --
+> > best,
+> > -tony
+> >
+> > "Commit early,commit often, and commit in a repository from which we can easily
+> > roll-back your mistakes" (AJR, 4Jan05).
+> >
+> > A.J. Rossini
+> > blindglobe@gmail.com
+> >
+> > _______________________________________________
+> > Bioc-devel@stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> 
+> --
+> Kasper Daniel Hansen, Research Assistant
+> Department of Biostatistics, University of Copenhagen
+> 
+> 
+
+
+-- 
+best,
+-tony
+
+"Commit early,commit often, and commit in a repository from which we can easily
+roll-back your mistakes" (AJR, 4Jan05).
+
+A.J. Rossini
+blindglobe@gmail.com
+
+From smyth at wehi.edu.au  Mon May 23 09:27:25 2005
+From: smyth at wehi.edu.au (Gordon Smyth)
+Date: Mon May 23 09:27:53 2005
+Subject: [Bioc-devel] Attention Bioconductor Maintainers
+In-Reply-To: <428E8C24.4040803@fhcrc.org>
+References: <m21x811ml0.fsf@macaroni.local>
+	<1170.211.31.228.55.1116637074.squirrel@homebase.wehi.edu.au>
+	<428E8C24.4040803@fhcrc.org>
+Message-ID: <6.2.1.2.1.20050523171347.02158428@imaphost.wehi.edu.au>
+
+Hi Robert,
+
+OK, yes, I see now the problem that you are addressing. I had been viewing 
+the release version as essentially fixed and not permitting version number 
+increments. However, if you do allow bug fixes and hence version increments 
+to the current release, I agree that you need to bump up the devel version 
+numbers (with a slower moving counter) so that the release version number 
+always stays below the devel version. It would be slightly better to do the 
+bumping only when the first change is actually made to the devel version, 
+but people will probably forget to do so at this stage, so I agree that 
+your pre-emptive bumping is a good idea.
+
+Regards
+Gordon
+
+At 11:17 AM 21/05/2005, Robert Gentleman wrote:
+>Hi Gordon,
+>    Do you have an alternative?
+>The problem, as I see it is the following:
+>   As R changes we track and use, and some times are the reason for, those 
+> changes. So packages and developers need to do that on the devel arm, it 
+> is going to morph into the next BioC release and be compatible with the 
+> next release of R. If they do not bump their version numbers quite 
+> substantially, then there are problems with version numbers between 
+> release BioC, which must allow bug fixes, and hence must allow version 
+> number increments, and those on the devel arm, which we hope will have 
+> version number changes because people are active and adding new features 
+> etc. I think it would be very confusing to start interlacing these - but 
+> we are very happy to see anything that developers want and that will help 
+> to provide for both a happier developer experience and a happier user 
+> experience.
+>
+>  This seemed to be the easiest way to achieve that, but certainly not the 
+> only one - so please let us know what you think would work better. If we 
+> can agree soon then we can implement it before too much divergence.
+>
+>
+>  Thanks
+>    Robert
+>
+>
+>Gordon K Smyth wrote:
+>>Hi Seth,
+>>I agree with you that the distinction between Bioc release and devel can 
+>>be confusing and needs to
+>>be clarified, but I don't think that this is the way to do it.  The 
+>>trouble with incrementing all
+>>the package numbers is that it breaks the basic principle that version 
+>>numbers track changes in
+>>packages.  It implies to a user that the packages have been changed, when 
+>>they have not.  A user
+>>will not be able to tell whether they should go to the trouble of 
+>>converting to the devel version
+>>or not.  It could even be considered to be a bit dishonest to give the 
+>>impression that all the
+>>packages have been updated and (by implication) improved when actually 
+>>they haven't.
+>>Anyway, this isn't a request for special treatment.  I think whatever you 
+>>do you should do to all
+>>the packages, and I'll work-around whatever.
+>>Gordon
+>>On Sat, May 21, 2005 9:53 am, Seth Falcon said:
+>>
+>>>Package version numbers have been "bumped".
+>>>
+>>>In order to distinguish between the Bioconductor 1.6 release branch
+>>>and the devel version of Bioc packages, I have made the following
+>>>version number change to all packages included in the 1.6 release:
+>>>
+>>>x.y.z  ==>  x.y+1.0
+>>>
+>>>For example, Biobase was released at 1.5.12.  It's new devel version
+>>>is 1.6.0.  This way, patches on the release branch can continue to
+>>>increment the z number without any confusion with the devel version of
+>>>the package.
+>>>
+>>>If you strongly object to this change in your package version number,
+>>>please contact me so that we can work out a compromise.
+>>>
+>>>Thanks,
+>>>
+>>>+ seth
+
+From johannes.rainer at tugraz.at  Mon May 23 10:45:22 2005
+From: johannes.rainer at tugraz.at (Dipl.-Ing. Johannes Rainer)
+Date: Mon May 23 10:45:40 2005
+Subject: [Bioc-devel] Error during wrapup, what does this mean?
+In-Reply-To: <428DFB8D.7000507@fhcrc.org>
+References: <20050520154604.dvaclbz71cc8kgkw@webmail.tugraz.at>
+	<428DF11C.5020505@med.umich.edu> <428DF4E9.8020400@fhcrc.org>
+	<20050520164529.hlzh3tyztw480o8o@webmail.tugraz.at>
+	<428DFB8D.7000507@fhcrc.org>
+Message-ID: <20050523104522.elanl8mg5c4co04s@webmail.tugraz.at>
+
+thanks for all your help!
+i am now using the tryCatch for all my error (and interrupt) catching :)
+
+thanks!
+
+Quoting Robert Gentleman <rgentlem@fhcrc.org>:
+
+> Dipl.-Ing. Johannes Rainer wrote:
+>> i agree with this. but what if the user types <ctrl>+c during the 
+>> call? i assume that try and tryCatch will not work in this cases, as 
+>> i want also roll back a transaction when the user breaks the 
+>> operation by himself.
+>> currently i have solved the problem in the following way:
+>> with options(error=expression(.rollItBack()))
+>
+> Hi,
+>  First - why assume, why not just test? Second - pass a connection in 
+> and use on.exit? Third, from the man page for tryCatch:
+>    User interrupts signal a condition of class 'interrupt' that
+>      inherits directly from class 'condition' before executing the
+>      default interrupt action.
+>
+>  Which seems to answer your question.
+>
+>>
+>> and during the function call i copy the connection parameter to a 
+>> global variable called 'ErrorConnection' which is used by the 
+>> rollItBack function. on the 'on.exit' i reset the 
+>> options(error=NULL) and remove the 'ErrorConnection' from the global 
+>> environment...
+>
+>  And as I said - any and every error rolls back a transaction - not 
+> really what you would like to have happen. Using global variables is, 
+> in my experience, never a good idea. Explicity parameter passing, and 
+> encapsulation via lexical scope are much easier to work with.
+>
+>  And what if I, as many other do, use options(error=recover) for 
+> debugging purposes. Your code seems to have a rather unfelicitous 
+> effect.
+>
+>  Robert
+>
+>>
+>> jo
+>>
+>> Quoting Robert Gentleman <rgentlem@fhcrc.org>:
+>>
+>>> James W. MacDonald wrote:
+>>>
+>>>> Dipl.-Ing. Johannes Rainer wrote:
+>>>>
+>>>>> hi, it's again me, but i found the problem...
+>>>>> as i am working with database connections and if an error occurs 
+>>>>> in a function call i want to roll back the whole stuff that has 
+>>>>> been written into a database, i thought to be smart and defined 
+>>>>> with
+>>>>>
+>>>>>> options(error=expression(.rollItBack(Con)))
+>>>>>
+>>>>>
+>>>>>
+>>>>>
+>>>>> where .rollItBack is a function that sends the command ROLLBACK 
+>>>>> TRANSACTION to the database. well, i did not think, that when the 
+>>>>> error occurs the object Con, which is a local variable in the 
+>>>>> function does not exist, unless the user has called the 
+>>>>> connection object also 'Con'.
+>>>>>
+>>>>> now i want to ask how i can define a global variable from within 
+>>>>> a function.
+>>>>
+>>>>
+>>>>
+>>>> See ?"<<-" and ?assign
+>>>>
+>>>> HTH,
+>>>>
+>>>> Jim
+>>>>
+>>>
+>>> Hi,
+>>>
+>>>   But it is generally not a good idea to do it that way. If users 
+>>> have connections that you are using then they should be parameters 
+>>> to the functions that you are using and using try, or tryCatch, 
+>>> will generally be much better. I would also like to point out that 
+>>> if I understand this, then any error the user makes will roll-back 
+>>> a transaction - typing the wrong name for a function etc. That is 
+>>> probably not a good design decision.
+>>>
+>>>   Robert
+>>>
+>>>
+>>>
+>>>>
+>>>>>
+>>>>> cheers, jo
+>>>>>
+>>>>> Quoting "Dipl.-Ing. Johannes Rainer" <johannes.rainer@tugraz.at>:
+>>>>>
+>>>>>> hi,
+>>>>>> i am getting the error message:
+>>>>>>
+>>>>>>> Error during wrapup: Object "Con" not found
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> in my functions and have no idea from where this message comes 
+>>>>>> (i have renamed some function arguments from 'Con' to 'con', 
+>>>>>> maybe the message comes from there :) ). nevertheless i do not 
+>>>>>> know where i should search for this error (as the functions work 
+>>>>>> like they should...). can anybody tell me more to this error 
+>>>>>> message?
+>>>>>>
+>>>>>> cheers, jo
+>>>>>>
+>>>>>> _______________________________________________
+>>>>>> Bioc-devel@stat.math.ethz.ch mailing list
+>>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>>>
+>>>>>
+>>>>> _______________________________________________
+>>>>> Bioc-devel@stat.math.ethz.ch mailing list
+>>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>>>
+>>>>
+>>>>
+>>>
+>>>
+>>
+>>
+>>
+>
+>
+
+From rgentlem at fhcrc.org  Mon May 23 16:01:12 2005
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Mon May 23 16:01:22 2005
+Subject: [Bioc-devel] Attention Bioconductor Maintainers
+In-Reply-To: <6.2.1.2.1.20050523171347.02158428@imaphost.wehi.edu.au>
+References: <m21x811ml0.fsf@macaroni.local>
+	<1170.211.31.228.55.1116637074.squirrel@homebase.wehi.edu.au>
+	<428E8C24.4040803@fhcrc.org>
+	<6.2.1.2.1.20050523171347.02158428@imaphost.wehi.edu.au>
+Message-ID: <4291E228.7090002@fhcrc.org>
+
+
+
+Gordon Smyth wrote:
+> Hi Robert,
+> 
+> OK, yes, I see now the problem that you are addressing. I had been 
+> viewing the release version as essentially fixed and not permitting 
+> version number increments. However, if you do allow bug fixes and hence 
+> version increments to the current release, I agree that you need to bump 
+> up the devel version numbers (with a slower moving counter) so that the 
+> release version number always stays below the devel version. It would be 
+> slightly better to do the bumping only when the first change is actually 
+> made to the devel version, but people will probably forget to do so at 
+> this stage, so I agree that your pre-emptive bumping is a good idea.
+> 
+
+Hi Gordon,
+
+  We did think about doing that (the bumping only at change time), but 
+all systems we could think of required some manual intervention/checking 
+here, and we are run a bit thin - the project is a bit too successful 
+for the available resources. But if you, or anyone else thinks up a 
+different scheme before the next release we would be happy to change. 
+This just seemed like it would be simplest for all - but a bit invasive, 
+and for that we do apologize.
+
+   Best wishes,
+     Robert
+
+
+
+> Regards
+> Gordon
+> 
+> At 11:17 AM 21/05/2005, Robert Gentleman wrote:
+> 
+>> Hi Gordon,
+>>    Do you have an alternative?
+>> The problem, as I see it is the following:
+>>   As R changes we track and use, and some times are the reason for, 
+>> those changes. So packages and developers need to do that on the devel 
+>> arm, it is going to morph into the next BioC release and be compatible 
+>> with the next release of R. If they do not bump their version numbers 
+>> quite substantially, then there are problems with version numbers 
+>> between release BioC, which must allow bug fixes, and hence must allow 
+>> version number increments, and those on the devel arm, which we hope 
+>> will have version number changes because people are active and adding 
+>> new features etc. I think it would be very confusing to start 
+>> interlacing these - but we are very happy to see anything that 
+>> developers want and that will help to provide for both a happier 
+>> developer experience and a happier user experience.
+>>
+>>  This seemed to be the easiest way to achieve that, but certainly not 
+>> the only one - so please let us know what you think would work better. 
+>> If we can agree soon then we can implement it before too much divergence.
+>>
+>>
+>>  Thanks
+>>    Robert
+>>
+>>
+>> Gordon K Smyth wrote:
+>>
+>>> Hi Seth,
+>>> I agree with you that the distinction between Bioc release and devel 
+>>> can be confusing and needs to
+>>> be clarified, but I don't think that this is the way to do it.  The 
+>>> trouble with incrementing all
+>>> the package numbers is that it breaks the basic principle that 
+>>> version numbers track changes in
+>>> packages.  It implies to a user that the packages have been changed, 
+>>> when they have not.  A user
+>>> will not be able to tell whether they should go to the trouble of 
+>>> converting to the devel version
+>>> or not.  It could even be considered to be a bit dishonest to give 
+>>> the impression that all the
+>>> packages have been updated and (by implication) improved when 
+>>> actually they haven't.
+>>> Anyway, this isn't a request for special treatment.  I think whatever 
+>>> you do you should do to all
+>>> the packages, and I'll work-around whatever.
+>>> Gordon
+>>> On Sat, May 21, 2005 9:53 am, Seth Falcon said:
+>>>
+>>>> Package version numbers have been "bumped".
+>>>>
+>>>> In order to distinguish between the Bioconductor 1.6 release branch
+>>>> and the devel version of Bioc packages, I have made the following
+>>>> version number change to all packages included in the 1.6 release:
+>>>>
+>>>> x.y.z  ==>  x.y+1.0
+>>>>
+>>>> For example, Biobase was released at 1.5.12.  It's new devel version
+>>>> is 1.6.0.  This way, patches on the release branch can continue to
+>>>> increment the z number without any confusion with the devel version of
+>>>> the package.
+>>>>
+>>>> If you strongly object to this change in your package version number,
+>>>> please contact me so that we can work out a compromise.
+>>>>
+>>>> Thanks,
+>>>>
+>>>> + seth
+> 
+>
+
+From ch-bioc at bobobeach.com  Tue May 24 01:44:42 2005
+From: ch-bioc at bobobeach.com (Cyrus Harmon)
+Date: Tue May 24 01:44:54 2005
+Subject: [Bioc-devel] drosophila2GENENAME problem?
+Message-ID: <81667A44-DA66-4198-9827-06E3A4ACE30E@bobobeach.com>
+
+I'm trying to use drosophila2GENENAME with the BioC 1.6 release and  
+running into some trouble. It seems that all of the gene names are  
+NA. Did something happen to these or am I doing something wrong here?
+
+In an attempt to figure out what's going on, I've stumbled across a  
+couple other things:
+
+1. When doing install.packages2("drosophila2"), everything seems to  
+install OK, but the message about Installation complete From URL: is  
+less than helpful as it doesn't return the full URL of the downloaded  
+package, but rather the URL http://www.bioconductor.org/packages/data/ 
+annotation/stable/src/contrib . While I'm sure folks who are more  
+informed than I can ape the proper URL for the drosophila2 package, I  
+can't.
+
+2. The "Return to index" link on the http://bioconductor.org/data/ 
+metaData/html/ page is busted.
+
+I imagine that the web pages are still in a state of flux; if you  
+want me to hold off on bug reports on the bioc web pages, I'm happy  
+to do so.
+
+Thanks,
+
+Cyrus
+
+btw, I'm successfully (for the most part) using BioC 1.6 on OS X  
+10.4.1 with R-2.1.0 built w/ gfortran. Lots of moving rapidly targets...
+
+From sfalcon at fhcrc.org  Tue May 24 06:14:07 2005
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue May 24 06:14:21 2005
+Subject: [Bioc-devel] drosophila2GENENAME problem?
+In-Reply-To: <81667A44-DA66-4198-9827-06E3A4ACE30E@bobobeach.com> (Cyrus
+	Harmon's message of "Mon, 23 May 2005 16:44:42 -0700")
+References: <81667A44-DA66-4198-9827-06E3A4ACE30E@bobobeach.com>
+Message-ID: <m28y256z1s.fsf@macaroni.local>
+
+Hi Cyrus,
+
+Cyrus Harmon <ch-bioc@bobobeach.com> writes:
+> I'm trying to use drosophila2GENENAME with the BioC 1.6 release and  
+> running into some trouble. It seems that all of the gene names are  
+> NA. Did something happen to these or am I doing something wrong
+> here?
+
+We're looking into it.
+
+> In an attempt to figure out what's going on, I've stumbled across a  
+> couple other things:
+>
+> 1. When doing install.packages2("drosophila2"), everything seems to  
+> install OK, but the message about Installation complete From URL: is  
+> less than helpful as it doesn't return the full URL of the downloaded  
+> package, but rather the URL http://www.bioconductor.org/packages/data/ 
+> annotation/stable/src/contrib . While I'm sure folks who are more  
+> informed than I can ape the proper URL for the drosophila2 package, I  
+> can't.
+
+I'm not sure how useful the URL is, complete or not, but I will add it
+to a list of improvements.  I think that we will be moving towards
+increased use of install.packages which does output the complete URL,
+but not as a summary message at the end, so it can be hard to catch.
+
+
+> 2. The "Return to index" link on the http://bioconductor.org/data/ 
+> metaData/html/ page is busted.
+>
+> I imagine that the web pages are still in a state of flux; if you  
+> want me to hold off on bug reports on the bioc web pages, I'm happy  
+> to do so.
+
+Please hold off on bug reports on the web pages.  As you imagined,
+things are in a temporary state and we will be putting effort into
+website improvements over the next couple of weeks.
+
+> btw, I'm successfully (for the most part) using BioC 1.6 on OS X  
+> 10.4.1 with R-2.1.0 built w/ gfortran. Lots of moving rapidly
+>        targets...
+
+Glad to hear it!
+
++ seth
+
+From J.J.Goeman at lumc.nl  Tue May 24 10:23:15 2005
+From: J.J.Goeman at lumc.nl (Goeman, J.J. (MSTAT))
+Date: Tue May 24 10:23:54 2005
+Subject: [Bioc-devel] Problem with getBioC()
+Message-ID: <68735E80D5EB7C4F8477BF00C450D38E0A58CF@mailc.lumcnet.prod.intern>
+
+ Hi,
+
+I'm running getBioC() on a newly installed R 2.1.0 on windows.
+
+All works fine, until I come to the following error message:
+
+Error in sprintf(gettext("unable to move temp installation '%d' to '%s'"),  : 
+        use format %s for character objects
+
+This terminates the installation. It did not install all packages. 
+
+Best,
+
+Jelle
+
+
+I used today's getBioC, which says it's version 0.7:
+
+    ## !!! Always change version number when updating this file !!!
+    VERSION <- "0.7"
+
+Below is the full output:
+
+> source("http://www.bioconductor.org/getBioC.R")
+> getBioC()
+
+Running getBioC version 0.7  with R version  2.1.0 
+
+Running biocinstall version 1.0  with R version  2.1.0 
+also installing the dependencies 'GO', 'KEGG', 'golubEsets', 'RColorBrewer'
+
+trying URL 'http://www.bioconductor.org/packages/data/annotation/stable/bin/windows/contrib/2.1/GO_1.8.2.zip'
+Content type 'application/zip' length 12676072 bytes
+opened URL
+downloaded 12378Kb
+
+trying URL 'http://www.bioconductor.org/packages/data/annotation/stable/bin/windows/contrib/2.1/KEGG_1.8.1.zip'
+Content type 'application/zip' length 233148 bytes
+opened URL
+downloaded 227Kb
+
+trying URL 'http://www.bioconductor.org/packages/data/experiment/stable/bin/windows/contrib/2.1/golubEsets_1.0.zip'
+Content type 'application/zip' length 2168986 bytes
+opened URL
+downloaded 2118Kb
+
+trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.1/RColorBrewer_0.2-3.zip'
+Content type 'application/zip' length 45201 bytes
+opened URL
+downloaded 44Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/affy_1.6.7.zip'
+Content type 'application/zip' length 1438528 bytes
+opened URL
+downloaded 1404Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/affydata_1.4.1.zip'
+Content type 'application/zip' length 9867339 bytes
+opened URL
+downloaded 9636Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/affyPLM_1.3.3.zip'
+Content type 'application/zip' length 3912506 bytes
+opened URL
+downloaded 3820Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/annaffy_1.0.18.zip'
+Content type 'application/zip' length 344446 bytes
+opened URL
+downloaded 336Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/annotate_1.5.15.zip'
+Content type 'application/zip' length 1673762 bytes
+opened URL
+downloaded 1634Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/Biobase_1.5.12.zip'
+Content type 'application/zip' length 623915 bytes
+opened URL
+downloaded 609Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/Biostrings_1.1.1.zip'
+Content type 'application/zip' length 217247 bytes
+opened URL
+downloaded 212Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/DynDoc_1.5.5.zip'
+Content type 'application/zip' length 91752 bytes
+opened URL
+downloaded 89Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/edd_1.5.1.zip'
+Content type 'application/zip' length 320107 bytes
+opened URL
+downloaded 312Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/gcrma_1.1.3.zip'
+Content type 'application/zip' length 131902 bytes
+opened URL
+downloaded 128Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/genefilter_1.6.1.zip'
+Content type 'application/zip' length 331172 bytes
+opened URL
+downloaded 323Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/geneplotter_1.6.1.zip'
+Content type 'application/zip' length 1537720 bytes
+opened URL
+downloaded 1501Kb
+
+trying URL 'http://www.bioconductor.org/packages/data/annotation/stable/bin/windows/contrib/2.1/hgu95av2_1.8.4.zip'
+Content type 'application/zip' length 5989106 bytes
+opened URL
+downloaded 5848Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/limma_1.9.6.zip'
+Content type 'application/zip' length 1307326 bytes
+opened URL
+downloaded 1276Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/makecdfenv_1.5.1.zip'
+Content type 'application/zip' length 3276551 bytes
+opened URL
+downloaded 3199Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/marray_1.6.3.zip'
+Content type 'application/zip' length 4363269 bytes
+opened URL
+downloaded 4261Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/matchprobes_1.0.22.zip'
+Content type 'application/zip' length 7337852 bytes
+opened URL
+downloaded 7165Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/multtest_1.6.0.zip'
+Content type 'application/zip' length 1550864 bytes
+opened URL
+downloaded 1514Kb
+
+trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.1/pamr_1.25.zip'
+Content type 'application/zip' length 1365701 bytes
+opened URL
+downloaded 1333Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/reposTools_1.5.19.zip'
+Content type 'application/zip' length 628767 bytes
+opened URL
+downloaded 614Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/ROC_1.1.1.zip'
+Content type 'application/zip' length 133323 bytes
+opened URL
+downloaded 130Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/siggenes_1.2.17.zip'
+Content type 'application/zip' length 567331 bytes
+opened URL
+downloaded 554Kb
+
+trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.1/sma_0.5.14.zip'
+Content type 'application/zip' length 3073928 bytes
+opened URL
+downloaded 3001Kb
+
+trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.1/statmod_1.1.0.zip'
+Content type 'application/zip' length 165548 bytes
+opened URL
+downloaded 161Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/tkWidgets_1.5.23.zip'
+Content type 'application/zip' length 540290 bytes
+opened URL
+downloaded 527Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/vsn_1.6.3.zip'
+Content type 'application/zip' length 1537894 bytes
+opened URL
+downloaded 1501Kb
+
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/widgetTools_1.4.7.zip'
+Content type 'application/zip' length 284075 bytes
+opened URL
+downloaded 277Kb
+
+trying URL 'http://cran.fhcrc.org/bin/windows/contrib/2.1/xtable_1.2-5.zip'
+Content type 'application/zip' length 65572 bytes
+opened URL
+downloaded 64Kb
+
+package 'GO' successfully unpacked and MD5 sums checked
+package 'KEGG' successfully unpacked and MD5 sums checked
+package 'golubEsets' successfully unpacked and MD5 sums checked
+package 'RColorBrewer' successfully unpacked and MD5 sums checked
+package 'affy' successfully unpacked and MD5 sums checked
+Error in sprintf(gettext("unable to move temp installation '%d' to '%s'"),  : 
+        use format %s for character objects
+> library(Biobase)
+Error in library(Biobase) : there is no package called 'Biobase'
+> library(KEGG)
+> sessionInfo()
+R version 2.1.0, 2005-04-18, i386-pc-mingw32 
+
+attached base packages:
+[1] "methods"   "stats"     "graphics"  "grDevices" "utils"     "datasets"  "base"     
+
+other attached packages:
+   KEGG 
+"1.8.1"
+
+From sfalcon at fhcrc.org  Tue May 24 15:54:26 2005
+From: sfalcon at fhcrc.org (Seth Falcon)
+Date: Tue May 24 15:55:06 2005
+Subject: [Bioc-devel] Problem with getBioC()
+In-Reply-To: <68735E80D5EB7C4F8477BF00C450D38E0A58CF@mailc.lumcnet.prod.intern>
+	(J. J. Goeman's message of "Tue, 24 May 2005 10:23:15 +0200")
+References: <68735E80D5EB7C4F8477BF00C450D38E0A58CF@mailc.lumcnet.prod.intern>
+Message-ID: <m28y244tm5.fsf@macaroni.local>
+
+Hi Jelle,
+
+"Goeman, J.J. \(MSTAT\)" <J.J.Goeman@lumc.nl> writes:
+> I'm running getBioC() on a newly installed R 2.1.0 on windows.
+> All works fine, until I come to the following error message:
+>
+> Error in sprintf(gettext("unable to move temp installation '%d' to '%s'"),  : 
+>         use format %s for character objects
+>
+> This terminates the installation. It did not install all packages. 
+
+Any chance you had some Bioc packages already loaded via library()
+before you ran getBioC?  In particular, if you happened to have an old
+version of affy loaded, this would, I believe, be the expected failure
+mode.
+
+We have not seen this issue in our testing on Windows.  
+
+One thing you could try from a fresh R session:
+
+source("http://www.bioconductor.org/getBioC.R")
+getBioC("affy")
+
+This should just download and install affy and its direct
+dependencies.  Since that seemed to be the package that caused the
+error, this would be a faster way of trying to reproduce.
+
+Best,
+
++ seth
+
+From J.J.Goeman at lumc.nl  Tue May 24 16:33:04 2005
+From: J.J.Goeman at lumc.nl (Goeman, J.J. (MSTAT))
+Date: Tue May 24 16:33:15 2005
+Subject: [Bioc-devel] Problem with getBioC()
+Message-ID: <68735E80D5EB7C4F8477BF00C450D38E0A58D3@mailc.lumcnet.prod.intern>
+
+ Hi Seth,
+
+This was a really fresh new install of R 2.1.0 on this machine and 
+
+> source("http://www.bioconductor.org/getBioC.R")
+> getBioC()
+
+were the very first commands I typed on this installation of R. There is of course a version of affy in the library of a previous version of R, but that should not interfere.
+
+Doing 
+
+> source("http://www.bioconductor.org/getBioC.R")
+> getBioC("affy")
+
+reproduces the error in a new R session. See below. 
+
+Jelle
+
+
+Running getBioC version 0.7  with R version  2.1.0 
+
+Running biocinstall version 1.0  with R version  2.1.0 
+trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/affy_1.6.7.zip'
+Content type 'application/zip' length 1438528 bytes
+opened URL
+downloaded 1404Kb
+
+package 'affy' successfully unpacked and MD5 sums checked
+Error in sprintf(gettext("unable to move temp installation '%d' to '%s'"),  : 
+        use format %s for character objects
+
+
+
+
+
+> -----Original Message-----
+> From: bioc-devel-bounces@stat.math.ethz.ch
+> [mailto:bioc-devel-bounces@stat.math.ethz.ch]On Behalf Of Seth Falcon
+> Sent: 24 May 2005 15:54
+> To: bioc-devel@stat.math.ethz.ch
+> Subject: Re: [Bioc-devel] Problem with getBioC()
+> 
+> 
+> Hi Jelle,
+> 
+> "Goeman, J.J. \(MSTAT\)" <J.J.Goeman@lumc.nl> writes:
+> > I'm running getBioC() on a newly installed R 2.1.0 on windows.
+> > All works fine, until I come to the following error message:
+> >
+> > Error in sprintf(gettext("unable to move temp installation 
+> '%d' to '%s'"),  : 
+> >         use format %s for character objects
+> >
+> > This terminates the installation. It did not install all packages. 
+> 
+> Any chance you had some Bioc packages already loaded via library()
+> before you ran getBioC?  In particular, if you happened to have an old
+> version of affy loaded, this would, I believe, be the expected failure
+> mode.
+> 
+> We have not seen this issue in our testing on Windows.  
+> 
+> One thing you could try from a fresh R session:
+> 
+> source("http://www.bioconductor.org/getBioC.R")
+> getBioC("affy")
+> 
+> This should just download and install affy and its direct
+> dependencies.  Since that seemed to be the package that caused the
+> error, this would be a faster way of trying to reproduce.
+> 
+> Best,
+> 
+> + seth
+> 
+> _______________________________________________
+> Bioc-devel@stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+From rgentlem at fhcrc.org  Tue May 24 16:48:09 2005
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Tue May 24 16:48:23 2005
+Subject: [Bioc-devel] Problem with getBioC()
+In-Reply-To: <68735E80D5EB7C4F8477BF00C450D38E0A58D3@mailc.lumcnet.prod.intern>
+References: <68735E80D5EB7C4F8477BF00C450D38E0A58D3@mailc.lumcnet.prod.intern>
+Message-ID: <42933EA9.4010704@fhcrc.org>
+
+Hi,
+  I am wondering if this is related to the locale settings (are you 
+using a non-English locale?) and some of the recent changes in R to 
+support other character sets. Which would explain why we have not seen 
+it - since we don't use non-English settings (anyone else out there with 
+non-English settings willing to give this a try).
+
+
+  You might also try and set options(error=recover), to see if that pops 
+you into a debugger at some useful point (did you try traceback()?) 
+Also, debug(install.packages), and then running this, would help to 
+narrow down just what we are looking for.
+
+   Or another experiment - try just downloading the zip file, to the 
+desktop and then loading it...
+
+HTH,
+   Robert
+
+
+Goeman, J.J. (MSTAT) wrote:
+>  Hi Seth,
+> 
+> This was a really fresh new install of R 2.1.0 on this machine and 
+> 
+> 
+>>source("http://www.bioconductor.org/getBioC.R")
+>>getBioC()
+> 
+> 
+> were the very first commands I typed on this installation of R. There is of course a version of affy in the library of a previous version of R, but that should not interfere.
+> 
+> Doing 
+> 
+> 
+>>source("http://www.bioconductor.org/getBioC.R")
+>>getBioC("affy")
+> 
+> 
+> reproduces the error in a new R session. See below. 
+> 
+> Jelle
+> 
+> 
+> Running getBioC version 0.7  with R version  2.1.0 
+> 
+> Running biocinstall version 1.0  with R version  2.1.0 
+> trying URL 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/contrib/2.1/affy_1.6.7.zip'
+> Content type 'application/zip' length 1438528 bytes
+> opened URL
+> downloaded 1404Kb
+> 
+> package 'affy' successfully unpacked and MD5 sums checked
+> Error in sprintf(gettext("unable to move temp installation '%d' to '%s'"),  : 
+>         use format %s for character objects
+> 
+> 
+> 
+> 
+> 
+> 
+>>-----Original Message-----
+>>From: bioc-devel-bounces@stat.math.ethz.ch
+>>[mailto:bioc-devel-bounces@stat.math.ethz.ch]On Behalf Of Seth Falcon
+>>Sent: 24 May 2005 15:54
+>>To: bioc-devel@stat.math.ethz.ch
+>>Subject: Re: [Bioc-devel] Problem with getBioC()
+>>
+>>
+>>Hi Jelle,
+>>
+>>"Goeman, J.J. \(MSTAT\)" <J.J.Goeman@lumc.nl> writes:
+>>
+>>>I'm running getBioC() on a newly installed R 2.1.0 on windows.
+>>>All works fine, until I come to the following error message:
+>>>
+>>>Error in sprintf(gettext("unable to move temp installation 
+>>
+>>'%d' to '%s'"),  : 
+>>
+>>>        use format %s for character objects
+>>>
+>>>This terminates the installation. It did not install all packages. 
+>>
+>>Any chance you had some Bioc packages already loaded via library()
+>>before you ran getBioC?  In particular, if you happened to have an old
+>>version of affy loaded, this would, I believe, be the expected failure
+>>mode.
+>>
+>>We have not seen this issue in our testing on Windows.  
+>>
+>>One thing you could try from a fresh R session:
+>>
+>>source("http://www.bioconductor.org/getBioC.R")
+>>getBioC("affy")
+>>
+>>This should just download and install affy and its direct
+>>dependencies.  Since that seemed to be the package that caused the
+>>error, this would be a faster way of trying to reproduce.
+>>
+>>Best,
+>>
+>>+ seth
+>>
+>>_______________________________________________
+>>Bioc-devel@stat.math.ethz.ch mailing list
+>>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>
+> 
+> 
+> _______________________________________________
+> Bioc-devel@stat.math.ethz.ch mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+From J.J.Goeman at lumc.nl  Tue May 24 17:21:55 2005
+From: J.J.Goeman at lumc.nl (Goeman, J.J. (MSTAT))
+Date: Tue May 24 17:22:07 2005
+Subject: [Bioc-devel] Problem with getBioC()
+Message-ID: <68735E80D5EB7C4F8477BF00C450D38E0A58D4@mailc.lumcnet.prod.intern>
+
+ Hi Robert and Seth,
+
+I succeeded in installing affy without problems by downloading the zip file. Since that moment I failed to reproduce the problem, even by starting again from installation of R. So I could not try the debugging tools.
+
+So probably it was just my computer who consistenty went berserk for a few hours... It running on Windows after all. Next time I'll wait with emailing you all until the problem persists for at least 24 hours.
+
+Best,
+
+Jelle
+
+
+
+
+
+
+
+> -----Original Message-----
+> From: Robert Gentleman [mailto:rgentlem@fhcrc.org]
+> Sent: 24 May 2005 16:48
+> To: Goeman, J.J. (MSTAT)
+> Cc: Seth Falcon; bioc-devel@stat.math.ethz.ch
+> Subject: Re: [Bioc-devel] Problem with getBioC()
+> 
+> 
+> Hi,
+>   I am wondering if this is related to the locale settings (are you 
+> using a non-English locale?) and some of the recent changes in R to 
+> support other character sets. Which would explain why we have 
+> not seen 
+> it - since we don't use non-English settings (anyone else out 
+> there with 
+> non-English settings willing to give this a try).
+> 
+> 
+>   You might also try and set options(error=recover), to see 
+> if that pops 
+> you into a debugger at some useful point (did you try traceback()?) 
+> Also, debug(install.packages), and then running this, would help to 
+> narrow down just what we are looking for.
+> 
+>    Or another experiment - try just downloading the zip file, to the 
+> desktop and then loading it...
+> 
+> HTH,
+>    Robert
+> 
+> 
+> Goeman, J.J. (MSTAT) wrote:
+> >  Hi Seth,
+> > 
+> > This was a really fresh new install of R 2.1.0 on this machine and 
+> > 
+> > 
+> >>source("http://www.bioconductor.org/getBioC.R")
+> >>getBioC()
+> > 
+> > 
+> > were the very first commands I typed on this installation 
+> of R. There is of course a version of affy in the library of 
+> a previous version of R, but that should not interfere.
+> > 
+> > Doing 
+> > 
+> > 
+> >>source("http://www.bioconductor.org/getBioC.R")
+> >>getBioC("affy")
+> > 
+> > 
+> > reproduces the error in a new R session. See below. 
+> > 
+> > Jelle
+> > 
+> > 
+> > Running getBioC version 0.7  with R version  2.1.0 
+> > 
+> > Running biocinstall version 1.0  with R version  2.1.0 
+> > trying URL 
+> 'http://www.bioconductor.org/packages/bioc/stable/bin/windows/
+> contrib/2.1/affy_1.6.7.zip'
+> > Content type 'application/zip' length 1438528 bytes
+> > opened URL
+> > downloaded 1404Kb
+> > 
+> > package 'affy' successfully unpacked and MD5 sums checked
+> > Error in sprintf(gettext("unable to move temp installation 
+> '%d' to '%s'"),  : 
+> >         use format %s for character objects
+> > 
+> > 
+> > 
+> > 
+> > 
+> > 
+> >>-----Original Message-----
+> >>From: bioc-devel-bounces@stat.math.ethz.ch
+> >>[mailto:bioc-devel-bounces@stat.math.ethz.ch]On Behalf Of 
+> Seth Falcon
+> >>Sent: 24 May 2005 15:54
+> >>To: bioc-devel@stat.math.ethz.ch
+> >>Subject: Re: [Bioc-devel] Problem with getBioC()
+> >>
+> >>
+> >>Hi Jelle,
+> >>
+> >>"Goeman, J.J. \(MSTAT\)" <J.J.Goeman@lumc.nl> writes:
+> >>
+> >>>I'm running getBioC() on a newly installed R 2.1.0 on windows.
+> >>>All works fine, until I come to the following error message:
+> >>>
+> >>>Error in sprintf(gettext("unable to move temp installation 
+> >>
+> >>'%d' to '%s'"),  : 
+> >>
+> >>>        use format %s for character objects
+> >>>
+> >>>This terminates the installation. It did not install all packages. 
+> >>
+> >>Any chance you had some Bioc packages already loaded via library()
+> >>before you ran getBioC?  In particular, if you happened to 
+> have an old
+> >>version of affy loaded, this would, I believe, be the 
+> expected failure
+> >>mode.
+> >>
+> >>We have not seen this issue in our testing on Windows.  
+> >>
+> >>One thing you could try from a fresh R session:
+> >>
+> >>source("http://www.bioconductor.org/getBioC.R")
+> >>getBioC("affy")
+> >>
+> >>This should just download and install affy and its direct
+> >>dependencies.  Since that seemed to be the package that caused the
+> >>error, this would be a faster way of trying to reproduce.
+> >>
+> >>Best,
+> >>
+> >>+ seth
+> >>
+> >>_______________________________________________
+> >>Bioc-devel@stat.math.ethz.ch mailing list
+> >>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> >>
+> > 
+> > 
+> > _______________________________________________
+> > Bioc-devel@stat.math.ethz.ch mailing list
+> > https://stat.ethz.ch/mailman/listinfo/bioc-devel
+> > 
+>
+
+From rgentlem at fhcrc.org  Tue May 24 18:19:31 2005
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Tue May 24 18:19:46 2005
+Subject: [Bioc-devel] Problem with getBioC()
+In-Reply-To: <68735E80D5EB7C4F8477BF00C450D38E0A58D4@mailc.lumcnet.prod.intern>
+References: <68735E80D5EB7C4F8477BF00C450D38E0A58D4@mailc.lumcnet.prod.intern>
+Message-ID: <42935413.6030709@fhcrc.org>
+
+Hi Jelle,
+   No, please don't do that. We really do appreciate accurate bug 
+reports, even if they end up unresolved, it is important that these 
+problems get reported, and accurately, as soon as possible. A lot of 
+users are unable, or unwilling to file such complete reports, and that 
+mkes it pretty hard from this end. So, to you and the many others - 
+please don't wait - please do file a report which bears some resemblance 
+to the instructions in the posting guide (as you did).
+
+
+
+  Best wishes,
+    Robert
+
+
+Goeman, J.J. (MSTAT) wrote:
+>  Hi Robert and Seth,
+> 
+> I succeeded in installing affy without problems by downloading the zip file. Since that moment I failed to reproduce the problem, even by starting again from installation of R. So I could not try the debugging tools.
+> 
+> So probably it was just my computer who consistenty went berserk for a few hours... It running on Windows after all. Next time I'll wait with emailing you all until the problem persists for at least 24 hours.
+> 
+> Best,
+> 
+> Jelle
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+>>-----Original Message-----
+>>From: Robert Gentleman [mailto:rgentlem@fhcrc.org]
+>>Sent: 24 May 2005 16:48
+>>To: Goeman, J.J. (MSTAT)
+>>Cc: Seth Falcon; bioc-devel@stat.math.ethz.ch
+>>Subject: Re: [Bioc-devel] Problem with getBioC()
+>>
+>>
+>>Hi,
+>>  I am wondering if this is related to the locale settings (are you 
+>>using a non-English locale?) and some of the recent changes in R to 
+>>support other character sets. Which would explain why we have 
+>>not seen 
+>>it - since we don't use non-English settings (anyone else out 
+>>there with 
+>>non-English settings willing to give this a try).
+>>
+>>
+>>  You might also try and set options(error=recover), to see 
+>>if that pops 
+>>you into a debugger at some useful point (did you try traceback()?) 
+>>Also, debug(install.packages), and then running this, would help to 
+>>narrow down just what we are looking for.
+>>
+>>   Or another experiment - try just downloading the zip file, to the 
+>>desktop and then loading it...
+>>
+>>HTH,
+>>   Robert
+>>
+>>
+>>Goeman, J.J. (MSTAT) wrote:
+>>
+>>> Hi Seth,
+>>>
+>>>This was a really fresh new install of R 2.1.0 on this machine and 
+>>>
+>>>
+>>>
+>>>>source("http://www.bioconductor.org/getBioC.R")
+>>>>getBioC()
+>>>
+>>>
+>>>were the very first commands I typed on this installation 
+>>
+>>of R. There is of course a version of affy in the library of 
+>>a previous version of R, but that should not interfere.
+>>
+>>>Doing 
+>>>
+>>>
+>>>
+>>>>source("http://www.bioconductor.org/getBioC.R")
+>>>>getBioC("affy")
+>>>
+>>>
+>>>reproduces the error in a new R session. See below. 
+>>>
+>>>Jelle
+>>>
+>>>
+>>>Running getBioC version 0.7  with R version  2.1.0 
+>>>
+>>>Running biocinstall version 1.0  with R version  2.1.0 
+>>>trying URL 
+>>
+>>'http://www.bioconductor.org/packages/bioc/stable/bin/windows/
+>>contrib/2.1/affy_1.6.7.zip'
+>>
+>>>Content type 'application/zip' length 1438528 bytes
+>>>opened URL
+>>>downloaded 1404Kb
+>>>
+>>>package 'affy' successfully unpacked and MD5 sums checked
+>>>Error in sprintf(gettext("unable to move temp installation 
+>>
+>>'%d' to '%s'"),  : 
+>>
+>>>        use format %s for character objects
+>>>
+>>>
+>>>
+>>>
+>>>
+>>>
+>>>
+>>>>-----Original Message-----
+>>>>From: bioc-devel-bounces@stat.math.ethz.ch
+>>>>[mailto:bioc-devel-bounces@stat.math.ethz.ch]On Behalf Of 
+>>
+>>Seth Falcon
+>>
+>>>>Sent: 24 May 2005 15:54
+>>>>To: bioc-devel@stat.math.ethz.ch
+>>>>Subject: Re: [Bioc-devel] Problem with getBioC()
+>>>>
+>>>>
+>>>>Hi Jelle,
+>>>>
+>>>>"Goeman, J.J. \(MSTAT\)" <J.J.Goeman@lumc.nl> writes:
+>>>>
+>>>>
+>>>>>I'm running getBioC() on a newly installed R 2.1.0 on windows.
+>>>>>All works fine, until I come to the following error message:
+>>>>>
+>>>>>Error in sprintf(gettext("unable to move temp installation 
+>>>>
+>>>>'%d' to '%s'"),  : 
+>>>>
+>>>>
+>>>>>       use format %s for character objects
+>>>>>
+>>>>>This terminates the installation. It did not install all packages. 
+>>>>
+>>>>Any chance you had some Bioc packages already loaded via library()
+>>>>before you ran getBioC?  In particular, if you happened to 
+>>
+>>have an old
+>>
+>>>>version of affy loaded, this would, I believe, be the 
+>>
+>>expected failure
+>>
+>>>>mode.
+>>>>
+>>>>We have not seen this issue in our testing on Windows.  
+>>>>
+>>>>One thing you could try from a fresh R session:
+>>>>
+>>>>source("http://www.bioconductor.org/getBioC.R")
+>>>>getBioC("affy")
+>>>>
+>>>>This should just download and install affy and its direct
+>>>>dependencies.  Since that seemed to be the package that caused the
+>>>>error, this would be a faster way of trying to reproduce.
+>>>>
+>>>>Best,
+>>>>
+>>>>+ seth
+>>>>
+>>>>_______________________________________________
+>>>>Bioc-devel@stat.math.ethz.ch mailing list
+>>>>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>>
+>>>
+>>>
+>>>_______________________________________________
+>>>Bioc-devel@stat.math.ethz.ch mailing list
+>>>https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>>>
+>>
+>
+
+From J.J.Goeman at lumc.nl  Tue May 24 18:33:00 2005
+From: J.J.Goeman at lumc.nl (Goeman, J.J. (MSTAT))
+Date: Tue May 24 18:33:13 2005
+Subject: [Bioc-devel] Problem with getBioC()
+Message-ID: <68735E80D5EB7C4F8477BF00C450D38E0A58D5@mailc.lumcnet.prod.intern>
+
+ Hi Robert and Seth,
+
+I was too quick in apologizing. I do still have the same problem, which now did not turn up in installing affy, but in installing genefilter. Running getBioC() a second time installed everything without problems. But then reinstalling R again and running getBioC() gave the same problems installing affy again. It puzzles me completely! Some traceback() information below.
+
+>   I am wondering if this is related to the locale settings (are you 
+> using a non-English locale?) and some of the recent changes in R to 
+> support other character sets. Which would explain why we have 
+> not seen 
+> it - since we don't use non-English settings (anyone else out 
+> there with 
+> non-English settings willing to give this a try).
+
+I do not think that this is a problem, as I'm running an English version of Windows.
+
+> You might also try and set options(error=recover), to see 
+> if that pops 
+> you into a debugger at some useful point (did you try traceback()?) 
+> Also, debug(install.packages), and then running this, would help to 
+> narrow down just what we are looking for.
+
+Traceback gives:
+
+> traceback()
+9: sprintf(gettext("unable to move temp installation '%d' to '%s'"), 
+       file.path(tmpDir, curPkg), instPath)
+8: warning(sprintf(gettext("unable to move temp installation '%d' to '%s'"), 
+       file.path(tmpDir, curPkg), instPath), domain = NA, call. = FALSE)
+7: unpackPkg(foundpkgs[okp, 2], foundpkgs[okp, 1], lib, installWithVers)
+6: .install.winbinary(pkgs = pkgs, lib = lib, contriburl = contriburl, 
+       method = method, available = available, destdir = destdir, 
+       installWithVers = installWithVers, dependencies = dependencies)
+5: install.packages(pkgs = c("affy", "affydata", "affyPLM", "annaffy", 
+   "annotate", "Biobase", "Biostrings", "DynDoc", "edd", "gcrma", 
+   "genefilter", "geneplotter", "hgu95av2", "limma", "makecdfenv", 
+   "marray", "matchprobes", "multtest", "pamr", "reposTools", "ROC", 
+   "siggenes", "sma", "statmod", "tkWidgets", "vsn", "widgetTools", 
+   "xtable"), repos = c("http://www.bioconductor.org/packages/bioc/stable", 
+   "http://www.bioconductor.org/packages/data/annotation/stable", 
+   "http://www.bioconductor.org/packages/data/experiment/stable", 
+   "http://www.bioconductor.org/packages/omegahat/stable", "http://www.bioconductor.org/packages/lindsey/stable", 
+   "http://cran.fhcrc.org"), lib = "C:/PROGRA~1/R/rw2010/library", 
+       dependencies = c("Depends", "Imports"))
+4: do.call("install.packages", args)
+3: biocinstall(lib = "C:/PROGRA~1/R/rw2010/library", groupName = "default", 
+       dependencies = c("Depends", "Imports"))
+2: do.call("biocinstall", args)
+1: getBioC()
+
+Setting options(error=recover) gives me a huge amount of output which I can't make heads or tails of. I've put it down below.
+
+>    Or another experiment - try just downloading the zip file, to the 
+> desktop and then loading it...
+
+That solves the problem, as my previous email showed. But it does not show why it occurs.
+
+Best,
+
+Jelle
+
+
+> options(error=recover)
+> debug(install.packages)
+> getBioC()
+
+Running getBioC version 0.7  with R version  2.1.0 
+
+Running biocinstall version 1.0  with R version  2.1.0 
+debugging in: install.packages(pkgs = c("affy", "affydata", "affyPLM", "annaffy", 
+"annotate", "Biobase", "Biostrings", "DynDoc", "edd", "gcrma", 
+"genefilter", "geneplotter", "hgu95av2", "limma", "makecdfenv", 
+"marray", "matchprobes", "multtest", "pamr", "reposTools", "ROC", 
+"siggenes", "sma", "statmod", "tkWidgets", "vsn", "widgetTools", 
+"xtable"), repos = c("http://www.bioconductor.org/packages/bioc/stable", 
+"http://www.bioconductor.org/packages/data/annotation/stable", 
+"http://www.bioconductor.org/packages/data/experiment/stable", 
+"http://www.bioconductor.org/packages/omegahat/stable", "http://www.bioconductor.org/packages/lindsey/stable", 
+"http://cran.fhcrc.org"), lib = "C:/PROGRA~1/R/rw2010/library", 
+    dependencies = c("Depends", "Imports"))
+debug: {
+    explode_bundles <- function(a) {
+        contains <- .find_bundles(a, FALSE)
+        extras <- unlist(lapply(names(contains), function(x) paste(contains[[x]], 
+            " (", x, ")", sep = "")))
+        sort(as.vector(c(a[, 1], extras)))
+    }
+    if (missing(pkgs) || !length(pkgs)) {
+        if (.Platform$OS.type == "windows" || .Platform$GUI == 
+            "AQUA") {
+            if (is.null(available)) 
+                available <- available.packages(contriburl = contriburl, 
+                  method = method)
+            if (NROW(available)) {
+                a <- explode_bundles(available)
+                pkgs <- select.list(a, multiple = TRUE, title = "Packages")
+            }
+            if (!length(pkgs)) 
+                stop("no packages were specified")
+        }
+        else if (.Platform$OS.type == "unix" && capabilities("tcltk") && 
+            capabilities("X11")) {
+            if (is.null(available)) 
+                available <- available.packages(contriburl = contriburl, 
+                  method = method)
+            if (NROW(available)) {
+                a <- explode_bundles(available)
+                pkgs <- tcltk::tk_select.list(a, multiple = TRUE, 
+                  title = "Packages")
+            }
+            if (!length(pkgs)) 
+                stop("no packages were specified")
+        }
+        else stop("no packages were specified")
+    }
+    if (missing(lib) || is.null(lib)) {
+        lib <- .libPaths()[1]
+        if (length(.libPaths()) > 1) 
+            warning(gettextf("argument 'lib' is missing: using %s", 
+                lib), immediate. = TRUE, domain = NA)
+    }
+    if (.Platform$OS.type == "windows") {
+        if (type == "mac.binary") 
+            stop("cannot install MacOS X binary packages on Windows")
+        if (type == "win.binary") {
+            .install.winbinary(pkgs = pkgs, lib = lib, contriburl = contriburl, 
+                method = method, available = available, destdir = destdir, 
+                installWithVers = installWithVers, dependencies = dependencies)
+            return(invisible())
+        }
+    }
+    else {
+        if (type == "mac.binary") {
+            if (!length(grep("darwin", R.version$platform))) 
+                stop("cannot install MacOS X binary packages on this plaform")
+            .install.macbinary(pkgs = pkgs, lib = lib, contriburl = contriburl, 
+                method = method, available = available, destdir = destdir, 
+                installWithVers = installWithVers, dependencies = dependencies)
+            return(invisible())
+        }
+        if (type == "win.binary") 
+            stop("cannot install Windows binary packages on this plaform")
+        if (!file.exists(file.path(R.home(), "bin", "INSTALL"))) 
+            stop("This version of R is not set up to install source packages\nIf it was installed from an RPM, you may need the R-devel RPM")
+    }
+    if (is.null(repos) & missing(contriburl)) {
+        update <- cbind(pkgs, lib)
+        cmd0 <- paste(file.path(R.home(), "bin", "R"), "CMD INSTALL")
+        if (installWithVers) 
+            cmd0 <- paste(cmd0, "--with-package-versions")
+        for (i in 1:nrow(update)) {
+            cmd <- paste(cmd0, "-l", shQuote(update[i, 2]), shQuote(update[i, 
+                1]))
+            if (system(cmd) > 0) 
+                warning(gettextf("installation of package '%s' had non-zero exit status", 
+                  update[i, 1]), domain = NA)
+        }
+        return(invisible())
+    }
+    oneLib <- length(lib) == 1
+    tmpd <- destdir
+    nonlocalcran <- length(grep("^file:", contriburl)) < length(contriburl)
+    if (is.null(destdir) && nonlocalcran) {
+        tmpd <- file.path(tempdir(), "downloaded_packages")
+        if (!file.exists(tmpd) && !dir.create(tmpd)) 
+            stop(gettextf("Unable to create temporary directory '%s'", 
+                tmpd), domain = NA)
+    }
+    depends <- is.character(dependencies) || (is.logical(dependencies) && 
+        dependencies)
+    if (depends && is.logical(dependencies)) 
+        dependencies <- c("Depends", "Imports", "Suggests")
+    if (depends && !oneLib) {
+        warning("Do not know which element of 'lib' to install dependencies into\nskipping dependencies")
+        depends <- FALSE
+    }
+    if (is.null(available)) 
+        available <- available.packages(contriburl = contriburl, 
+            method = method)
+    bundles <- .find_bundles(available)
+    for (bundle in names(bundles)) pkgs[pkgs %in% bundles[[bundle]]] <- bundle
+    if (depends) {
+        p0 <- p1 <- unique(pkgs)
+        have <- .packages(all.available = TRUE)
+        repeat {
+            if (any(miss <- !p1 %in% row.names(available))) {
+                cat(sprintf(ngettext(sum(miss), "dependency %s is not available", 
+                  "dependencies %s are not available"), paste(sQuote(p1[miss]), 
+                  collapse = ", ")), "\n\n", sep = "")
+                flush.console()
+            }
+            p1 <- p1[!miss]
+            deps <- as.vector(available[p1, dependencies])
+            deps <- .clean_up_dependencies(deps, available)
+            if (!length(deps)) 
+                break
+            toadd <- deps[!deps %in% c("R", have, pkgs)]
+            if (length(toadd) == 0) 
+                break
+            pkgs <- c(toadd, pkgs)
+            p1 <- toadd
+        }
+        for (bundle in names(bundles)) pkgs[pkgs %in% bundles[[bundle]]] <- bundle
+        pkgs <- unique(pkgs)
+        pkgs <- pkgs[pkgs %in% row.names(available)]
+        if (length(pkgs) > length(p0)) {
+            added <- setdiff(pkgs, p0)
+            cat(ngettext(length(added), "also installing the dependency ", 
+                "also installing the dependencies "), paste(sQuote(added), 
+                collapse = ", "), "\n\n", sep = "")
+            flush.console()
+        }
+    }
+    foundpkgs <- download.packages(pkgs, destdir = tmpd, available = available, 
+        contriburl = contriburl, method = method, type = "source")
+    if (!is.null(foundpkgs)) {
+        update <- unique(cbind(pkgs, lib))
+        colnames(update) <- c("Package", "LibPath")
+        found <- pkgs %in% foundpkgs[, 1]
+        files <- foundpkgs[match(pkgs[found], foundpkgs[, 1]), 
+            2]
+        update <- cbind(update[found, , drop = FALSE], file = files)
+        if (nrow(update) > 1) {
+            upkgs <- unique(pkgs <- update[, 1])
+            DL <- .make_dependency_list(upkgs, available)
+            p0 <- .find_install_order(upkgs, DL)
+            update <- update[sort.list(match(pkgs, p0)), ]
+        }
+        cmd0 <- paste(file.path(R.home(), "bin", "R"), "CMD INSTALL")
+        if (installWithVers) 
+            cmd0 <- paste(cmd0, "--with-package-versions")
+        for (i in 1:nrow(update)) {
+            cmd <- paste(cmd0, "-l", shQuote(update[i, 2]), update[i, 
+                3])
+            status <- system(cmd)
+            if (status > 0) 
+                warning(gettextf("installation of package '%s' had non-zero exit status", 
+                  update[i, 1]), domain = NA)
+        }
+        if (!is.null(tmpd) && is.null(destdir)) 
+            cat("\n", gettextf("The downloaded packages are in\n\t%s", 
+                normalizePath(tmpd)), "\n", sep = "")
+        link.html.help(verbose = TRUE)
+    }
+    else if (!is.null(tmpd) && is.null(destdir)) 
+        unlink(tmpd, TRUE)
+    invisible()
+}
+
+From rgentlem at fhcrc.org  Tue May 24 19:01:34 2005
+From: rgentlem at fhcrc.org (Robert Gentleman)
+Date: Tue May 24 19:01:49 2005
+Subject: [Bioc-devel] Problem with getBioC()
+In-Reply-To: <68735E80D5EB7C4F8477BF00C450D38E0A58D5@mailc.lumcnet.prod.intern>
+References: <68735E80D5EB7C4F8477BF00C450D38E0A58D5@mailc.lumcnet.prod.intern>
+Message-ID: <42935DEE.7050901@fhcrc.org>
+
+Hi,
+
+
+Goeman, J.J. (MSTAT) wrote:
+>  Hi Robert and Seth,
+> 
+> I was too quick in apologizing. I do still have the same problem, which now did not turn up in installing affy, but in installing genefilter. Running getBioC() a second time installed everything without problems. But then reinstalling R again and running getBioC() gave the same problems installing affy again. It puzzles me completely! Some traceback() information below.
+> 
+> 
+>>  I am wondering if this is related to the locale settings (are you 
+>>using a non-English locale?) and some of the recent changes in R to 
+>>support other character sets. Which would explain why we have 
+>>not seen 
+>>it - since we don't use non-English settings (anyone else out 
+>>there with 
+>>non-English settings willing to give this a try).
+> 
+> 
+> I do not think that this is a problem, as I'm running an English version of Windows.
+> 
+> 
+>>You might also try and set options(error=recover), to see 
+>>if that pops 
+>>you into a debugger at some useful point (did you try traceback()?) 
+>>Also, debug(install.packages), and then running this, would help to 
+>>narrow down just what we are looking for.
+> 
+> 
+> Traceback gives:
+> 
+> 
+>>traceback()
+so use options(error=recover)
+
+select the frame for sprintf and then see what tmpDir, curPkg and 
+instPath are, one suspects that therein lies the problem
+
+> 
+> 9: sprintf(gettext("unable to move temp installation '%d' to '%s'"), 
+>        file.path(tmpDir, curPkg), instPath)
+> 8: warning(sprintf(gettext("unable to move temp installation '%d' to '%s'"), 
+>        file.path(tmpDir, curPkg), instPath), domain = NA, call. = FALSE)
+> 7: unpackPkg(foundpkgs[okp, 2], foundpkgs[okp, 1], lib, installWithVers)
+> 6: .install.winbinary(pkgs = pkgs, lib = lib, contriburl = contriburl, 
+>        method = method, available = available, destdir = destdir, 
+>        installWithVers = installWithVers, dependencies = dependencies)
+> 5: install.packages(pkgs = c("affy", "affydata", "affyPLM", "annaffy", 
+>    "annotate", "Biobase", "Biostrings", "DynDoc", "edd", "gcrma", 
+>    "genefilter", "geneplotter", "hgu95av2", "limma", "makecdfenv", 
+>    "marray", "matchprobes", "multtest", "pamr", "reposTools", "ROC", 
+>    "siggenes", "sma", "statmod", "tkWidgets", "vsn", "widgetTools", 
+>    "xtable"), repos = c("http://www.bioconductor.org/packages/bioc/stable", 
+>    "http://www.bioconductor.org/packages/data/annotation/stable", 
+>    "http://www.bioconductor.org/packages/data/experiment/stable", 
+>    "http://www.bioconductor.org/packages/omegahat/stable", "http://www.bioconductor.org/packages/lindsey/stable", 
+>    "http://cran.fhcrc.org"), lib = "C:/PROGRA~1/R/rw2010/library", 
+>        dependencies = c("Depends", "Imports"))
+> 4: do.call("install.packages", args)
+> 3: biocinstall(lib = "C:/PROGRA~1/R/rw2010/library", groupName = "default", 
+>        dependencies = c("Depends", "Imports"))
+> 2: do.call("biocinstall", args)
+> 1: getBioC()
+> 
+> Setting options(error=recover) gives me a huge amount of output which I can't make heads or tails of. I've put it down below.
+> 
+> 
+>>   Or another experiment - try just downloading the zip file, to the 
+>>desktop and then loading it...
+> 
+> 
+> That solves the problem, as my previous email showed. But it does not show why it occurs.
+> 
+> Best,
+> 
+> Jelle
+> 
+> 
+> 
+>>options(error=recover)
+>>debug(install.packages)
+>>getBioC()
+> 
+> 
+> Running getBioC version 0.7  with R version  2.1.0 
+> 
+> Running biocinstall version 1.0  with R version  2.1.0 
+> debugging in: install.packages(pkgs = c("affy", "affydata", "affyPLM", "annaffy", 
+> "annotate", "Biobase", "Biostrings", "DynDoc", "edd", "gcrma", 
+> "genefilter", "geneplotter", "hgu95av2", "limma", "makecdfenv", 
+> "marray", "matchprobes", "multtest", "pamr", "reposTools", "ROC", 
+> "siggenes", "sma", "statmod", "tkWidgets", "vsn", "widgetTools", 
+> "xtable"), repos = c("http://www.bioconductor.org/packages/bioc/stable", 
+> "http://www.bioconductor.org/packages/data/annotation/stable", 
+> "http://www.bioconductor.org/packages/data/experiment/stable", 
+> "http://www.bioconductor.org/packages/omegahat/stable", "http://www.bioconductor.org/packages/lindsey/stable", 
+> "http://cran.fhcrc.org"), lib = "C:/PROGRA~1/R/rw2010/library", 
+>     dependencies = c("Depends", "Imports"))
+> debug: {
+>     explode_bundles <- function(a) {
+>         contains <- .find_bundles(a, FALSE)
+>         extras <- unlist(lapply(names(contains), function(x) paste(contains[[x]], 
+>             " (", x, ")", sep = "")))
+>         sort(as.vector(c(a[, 1], extras)))
+>     }
+>     if (missing(pkgs) || !length(pkgs)) {
+>         if (.Platform$OS.type == "windows" || .Platform$GUI == 
+>             "AQUA") {
+>             if (is.null(available)) 
+>                 available <- available.packages(contriburl = contriburl, 
+>                   method = method)
+>             if (NROW(available)) {
+>                 a <- explode_bundles(available)
+>                 pkgs <- select.list(a, multiple = TRUE, title = "Packages")
+>             }
+>             if (!length(pkgs)) 
+>                 stop("no packages were specified")
+>         }
+>         else if (.Platform$OS.type == "unix" && capabilities("tcltk") && 
+>             capabilities("X11")) {
+>             if (is.null(available)) 
+>                 available <- available.packages(contriburl = contriburl, 
+>                   method = method)
+>             if (NROW(available)) {
+>                 a <- explode_bundles(available)
+>                 pkgs <- tcltk::tk_select.list(a, multiple = TRUE, 
+>                   title = "Packages")
+>             }
+>             if (!length(pkgs)) 
+>                 stop("no packages were specified")
+>         }
+>         else stop("no packages were specified")
+>     }
+>     if (missing(lib) || is.null(lib)) {
+>         lib <- .libPaths()[1]
+>         if (length(.libPaths()) > 1) 
+>             warning(gettextf("argument 'lib' is missing: using %s", 
+>                 lib), immediate. = TRUE, domain = NA)
+>     }
+>     if (.Platform$OS.type == "windows") {
+>         if (type == "mac.binary") 
+>             stop("cannot install MacOS X binary packages on Windows")
+>         if (type == "win.binary") {
+>             .install.winbinary(pkgs = pkgs, lib = lib, contriburl = contriburl, 
+>                 method = method, available = available, destdir = destdir, 
+>                 installWithVers = installWithVers, dependencies = dependencies)
+>             return(invisible())
+>         }
+>     }
+>     else {
+>         if (type == "mac.binary") {
+>             if (!length(grep("darwin", R.version$platform))) 
+>                 stop("cannot install MacOS X binary packages on this plaform")
+>             .install.macbinary(pkgs = pkgs, lib = lib, contriburl = contriburl, 
+>                 method = method, available = available, destdir = destdir, 
+>                 installWithVers = installWithVers, dependencies = dependencies)
+>             return(invisible())
+>         }
+>         if (type == "win.binary") 
+>             stop("cannot install Windows binary packages on this plaform")
+>         if (!file.exists(file.path(R.home(), "bin", "INSTALL"))) 
+>             stop("This version of R is not set up to install source packages\nIf it was installed from an RPM, you may need the R-devel RPM")
+>     }
+>     if (is.null(repos) & missing(contriburl)) {
+>         update <- cbind(pkgs, lib)
+>         cmd0 <- paste(file.path(R.home(), "bin", "R"), "CMD INSTALL")
+>         if (installWithVers) 
+>             cmd0 <- paste(cmd0, "--with-package-versions")
+>         for (i in 1:nrow(update)) {
+>             cmd <- paste(cmd0, "-l", shQuote(update[i, 2]), shQuote(update[i, 
+>                 1]))
+>             if (system(cmd) > 0) 
+>                 warning(gettextf("installation of package '%s' had non-zero exit status", 
+>                   update[i, 1]), domain = NA)
+>         }
+>         return(invisible())
+>     }
+>     oneLib <- length(lib) == 1
+>     tmpd <- destdir
+>     nonlocalcran <- length(grep("^file:", contriburl)) < length(contriburl)
+>     if (is.null(destdir) && nonlocalcran) {
+>         tmpd <- file.path(tempdir(), "downloaded_packages")
+>         if (!file.exists(tmpd) && !dir.create(tmpd)) 
+>             stop(gettextf("Unable to create temporary directory '%s'", 
+>                 tmpd), domain = NA)
+>     }
+>     depends <- is.character(dependencies) || (is.logical(dependencies) && 
+>         dependencies)
+>     if (depends && is.logical(dependencies)) 
+>         dependencies <- c("Depends", "Imports", "Suggests")
+>     if (depends && !oneLib) {
+>         warning("Do not know which element of 'lib' to install dependencies into\nskipping dependencies")
+>         depends <- FALSE
+>     }
+>     if (is.null(available)) 
+>         available <- available.packages(contriburl = contriburl, 
+>             method = method)
+>     bundles <- .find_bundles(available)
+>     for (bundle in names(bundles)) pkgs[pkgs %in% bundles[[bundle]]] <- bundle
+>     if (depends) {
+>         p0 <- p1 <- unique(pkgs)
+>         have <- .packages(all.available = TRUE)
+>         repeat {
+>             if (any(miss <- !p1 %in% row.names(available))) {
+>                 cat(sprintf(ngettext(sum(miss), "dependency %s is not available", 
+>                   "dependencies %s are not available"), paste(sQuote(p1[miss]), 
+>                   collapse = ", ")), "\n\n", sep = "")
+>                 flush.console()
+>             }
+>             p1 <- p1[!miss]
+>             deps <- as.vector(available[p1, dependencies])
+>             deps <- .clean_up_dependencies(deps, available)
+>             if (!length(deps)) 
+>                 break
+>             toadd <- deps[!deps %in% c("R", have, pkgs)]
+>             if (length(toadd) == 0) 
+>                 break
+>             pkgs <- c(toadd, pkgs)
+>             p1 <- toadd
+>         }
+>         for (bundle in names(bundles)) pkgs[pkgs %in% bundles[[bundle]]] <- bundle
+>         pkgs <- unique(pkgs)
+>         pkgs <- pkgs[pkgs %in% row.names(available)]
+>         if (length(pkgs) > length(p0)) {
+>             added <- setdiff(pkgs, p0)
+>             cat(ngettext(length(added), "also installing the dependency ", 
+>                 "also installing the dependencies "), paste(sQuote(added), 
+>                 collapse = ", "), "\n\n", sep = "")
+>             flush.console()
+>         }
+>     }
+>     foundpkgs <- download.packages(pkgs, destdir = tmpd, available = available, 
+>         contriburl = contriburl, method = method, type = "source")
+>     if (!is.null(foundpkgs)) {
+>         update <- unique(cbind(pkgs, lib))
+>         colnames(update) <- c("Package", "LibPath")
+>         found <- pkgs %in% foundpkgs[, 1]
+>         files <- foundpkgs[match(pkgs[found], foundpkgs[, 1]), 
+>             2]
+>         update <- cbind(update[found, , drop = FALSE], file = files)
+>         if (nrow(update) > 1) {
+>             upkgs <- unique(pkgs <- update[, 1])
+>             DL <- .make_dependency_list(upkgs, available)
+>             p0 <- .find_install_order(upkgs, DL)
+>             update <- update[sort.list(match(pkgs, p0)), ]
+>         }
+>         cmd0 <- paste(file.path(R.home(), "bin", "R"), "CMD INSTALL")
+>         if (installWithVers) 
+>             cmd0 <- paste(cmd0, "--with-package-versions")
+>         for (i in 1:nrow(update)) {
+>             cmd <- paste(cmd0, "-l", shQuote(update[i, 2]), update[i, 
+>                 3])
+>             status <- system(cmd)
+>             if (status > 0) 
+>                 warning(gettextf("installation of package '%s' had non-zero exit status", 
+>                   update[i, 1]), domain = NA)
+>         }
+>         if (!is.null(tmpd) && is.null(destdir)) 
+>             cat("\n", gettextf("The downloaded packages are in\n\t%s", 
+>                 normalizePath(tmpd)), "\n", sep = "")
+>         link.html.help(verbose = TRUE)
+>     }
+>     else if (!is.null(tmpd) && is.null(destdir)) 
+>         unlink(tmpd, TRUE)
+>     invisible()
+> }
+> 
+> 
+> 
+> 
+> 
+>
+
+From J.J.Goeman at lumc.nl  Wed May 25 12:21:05 2005
+From: J.J.Goeman at lumc.nl (Goeman, J.J. (MSTAT))
+Date: Wed May 25 12:21:19 2005
+Subject: [Bioc-devel] Problem with getBioC()
+Message-ID: <68735E80D5EB7C4F8477BF00C450D38E0A58D6@mailc.lumcnet.prod.intern>
+
+ Hi Robert,
+
+> so use options(error=recover)
+> 
+> select the frame for sprintf and then see what tmpDir, curPkg and 
+> instPath are, one suspects that therein lies the problem
+
+I've tried this on a new installation of R. This time it breaks down at annaffy.
+
+package 'GO' successfully unpacked and MD5 sums checked
+package 'KEGG' successfully unpacked and MD5 sums checked
+package 'golubEsets' successfully unpacked and MD5 sums checked
+package 'RColorBrewer' successfully unpacked and MD5 sums checked
+package 'affy' successfully unpacked and MD5 sums checked
+package 'affydata' successfully unpacked and MD5 sums checked
+package 'affyPLM' successfully unpacked and MD5 sums checked
+package 'annaffy' successfully unpacked and MD5 sums checked
+Error in sprintf(gettext("unable to move temp installation '%d' to '%s'"),  : 
+        use format %s for character objects
+
+Enter a frame number, or 0 to exit   
+
+1: getBioC()
+2: do.call("biocinstall", args)
+3: biocinstall(lib = "C:/R/rw2010/library", groupName = "default", dependencies = c
+4: do.call("install.packages", args)
+5: install.packages(pkgs = c("affy", "affydata", "affyPLM", "annaffy", "annotate", 
+6: .install.winbinary(pkgs = pkgs, lib = lib, contriburl = contriburl, method = met
+7: unpackPkg(foundpkgs[okp, 2], foundpkgs[okp, 1], lib, installWithVers)
+8: warning(sprintf(gettext("unable to move temp installation '%d' to '%s'"), file.p
+9: sprintf(gettext("unable to move temp installation '%d' to '%s'"), file.path(tmpD
+
+Selection: 9
+Called from: eval(expr, envir, enclos)
+Browse[1]>  tmpDir
+Error during wrapup: Object "tmpDir" not found
+Browse[1]> curPkg
+Error during wrapup: Object "curPkg" not found
+Browse[1]> instPath
+Error during wrapup: Object "instPath" not found
+ 
+The same at selection 8. At selection 7 I get:
+
+Selection: 7
+Called from: eval(expr, envir, enclos)
+Browse[1]> instPath
+[1] "C:/R/rw2010/library/annaffy"
+Browse[1]>  tmpDir
+[1] "C:/R/rw2010/library\\file13987"
+Browse[1]> curPkg
+[1] "annaffy"
+Browse[1]> file.path(tmpDir, curPkg)
+[1] "C:/R/rw2010/library\\file13987/annaffy"
+Browse[1]> sprintf(gettext("unable to move temp installation '%d' to '%s'"), 
++        file.path(tmpDir, curPkg), instPath)
+Error during wrapup: use format %s for character objects
+Browse[1]> class(file.path(tmpDir, curPkg))
+[1] "character"
+
+The "use format %s for character objects" is the reported error that getBioC() breaks down on. This should be repaired with changing %d to %s:
+
+Browse[1]> sprintf(gettext("unable to move temp installation '%s' to '%s'"), 
++         file.path(tmpDir, curPkg), instPath)
+[1] "unable to move temp installation 'C:/R/rw2010/library\\file13987/annaffy' to 'C:/R/rw2010/library/annaffy'"
+
+I still don't know what this warning comes from. The folder 'C:/R/rw2010/library\\file13987/annaffy' neatly contains the affy package. The folder 'C:/R/rw2010/library/annaffy' does not exist yet. 
+
+Best,
+
+Jelle
+
+
+Full traceback again below:
+
+9: sprintf(gettext("unable to move temp installation '%d' to '%s'"), 
+       file.path(tmpDir, curPkg), instPath)
+8: warning(sprintf(gettext("unable to move temp installation '%d' to '%s'"), 
+       file.path(tmpDir, curPkg), instPath), domain = NA, call. = FALSE)
+7: unpackPkg(foundpkgs[okp, 2], foundpkgs[okp, 1], lib, installWithVers)
+6: .install.winbinary(pkgs = pkgs, lib = lib, contriburl = contriburl, 
+       method = method, available = available, destdir = destdir, 
+       installWithVers = installWithVers, dependencies = dependencies)
+5: install.packages(pkgs = c("affy", "affydata", "affyPLM", "annaffy", 
+   "annotate", "Biobase", "Biostrings", "DynDoc", "edd", "gcrma", 
+   "genefilter", "geneplotter", "hgu95av2", "limma", "makecdfenv", 
+   "marray", "matchprobes", "multtest", "pamr", "reposTools", "ROC", 
+   "siggenes", "sma", "statmod", "tkWidgets", "vsn", "widgetTools", 
+   "xtable"), repos = c("http://www.bioconductor.org/packages/bioc/stable", 
+   "http://www.bioconductor.org/packages/data/annotation/stable", 
+   "http://www.bioconductor.org/packages/data/experiment/stable", 
+   "http://www.bioconductor.org/packages/omegahat/stable", "http://www.bioconductor.org/packages/lindsey/stable", 
+   "http://cran.fhcrc.org"), lib = "C:/PROGRA~1/R/rw2010/library", 
+       dependencies = c("Depends", "Imports"))
+4: do.call("install.packages", args)
+3: biocinstall(lib = "C:/PROGRA~1/R/rw2010/library", groupName = "default", 
+       dependencies = c("Depends", "Imports"))
+2: do.call("biocinstall", args)
+1: getBioC()
+
