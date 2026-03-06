@@ -1986,6 +1986,22 @@
       "thread_id": "thread-efddb0eac70a",
       "thread_depth": 1,
       "month": "2013-09"
+    },
+    {
+      "id": "msg-458a67b0105b",
+      "message_id": "<524A108B.1060806@thompsonclan.org>",
+      "from_name": "Ryan",
+      "from_email_hash": "1c6083d092a4c7f4597cd41b79d67b55d57d9258281eb5801f66e190fbb8caa3",
+      "date": "2013-09-30T17:00:11-07:00",
+      "subject": "[Bioc-devel] Proof-of-concept parallel preloading FastqStreamer",
+      "subject_clean": "[Bioc-devel] Proof-of-concept parallel preloading FastqStreamer",
+      "in_reply_to": null,
+      "references": [],
+      "body_plain": "Hi all,\n\nI have previously written an Rscript to read, filter, and write large \nfastq files using FastqSteamer to read. Through some complicated tricks, \nI was able to get the input to happen in parallel with the processing \nand output (using parallel::mcparallel and friends). In other words, \nwhile my script was processing and writing out the nth block of reads, \nanother process was reading the (n+1)th block of reads at the same time. \nThis almost doubled the speed of my script (the server had sufficient \nI/O bandwidth to parallelize reads and writes to disk). Since then, I've \nbeen wanting to generalize this pattern, and I have just now made a \nworking proof of concept. It is a wrapper for FastqStreamer that runs in \na separate process and uses parallel:::sendMaster to send each block to \nthe main script, and then calls yield on the FastqStreamer to preload \nthe next block while the script is processing the current one. You can \nview and download the script here:\n\nhttps://gist.github.com/DarwinAwardWinner/6771922\n\nI have strategically placed print statementsin the code in order to \ndemonstrate that preloading is happening. For example, I get the \nfollowing when I run the script on my machine:\n\nCHILD: Preloaded 1 yields.\nCHILD: Sent 1 yields.\nCHILD: Preloaded 2 yields.\nCHILD: Sent 2 yields.\nMAIN: Received 1 yields.\nMAIN: Processing reads\nCHILD: Preloaded 3 yields.\nMAIN: Processed 1 yields.\nCHILD: Sent 3 yields.\nMAIN: Received 2 yields.\nMAIN: Processing reads\nCHILD: Preloaded 4 yields.\nMAIN: Processed 2 yields.\nCHILD: Sent 4 yields.\nMAIN: Received 3 yields.\nMAIN: Processing reads\nCHILD: Preloaded 5 yields.\nMAIN: Processed 3 yields.\nCHILD: Sent 5 yields.\nMAIN: Received 4 yields.\nMAIN: Processing reads\nCHILD: Preloaded 6 yields.\nMAIN: Processed 4 yields.\nCHILD: Sent 6 yields.\nMAIN: Received 5 yields.\nMAIN: Processing reads\nMAIN: Processed 5 yields.\nMAIN: Received 6 yields.\nMAIN: Processing reads\nMAIN: Processed 6 yields.\n\nIn the script, the child is reading the fastq file, and the main process \nis doing the \"calculation\" (which is just a sleep). As you can see, the \nchild is always a step or two ahead of the main script, so that whenever \nthe main script asks for the next yield, it gets it immediately instead \nof waiting for the child to read from the disk.\n\nSo, is this kind of feature appropriate for inclusion into BioConductor?\n\n-Ryan Thompson",
+      "body_snippet": "Hi all,\n\nI have previously written an Rscript to read, filter, and write large \nfastq files using FastqSteamer to read. Through some complicated tricks, \nI was able to get the input to happen in paral",
+      "thread_id": "thread-458a67b0105b",
+      "thread_depth": 0,
+      "month": "2013-09"
     }
   ],
   "threads": [
@@ -2272,6 +2288,17 @@
       "started": "2013-09-28T21:19:53+09:00",
       "last_reply": "2013-09-28T09:03:24-07:00",
       "root_message_id": "msg-efddb0eac70a"
+    },
+    {
+      "id": "thread-458a67b0105b",
+      "subject": "[Bioc-devel] Proof-of-concept parallel preloading FastqStreamer",
+      "message_count": 1,
+      "participants": [
+        "Ryan"
+      ],
+      "started": "2013-09-30T17:00:11-07:00",
+      "last_reply": "2013-09-30T17:00:11-07:00",
+      "root_message_id": "msg-458a67b0105b"
     }
   ]
 }

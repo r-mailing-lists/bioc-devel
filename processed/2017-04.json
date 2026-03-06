@@ -301,25 +301,6 @@
       "month": "2017-04"
     },
     {
-      "id": "msg-687184e1fd5f",
-      "message_id": "<CADfRZfaKucBBH5ay2pba594LJt9=_OaVhhUdWWaA5fVhdHVc8w@mail.gmail.com>",
-      "from_name": "Maarten van Iterson",
-      "from_email_hash": "214dc661dac235ac985c4fa122741defb93f8a874f23a392c849058b1fba5eb6",
-      "date": "2017-04-04T07:57:21+01:00",
-      "subject": "[Bioc-devel] cbind SummarizedExperiments containing a DNAStringSet not working",
-      "subject_clean": "[Bioc-devel] cbind SummarizedExperiments containing a DNAStringSet not working",
-      "in_reply_to": "<d5c07f5c-599d-05e4-a586-78ef662dc865@fredhutch.org>",
-      "references": [
-        "<CADfRZfYrXacJmt75yQAXTYE1uk=ngJa-hHNVdSzNmh8TTD7x3g@mail.gmail.com>",
-        "<d5c07f5c-599d-05e4-a586-78ef662dc865@fredhutch.org>"
-      ],
-      "body_plain": "Thanks for looking into this!\n\nMaarten\n\nOn Mon, Apr 3, 2017 at 7:00 PM, Herv? Pag?s <hpages at fredhutch.org> wrote:\n\n> Hi Maarten,\n>\n> identical() is not reliable on DNAStringSet objects or other objects\n> that contain external pointers as it can return false negatives as well\n> as false positives. We'll fix the \"cbind\" and \"rbind\" methods for\n> SummarizedExperiment to work around this problem.\n>\n> Thanks for the report.\n>\n> H.\n>\n>\n> On 04/03/2017 12:58 AM, Maarten van Iterson wrote:\n>\n>> Dear list,\n>>\n>> Combining SummarizedExperiment object, containing a DNAStringSet in the\n>> rowData seems not to work properly. If I cbind two SummarizedExperiment\n>> objects, which I know are identical, an error is reported:\n>>\n>> Error in FUN(X[[i]], ...) (from #2) :\n>>   column(s) 'sourceSeq' in ?mcols? are duplicated and the data do not\n>> match\n>>\n>> I think I traced the problem existing in `SummarizedExperiment:::.compa\n>> re`\n>> in that `identical` is used to compare DNAStringSets which is not behaving\n>> as expected. Whereas it should return all identical it returns it is not!\n>>\n>> Here is a counter example (which was easier to construct) showing that\n>> `identical` returns FALSE where it should return TRUE.\n>>\n>> library(Biostrings)\n>>> seq1 <- paste(DNA_BASES[sample(1:4,5,replace=T)], collapse=\"\")\n>>> seq2 <- paste(DNA_BASES[sample(1:4,5,replace=T)], collapse=\"\")\n>>>\n>>> seq1\n>>>\n>> [1] \"GACTC\"\n>>\n>>> seq2\n>>>\n>> [1] \"GAATG\"\n>>\n>>>\n>>> s1 <- DNAStringSet(seq1)\n>>> s2 <- DNAStringSet(seq2)\n>>>\n>>> str(s1)\n>>>\n>> Formal class 'DNAStringSet' [package \"Biostrings\"] with 5 slots\n>>   ..@ pool           :Formal class 'SharedRaw_Pool' [package \"XVector\"]\n>> with 2 slots\n>>   .. .. ..@ xp_list                    :List of 1\n>>   .. .. .. ..$ :<externalptr>\n>>   .. .. ..@ .link_to_cached_object_list:List of 1\n>>   .. .. .. ..$ :<environment:0x71f94d0>\n>>   ..@ ranges         :Formal class 'GroupedIRanges' [package \"XVector\"]\n>> with 7 slots\n>>   .. .. ..@ group          : int 1\n>>   .. .. ..@ start          : int 1\n>>   .. .. ..@ width          : int 5\n>>   .. .. ..@ NAMES          : NULL\n>>   .. .. ..@ elementType    : chr \"integer\"\n>>   .. .. ..@ elementMetadata: NULL\n>>   .. .. ..@ metadata       : list()\n>>   ..@ elementType    : chr \"DNAString\"\n>>   ..@ elementMetadata: NULL\n>>   ..@ metadata       : list()\n>>\n>>> str(s2)\n>>>\n>> Formal class 'DNAStringSet' [package \"Biostrings\"] with 5 slots\n>>   ..@ pool           :Formal class 'SharedRaw_Pool' [package \"XVector\"]\n>> with 2 slots\n>>   .. .. ..@ xp_list                    :List of 1\n>>   .. .. .. ..$ :<externalptr>\n>>   .. .. ..@ .link_to_cached_object_list:List of 1\n>>   .. .. .. ..$ :<environment:0x71f94d0>\n>>\n>>   ..@ ranges         :Formal class 'GroupedIRanges' [package \"XVector\"]\n>> with 7 slots\n>>   .. .. ..@ group          : int 1\n>>   .. .. ..@ start          : int 1\n>>   .. .. ..@ width          : int 5\n>>   .. .. ..@ NAMES          : NULL\n>>   .. .. ..@ elementType    : chr \"integer\"\n>>   .. .. ..@ elementMetadata: NULL\n>>   .. .. ..@ metadata       : list()\n>>   ..@ elementType    : chr \"DNAString\"\n>>   ..@ elementMetadata: NULL\n>>   ..@ metadata       : list()\n>>\n>>>\n>>> identical(seq1, seq2)\n>>>\n>> [1] FALSE\n>>\n>>> identical(s1, s2)\n>>>\n>> [1] TRUE\n>>\n>>> seq1 == seq2\n>>>\n>> [1] FALSE\n>>\n>>> s1 == s2\n>>>\n>> [1] FALSE\n>>\n>>>\n>>> sessionInfo()\n>>>\n>> R version 3.3.2 (2016-10-31)\n>> Platform: x86_64-pc-linux-gnu (64-bit)\n>> Running under: Ubuntu 16.04.2 LTS\n>>\n>> locale:\n>>  [1] LC_CTYPE=en_US.utf8       LC_NUMERIC=C\n>>  [3] LC_TIME=en_US.utf8        LC_COLLATE=en_US.utf8\n>>  [5] LC_MONETARY=en_US.utf8    LC_MESSAGES=en_US.utf8\n>>  [7] LC_PAPER=en_US.utf8       LC_NAME=C\n>>  [9] LC_ADDRESS=C              LC_TELEPHONE=C\n>> [11] LC_MEASUREMENT=en_US.utf8 LC_IDENTIFICATION=C\n>>\n>> attached base packages:\n>> [1] parallel  stats4    stats     graphics  grDevices utils     datasets\n>> [8] methods   base\n>>\n>> other attached packages:\n>>  [1] Biostrings_2.42.1          XVector_0.14.1\n>>  [3] BBMRIomics_1.0.3           SummarizedExperiment_1.4.0\n>>  [5] Biobase_2.34.0             GenomicRanges_1.26.4\n>>  [7] GenomeInfoDb_1.10.3        IRanges_2.8.2\n>>  [9] S4Vectors_0.12.2           BiocGenerics_0.20.0\n>>\n>> loaded via a namespace (and not attached):\n>>  [1] Rcpp_0.12.10             AnnotationDbi_1.36.2\n>> hms_0.3\n>>  [4] GenomicAlignments_1.10.1 zlibbioc_1.20.0\n>> BiocParallel_1.8.1\n>>  [7] BSgenome_1.42.0          lattice_0.20-35\n>> R6_2.2.0\n>> [10] httr_1.2.1               tools_3.3.2\n>> grid_3.3.2\n>> [13] DBI_0.6                  assertthat_0.1\n>> digest_0.6.12\n>> [16] tibble_1.2               Matrix_1.2-8\n>> readr_1.1.0\n>> [19] rtracklayer_1.34.2       bitops_1.0-6\n>> biomaRt_2.30.0\n>> [22] RCurl_1.95-4.8           memoise_1.0.0\n>> RSQLite_1.1-2\n>> [25] compiler_3.3.2           GenomicFeatures_1.26.3\n>> Rsamtools_1.26.1\n>> [28] XML_3.98-1.5             jsonlite_1.3\n>> VariantAnnotation_1.20.3\n>>\n>>>\n>>>\n>> I don't completely understand understand why `identical` is not working\n>> properly is it comparing the environment address in the above example they\n>> are the same although the sequences are not? In my case the two\n>> SummarizedExperiments contained the same DNAStringSets but had a different\n>> environment address?\n>>\n>> Regards,\n>> Maarten\n>>\n>>         [[alternative HTML version deleted]]\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://urldefense.proofpoint.com/v2/url?u=https-3A__stat.et\n>> hz.ch_mailman_listinfo_bioc-2Ddevel&d=DwIGaQ&c=eRAMFD45gAfqt\n>> 84VtBcfhQ&r=BK7q3XeAvimeWdGbWY_wJYbW0WYiZvSXAJJKaaPhzWA&m=uv\n>> rEDLijSOFICTEXtDWEcJQxpbdIH_JLue85P1KkRSk&s=CiJ40v8p658EEANn\n>> kQUiSwzWFnU_9gbt3urmC3CXn5g&e=\n>>\n>>\n> --\n> Herv? Pag?s\n>\n> Program in Computational Biology\n> Division of Public Health Sciences\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N, M1-B514\n> P.O. Box 19024\n> Seattle, WA 98109-1024\n>\n> E-mail: hpages at fredhutch.org\n> Phone:  (206) 667-5791\n> Fax:    (206) 667-1319\n>\n\n\t[[alternative HTML version deleted]]",
-      "body_snippet": "Thanks for looking into this!\n\nMaarten\n\nOn Mon, Apr 3, 2017 at 7:00 PM, Herv? Pag?s <hpages at fredhutch.org> wrote:\n\n> Hi Maarten,\n>\n> identical() is not reliable on DNAStringSet objects or other obj",
-      "thread_id": "thread-3b61ee43038e",
-      "thread_depth": 2,
-      "month": "2017-04"
-    },
-    {
       "id": "msg-ef2b5cc0732d",
       "message_id": "<CAAXDaeUevxA_BMcx-oqK2wwrKX7p-J8YNnihvZm2rtFy=xwNNQ@mail.gmail.com>",
       "from_name": "Alina Selega",
@@ -332,38 +313,6 @@
       "body_plain": "Hi,\n\nMy package BUMHMM is failing to build on tokay2, with the error: \"there is\nno package called 'Biobase'\". The package is built and checked with no\nproblems on other platforms.\n\nThe build report is here:\nhttp://bioconductor.org/checkResults/3.5/bioc-LATEST/BUMHMM/tokay2-buildsrc.html\n\nThis seems like a problem that many packages are encountering since the\nlast snapshot on the 2nd April.\n\nCould anyone provide any advice?\n\nThanks,\nAlina\n\n\t[[alternative HTML version deleted]]",
       "body_snippet": "Hi,\n\nMy package BUMHMM is failing to build on tokay2, with the error: \"there is\nno package called 'Biobase'\". The package is built and checked with no\nproblems on other platforms.\n\nThe build report is",
       "thread_id": "thread-ef2b5cc0732d",
-      "thread_depth": 0,
-      "month": "2017-04"
-    },
-    {
-      "id": "msg-ef2b5cc0732d",
-      "message_id": "<CAAXDaeUevxA_BMcx-oqK2wwrKX7p-J8YNnihvZm2rtFy=xwNNQ@mail.gmail.com>",
-      "from_name": "Alina Selega",
-      "from_email_hash": "2edc761b1cf316fe582aab9876efbb44b962b90a14fb52ba18d5295cec1517ec",
-      "date": "2017-04-04T11:38:43+01:00",
-      "subject": "[Bioc-devel] Error when building on tokay2 for BioC 3.5",
-      "subject_clean": "[Bioc-devel] Error when building on tokay2 for BioC 3.5",
-      "in_reply_to": null,
-      "references": [],
-      "body_plain": "Hi,\n\nMy package BUMHMM is failing to build on tokay2, with the error: \"there is\nno package called 'Biobase'\". The package is built and checked with no\nproblems on other platforms.\n\nThe build report is here:\nhttp://bioconductor.org/checkResults/3.5/bioc-LATEST/BUMHMM/tokay2-buildsrc.html\n\nThis seems like a problem that many packages are encountering since the\nlast snapshot on the 2nd April.\n\nCould anyone provide any advice?\n\nThanks,\nAlina\n\n\t[[alternative HTML version deleted]]",
-      "body_snippet": "Hi,\n\nMy package BUMHMM is failing to build on tokay2, with the error: \"there is\nno package called 'Biobase'\". The package is built and checked with no\nproblems on other platforms.\n\nThe build report is",
-      "thread_id": "thread-ef2b5cc0732d",
-      "thread_depth": 0,
-      "month": "2017-04"
-    },
-    {
-      "id": "msg-4f9528fe3f80",
-      "message_id": "<CAAXDaeXx0iH_o-Lo-WEKBd4guKMSX3wgfN=AJ8OEWDJuMXUxOg@mail.gmail.com>",
-      "from_name": "Alina Selega",
-      "from_email_hash": "2edc761b1cf316fe582aab9876efbb44b962b90a14fb52ba18d5295cec1517ec",
-      "date": "2017-04-04T11:53:57+01:00",
-      "subject": "[Bioc-devel] Error when building on tokay2 for BioC 3.5",
-      "subject_clean": "[Bioc-devel] Error when building on tokay2 for BioC 3.5",
-      "in_reply_to": null,
-      "references": [],
-      "body_plain": "## I am resending this email as I it got rejected from posting due to \"a\nmessage with identical text being posted to the list recently\" (for reasons\nunknown to me). ##\n\nHi,\n\nMy package BUMHMM is giving an error when building on tokay2, with the\nerror message: \"there is no package called 'Biobase'\". The package is built\nand checked with no problems on other platforms.\n\nThe build report is here:\nhttp://bioconductor.org/checkResults/3.5/bioc-LATEST/\nBUMHMM/tokay2-buildsrc.html\n\nThis seems like a problem that many packages are encountering since the\nlast snapshot on the 2nd April.\n\nCould anyone provide any advice?\n\nThanks,\nAlina\n\n\t[[alternative HTML version deleted]]",
-      "body_snippet": "## I am resending this email as I it got rejected from posting due to \"a\nmessage with identical text being posted to the list recently\" (for reasons\nunknown to me). ##\n\nHi,\n\nMy package BUMHMM is givin",
-      "thread_id": "thread-4f9528fe3f80",
       "thread_depth": 0,
       "month": "2017-04"
     },
@@ -403,25 +352,6 @@
       "month": "2017-04"
     },
     {
-      "id": "msg-bd8627af2e48",
-      "message_id": "<5D29FC1E-317B-4BBA-9FF9-B20A06EF3528@eurac.edu>",
-      "from_name": "Rainer Johannes",
-      "from_email_hash": "63fb591947806e70492acf1669fb246cf458172abcfc245819af6c5aba36ae84",
-      "date": "2017-04-04T11:02:13Z",
-      "subject": "[Bioc-devel] Filter classes moved from ensembldb to AnnotationFilter",
-      "subject_clean": "[Bioc-devel] Filter classes moved from ensembldb to AnnotationFilter",
-      "in_reply_to": "<CAEiDEr9pp_fQ=aGUJRMfkPD5FQuGfni6dSjgAXfCsiWuMk4G9w@mail.gmail.com>",
-      "references": [
-        "<D58E6681-F7B7-4404-A33E-F0C68734EE4E@eurac.edu>",
-        "<CAEiDEr9pp_fQ=aGUJRMfkPD5FQuGfni6dSjgAXfCsiWuMk4G9w@mail.gmail.com>"
-      ],
-      "body_plain": "On 4 Apr 2017, at 10:59, Stian L?gstad <stianlagstad at gmail.com<mailto:stianlagstad at gmail.com>> wrote:\n\nHi,\n\nThanks again for notifying me about the changes needed in chimeraviz. Right now I'm having problems installing Gviz - I get these errors:\n\n\"\"\"\nNo methods found in \"GenomicAlignments\" for requests: pmapFromTranscripts\nError : object 'GRangesFilter' is not exported by 'namespace:ensembldb'\nERROR: lazy loading failed for package 'Gviz'\n\"\"\"\n\nAre these errors caused by the change in ensembldb? If so: Do you know how I can keep developing without having to wait for Gviz?\n\n\nThese come from biovizBase which Gviz imports. I've sent Micheal the fixes for biovizBase and ggbio that should fix this.\nWe need to wait for the changes to be propagated, since also for ensembldb I get today still version 1.99.12 but not the new 1.99.13.\n\nOn Mon, Apr 3, 2017 at 8:59 AM, Rainer Johannes <Johannes.Rainer at eurac.edu<mailto:Johannes.Rainer at eurac.edu>> wrote:\nDear all,\n\nI've just committed a change in ensembldb (version 1.99.13) that removes all filter classes from it and imports them from the AnnotationFilter package. This change will break biovizBase and ggbio (and all packages downstream of them, e.g. Gviz). I've already sent Michael Lawrence patches to fix both packages, but  there might still be some problems in the upcoming build reports I guess.\n\nI've also contacted the developers of the TVTB and chimeraviz packages and made them aware of the change. Could be that there are other packages out there possibly affected by the change. If so, let me know and I'll assist fixing the problems (if needed).\n\ncheers, jo\n\n_______________________________________________\nBioc-devel at r-project.org<mailto:Bioc-devel at r-project.org> mailing list\nhttps://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n\n--\nStian L?gstad\n+47 41 80 80 25\n\n\n\t[[alternative HTML version deleted]]",
-      "body_snippet": "On 4 Apr 2017, at 10:59, Stian L?gstad <stianlagstad at gmail.com<mailto:stianlagstad at gmail.com>> wrote:\n\nHi,\n\nThanks again for notifying me about the changes needed in chimeraviz. Right now I'm ha",
-      "thread_id": "thread-bd8627af2e48",
-      "thread_depth": 0,
-      "month": "2017-04"
-    },
-    {
       "id": "msg-256f17d94726",
       "message_id": "<CAAXDaeWS1xrgRU=SbnXTHEtVAraoOoOtowR7zW_H++LVEMa+aQ@mail.gmail.com>",
       "from_name": "Alina Selega",
@@ -435,40 +365,6 @@
       "body_snippet": "Hi,\n\nMy package BUMHMM fails to build on tokay2 with the following error\nmessage:\n\" there is no package called 'Biobase' \".\n\nhttp://bioconductor.org/checkResults/3.5/bioc-LATEST/\nBUMHMM/tokay2-buildsr",
       "thread_id": "thread-256f17d94726",
       "thread_depth": 0,
-      "month": "2017-04"
-    },
-    {
-      "id": "msg-256f17d94726",
-      "message_id": "<CAAXDaeWS1xrgRU=SbnXTHEtVAraoOoOtowR7zW_H++LVEMa+aQ@mail.gmail.com>",
-      "from_name": "Alina Selega",
-      "from_email_hash": "2edc761b1cf316fe582aab9876efbb44b962b90a14fb52ba18d5295cec1517ec",
-      "date": "2017-04-04T12:24:07+01:00",
-      "subject": "[Bioc-devel] Build error on tokay2",
-      "subject_clean": "[Bioc-devel] Build error on tokay2",
-      "in_reply_to": null,
-      "references": [],
-      "body_plain": "Hi,\n\nMy package BUMHMM fails to build on tokay2 with the following error\nmessage:\n\" there is no package called 'Biobase' \".\n\nhttp://bioconductor.org/checkResults/3.5/bioc-LATEST/\nBUMHMM/tokay2-buildsrc.html\n\nThere are no problems with other platforms.\n\nIt seems that many packages are encountering this problem since the last\nsnapshot on the 2nd April.\n\nCould anyone provide any advice?\n\nThanks,\nAlina\n\n\t[[alternative HTML version deleted]]",
-      "body_snippet": "Hi,\n\nMy package BUMHMM fails to build on tokay2 with the following error\nmessage:\n\" there is no package called 'Biobase' \".\n\nhttp://bioconductor.org/checkResults/3.5/bioc-LATEST/\nBUMHMM/tokay2-buildsr",
-      "thread_id": "thread-256f17d94726",
-      "thread_depth": 0,
-      "month": "2017-04"
-    },
-    {
-      "id": "msg-6fc41275465f",
-      "message_id": "<CY1PR1201MB1002EC29C2ADBA1E24BC06D3F90B0@CY1PR1201MB1002.namprd12.prod.outlook.com>",
-      "from_name": "Shepherd, Lori",
-      "from_email_hash": "268cfd046fad2005f396f2607a1f0d67f7a36e84212b7c16235e6676d961976f",
-      "date": "2017-04-04T11:25:56Z",
-      "subject": "[Bioc-devel] Build error on tokay2",
-      "subject_clean": "[Bioc-devel] Build error on tokay2",
-      "in_reply_to": "<CAAXDaeWS1xrgRU=SbnXTHEtVAraoOoOtowR7zW_H++LVEMa+aQ@mail.gmail.com>",
-      "references": [
-        "<CAAXDaeWS1xrgRU=SbnXTHEtVAraoOoOtowR7zW_H++LVEMa+aQ@mail.gmail.com>"
-      ],
-      "body_plain": "This is an ERROR on our tokay2 builder and we are in the process of resolving.  You do not need to take any actions at this time and when it is resolved this should clear up automatically on the next build.\n\n\nLori Shepherd\n\nBioconductor Core Team\n\nRoswell Park Cancer Institute\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Alina Selega <alina.selega at gmail.com>\nSent: Tuesday, April 4, 2017 7:24:07 AM\nTo: bioc-devel\nSubject: [Bioc-devel] Build error on tokay2\n\nHi,\n\nMy package BUMHMM fails to build on tokay2 with the following error\nmessage:\n\" there is no package called 'Biobase' \".\n\nhttp://bioconductor.org/checkResults/3.5/bioc-LATEST/\nBUMHMM/tokay2-buildsrc.html\n\nThere are no problems with other platforms.\n\nIt seems that many packages are encountering this problem since the last\nsnapshot on the 2nd April.\n\nCould anyone provide any advice?\n\nThanks,\nAlina\n\n        [[alternative HTML version deleted]]\n\n_______________________________________________\nBioc-devel at r-project.org mailing list\nhttps://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\nThis email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\t[[alternative HTML version deleted]]",
-      "body_snippet": "This is an ERROR on our tokay2 builder and we are in the process of resolving.  You do not need to take any actions at this time and when it is resolved this should clear up automatically on the next ",
-      "thread_id": "thread-256f17d94726",
-      "thread_depth": 1,
       "month": "2017-04"
     },
     {
@@ -5137,7 +5033,7 @@
     {
       "id": "thread-3b61ee43038e",
       "subject": "[Bioc-devel] cbind SummarizedExperiments containing a DNAStringSet not working",
-      "message_count": 4,
+      "message_count": 3,
       "participants": [
         "Hervé Pagès",
         "Maarten van Iterson"
@@ -5197,17 +5093,6 @@
     {
       "id": "thread-bd8627af2e48",
       "subject": "[Bioc-devel] Filter classes moved from ensembldb to AnnotationFilter",
-      "message_count": 1,
-      "participants": [
-        "Rainer Johannes"
-      ],
-      "started": "2017-04-04T11:02:13+00:00",
-      "last_reply": "2017-04-04T11:02:13+00:00",
-      "root_message_id": "msg-bd8627af2e48"
-    },
-    {
-      "id": "thread-bd8627af2e48",
-      "subject": "[Bioc-devel] Filter classes moved from ensembldb to AnnotationFilter",
       "message_count": 12,
       "participants": [
         "Hahne, Florian",
@@ -5233,28 +5118,6 @@
       "root_message_id": "msg-ef2b5cc0732d"
     },
     {
-      "id": "thread-ef2b5cc0732d",
-      "subject": "[Bioc-devel] Error when building on tokay2 for BioC 3.5",
-      "message_count": 1,
-      "participants": [
-        "Alina Selega"
-      ],
-      "started": "2017-04-04T11:38:43+01:00",
-      "last_reply": "2017-04-04T11:38:43+01:00",
-      "root_message_id": "msg-ef2b5cc0732d"
-    },
-    {
-      "id": "thread-4f9528fe3f80",
-      "subject": "[Bioc-devel] Error when building on tokay2 for BioC 3.5",
-      "message_count": 1,
-      "participants": [
-        "Alina Selega"
-      ],
-      "started": "2017-04-04T11:53:57+01:00",
-      "last_reply": "2017-04-04T11:53:57+01:00",
-      "root_message_id": "msg-4f9528fe3f80"
-    },
-    {
       "id": "thread-4f9528fe3f80",
       "subject": "[Bioc-devel] Error when building on tokay2 for BioC 3.5",
       "message_count": 1,
@@ -5268,24 +5131,13 @@
     {
       "id": "thread-256f17d94726",
       "subject": "[Bioc-devel] Build error on tokay2",
-      "message_count": 3,
+      "message_count": 2,
       "participants": [
         "Alina Selega",
         "Shepherd, Lori"
       ],
       "started": "2017-04-04T12:24:07+01:00",
       "last_reply": "2017-04-04T11:25:56+00:00",
-      "root_message_id": "msg-256f17d94726"
-    },
-    {
-      "id": "thread-256f17d94726",
-      "subject": "[Bioc-devel] Build error on tokay2",
-      "message_count": 1,
-      "participants": [
-        "Alina Selega"
-      ],
-      "started": "2017-04-04T12:24:07+01:00",
-      "last_reply": "2017-04-04T12:24:07+01:00",
       "root_message_id": "msg-256f17d94726"
     },
     {

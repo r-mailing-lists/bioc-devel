@@ -2608,6 +2608,28 @@
       "thread_id": "thread-497e07b647e7",
       "thread_depth": 3,
       "month": "2013-07"
+    },
+    {
+      "id": "msg-f2745f4a472b",
+      "message_id": "<51F99823.3050104@fhcrc.org>",
+      "from_name": "Hervé Pagès",
+      "from_email_hash": "abd4d7962a2dd3556242b7fdb915eb6ce60306e7a252463c9851a927b845bee3",
+      "date": "2013-07-31T16:05:07-07:00",
+      "subject": "[Bioc-devel] Running Time of readBamGappedAlignmentPairs",
+      "subject_clean": "[Bioc-devel] Running Time of readBamGappedAlignmentPairs",
+      "in_reply_to": "<A4D0AD48C137224D9E532742F418928A1CFB92AC@BL2PRD0111MB520.prod.exchangelabs.com>",
+      "references": [
+        "<A4D0AD48C137224D9E532742F418928A1CFB8D42@BL2PRD0111MB520.prod.exchangelabs.com>",
+        "<1881665518.1447208.1375075786170.JavaMail.root@fhcrc.org>",
+        "<A4D0AD48C137224D9E532742F418928A1CFB8D7B@BL2PRD0111MB520.prod.exchangelabs.com>",
+        "<51F6A697.7070909@fhcrc.org>",
+        "<A4D0AD48C137224D9E532742F418928A1CFB92AC@BL2PRD0111MB520.prod.exchangelabs.com>"
+      ],
+      "body_plain": "Hi Dario,\n\nThanks for providing the file.\n\nThe file has 55780092 records in it and yes it only contains primary\nalignments so this is the best situation for the pairing algorithm.\n\nHere are the timings I get for the readBamGappedAlignmentPairs()\nfunction (renamed readGAlignmentPairsFromBam() in devel) on a 64-bit\nUbuntu server with 384 Gb of RAM:\n\n## With BioC release (Rsamtools 1.12.3)\n## ------------------------------------\n## Timings:\n##   - readBamGappedAlignments: 10 min 30 s (A=A1+A2)\n##     - scanBam:                6 min      (A1)\n##     - other:                  4 min 30 s (A2)\n##   - makeGappedAlignmentPairs: 5 min 30 s (B=B1+B2)\n##     - findMateAlignment:      1 min 30 s (B1)\n##     - other:                  4 min      (B2)\n##   Total time:                16 min      (A+B)\n## Memory usage: 13 Gb\n\n## With BioC devel (Rsamtools 1.13.19)\n## -----------------------------------\n## Timings:\n##   - readGAlignmentsFromBam: 11 min      (A=A1+A2)\n##     - scanBam:               6 min      (A1)\n##     - other:                 5 min      (A2)\n##   - makeGAlignmentPairs:     4 min      (B=B1+B2)\n##     - findMateAlignment:     1 min      (B1)\n##     - other:                 3 min      (B2)\n##   Total time:               15 min      (A+B)\n## Memory usage: 13 Gb\n\nIndeed, not much difference between release and devel :-/\n\nI didn't have the opportunity to do this kind of detailed timing of\nthe readGAlignmentPairsFromBam() function on such a big file before,\nbut I find it pretty interesting (I only benchmarked findMateAlignment()\nand it was on simulated data).\n\nIn particular I'm quite surprised to discover that the pairing algo\n(implemented in findMateAlignment) is actually not the bottleneck\n(and it being optimized in BioC devel explains the small difference\nbetween total time in release and total time in devel).\n\nJust a note on the timings you sent earlier (I'm copying them here\nagain):\n\n   > system.time(RNAreads <- readBamGappedAlignmentPairs(file))\n         user  system elapsed\n      1852.16   59.00 1939.11\n   > system.time(RNAreads <- readBamGappedAlignments(file))\n         user  system elapsed\n       192.80    8.12  214.97\n\nSubtracting the 2 times above to infer the time spent for the pairing\nis a shortcut that overlooks the following: when\nreadBamGappedAlignmentPairs() calls readBamGappedAlignments()\ninternally, it calls it with 'use.names=TRUE', and also with a 'param'\narg that specifies the extra BAM fields, and also with a specific flag\nfilter. All those things are required for the pairing algo. So a more\nsensible comparison is to compare:\n\n   RNAreads <- readBamGappedAlignmentPairs(file)\n\nversus:\n\n   flag0 <- scanBamFlag(isPaired=TRUE, isUnmappedQuery=FALSE, \nhasUnmappedMate=FALSE)\n   what0 <- c(\"rname\", \"strand\", \"pos\", \"cigar\", \"flag\", \"mrnm\", \"mpos\")\n   param0 <- ScanBamParam(flag=flag0, what=what0)\n   RNAreads <- readBamGappedAlignments(file, use.names=TRUE, param=param0)\n\nThis internal call to readBamGappedAlignments() takes more than 70%\nof the total time of readBamGappedAlignmentPairs() (11 min / 15 min\nwith BioC devel on my Linux server). This is a little bit surprising\nto me and that's something I'd like to investigate.\n\nCheers,\nH.\n\n\nOn 07/30/2013 05:00 PM, Dario Strbenac wrote:\n> Hi.\n>\n> The files are\n>\n> http://www.maths.usyd.edu.au/u/dario/RNAAlignedSorted.bam\n> http://www.maths.usyd.edu.au/u/dario/RNAAlignedSorted.bam.bai\n>\n> While you have them, could you also investigate the granges coercion function ? It also took half an hour.\n>\n> ________________________________________\n> From: Herv? Pag?s [hpages at fhcrc.org]\n> Sent: Tuesday, 30 July 2013 3:29 AM\n> To: Dario Strbenac\n> Cc: bioc-devel at r-project.org\n> Subject: Re: [Bioc-devel] Running Time of readBamGappedAlignmentPairs\n>\n> On 07/29/2013 12:00 AM, Dario Strbenac wrote:\n>> Because I only allowed unique mappings, the ratio is 2. After installing the development package versions, I only got a 10% improvement.\n>\n> Mmmh that's disappointing. Can you put the file somewhere so I can have\n> a look? Thanks.\n>\n> H.\n>\n>>\n>>      user  system elapsed\n>> 1681.36   65.79 1752.10\n>>\n>> ________________________________________\n>> From: Pages, Herve [hpages at fhcrc.org]\n>> Sent: Monday, 29 July 2013 3:29 PM\n>> To: Dario Strbenac\n>> Cc: bioc-devel at r-project.org\n>> Subject: Re: [Bioc-devel] Running Time of readBamGappedAlignmentPairs\n>>\n>> Hi Dario,\n>>\n>> The function was optimized in Bioc-devel. Depending on the number\n>> of records in your BAM file (which is more relevant than its size),\n>> it should now be between 2x and 5x faster. Please give it a try and\n>> let us know.\n>>\n>> Also keep in mind that the pairing algo will slow down if\n>> the \"average nb of records per unique QNAME\" is 3 or more.\n>> This was discussed here last month:\n>>     https://stat.ethz.ch/pipermail/bioconductor/2013-June/053390.html\n>>\n>> Cheers,\n>> H.\n>>\n>>\n>> ----- Original Message -----\n>> From: \"Dario Strbenac\" <dstr7320 at uni.sydney.edu.au>\n>> To: bioc-devel at r-project.org\n>> Sent: Sunday, July 28, 2013 9:00:30 PM\n>> Subject: [Bioc-devel] Running Time of readBamGappedAlignmentPairs\n>>\n>> Hello,\n>>\n>> Could readBamGappedAlignmentPairs be optimised ? It's surprising that it takes an extra 29 minutes to calculate the pairing information, for the example below. The BAM file is 4 GB in size.\n>>\n>>> system.time(RNAreads <- readBamGappedAlignmentPairs(file))\n>>      user  system elapsed\n>> 1852.16   59.00 1939.11\n>>> system.time(RNAreads <- readBamGappedAlignments(file))\n>>      user  system elapsed\n>>    192.80    8.12  214.97\n>>\n>> --------------------------------------\n>> Dario Strbenac\n>> PhD Student\n>> University of Sydney\n>> Camperdown NSW 2050\n>> Australia\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>\n> --\n> Herv? Pag?s\n>\n> Program in Computational Biology\n> Division of Public Health Sciences\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N, M1-B514\n> P.O. Box 19024\n> Seattle, WA 98109-1024\n>\n> E-mail: hpages at fhcrc.org\n> Phone:  (206) 667-5791\n> Fax:    (206) 667-1319\n>\n>\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_snippet": "Hi Dario,\n\nThanks for providing the file.\n\nThe file has 55780092 records in it and yes it only contains primary\nalignments so this is the best situation for the pairing algorithm.\n\nHere are the timing",
+      "thread_id": "thread-f2745f4a472b",
+      "thread_depth": 0,
+      "month": "2013-07"
     }
   ],
   "threads": [
@@ -3135,6 +3157,17 @@
       "started": "2013-07-31T15:29:09+02:00",
       "last_reply": "2013-07-31T22:41:38+02:00",
       "root_message_id": "msg-497e07b647e7"
+    },
+    {
+      "id": "thread-f2745f4a472b",
+      "subject": "[Bioc-devel] Running Time of readBamGappedAlignmentPairs",
+      "message_count": 1,
+      "participants": [
+        "Hervé Pagès"
+      ],
+      "started": "2013-07-31T16:05:07-07:00",
+      "last_reply": "2013-07-31T16:05:07-07:00",
+      "root_message_id": "msg-f2745f4a472b"
     }
   ]
 }
