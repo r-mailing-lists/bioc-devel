@@ -272,3 +272,117 @@ This email message may contain legally privileged and/or confidential informatio
 	[[alternative HTML version deleted]]
 
 
+From zhengx @end|ng |rom uw@edu  Fri Apr  3 08:24:28 2026
+From: zhengx @end|ng |rom uw@edu (Xiuwen Zheng)
+Date: Fri, 3 Apr 2026 01:24:28 -0500
+Subject: [Bioc-devel] SeqArray build failing due to missing
+ VariantAnnotation
+In-Reply-To: <BL1PR12MB530126CC91EFD3C788D97963F951A@BL1PR12MB5301.namprd12.prod.outlook.com>
+References: <CAJDQjLejNyunKzWEtZNmsUMEu3v1KGoUep_bDx8EmQw0AY8AUA@mail.gmail.com>
+ <BL1PR12MB530126CC91EFD3C788D97963F951A@BL1PR12MB5301.namprd12.prod.outlook.com>
+Message-ID: <CAACkqJeE2nWdXU=ah8aEtM=SyLTdYJ1RO9fAgQ=b7QuLFBuKtw@mail.gmail.com>
+
+Hi Lori and Stephanie,
+
+Thank you for the feedback.
+I have fixed the issue by removing the unsupported verbose argument
+from the requireNamespace call in SeqArray.
+
+Best regards,
+
+Xiuwen
+
+
+On Thu, Apr 2, 2026 at 10:34?AM Kern, Lori via Bioc-devel
+<bioc-devel at r-project.org> wrote:
+>
+> It looks like the ERROR is actually because of your call to requireNamespace where it actually does not have a verbose argument and causes unexpected failures because of this.  I think if you remove the verbose argument it should work as expected. For consistency I would also recommend keeping the open bracket on the if ...
+>
+> > if (!requireNamespace("VariantAnnotation", quietly = TRUE, verbose=FALSE)) {
+>     stop("Please install VariantAnnotation to use this function")
+> }
+> Error: Please install VariantAnnotation to use this function
+>
+> > if (!requireNamespace("VariantAnnotation", quietly = TRUE)) {
+>     stop("Please install VariantAnnotation to use this function")
+> }
+> >
+>
+>
+>
+>
+> Lori Kern
+>
+> Bioconductor Core Team
+>
+> Roswell Park Comprehensive Cancer Center
+>
+> Department of Biostatistics & Bioinformatics
+>
+> Elm & Carlton Streets
+>
+> Buffalo, New York 14263
+>
+> ________________________________
+> From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Stephanie Gogarten <sdmorris at uw.edu>
+> Sent: Monday, March 30, 2026 7:50 PM
+> To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+> Cc: Xiuwen Zheng <zhengxwen at gmail.com>
+> Subject: [Bioc-devel] SeqArray build failing due to missing VariantAnnotation
+>
+> Hi,
+>
+> SeqArray is failing to build on nebbiolo1, with the error
+>
+> Quitting from SeqArray.Rmd:293-299 [unnamed-chunk-11]
+> Error in `seqAsVCF()`:
+> ! Please install VariantAnnotation to use this function
+>
+> It looks like VariantAnnotation is passing its own builds, so I don't
+> understand why this error is happening. Is it related to the ordering of
+> package builds? One potential fix could be to add VariantAnnotation to
+> VignetteDepends, but it's already in Suggests which implies that it should
+> be installed prior to building the vignette, right?
+>
+> thanks,
+> Stephanie Gogarten
+>
+> --
+>
+> Stephanie M. Gogarten, PhD
+>
+> Senior Research Scientist / Genetic Analysis Center
+> <https://secure-web.cisco.com/1OIcJAYMnZJUlIdHMbfUdY62Z16BbLUQMoOtsIRtyvjKTTIUe3fiKaOwXVlgZeVTPEYN1QOvGhm2BgMR4-TGJimlwX5_NM144Do1PiW2LUtejBKT-hkRlJMmiHQ1nbRwLfuRy7PxY93DL_7cXYXaBTYgXqgS_KOXkPm59mhsUDD8gAfODdINfK5EgaUXlmWj0ZrmDE9Vq-Tb03BBbKkiyP8bq8uR4yHfpnXzkYv2eDhh0o3xuLA0j0GZ8G5P9aGKdGykCNpqvsJXb_kTA_Rd2HlfCSje1lSNis5p8xQUGJ6bKXnFGWQrUox9HCzh3qDML/https%3A%2F%2Fwww.biostat.washington.edu%2Fresearch%2Fcenters%2Fgac>
+>
+> Department of Biostatistics <https://secure-web.cisco.com/18J0owqfxmCTB7X8kQz9eLNDeYtu5yO6-5IwDbh1jKNPSsbYqF9CFTRVhsPLFH8vn1yfjBvVgHCuZsl53ewIrfJBKZ0wVLU5IioQSKa3Fuw30zy19l2yLHiUyCK-dOOkfqGXwZRu6zggxPfIgaLQMtG7GwATugxcImraJVWFyaFm5Bg4BHebQAvrwiT4elVylBNzlwGZcottc8OEhlEbhf7iqK4PB3OFTM1h-qHIyKohbTacoC2jl6uX0cAm9CjwihnxlWzkcmiwzkpVtfmC3uZ23uNz0hkq3mKTZ1P4lcrWsupOMtnM7XaD1uncMmfjx/https%3A%2F%2Fwww.biostat.washington.edu%2F>
+>
+> UNIVERSITY OF WASHINGTON
+>
+>
+>
+> UW Tower Box 359461
+>
+> 4333 Brooklyn Ave NE, Seattle, WA 98195
+>
+> 206.221.0757
+>
+> sdmorris at uw.edu
+>
+> she/her/hers
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://secure-web.cisco.com/1D0gBOkuN_3S0YRi6axUwg3frXGJ7ATqWrZLSTQ4knSRrKd8ponTCXekksJ0U07Fen-5Nk2hTUlHzuPCc7FHV2dYnf4wPlGapOCdaVrp83i4ZrwQaxvDRoaljsD4O9k3_5i2xcnik0ijwg_hnw09XktFTw8y0FYqJHR50R00YuwcoFIYkjiFWK5ART2YHZhCLSVQRHsKcdw_TbY58zLXP7u2ZVrA4dqfQebfvSS_wEsh--aWtCQpT9ugin7uO8x6HB1yaXwS201a4eKN0omhTlV7lmVOo9KKffKgPGvw6e_W9zO_L71PoGbpe7aa1Ou3Y/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+>
+>
+>
+> This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
