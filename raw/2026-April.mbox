@@ -1362,3 +1362,727 @@ https://urldefense.com/v3/__https://stat.ethz.ch/mailman/listinfo/bioc-devel__;!
 	[[alternative HTML version deleted]]
 
 
+From jpv|||em|n @end|ng |rom gm@||@com  Tue Apr 21 08:08:08 2026
+From: jpv|||em|n @end|ng |rom gm@||@com (Jean-Philippe Villemin)
+Date: Tue, 21 Apr 2026 08:08:08 +0200
+Subject: [Bioc-devel] Package failing due to missing dependencies on
+ kunpeng2
+In-Reply-To: <CA+hGqFe614owy0zG3EVZ1_mh0dJBmht+JiTTyYnMVNs8mG71ow@mail.gmail.com>
+References: <CA+hGqFe614owy0zG3EVZ1_mh0dJBmht+JiTTyYnMVNs8mG71ow@mail.gmail.com>
+Message-ID: <CAK1_-r6=e+PCHJDyQT0mtMWHna0QsMK--kuX25RH2eoOG6i3Xg@mail.gmail.com>
+
+Dear Bioconductor team,
+
+We were surprised to see that the build of our package BulkSignalR has
+recently failed, although it was successful in previous snapshots.
+
+We're unsure what might be causing the issue.
+
+Interestingly, the build fails only on a certain platform ? namely
+Kungpeng2 ? due to missing package ExperimentHub as also reported by others.
+
+Thank you very much for your help.
+
+Le lun. 20 avr. 2026 ? 18:28, Richard Heery <richardheery at gmail.com> a
+?crit :
+
+> Hi all,
+>
+> My package is failing on kunpeng2 with the error "ERROR: dependencies
+> ?AnnotationHub?, ?annotatr?, ?ExperimentHub? are not available for package
+> ?methodical?", though I have these packages in the imports section of my
+> DESCRIPTION file. Could these packages be missing on kunpeng2 somehow?
+>
+> Cheers,
+>
+> Richard
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+
+-- 
+*Jean-Philippe Villemin   *- Bioinformatics, PhD -
+
+*Precision Imaging as a New Key in Cancer Care (PINKcc Lab)*
+
+Institut de Recherche en Canc?rologie de Montpellier - Inserm U1194
+208 avenue des Apothicaires
+34298 Montpellier cedex 5 FRANCE
+*jpvillemin at gmail.com <jpvillemin at gmail.com>*
+
+	[[alternative HTML version deleted]]
+
+
+From |c@t@|@ @end|ng |rom |r@|c@|x@@e@  Tue Apr 21 10:03:47 2026
+From: |c@t@|@ @end|ng |rom |r@|c@|x@@e@ (Francesc Catala Moll)
+Date: Tue, 21 Apr 2026 08:03:47 +0000
+Subject: [Bioc-devel] 
+ [EXT] Re: Installation Error on nebbiolo2 Due to CVXR Dependency
+In-Reply-To: <CAEdP+wQuEPvcpy5c+jDeHXh3ZHi2S9TpOmNBmwGehDovZq8C-g@mail.gmail.com>
+References: <CAEdP+wQ7GYpzcusPmmN+swCrg-4JwMSEwma9Y3YQ0y1xB+24Jw@mail.gmail.com>
+ <CAANT7+U2ba19=Bgp-m0f9zH9w5Opfu5n-d3H+=8NpVB9F365+Q@mail.gmail.com>
+ <CAEdP+wQSruT9xNYe0nCL8VpS4weZBEuSYgZHHgqG2n6ageQN_A@mail.gmail.com>
+ <CAEdP+wQuEPvcpy5c+jDeHXh3ZHi2S9TpOmNBmwGehDovZq8C-g@mail.gmail.com>
+Message-ID: <AS8PR09MB4998EF197DA2F26108AA7925CD2C2@AS8PR09MB4998.eurprd09.prod.outlook.com>
+
+Dear Huang,
+
+I maintain a package that depends on ANCOMBC and saw the recent Bioc-devel thread regarding the CVXR build failure on nebbiolo1.
+
+To help resolve this quickly, I have just submitted a Pull Request to your GitHub repository. The PR completely removes the CVXR dependency by replacing its single use-case in the trend test with the quadprog package.
+
+quadprog solves the exact same constrained optimization problem but is a lightweight CRAN standard that does not require Rust, meaning it will compile flawlessly on all Bioconductor servers. I have tested it locally to ensure the results perfectly match your original implementation.
+
+I hope you find this PR helpful to get ANCOMBC building smoothly again!
+
+Best regards,
+
+Francesc
+
+
+De: Bioc-devel <bioc-devel-bounces at r-project.org> en nombre de Huang Lin (Frederick) <huanglinfrederick at gmail.com>
+Fecha: lunes, 13 de abril de 2026 a las 18:00
+Para: Vincent Carey <stvjc at channing.harvard.edu>
+CC: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Asunto: [EXT] Re: [Bioc-devel] Installation Error on nebbiolo2 Due to CVXR Dependency
+
+Dear Vincent and BioC Team,
+
+I?m writing to follow up on my previous inquiry, as I am still receiving
+the error on nebbiolo1.
+
+Do you anticipate adding rustc support on nebbiolo1 in the future? Also, is
+there anything I can do on my end to help resolve this issue?
+
+Thank you so much for your time and assistance,
+
+On Tue, Mar 31, 2026 at 2:50?PM Huang Lin (Frederick) <
+huanglinfrederick at gmail.com> wrote:
+
+> Hi Vincent,
+>
+> Thanks so much for the explanation; that was very helpful.
+>
+> Since this appears to be more of a system issue, do you anticipate adding
+> rustc support on nebbiolo1 in the future? Alternatively, would moving the
+> CVXR dependency from Imports to Suggests help in this case?
+>
+> Best,
+>
+>
+> On Mon, Mar 23, 2026 at 6:47?PM Vincent Carey <stvjc at channing.harvard.edu>
+> wrote:
+>
+>> I suspect that the problem is that clarabel can't compile on nebbiolo1,
+>> because rustc is
+>> a System Requirement, and we haven't adopted rustc support at this time.
+>> CVXR is not
+>> buildable in the absence of clarabel, and thus ANCOMBC won't build there
+>> either.  The mac binary
+>> for CVXR, on the other hand, is available from r-universe, and so there
+>> is a successful build for the
+>> mac platform.
+>>
+>> You can learn about the health of your package on linux at
+>> https://url.de.m.mimecastprotect.com/s/bZduCpZNRmiZlMYCPfBTGZuUj
+>>
+>> On Mon, Mar 23, 2026 at 6:11?PM Huang Lin (Frederick) <
+>> huanglinfrederick at gmail.com> wrote:
+>>
+>>> Dear BioC Team,
+>>>
+>>> I am the maintainer of the ANCOMBC package and have recently received
+>>> notifications indicating installation errors on nebbiolo2.
+>>>
+>>> From the error messages, it appears that the issue is related to the
+>>> unavailability of the dependency package ?CVXR?. I have not observed
+>>> similar issues on other platforms, and the ANCOMBC package builds and
+>>> installs successfully on my local MacBook.
+>>>
+>>> Could you advise on how to address this issue?
+>>>
+>>> Thank you,
+>>>
+>>> Huang
+>>>
+>>>         [[alternative HTML version deleted]]
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://url.de.m.mimecastprotect.com/s/8rK9CqQOVnuv40qcXhvTE6qAN
+>>>
+>>
+>> The information in this email is intended only for the person to whom it
+>> is addressed. If you believe this e-mail was sent to you in error and
+>> the email contains patient information, please contact the Partners
+>> Compliance HelpLine at http://url.de.m.mimecastprotect.com/s/nPQhCr2PEofONVgC4i3T4yk7F . If the
+>> email was sent to you in error but does not contain patient information,
+>> please contact the sender and properly dispose of the email.
+>
+>
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://url.de.m.mimecastprotect.com/s/8rK9CqQOVnuv40qcXhvTE6qAN
+
+
+	[[alternative HTML version deleted]]
+
+
+From rd|@z02 @end|ng |rom gm@||@com  Tue Apr 21 13:37:43 2026
+From: rd|@z02 @end|ng |rom gm@||@com (Ramon Diaz-Uriarte)
+Date: Tue, 21 Apr 2026 13:37:43 +0200
+Subject: [Bioc-devel] OncoSimulR Timeout on  kunpeng2 during vignette build
+Message-ID: <87tst4zgqg.fsf@gmail.com>
+
+Dear All,
+
+A package I maintain, OncoSimulR, now on version 4.13.4,  is showing a TIMEOUT on kunpeng2 (https://bioconductor.org/checkResults/devel/bioc-LATEST/OncoSimulR/), apparently during the vignette build process (https://bioconductor.org/checkResults/devel/bioc-LATEST/OncoSimulR/kunpeng2-buildsrc.html).
+
+I do not understand what is happening, nor how to debug this, since al the logs show is
+
+* checking for file ?OncoSimulR/DESCRIPTION? ... OK
+* preparing ?OncoSimulR?:
+* checking DESCRIPTION meta-information ... OK
+* cleaning src
+* installing the package to build vignettes
+* creating vignettes ...
+
+The package does not seem to show this issue in  the (supported) platforms in R universe (https://bioc.r-universe.dev/OncoSimulR#checktable).
+
+I've noticed there are at least some other packages with a similar pattern: they seem to build and check OK on all platforms, but timeout on vignette build on kunpeng2. Is there anything I should do?
+
+Best,
+
+R.
+
+
+--
+Ramon Diaz-Uriarte
+Department of Biochemistry, Lab B-31
+Facultad de Medicina
+Universidad Aut?noma de Madrid
+Arzobispo Morcillo, 4
+28029 Madrid
+Spain
+
+Phone: +34-91-497-2412
+
+Email: rdiaz02 at gmail.com
+       r.diaz at uam.es
+       ramon.diaz at iib.uam.es
+
+https://ligarto.org/rdiaz
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Tue Apr 21 13:39:59 2026
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Tue, 21 Apr 2026 11:39:59 +0000
+Subject: [Bioc-devel] Package failing due to missing dependencies on
+ kunpeng2
+In-Reply-To: <CAK1_-r6=e+PCHJDyQT0mtMWHna0QsMK--kuX25RH2eoOG6i3Xg@mail.gmail.com>
+References: <CA+hGqFe614owy0zG3EVZ1_mh0dJBmht+JiTTyYnMVNs8mG71ow@mail.gmail.com>
+ <CAK1_-r6=e+PCHJDyQT0mtMWHna0QsMK--kuX25RH2eoOG6i3Xg@mail.gmail.com>
+Message-ID: <BL1PR12MB5301FEB7741DA74907146FA0F92C2@BL1PR12MB5301.namprd12.prod.outlook.com>
+
+We have identified an issue with the version of R that was being used on kunpeng2 which likely is related. Once we have resolved we will evaluate the missing dependency errors.
+
+The build results/errors from this machine will not be evaluated when determining packages propagating to the next release. Your package will still be included.
+
+
+
+
+Lori Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Jean-Philippe Villemin <jpvillemin at gmail.com>
+Sent: Tuesday, April 21, 2026 2:08 AM
+To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Cc: Jacques Colinge <jacques.colinge at inserm.fr>
+Subject: Re: [Bioc-devel] Package failing due to missing dependencies on kunpeng2
+
+Dear Bioconductor team,
+
+We were surprised to see that the build of our package BulkSignalR has
+recently failed, although it was successful in previous snapshots.
+
+We're unsure what might be causing the issue.
+
+Interestingly, the build fails only on a certain platform ? namely
+Kungpeng2 ? due to missing package ExperimentHub as also reported by others.
+
+Thank you very much for your help.
+
+Le lun. 20 avr. 2026 ? 18:28, Richard Heery <richardheery at gmail.com> a
+?crit :
+
+> Hi all,
+>
+> My package is failing on kunpeng2 with the error "ERROR: dependencies
+> ?AnnotationHub?, ?annotatr?, ?ExperimentHub? are not available for package
+> ?methodical?", though I have these packages in the imports section of my
+> DESCRIPTION file. Could these packages be missing on kunpeng2 somehow?
+>
+> Cheers,
+>
+> Richard
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://secure-web.cisco.com/1jxik1q22o-s_Y73LkYQHM3x0yIcZNAJHbfr3vIb5A5bTpdlwoShFnpLwUGTFPvPG1kgIhDR5R8CBjlT9cXl_Gaej4OHs0Yaqjyxy-eaEGabNNKw3BYclVog-dophH-YG3UCHm8IRTwO51H56geDZcSjU6yv5crdA91_Szh_o1uLoODw3-wkluNLwrMlM-VPgBEz4FcaX5RNWZri2I6XrUb0FLUOupY6fyF2P1oYc2qbuLYAEW8TfQrSJknhoAs4uYMRawtZozMOmxpXVIF_ogvLzhpi3z-8sySaWeymMlEwpiLmHM1UUKV9SGx_jxN6b/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+>
+
+
+--
+*Jean-Philippe Villemin   *- Bioinformatics, PhD -
+
+*Precision Imaging as a New Key in Cancer Care (PINKcc Lab)*
+
+Institut de Recherche en Canc?rologie de Montpellier - Inserm U1194
+208 avenue des Apothicaires
+34298 Montpellier cedex 5 FRANCE
+*jpvillemin at gmail.com <jpvillemin at gmail.com>*
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://secure-web.cisco.com/1jxik1q22o-s_Y73LkYQHM3x0yIcZNAJHbfr3vIb5A5bTpdlwoShFnpLwUGTFPvPG1kgIhDR5R8CBjlT9cXl_Gaej4OHs0Yaqjyxy-eaEGabNNKw3BYclVog-dophH-YG3UCHm8IRTwO51H56geDZcSjU6yv5crdA91_Szh_o1uLoODw3-wkluNLwrMlM-VPgBEz4FcaX5RNWZri2I6XrUb0FLUOupY6fyF2P1oYc2qbuLYAEW8TfQrSJknhoAs4uYMRawtZozMOmxpXVIF_ogvLzhpi3z-8sySaWeymMlEwpiLmHM1UUKV9SGx_jxN6b/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Tue Apr 21 13:42:25 2026
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Tue, 21 Apr 2026 11:42:25 +0000
+Subject: [Bioc-devel] 
+ OncoSimulR Timeout on  kunpeng2 during vignette build
+In-Reply-To: <87tst4zgqg.fsf@gmail.com>
+References: <87tst4zgqg.fsf@gmail.com>
+Message-ID: <BL1PR12MB5301C21D3ADED54CA895EBF3F92C2@BL1PR12MB5301.namprd12.prod.outlook.com>
+
+We have identified an issue with the version of R that was being used on kunpeng2 which likely is related.  This can be ignored for now until we run an update.
+
+
+The build results/errors from this machine will not be evaluated when determining packages propagating to the next release. Your package will still be included.
+
+
+
+
+Lori Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Ramon Diaz-Uriarte <rdiaz02 at gmail.com>
+Sent: Tuesday, April 21, 2026 7:37 AM
+To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: [Bioc-devel] OncoSimulR Timeout on kunpeng2 during vignette build
+
+Dear All,
+
+A package I maintain, OncoSimulR, now on version 4.13.4,  is showing a TIMEOUT on kunpeng2 (https://secure-web.cisco.com/1Eh8FxRUgzDCK8YQO9aEFtH0BUSGt5qXPn-nj4fUSB_-Fmr7sO6-n9Pl9s0Q8HhKbkWYEDZFXcMKkArym_BungjnA7JcOaVJEMFwXK5RdhMi-GfRZdRnrbmEDjMOWqEvOIuvarEcRY2RqDmH4Lh_cylBBD_hSULQU1EChGwKyCZ3GG1VW3DOOVdcQez5osJeTTW4lGW286AyVOaJAa2rb8YI52argSk_g_ToslDxhf1tdW7UbFHopG6t4ULHuWlbjufjmcBMH1fKYOrdxSg97XNr3Gj3n9XcyMaNMQVBiD5dph16MHwVV_9ioDaw9s0Gs/https%3A%2F%2Fbioconductor.org%2FcheckResults%2Fdevel%2Fbioc-LATEST%2FOncoSimulR%2F), apparently during the vignette build process (https://secure-web.cisco.com/1wC-QitpATgzZLg-OA4Yqk8kDdDqtZ85t1eoOogdoDG39pNkmH_xx8xzqT9EXe6e3gFjL8shxF9559wAQoBn_WfxaNR_k_3aF1t9GtSqb492Zu8SY6MGhss9vTMp3VxPNqgcDKNdNz57JVMzSj8pjZ8aNselyDXxMn4fVx9VRdgnUcQZJBh2UQKAqynzk4OLjRo9-BkaTunIz86d3-CsHun_6oA9b4PMYlWa4Abc7tqz1IJoA1io92b6Wo_iaJ5TblF1Vf0cdouQOrMcXRoL1Cj9zgEQ8l3PARJ9eFzoapnK2a23NJCBpIw84Rh4mAf6-/https%3A%2F%2Fbioconductor.org%2FcheckResults%2Fdevel%2Fbioc-LATEST%2FOncoSimulR%2Fkunpeng2-buildsrc.html).
+
+I do not understand what is happening, nor how to debug this, since al the logs show is
+
+* checking for file ?OncoSimulR/DESCRIPTION? ... OK
+* preparing ?OncoSimulR?:
+* checking DESCRIPTION meta-information ... OK
+* cleaning src
+* installing the package to build vignettes
+* creating vignettes ...
+
+The package does not seem to show this issue in  the (supported) platforms in R universe (https://secure-web.cisco.com/1ED6QCe2u7X_1AcLT5ewiDKMSEzO4Phzv36sjGvM5hmYg40cfLmN3pmB4sbmrEc6dUs3ENrbLklaeQAiTA_6_TzhxULCOlORyGyldt6NhWZDO429UCvUrf5QnLdqSOiLOtpV3xuIMls9MHbouX1D7hJxcwobF2Fx3zyQdh01eeJqrKIx_JJe18YPDj9j1d_mRb1gT485p2joeEtIOzyjzigHJH276OGdkFhztAKXOyqijpw7_2EWIKM5uVl3Ez3kUYsfrEFGE_WNmmytK8Il1kPk_4df3YCCvSAPR46sVvB9c6JRZom3qhEYAIRodmizj/https%3A%2F%2Fbioc.r-universe.dev%2FOncoSimulR%23checktable).
+
+I've noticed there are at least some other packages with a similar pattern: they seem to build and check OK on all platforms, but timeout on vignette build on kunpeng2. Is there anything I should do?
+
+Best,
+
+R.
+
+
+--
+Ramon Diaz-Uriarte
+Department of Biochemistry, Lab B-31
+Facultad de Medicina
+Universidad Aut?noma de Madrid
+Arzobispo Morcillo, 4
+28029 Madrid
+Spain
+
+Phone: +34-91-497-2412
+
+Email: rdiaz02 at gmail.com
+       r.diaz at uam.es
+       ramon.diaz at iib.uam.es
+
+https://secure-web.cisco.com/1A-ygE9qEF1INBUDQ2Wh7AAJNwjPmp9tJKsLnNTF3zAYHmtyG625OlHqGvQVcsPx7YlmJZvwLl47kwr32TAUy8-YjZEZLJh2pSM76GXVh460Nxb61nnXbvyPpGRUtL0EctZirsG1FEO-a6xdlfKvB6SaMfPVE2jswmdDdBHwWrpYm7CT3n7wQNyXS2ggFSojgZt4u3clbd9zDtyDfaIs2Bee58-yi-c0RfZRvKU_zT0o45NK8989zu6Ig2EW_wk1wwkd0EuFU4XtrVXICO-8hg4k8H7VlH6k6H-iUnDyOgfshXGgnGe-wVyVaIB20mgAZ/https%3A%2F%2Fligarto.org%2Frdiaz
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://secure-web.cisco.com/1AxEB-xCA3PZxTt4BJX0Gh8_RhExs_cpadW1f1F2zaDYZTMt4EUFH6lpCKsxnUACFN2pXEqh7R_Je0yt_upfl1XDCsllipNbjkhrJa-JFzkpjfiCw8ukGoW3s5V6MwvYamXWQUHZNWQhWZTm6ZqcEYtiQOwb4VyY8okkYUZA1xM8zgF2AITs0XVTLd4ca7FjKPbzL-OeE_fNhxER0JIQ3TX_-nEm-SBnU1S-5k1rlvAUEGUxghre9frM6FPIIcJNI5G-vFCu0sYa5ISObRFAwKA0ZPVv_IoWFg9o-72UTKQ7yL3dXp_v93HbjS_r1GZfq/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From @pr@t|m@m|tr@ @end|ng |rom gm@||@com  Tue Apr 21 15:22:18 2026
+From: @pr@t|m@m|tr@ @end|ng |rom gm@||@com (Apratim Mitra)
+Date: Tue, 21 Apr 2026 09:22:18 -0400
+Subject: [Bioc-devel] packaging failing build on kunpeng2 due to R version
+Message-ID: <CABN-1qn5o+u-JvREURwWMPtFn+BJb8_rzmwK4AeiM-40kSWywQ@mail.gmail.com>
+
+Hi all,
+
+My package 'carnation' is failing the build on kunpeng2 with the error:
+
+      -----------------------------------
+ERROR: this R is version 4.5.0, package 'carnation' requires R >= 4.6.0
+      -----------------------------------
+ERROR: package installation failed
+
+I have the R version requirement set to 4.6.0 as per bioconductor new
+package contributions guidelines, and the package is passing all checks on
+the other two test runners nebbiolo1 and kjohnson3. Do I need to set the R
+version requirement to >= 4.5.0? However, if I did that I am concerned that
+the checks will raise NOTEs or WARNINGs on the other two systems.
+
+Any help or advice would be much appreciated.
+
+Best,
+Apratim
+
+	[[alternative HTML version deleted]]
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Tue Apr 21 15:46:01 2026
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Tue, 21 Apr 2026 13:46:01 +0000
+Subject: [Bioc-devel] 
+ packaging failing build on kunpeng2 due to R version
+In-Reply-To: <CABN-1qn5o+u-JvREURwWMPtFn+BJb8_rzmwK4AeiM-40kSWywQ@mail.gmail.com>
+References: <CABN-1qn5o+u-JvREURwWMPtFn+BJb8_rzmwK4AeiM-40kSWywQ@mail.gmail.com>
+Message-ID: <BL1PR12MB53018CF8A698E9C4D307ECDEF92C2@BL1PR12MB5301.namprd12.prod.outlook.com>
+
+We have identified an issue with the version of R that was being used on kunpeng2 .  This can be ignored for now until we run an update.
+
+
+The build results/errors from this machine will not be evaluated when determining packages propagating to the next release. Your package will still be included.
+
+
+
+Lori Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Apratim Mitra <apratim.mitra at gmail.com>
+Sent: Tuesday, April 21, 2026 9:22 AM
+To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: [Bioc-devel] packaging failing build on kunpeng2 due to R version
+
+Hi all,
+
+My package 'carnation' is failing the build on kunpeng2 with the error:
+
+      -----------------------------------
+ERROR: this R is version 4.5.0, package 'carnation' requires R >= 4.6.0
+      -----------------------------------
+ERROR: package installation failed
+
+I have the R version requirement set to 4.6.0 as per bioconductor new
+package contributions guidelines, and the package is passing all checks on
+the other two test runners nebbiolo1 and kjohnson3. Do I need to set the R
+version requirement to >= 4.5.0? However, if I did that I am concerned that
+the checks will raise NOTEs or WARNINGs on the other two systems.
+
+Any help or advice would be much appreciated.
+
+Best,
+Apratim
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://secure-web.cisco.com/1Hcn0_0k883gLvSOo-ozKNSMFModBo_X1hGB2LGJsCx9eJdjyBNAwBvKiSkVmy7_ZF5K7GN8C7VZ7fcEj549cAYaFzHMENe7TVmRnKKTZLM9XnxdJpGfCDe2SjWK2tijp24AoWzWuLBvKEe62mJNTzPNG3y7KeP9R95SSxfOntte8ZQ2dOn8bLfnmNGQm3WSrwklemMCM7epF2Toy02LRsmSNnHgQWukCRVm4Hry8nIdzyfXqn-jOoZa0uf_5wPCAkVuu6zc0BiY0Np5bCM11sWqcMn77PpYI7c_TOdwMUOzn2fNW5ufdpe5o-9BTJF7c/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From rd|@z02 @end|ng |rom gm@||@com  Tue Apr 21 18:14:34 2026
+From: rd|@z02 @end|ng |rom gm@||@com (Ramon Diaz-Uriarte)
+Date: Tue, 21 Apr 2026 18:14:34 +0200
+Subject: [Bioc-devel] 
+ OncoSimulR Timeout on  kunpeng2 during vignette build
+In-Reply-To: <BL1PR12MB5301C21D3ADED54CA895EBF3F92C2@BL1PR12MB5301.namprd12.prod.outlook.com>
+References: <87tst4zgqg.fsf@gmail.com>
+ <BL1PR12MB5301C21D3ADED54CA895EBF3F92C2@BL1PR12MB5301.namprd12.prod.outlook.com>
+Message-ID: <87y0igxpcl.fsf@gmail.com>
+
+Dear Lori,
+
+Thanks a lot for the detailed clarification.
+
+Best,
+
+R.
+
+On Tue, 21-April-2026, at 13:42:25, "Kern, Lori" <Lori.Shepherd at RoswellPark.org> wrote:
+> We have identified an issue with the version of R that was being used on kunpeng2 which likely is related.  This can be ignored for now until we
+> run an update.
+>
+> The build results/errors from this machine will not be evaluated when determining packages propagating to the next release. Your package will
+> still be included.
+>
+> Lori Kern
+>
+> Bioconductor Core Team
+>
+> Roswell Park Comprehensive Cancer Center
+>
+> Department of Biostatistics & Bioinformatics
+>
+> Elm & Carlton Streets
+>
+> Buffalo, New York 14263
+>
+> -------------------------------------------------------------------------------------------------------------------------
+> From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Ramon Diaz-Uriarte <rdiaz02 at gmail.com>
+> Sent: Tuesday, April 21, 2026 7:37 AM
+> To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+> Subject: [Bioc-devel] OncoSimulR Timeout on kunpeng2 during vignette build
+>
+> Dear All,
+>
+> A package I maintain, OncoSimulR, now on version 4.13.4,  is showing a TIMEOUT on kunpeng2
+> (https://secure-web.cisco.com/1Eh8FxRUgzDCK8YQO9aEFtH0BUSGt5qXPn-nj4fUSB_-Fmr7sO6-n9Pl9s0Q8HhKbkWYEDZFXcMKkArym_BungjnA7JcOaVJEMFwXK5RdhMi-GfRZdRnrbmEDjMOWqEvOIuvarEcRY2RqDmH4Lh_cylBBD_hSULQU1EChGwKyCZ3GG1VW3DOOVdcQez5osJeTTW4lGW286AyVOaJAa2rb8YI52argSk_g_ToslDxhf1tdW7UbFHopG6t4ULHuWlbjufjmcBMH1fKYOrdxSg97XNr3Gj3n9XcyMaNMQVBiD5dph16MHwVV_9ioDaw9s0Gs/https%3A%2F%2Fbioconductor.org%2FcheckResults%2Fdevel%2Fbioc-LATEST%2FOncoSimulR%2F),
+> apparently during the vignette build process
+> (https://secure-web.cisco.com/1wC-QitpATgzZLg-OA4Yqk8kDdDqtZ85t1eoOogdoDG39pNkmH_xx8xzqT9EXe6e3gFjL8shxF9559wAQoBn_WfxaNR_k_3aF1t9GtSqb492Zu8SY6MGhss9vTMp3VxPNqgcDKNdNz57JVMzSj8pjZ8aNselyDXxMn4fVx9VRdgnUcQZJBh2UQKAqynzk4OLjRo9-BkaTunIz86d3-CsHun_6oA9b4PMYlWa4Abc7tqz1IJoA1io92b6Wo_iaJ5TblF1Vf0cdouQOrMcXRoL1Cj9zgEQ8l3PARJ9eFzoapnK2a23NJCBpIw84Rh4mAf6-/https%3A%2F%2Fbioconductor.org%2FcheckResults%2Fdevel%2Fbioc-LATEST%2FOncoSimulR%2Fkunpeng2-buildsrc.html).
+>
+>
+> I do not understand what is happening, nor how to debug this, since al the logs show is
+>
+> * checking for file ?OncoSimulR/DESCRIPTION? ... OK
+> * preparing ?OncoSimulR?:
+> * checking DESCRIPTION meta-information ... OK
+> * cleaning src
+> * installing the package to build vignettes
+> * creating vignettes ...
+>
+> The package does not seem to show this issue in  the (supported) platforms in R universe
+> (https://secure-web.cisco.com/1ED6QCe2u7X_1AcLT5ewiDKMSEzO4Phzv36sjGvM5hmYg40cfLmN3pmB4sbmrEc6dUs3ENrbLklaeQAiTA_6_TzhxULCOlORyGyldt6NhWZDO429UCvUrf5QnLdqSOiLOtpV3xuIMls9MHbouX1D7hJxcwobF2Fx3zyQdh01eeJqrKIx_JJe18YPDj9j1d_mRb1gT485p2joeEtIOzyjzigHJH276OGdkFhztAKXOyqijpw7_2EWIKM5uVl3Ez3kUYsfrEFGE_WNmmytK8Il1kPk_4df3YCCvSAPR46sVvB9c6JRZom3qhEYAIRodmizj/https%3A%2F%2Fbioc.r-universe.dev%2FOncoSimulR%23checktable).
+>
+>
+> I've noticed there are at least some other packages with a similar pattern: they seem to build and check OK on all platforms, but timeout on
+> vignette build on kunpeng2. Is there anything I should do?
+>
+> Best,
+>
+> R.
+
+--
+Ramon Diaz-Uriarte
+Department of Biochemistry, Lab B-31
+Facultad de Medicina
+Universidad Aut?noma de Madrid
+Arzobispo Morcillo, 4
+28029 Madrid
+Spain
+
+Phone: +34-91-497-2412
+
+Email: rdiaz02 at gmail.com
+       r.diaz at uam.es
+       ramon.diaz at iib.uam.es
+
+https://ligarto.org/rdiaz
+
+
+From Andre@@Wok@ty @end|ng |rom @ph@cuny@edu  Tue Apr 21 18:47:09 2026
+From: Andre@@Wok@ty @end|ng |rom @ph@cuny@edu (Andres Wokaty)
+Date: Tue, 21 Apr 2026 16:47:09 +0000
+Subject: [Bioc-devel] 
+ [EXT] Re: Installation Error on nebbiolo2 Due to CVXR Dependency
+In-Reply-To: <AS8PR09MB4998EF197DA2F26108AA7925CD2C2@AS8PR09MB4998.eurprd09.prod.outlook.com>
+References: <CAEdP+wQ7GYpzcusPmmN+swCrg-4JwMSEwma9Y3YQ0y1xB+24Jw@mail.gmail.com>
+ <CAANT7+U2ba19=Bgp-m0f9zH9w5Opfu5n-d3H+=8NpVB9F365+Q@mail.gmail.com>
+ <CAEdP+wQSruT9xNYe0nCL8VpS4weZBEuSYgZHHgqG2n6ageQN_A@mail.gmail.com>
+ <CAEdP+wQuEPvcpy5c+jDeHXh3ZHi2S9TpOmNBmwGehDovZq8C-g@mail.gmail.com>
+ <AS8PR09MB4998EF197DA2F26108AA7925CD2C2@AS8PR09MB4998.eurprd09.prod.outlook.com>
+Message-ID: <IA0PR14MB6416D025FD3B00225ED14746DA2C2@IA0PR14MB6416.namprd14.prod.outlook.com>
+
+Hi everyone,
+
+Sorry for the delayed response. The release is always pretty hectic.
+
+Since we're moving toward an R Universe build where the rust will be available in the container, I updated to a newer rust on nebbiolo1 yesterday, so ANCOMBC is now passing.
+
+Andres Wokaty (they/them)
+
+Waldron Lab at CUNY SPH
+Bioconductor Core Team
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Francesc Catala Moll via Bioc-devel <bioc-devel at r-project.org>
+Sent: Tuesday, April 21, 2026 4:03 AM
+To: Huang Lin (Frederick) <huanglinfrederick at gmail.com>; Vincent Carey <stvjc at channing.harvard.edu>
+Cc: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: Re: [Bioc-devel] [EXT] Re: Installation Error on nebbiolo2 Due to CVXR Dependency
+
+* External Sender - Proceed Cautiously with Links and Attachments. *
+
+Dear Huang,
+
+I maintain a package that depends on ANCOMBC and saw the recent Bioc-devel thread regarding the CVXR build failure on nebbiolo1.
+
+To help resolve this quickly, I have just submitted a Pull Request to your GitHub repository. The PR completely removes the CVXR dependency by replacing its single use-case in the trend test with the quadprog package.
+
+quadprog solves the exact same constrained optimization problem but is a lightweight CRAN standard that does not require Rust, meaning it will compile flawlessly on all Bioconductor servers. I have tested it locally to ensure the results perfectly match your original implementation.
+
+I hope you find this PR helpful to get ANCOMBC building smoothly again!
+
+Best regards,
+
+Francesc
+
+
+De: Bioc-devel <bioc-devel-bounces at r-project.org> en nombre de Huang Lin (Frederick) <huanglinfrederick at gmail.com>
+Fecha: lunes, 13 de abril de 2026 a las 18:00
+Para: Vincent Carey <stvjc at channing.harvard.edu>
+CC: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Asunto: [EXT] Re: [Bioc-devel] Installation Error on nebbiolo2 Due to CVXR Dependency
+
+Dear Vincent and BioC Team,
+
+I?m writing to follow up on my previous inquiry, as I am still receiving
+the error on nebbiolo1.
+
+Do you anticipate adding rustc support on nebbiolo1 in the future? Also, is
+there anything I can do on my end to help resolve this issue?
+
+Thank you so much for your time and assistance,
+
+On Tue, Mar 31, 2026 at 2:50?PM Huang Lin (Frederick) <
+huanglinfrederick at gmail.com> wrote:
+
+> Hi Vincent,
+>
+> Thanks so much for the explanation; that was very helpful.
+>
+> Since this appears to be more of a system issue, do you anticipate adding
+> rustc support on nebbiolo1 in the future? Alternatively, would moving the
+> CVXR dependency from Imports to Suggests help in this case?
+>
+> Best,
+>
+>
+> On Mon, Mar 23, 2026 at 6:47?PM Vincent Carey <stvjc at channing.harvard.edu>
+> wrote:
+>
+>> I suspect that the problem is that clarabel can't compile on nebbiolo1,
+>> because rustc is
+>> a System Requirement, and we haven't adopted rustc support at this time.
+>> CVXR is not
+>> buildable in the absence of clarabel, and thus ANCOMBC won't build there
+>> either.  The mac binary
+>> for CVXR, on the other hand, is available from r-universe, and so there
+>> is a successful build for the
+>> mac platform.
+>>
+>> You can learn about the health of your package on linux at
+>> https://urldefense.com/v3/__https://url.de.m.mimecastprotect.com/s/bZduCpZNRmiZlMYCPfBTGZuUj__;!!LRXxDv2l!SBAKEdF9h4kmjHXHR1poCSwGgxx66uZGHREXWbtHNxO-QJzr7KBYOf3YuLJYfHVJ-r3WKcVxI3OBXwYYcoKwu7YtpwFzjmAM5A$
+>>
+>> On Mon, Mar 23, 2026 at 6:11?PM Huang Lin (Frederick) <
+>> huanglinfrederick at gmail.com> wrote:
+>>
+>>> Dear BioC Team,
+>>>
+>>> I am the maintainer of the ANCOMBC package and have recently received
+>>> notifications indicating installation errors on nebbiolo2.
+>>>
+>>> From the error messages, it appears that the issue is related to the
+>>> unavailability of the dependency package ?CVXR?. I have not observed
+>>> similar issues on other platforms, and the ANCOMBC package builds and
+>>> installs successfully on my local MacBook.
+>>>
+>>> Could you advise on how to address this issue?
+>>>
+>>> Thank you,
+>>>
+>>> Huang
+>>>
+>>>         [[alternative HTML version deleted]]
+>>>
+>>> _______________________________________________
+>>> Bioc-devel at r-project.org mailing list
+>>> https://urldefense.com/v3/__https://url.de.m.mimecastprotect.com/s/8rK9CqQOVnuv40qcXhvTE6qAN__;!!LRXxDv2l!SBAKEdF9h4kmjHXHR1poCSwGgxx66uZGHREXWbtHNxO-QJzr7KBYOf3YuLJYfHVJ-r3WKcVxI3OBXwYYcoKwu7YtpwE5u5tmRQ$
+>>>
+>>
+>> The information in this email is intended only for the person to whom it
+>> is addressed. If you believe this e-mail was sent to you in error and
+>> the email contains patient information, please contact the Partners
+>> Compliance HelpLine at https://urldefense.com/v3/__http://url.de.m.mimecastprotect.com/s/nPQhCr2PEofONVgC4i3T4yk7F__;!!LRXxDv2l!SBAKEdF9h4kmjHXHR1poCSwGgxx66uZGHREXWbtHNxO-QJzr7KBYOf3YuLJYfHVJ-r3WKcVxI3OBXwYYcoKwu7YtpwES_6lnYA$  . If the
+>> email was sent to you in error but does not contain patient information,
+>> please contact the sender and properly dispose of the email.
+>
+>
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://urldefense.com/v3/__https://url.de.m.mimecastprotect.com/s/8rK9CqQOVnuv40qcXhvTE6qAN__;!!LRXxDv2l!SBAKEdF9h4kmjHXHR1poCSwGgxx66uZGHREXWbtHNxO-QJzr7KBYOf3YuLJYfHVJ-r3WKcVxI3OBXwYYcoKwu7YtpwE5u5tmRQ$
+
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://urldefense.com/v3/__https://stat.ethz.ch/mailman/listinfo/bioc-devel__;!!LRXxDv2l!SBAKEdF9h4kmjHXHR1poCSwGgxx66uZGHREXWbtHNxO-QJzr7KBYOf3YuLJYfHVJ-r3WKcVxI3OBXwYYcoKwu7YtpwEpSqvF1Q$
+
+	[[alternative HTML version deleted]]
+
+
