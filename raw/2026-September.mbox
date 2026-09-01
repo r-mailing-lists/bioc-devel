@@ -1,0 +1,76 @@
+From Andre@@Wok@ty @end|ng |rom @ph@cuny@edu  Tue Sep  1 00:12:03 2026
+From: Andre@@Wok@ty @end|ng |rom @ph@cuny@edu (Andres Wokaty)
+Date: Mon, 31 Aug 2026 22:12:03 +0000
+Subject: [Bioc-devel] 
+ package check failures on machines due to unavailable dependency
+In-Reply-To: <SY7P282MB455192370D6923D354588291DAAD2@SY7P282MB4551.AUSP282.PROD.OUTLOOK.COM>
+References: <SY7P282MB455192370D6923D354588291DAAD2@SY7P282MB4551.AUSP282.PROD.OUTLOOK.COM>
+Message-ID: <IA0PR14MB6416F07CD0F1BD42EC63D7AADAA92@IA0PR14MB6416.namprd14.prod.outlook.com>
+
+Hi Mengyuan,
+
+Regarding cellxgene.census, which I see is in the chanzuckerberg r-universe, Bioconductor's current policy states that dependencies should come from either Bioconductor or CRAN as noted at https://contributions.bioconductor.org/description.html?q=depend#depends-imports-suggests-enhances. Alternative approaches are being evaluated but at this time the policy hasn't changed.
+
+Andres Wokaty (they/them)
+
+Waldron Lab at CUNY SPH
+Bioconductor Core Team
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Mengyuan Shen via Bioc-devel <bioc-devel at r-project.org>
+Sent: Thursday, August 27, 2026 12:22 AM
+To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: [Bioc-devel] package check failures on machines due to unavailable dependency
+
+* External Sender - Proceed Cautiously with Links and Attachments. *
+
+Dear Bioconductor team,
+
+I am the maintainer of package cellNexus. I am contacting you about the following error:
+
+cellnexus is currently failing checks on nebbiolo2 and lconway because the suggested dependency cellxgene.census<https://urldefense.com/v3/__https://chanzuckerberg.r-universe.dev/cellxgene.census*readme__;Iw!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCV2lYRQtA$ > is not available.
+
+`Package suggested but not available: ?cellxgene.census?`
+
+I have tried removing it from DESCRIPTION Suggests, but it had another check warning, so decided to keep it in Suggests
+? checking dependencies in R code ... WARNING
+  '::' or ':::' import not declared from: ?cellxgene.census?
+  'loadNamespace' or 'requireNamespace' call not declared from: ?cellxgene.census?
+
+I fixed this in the GitHub CI by conditionally skipping suggested dependencies on windows os as below:
+
+steps:
+conditionally skip suggest dependencies for windows os
+    - name: Set Windows env vars
+      if: runner.os == 'Windows'
+      run: echo "_R_CHECK_FORCE_SUGGESTS_=false" >> $env:GITHUB_ENV
+
+What would be the recommended approach for dealing with the check failures? Is this something that can be addressed separately from the package?
+
+Kind regards,
+Mengyuan
+
+[WEHI Logo]
+
+
+Walter and Eliza Hall Institute of Medical Research
+1G Royal Parade Parkville Victoria 3052 Australia
+
+https://urldefense.com/v3/__http://www.wehi.edu.au__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCXpHb4hSg$ <https://urldefense.com/v3/__https://wehi.edu.au__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCWRF1SH2A$ >
+
+Twitter<https://urldefense.com/v3/__https://twitter.com/WEHI_research__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCVIQ_nr3g$ >  |  Facebook<https://urldefense.com/v3/__https://www.facebook.com/WEHIresearch/__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCWYJvjJRw$ >  |  Instagram<https://urldefense.com/v3/__https://www.instagram.com/wehi_research__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCVGixZGpA$ >  |  Youtube<https://urldefense.com/v3/__https://www.youtube.com/user/WEHImovies__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCUqqiHqQA$ >  |  LinkedIn<https://urldefense.com/v3/__https://www.linkedin.com/company/wehi_research__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCWvmBPJSw$ >
+
+
+WEHI acknowledges the Wurundjeri people of the Kulin Nation as the traditional owners of the land where our campuses are located and the continuing connection to country and community.
+
+Private and confidential
+The content of this e-mail and any attachments may be private and confidential, intended only for use of the individual or entity named. If you are not the intended recipient of this message you must not read, forward, print, copy, disclose, use or store in any way the information this e-mail or any attachment contains. If you are not the intended recipient, please notify the sender immediately and delete or destroy all copies of this e-mail and any attachment.
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://urldefense.com/v3/__https://stat.ethz.ch/mailman/listinfo/bioc-devel__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCV5oKo_dQ$
+
+	[[alternative HTML version deleted]]
+
+

@@ -316,6 +316,24 @@
       "thread_id": "thread-64f67cd44511",
       "thread_depth": 1,
       "month": "2026-08"
+    },
+    {
+      "id": "msg-907e31a4ad60",
+      "message_id": "<IA0PR14MB6416F07CD0F1BD42EC63D7AADAA92@IA0PR14MB6416.namprd14.prod.outlook.com>",
+      "from_name": "Andres Wokaty",
+      "from_email_hash": "219fad5e2f8860120ce8028b29a2de42a1dc3e6145af61c796b613aba0b4e842",
+      "date": "2026-08-31T22:12:03Z",
+      "subject": "[Bioc-devel]  package check failures on machines due to unavailable dependency",
+      "subject_clean": "[Bioc-devel]  package check failures on machines due to unavailable dependency",
+      "in_reply_to": "<SY7P282MB455192370D6923D354588291DAAD2@SY7P282MB4551.AUSP282.PROD.OUTLOOK.COM>",
+      "references": [
+        "<SY7P282MB455192370D6923D354588291DAAD2@SY7P282MB4551.AUSP282.PROD.OUTLOOK.COM>"
+      ],
+      "body_plain": "Hi Mengyuan,\n\nRegarding cellxgene.census, which I see is in the chanzuckerberg r-universe, Bioconductor's current policy states that dependencies should come from either Bioconductor or CRAN as noted at https://contributions.bioconductor.org/description.html?q=depend#depends-imports-suggests-enhances. Alternative approaches are being evaluated but at this time the policy hasn't changed.\n\nAndres Wokaty (they/them)\n\nWaldron Lab at CUNY SPH\nBioconductor Core Team\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Mengyuan Shen via Bioc-devel <bioc-devel at r-project.org>\nSent: Thursday, August 27, 2026 12:22 AM\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>\nSubject: [Bioc-devel] package check failures on machines due to unavailable dependency\n\n* External Sender - Proceed Cautiously with Links and Attachments. *\n\nDear Bioconductor team,\n\nI am the maintainer of package cellNexus. I am contacting you about the following error:\n\ncellnexus is currently failing checks on nebbiolo2 and lconway because the suggested dependency cellxgene.census<https://urldefense.com/v3/__https://chanzuckerberg.r-universe.dev/cellxgene.census*readme__;Iw!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCV2lYRQtA$ > is not available.\n\n`Package suggested but not available: ?cellxgene.census?`\n\nI have tried removing it from DESCRIPTION Suggests, but it had another check warning, so decided to keep it in Suggests\n? checking dependencies in R code ... WARNING\n  '::' or ':::' import not declared from: ?cellxgene.census?\n  'loadNamespace' or 'requireNamespace' call not declared from: ?cellxgene.census?\n\nI fixed this in the GitHub CI by conditionally skipping suggested dependencies on windows os as below:\n\nsteps:\nconditionally skip suggest dependencies for windows os\n    - name: Set Windows env vars\n      if: runner.os == 'Windows'\n      run: echo \"_R_CHECK_FORCE_SUGGESTS_=false\" >> $env:GITHUB_ENV\n\nWhat would be the recommended approach for dealing with the check failures? Is this something that can be addressed separately from the package?\n\nKind regards,\nMengyuan\n\n[WEHI Logo]\n\n\nWalter and Eliza Hall Institute of Medical Research\n1G Royal Parade Parkville Victoria 3052 Australia\n\nhttps://urldefense.com/v3/__http://www.wehi.edu.au__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCXpHb4hSg$ <https://urldefense.com/v3/__https://wehi.edu.au__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCWRF1SH2A$ >\n\nTwitter<https://urldefense.com/v3/__https://twitter.com/WEHI_research__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCVIQ_nr3g$ >  |  Facebook<https://urldefense.com/v3/__https://www.facebook.com/WEHIresearch/__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCWYJvjJRw$ >  |  Instagram<https://urldefense.com/v3/__https://www.instagram.com/wehi_research__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCVGixZGpA$ >  |  Youtube<https://urldefense.com/v3/__https://www.youtube.com/user/WEHImovies__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCUqqiHqQA$ >  |  LinkedIn<https://urldefense.com/v3/__https://www.linkedin.com/company/wehi_research__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCWvmBPJSw$ >\n\n\nWEHI acknowledges the Wurundjeri people of the Kulin Nation as the traditional owners of the land where our campuses are located and the continuing connection to country and community.\n\nPrivate and confidential\nThe content of this e-mail and any attachments may be private and confidential, intended only for use of the individual or entity named. If you are not the intended recipient of this message you must not read, forward, print, copy, disclose, use or store in any way the information this e-mail or any attachment contains. If you are not the intended recipient, please notify the sender immediately and delete or destroy all copies of this e-mail and any attachment.\n\n        [[alternative HTML version deleted]]\n\n_______________________________________________\nBioc-devel at r-project.org mailing list\nhttps://urldefense.com/v3/__https://stat.ethz.ch/mailman/listinfo/bioc-devel__;!!LRXxDv2l!XMopwWnHmwrb0nkFtahvcsgg2-h1fzUOdotkb7SMVBRyc2xXU7onNKe_38Teez5d4WY54asgPQkhZ9GmSR_d_s7-XCV5oKo_dQ$\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi Mengyuan,\n\nRegarding cellxgene.census, which I see is in the chanzuckerberg r-universe, Bioconductor's current policy states that dependencies should come from either Bioconductor or CRAN as noted ",
+      "thread_id": "thread-37f6ee5a3234",
+      "thread_depth": 1,
+      "month": "2026-08"
     }
   ],
   "threads": [
@@ -458,12 +476,13 @@
     {
       "id": "thread-37f6ee5a3234",
       "subject": "[Bioc-devel] package check failures on machines due to unavailable dependency",
-      "message_count": 1,
+      "message_count": 2,
       "participants": [
+        "Andres Wokaty",
         "Mengyuan Shen"
       ],
       "started": "2026-08-27T04:22:22Z",
-      "last_reply": "2026-08-27T04:22:22Z",
+      "last_reply": "2026-08-31T22:12:03Z",
       "root_message_id": "msg-37f6ee5a3234"
     },
     {
