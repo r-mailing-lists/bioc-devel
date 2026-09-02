@@ -74,3 +74,387 @@ https://urldefense.com/v3/__https://stat.ethz.ch/mailman/listinfo/bioc-devel__;!
 	[[alternative HTML version deleted]]
 
 
+From g|@dk|@@rk@d|u@z @end|ng |rom gm@||@com  Tue Sep  1 07:35:40 2026
+From: g|@dk|@@rk@d|u@z @end|ng |rom gm@||@com (=?UTF-8?B?QXJlayBHxYJhZGtp?=)
+Date: Tue, 1 Sep 2026 07:35:40 +0200
+Subject: [Bioc-devel] Submission #128 (gDRplots): macOS and Windows check
+ runners resolve release, Linux resolves devel
+Message-ID: <CAMsP4e2MtfCQsF3TVr3OAVMfuGsNO+xzFPQdtCQvPu_kC=wanA@mail.gmail.com>
+
+Hello,
+
+I maintain gDRplots, submitted on 4 August (BiocContributions issue #128).
+Two of the three check platforms have been failing since submission, and I
+think the cause is on the infrastructure side rather than in my package, so
+I'd like to ask about it here.
+
+In a single r-universe run, the runners resolve Bioconductor dependencies
+from two different branches:
+
+  linux-release-x86_64    bioconductor.posit.co/packages/devel
+gDRtestData 1.11.7   OK
+  macos-release-arm64     bioconductor.posit.co/packages/3.23
+ gDRtestData 1.10.0   ERROR
+  windows-release-x86_64  bioconductor.posit.co/packages/3.23
+ gDRtestData 1.10.0   ERROR
+
+My examples use a directory that was added to gDRtestData during the
+current devel cycle, so system.file() finds it on Linux and returns "" on
+macOS and Windows. That single difference is the only ERROR left on either
+platform.
+
+Is this intentional? It doesn't look specific to gDRplots ? any submission
+depending on something added to a Bioconductor package during the current
+cycle would fail on exactly those two platforms and pass on the third.
+
+And a related question I genuinely don't know the answer to: is a clean
+build on all platforms a precondition for a reviewer being assigned, or can
+review start in parallel? My submission has been in pre-review for four
+weeks and I'd like to know whether I'm waiting on this or on something else.
+
+I do have a local workaround ? guarding the affected examples so they skip
+when the data isn't installed ? but I'd rather not push it if the runners
+are meant to resolve devel, since it would just hide the difference.
+
+Thanks,
+Arek Gladki
+
+	[[alternative HTML version deleted]]
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Tue Sep  1 13:59:46 2026
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Tue, 1 Sep 2026 11:59:46 +0000
+Subject: [Bioc-devel] 
+ Submission #128 (gDRplots): macOS and Windows check
+ runners resolve release, Linux resolves devel
+In-Reply-To: <CAMsP4e2MtfCQsF3TVr3OAVMfuGsNO+xzFPQdtCQvPu_kC=wanA@mail.gmail.com>
+References: <CAMsP4e2MtfCQsF3TVr3OAVMfuGsNO+xzFPQdtCQvPu_kC=wanA@mail.gmail.com>
+Message-ID: <BL1PR12MB5301013C975D657D5F3969BAF9A82@BL1PR12MB5301.namprd12.prod.outlook.com>
+
+There is a slight misconception on what release and devel mean in this scenario.  They are not referring to release and devel of Bioconductor, they are referring to the release or devel version of R.  In this current cycle Bioconductor devel is still using  R-release for testing not R-devel (in prep for the new release next year).
+
+I'm looking at your comment on the issue as well,  you reference posit repositories for bioconductor packages but those are not utilized and I'm curious as to why or how you came to that conclusion?   The Bioconductor r-universe repositories are what are being utilized for dependencies and from the detailed looks of the run, it is pulling dependencies from the correct devel r-universe of Bioconductor.
+
+Also,  if your package is needing the higher version of gdrtestdata then that should be changed in your description file as you are also still referencing 1.6.0 version of the package.
+
+It does seem strange that I cannot find gDRtestData in the list of installed packages during the run log; and I'm not finding it in the current Bioconductor universes.   We will follow up on this to find out why and perhaps that will clear the issue.
+
+As far as reviewer assignment: It is an automatic system, so it waits for a clean build for the reviewer to be assigned. There is a way to override it, but let's see if we can get it resolved first by making sure the gDRtestData is available in the universe.  (I would still recommend upping the version needed in the description as that does appear to be inaccurate then) . If that does not help once its available,  we can override and go ahead with assignment while we all investigate the issue.
+
+Cheers,
+
+
+Lori Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Arek G?adki <gladki.arkadiusz at gmail.com>
+Sent: Tuesday, September 1, 2026 1:35 AM
+To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: [Bioc-devel] Submission #128 (gDRplots): macOS and Windows check runners resolve release, Linux resolves devel
+
+Hello,
+
+I maintain gDRplots, submitted on 4 August (BiocContributions issue #128).
+Two of the three check platforms have been failing since submission, and I
+think the cause is on the infrastructure side rather than in my package, so
+I'd like to ask about it here.
+
+In a single r-universe run, the runners resolve Bioconductor dependencies
+from two different branches:
+
+  linux-release-x86_64    bioconductor.posit.co/packages/devel
+gDRtestData 1.11.7   OK
+  macos-release-arm64     bioconductor.posit.co/packages/3.23
+ gDRtestData 1.10.0   ERROR
+  windows-release-x86_64  bioconductor.posit.co/packages/3.23
+ gDRtestData 1.10.0   ERROR
+
+My examples use a directory that was added to gDRtestData during the
+current devel cycle, so system.file() finds it on Linux and returns "" on
+macOS and Windows. That single difference is the only ERROR left on either
+platform.
+
+Is this intentional? It doesn't look specific to gDRplots ? any submission
+depending on something added to a Bioconductor package during the current
+cycle would fail on exactly those two platforms and pass on the third.
+
+And a related question I genuinely don't know the answer to: is a clean
+build on all platforms a precondition for a reviewer being assigned, or can
+review start in parallel? My submission has been in pre-review for four
+weeks and I'd like to know whether I'm waiting on this or on something else.
+
+I do have a local workaround ? guarding the affected examples so they skip
+when the data isn't installed ? but I'd rather not push it if the runners
+are meant to resolve devel, since it would just hide the difference.
+
+Thanks,
+Arek Gladki
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://secure-web.cisco.com/10LixFBFMGLCNwBNsgAjt9bv1d9EBUboQJ_9GFlQoeSlf1wJEm2ZGXGRIplo0L6S-QFXvuwODI85y-M2clBkWxuhRZ0OiDbpgapjV-1HJ4lyubHyp61GNSzwy-yc6fmDRbXD0cSfkg0CrXMGtxZmwc2n3VUcNtiJMpCofwusz3cEsjcgwiDaoe7yq7CnpeieVYL2MktnvGpG_beD_AcUYw0NYf-S0m2obUdT1xbWqGMsGk48E2BoJNemnWj2m0JhQMDY3ymxQxIkgJXwjnk0dZjWMCK7F-HheAJCt2C7SRk7lUCyBYTw6tkPiHR3DbnpC/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From g|@dk|@@rk@d|u@z @end|ng |rom gm@||@com  Tue Sep  1 15:08:20 2026
+From: g|@dk|@@rk@d|u@z @end|ng |rom gm@||@com (=?UTF-8?B?QXJlayBHxYJhZGtp?=)
+Date: Tue, 1 Sep 2026 15:08:20 +0200
+Subject: [Bioc-devel] 
+ Submission #128 (gDRplots): macOS and Windows check
+ runners resolve release, Linux resolves devel
+In-Reply-To: <BL1PR12MB5301013C975D657D5F3969BAF9A82@BL1PR12MB5301.namprd12.prod.outlook.com>
+References: <CAMsP4e2MtfCQsF3TVr3OAVMfuGsNO+xzFPQdtCQvPu_kC=wanA@mail.gmail.com>
+ <BL1PR12MB5301013C975D657D5F3969BAF9A82@BL1PR12MB5301.namprd12.prod.outlook.com>
+Message-ID: <CAMsP4e1n2P6Jk3wMP+j10B5+5W-f4LO6B+7dD3bYHnDEqRH6oQ@mail.gmail.com>
+
+Hi Lori,
+
+Thank you ? that resolves two of my questions and lets me correct a third
+that was my own imprecision. I went back to the job logs and to the
+r-universe configuration, and I think I can now point at the exact line
+that produces the difference.
+
+First, my correction. You are right that the software repository is the
+Bioconductor r-universe. Every job in the run uses BioCsoft =
+https://bioc.r-universe.dev. The URLs I quoted were BioCann and BioCexp ?
+the annotation and experiment-data repositories, which r-universe itself
+points at bioconductor.posit.co. I should have named the repositories
+instead of just pasting URLs; that was misleading, sorry.
+
+Second, on release and devel referring to R rather than Bioconductor. That
+matches the job names, but I don't believe it explains this case, because
+jobs running the same R end up on different Bioconductor branches. From run
+33407606944:
+
+  job                     R                  BioCexp   gDRtestData   result
+  R-release for Linux     4.6.1              devel     1.11.7        OK
+  R-devel   for Linux     R-devel r90452     devel     1.11.7        OK
+  R-release for Windows   4.6.1              3.23      1.10.0        ERROR
+  R-devel   for Windows   R-devel r90452     3.23      1.10.0        ERROR
+  R-release for MacOS     4.6.1              3.23      1.10.0        ERROR
+  R-oldrel  for Windows   4.5.3              3.22      1.8.0         ERROR
+  R-oldrel  for MacOS     4.5.3              3.22      1.8.0         ERROR
+
+Verbatim from the two R-release jobs, both on R 4.6.1:
+
+  R-release for Linux
+
+https://github.com/r-universe/biocstaging/actions/runs/33407606944/job/99540810756
+      $BioCsoft
+      [1] "https://bioc.r-universe.dev/bin/linux/resolute-x86_64/4.6"
+      $BioCexp
+      [1] "https://bioconductor.posit.co/packages/devel/data/experiment"
+      trying URL
+'.../packages/devel/data/experiment/src/contrib/gDRtestData_1.11.7.tar.gz'
+
+  R-release for Windows
+
+https://github.com/r-universe/biocstaging/actions/runs/33407606944/job/99540811117
+      $BioCsoft
+      [1] "https://bioc.r-universe.dev"
+      $BioCexp
+      [1] "https://bioconductor.posit.co/packages/3.23/data/experiment"
+      trying URL
+'.../packages/3.23/data/experiment/src/contrib/gDRtestData_1.10.0.tar.gz'
+
+The R-devel Windows job (
+https://github.com/r-universe/biocstaging/actions/runs/33407606944/job/99540811162)
+prints the same 3.23 URLs while running "R Under development (unstable)
+(2026-08-27 r90452)". Since config.yaml currently has release_version 3.23
+and devel_version 3.24, those jobs are installing experiment-data packages
+from the release branch, and the R version is not what decides it.
+
+Third, where that comes from. There are two Rprofiles and they disagree:
+
+https://github.com/r-universe-org/actions/blob/v12/Rprofile (line 1:
+"currently used on Win and Mac but NOT Linux") branches on UNIVERSE_NAME.
+For 'bioc' it hardcodes devel; for anything else, lines 41-42:
+
+      bioc_anno <- sprintf("
+https://bioconductor.posit.co/packages/%s/data/annotation",
+
+ utils:::.BioC_version_associated_with_R_version())
+      bioc_exp  <- sprintf("
+https://bioconductor.posit.co/packages/%s/data/experiment",
+
+ utils:::.BioC_version_associated_with_R_version())
+
+https://github.com/r-universe-org/base-image/blob/master/Rprofile (Linux)
+has the same branch structure, but its final else hardcodes devel:
+
+      BioCann = "
+https://bioconductor.posit.co/packages/devel/data/annotation"
+      BioCexp = "
+https://bioconductor.posit.co/packages/devel/data/experiment"
+
+Our universe is biocstaging ? the logs print $universe = "
+https://biocstaging.r-universe.dev" ? so it takes the final else in both
+files: devel on Linux, R-version-derived release on Windows and macOS.
+
+So the request to whoever maintains this: could biocstaging be treated like
+bioc in r-universe-org/actions/Rprofile, so that the Windows and macOS data
+repositories point at devel as they already do on Linux? As far as I can
+tell it is a one-line condition. It is not specific to my package: any
+submission depending on an ExperimentData or annotation package that
+changed during the current devel cycle will fail on exactly those platforms
+and pass on Linux, and the failure looks like a package bug rather than a
+repository difference.
+
+Fourth, on gDRtestData not appearing in the universes ? I think that is
+expected and there may be nothing to find.
+https://bioc.r-universe.dev/api/ls lists 2425 packages and they are all
+software packages; airway, curatedTCGAData and org.Hs.eg.db are absent as
+well, and gDRtestData is ExperimentData (biocViews: ExperimentData,
+TechnologyData). That is exactly why BioCexp decides the outcome here ?
+there is no universe copy to fall back on. (There is also a
+bioconductor.r-universe.dev, distinct from bioc.r-universe.dev, which
+contains only BiocManager; if that is where you looked, everything would be
+missing from it.)
+
+And you are right that the DESCRIPTION entry is stale. inst/depmap_data/
+was added in gDRtestData 1.11.2, so (>= 1.6.0) does not describe what the
+examples actually need. I would rather settle the repository question
+before changing it, since which constraint is the correct one depends on
+which branch the checks resolve.
+
+Understood on reviewer assignment being automatic ? I would rather not ask
+for an override yet. I have the examples guarded locally so they skip when
+the data is absent, which would make the builds green immediately, but that
+would also stop them running on Windows and macOS for the rest of the cycle
+and hide the repository difference. If the Rprofile condition can be
+changed, I would prefer to adjust the DESCRIPTION entry, rebuild, and let
+the examples actually run.
+
+Thanks again for digging into this,
+Arek Gladki
+
+On Tue, 1 Sept 2026 at 13:59, Kern, Lori <Lori.Shepherd at roswellpark.org>
+wrote:
+
+> There is a slight misconception on what release and devel mean in this
+> scenario.  They are not referring to release and devel of Bioconductor,
+> they are referring to the release or devel version of R.  In this current
+> cycle Bioconductor devel is still using  R-release for testing not R-devel
+> (in prep for the new release next year).
+>
+> I'm looking at your comment on the issue as well,  you reference posit
+> repositories for bioconductor packages but those are not utilized and I'm
+> curious as to why or how you came to that conclusion?   The Bioconductor
+> r-universe repositories are what are being utilized for dependencies and
+> from the detailed looks of the run, it is pulling dependencies from the
+> correct devel r-universe of Bioconductor.
+>
+> Also,  if your package is needing the higher version of gdrtestdata then
+> that should be changed in your description file as you are also still
+> referencing 1.6.0 version of the package.
+>
+> It does seem strange that I cannot find gDRtestData in the list of
+> installed packages during the run log; and I'm not finding it in the
+> current Bioconductor universes.   We will follow up on this to find out why
+> and perhaps that will clear the issue.
+>
+> As far as reviewer assignment: It is an automatic system, so it waits for
+> a clean build for the reviewer to be assigned. There is a way to override
+> it, but let's see if we can get it resolved first by making sure the
+> gDRtestData is available in the universe.  (I would still recommend upping
+> the version needed in the description as that does appear to be inaccurate
+> then) . If that does not help once its available,  we can override and go
+> ahead with assignment while we all investigate the issue.
+>
+> Cheers,
+>
+> Lori Kern
+>
+> Bioconductor Core Team
+>
+> Roswell Park Comprehensive Cancer Center
+>
+> Department of Biostatistics & Bioinformatics
+>
+> Elm & Carlton Streets
+>
+> Buffalo, New York 14263
+> ------------------------------
+> *From:* Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Arek
+> G?adki <gladki.arkadiusz at gmail.com>
+> *Sent:* Tuesday, September 1, 2026 1:35 AM
+> *To:* bioc-devel at r-project.org <bioc-devel at r-project.org>
+> *Subject:* [Bioc-devel] Submission #128 (gDRplots): macOS and Windows
+> check runners resolve release, Linux resolves devel
+>
+> Hello,
+>
+> I maintain gDRplots, submitted on 4 August (BiocContributions issue #128).
+> Two of the three check platforms have been failing since submission, and I
+> think the cause is on the infrastructure side rather than in my package, so
+> I'd like to ask about it here.
+>
+> In a single r-universe run, the runners resolve Bioconductor dependencies
+> from two different branches:
+>
+>   linux-release-x86_64    bioconductor.posit.co/packages/devel
+> gDRtestData 1.11.7   OK
+>   macos-release-arm64     bioconductor.posit.co/packages/3.23
+>  gDRtestData 1.10.0   ERROR
+>   windows-release-x86_64  bioconductor.posit.co/packages/3.23
+>  gDRtestData 1.10.0   ERROR
+>
+> My examples use a directory that was added to gDRtestData during the
+> current devel cycle, so system.file() finds it on Linux and returns "" on
+> macOS and Windows. That single difference is the only ERROR left on either
+> platform.
+>
+> Is this intentional? It doesn't look specific to gDRplots ? any submission
+> depending on something added to a Bioconductor package during the current
+> cycle would fail on exactly those two platforms and pass on the third.
+>
+> And a related question I genuinely don't know the answer to: is a clean
+> build on all platforms a precondition for a reviewer being assigned, or can
+> review start in parallel? My submission has been in pre-review for four
+> weeks and I'd like to know whether I'm waiting on this or on something
+> else.
+>
+> I do have a local workaround ? guarding the affected examples so they skip
+> when the data isn't installed ? but I'd rather not push it if the runners
+> are meant to resolve devel, since it would just hide the difference.
+>
+> Thanks,
+> Arek Gladki
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+>
+> https://secure-web.cisco.com/10LixFBFMGLCNwBNsgAjt9bv1d9EBUboQJ_9GFlQoeSlf1wJEm2ZGXGRIplo0L6S-QFXvuwODI85y-M2clBkWxuhRZ0OiDbpgapjV-1HJ4lyubHyp61GNSzwy-yc6fmDRbXD0cSfkg0CrXMGtxZmwc2n3VUcNtiJMpCofwusz3cEsjcgwiDaoe7yq7CnpeieVYL2MktnvGpG_beD_AcUYw0NYf-S0m2obUdT1xbWqGMsGk48E2BoJNemnWj2m0JhQMDY3ymxQxIkgJXwjnk0dZjWMCK7F-HheAJCt2C7SRk7lUCyBYTw6tkPiHR3DbnpC/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+>
+>
+> This email message may contain legally privileged and/or confidential
+> information. If you are not the intended recipient(s), or the employee or
+> agent responsible for the delivery of this message to the intended
+> recipient(s), you are hereby notified that any disclosure, copying,
+> distribution, or use of this email message is prohibited. If you have
+> received this message in error, please notify the sender immediately by
+> e-mail and delete this email message from your computer. Thank you.
+>
+
+	[[alternative HTML version deleted]]
+
+
