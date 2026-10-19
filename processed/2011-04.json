@@ -105,11 +105,14 @@
       "subject_clean": "[Bioc-devel] linking LAPACK in windows",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110401/6c88841d/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110401/6c88841d/attachment.pl>",
+      "body_plain": "Dear list,\n\nI am a new contributor to Bioconductor looking for guidance. My package\n(inveRsion) does not pass the R CMD check in liverpool. Basically, when it\ncompiles the vignette, one of the functions returns NaNs when it should\nnot. I traced back the bug on a windows machine. Although the package\ninstalls and compiles the c code without errors, I found that an R\nfunction ultimately relying on a LAPACK call returns the NaNs (source of\nthe bug), when in Mac and Linux it does not. Would this be a problem of\nlinking LAPACK in windows?\n\nI've got a Makevars file with the line \n\nPKG_LIBS = $(SUBLIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)\n\nthat seems to work in lamb1 and pelham. I've been back and forth the\nR-extension manual and feel a bit out of my depth. I cannot figure out\nwhat I should do. I imagine that a way out would be to provide the LAPACK\nroutines with the package and compile them with it. My question is: Is\nthis an acceptable practice? Otherwise, some light into which sort of\nthings I would have to do in the Makevars (Makevars.win?) file will be\nmuch appreciated. Or am I missing something else?\n\nPlease see bellow for particulars.\n\nMany thanks,\nAlejandro\n\nAlejandro Caceres\nCentre de Recerca en Epidemiologia Ambiental\nDoctor Aiguader 88, 0803\nBarcelona, Spain\n\n\n-------------\nnewFreq.c compiled with \n-------------\n\nR CMD SHLIB newFreq.c\n\n(with a Makevars in the local dir having the line:\nPKG_LIBS = $(SUBLIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS))\n\n--------\nR code\n--------\n\nResp<-c(0.93,0.98,1,0.97,1,1,1,1,0.93,1)\nblock<-c(4,1,7,2,5,1,5,1,4,1)\nnsub<-10\nlev<-7\nnlev<-7\n\ndyn.load(\"newFreq.dll\")\n# dyn.load(\"newFreq.so\")\n\n.C(\"newFreq\", as.double(Resp), as.double(block), as.double(lev),\nas.integer(nlev),as.integer(nsub), as.double(rep(0,nlev)))[[6]]\n\n---------\nC code, file: newFreq.c\n----------\n#include <stdio.h>\n#include <R.h>\n#include <R_ext/Lapack.h> \n#include <R_ext/BLAS.h>\n\n\nvoid newFreq( double *Resp, double *block, double *lev, int *nlev, int\n*nsub, double *out)\n{\n\n  int level, subject, row, col, inx;  \n  double freqLev[*nlev];\n  double bb[*nlev];\n\n  double *AA= (double *)malloc(((*nsub)*(*nsub))*sizeof(*AA));\n \n  double maxfreq;\n  \n  /* compute freqLev */\n  for (level=0; level<*nlev; ++level) \n    freqLev[level]=0.0;\n\n      \n  for (subject=0; subject<*nsub; ++subject) \n  {\n    for (level=0; level<*nlev; ++level) \n    {\n      if(block[subject]==lev[level])\n      {\n       freqLev[level]=freqLev[level]+Resp[subject];       \n      }\n     }\n   }\n\n  /*register max freq*/\n  maxfreq==-1.0;\n  inx=0; \n  for (level=0; level<*nlev; ++level) \n  {\n    if(freqLev[level]>maxfreq)\n    {\n      maxfreq=freqLev[level];\n      inx=level;  \n    }\n   }\n      \n   \n    for (row=0; row<*nlev; ++row) \n    {\n        for (col=0; col<*nlev; ++col) \n        {\n          if (row==col)\n          {\n            AA[row*(*nlev)+col]=1.0;\n          }\n          else\n          {\n            AA[row*(*nlev)+col]=0.0;\n          }\n          \n          if (row==inx)\n          {\n            AA[row*(*nlev)+col]=-freqLev[col]/maxfreq;\n          }\n          \n          if (col==inx)\n          {\n            AA[row*(*nlev)+col]=1;\n          }\n        }  \n    \n    }\n        \n    /*define bb*/ \n    for (row=0; row<*nlev; ++row) \n    {\n      bb[row]=0.0;\n      if(row==inx)\n        bb[inx]=1;\n    }\n    \n    \n    /*solve linear algebra*/\n    int nr=1;\n    int *pnr;\n    pnr=&nr;\n    *pnr=nr;\n    \n    int inf=0;\n    int *pinf;\n    pinf=&inf;\n    *pinf=inf;\n    \n    int ipiv[*nlev];\n   \n    F77_NAME(dgesv)(nlev, pnr, AA, nlev, ipiv, bb, nlev, pinf);\n                \n    for (row=0; row<*nlev; ++row) \n     out[row]=bb[row];   \n        \n   free(AA);\n   AA=NULL; \n\n}\n\n\n\n\n\n\n\n\n\n\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Dear list,\n\nI am a new contributor to Bioconductor looking for guidance. My package\n(inveRsion) does not pass the R CMD check in liverpool. Basically, when it\ncompiles the vignette, one of the functio",
       "thread_id": "thread-256230e6b96a",
       "thread_depth": 0,
-      "month": "2011-04"
+      "month": "2011-04",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110401/6c88841d/attachment.pl"
+      ]
     },
     {
       "id": "msg-8a200d8a8887",
@@ -195,11 +198,14 @@
         "<D464EAC2-DC70-48D0-9762-EAF630EF65C3@clevert.de>",
         "<4D974156.5020607@fhcrc.org>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110403/be912cfb/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110403/be912cfb/attachment.pl>",
+      "body_plain": "Hi Martin,\n\nhave many thanks for your help. I double-checked the DESCRIPTION file, but I \ncouldn't find a mistake: both check and build went smooth and the version number \nshould be ok, too.\nPlease let me know what do I have to do, in order to fix this problem.\n\nOnce again many thanks for your kind help!\nOkko\n\n\n-- \n\ndipl.-inf. djork clevert | gleimstr. 13a | d-10437 berlin\ne: okko at clevert.de\np: +49.30.4432 4702\nf: +49.30.6883 5307\n\nAm 02.04.2011 um 17:31 schrieb Martin Morgan:\n\n> On 04/02/2011 02:12 AM, Djork-Arne Clevert wrote:\n>> Dear all,\n>> \n>> I have recently updated my farms package in the devel-repository: Revision 54270, 2011-03-31 00:37:47 +0200.\n>> After checking the latest build (snapshot 54333), it appears that the package was not included in this version.\n>> Is there something odd with the package or how does it comes?\n> \n> Hi Okko -- your updated DESCRIPTION file is invalid. Martin\n> \n>> \n>> Many thanks in advance,\n>> Okko\n>> \n>> \n>> \n>> \n> \n> \n> -- \n> Computational Biology\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109\n> \n> Location: M1-B861\n> Telephone: 206 667-2793\n\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi Martin,\n\nhave many thanks for your help. I double-checked the DESCRIPTION file, but I \ncouldn't find a mistake: both check and build went smooth and the version number \nshould be ok, too.\nPlease le",
       "thread_id": "thread-3a70a0a0713a",
       "thread_depth": 2,
-      "month": "2011-04"
+      "month": "2011-04",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110403/be912cfb/attachment.pl"
+      ]
     },
     {
       "id": "msg-0ed656deb487",
@@ -236,11 +242,14 @@
         "<F0B74CD8-2F2A-40E0-9FDA-F4B258E84BF0@clevert.de>",
         "<4D97B38A.5020800@fhcrc.org>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110404/42f18cb6/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110404/42f18cb6/attachment.pl>",
+      "body_plain": "Martin,\n\nhave many thanks for your prompt and detailed reply. I checked the file and\nmuch to my surprise I found that Dan already changed the line endings! \n\n@Dan: This was very nice of you. Have many thanks!!!\n\nThanks,\nOkko\n\n\n\n\n-- \n\ndipl.-inf. djork clevert | gleimstr. 13a | d-10437 berlin\ne: okko at clevert.de\np: +49.30.4432 4702\nf: +49.30.6883 5307\n\nAm 03.04.2011 um 01:38 schrieb Martin Morgan:\n\n> On 04/02/2011 04:16 PM, Djork-Arne Clevert wrote:\n>> Hi Martin,\n>> \n>> have many thanks for your help. I double-checked the DESCRIPTION file,\n>> but I\n>> couldn't find a mistake: both check and build went smooth and the\n>> version number\n>> should be ok, too.\n>> Please let me know what do I have to do, in order to fix this problem.\n> \n> I think the Package: line ends with a new line only ('\\n'; Linux) whereas your other lines end with carriage return and new line ('\\r\\n'; windows). This is throwing off an early stage in the build system, before R even sees the package. Remember that the build system only runs once a day so you will not know that you have been successful until the next build cycle.\n> \n> Martin\n> \n> \n>> \n>> Once again many thanks for your kind help!\n>> Okko\n>> \n>> \n>> --\n>> \n>> dipl.-inf. djork clevert | gleimstr. 13a | d-10437 berlin\n>> e: okko at clevert.de <mailto:okko at clevert.de>\n>> p: +49.30.4432 4702\n>> f: +49.30.6883 5307\n>> \n>> Am 02.04.2011 um 17:31 schrieb Martin Morgan:\n>> \n>>> On 04/02/2011 02:12 AM, Djork-Arne Clevert wrote:\n>>>> Dear all,\n>>>> \n>>>> I have recently updated my farms package in the devel-repository:\n>>>> Revision 54270, 2011-03-31 00:37:47 +0200.\n>>>> After checking the latest build (snapshot 54333), it appears that the\n>>>> package was not included in this version.\n>>>> Is there something odd with the package or how does it comes?\n>>> \n>>> Hi Okko -- your updated DESCRIPTION file is invalid. Martin\n>>> \n>>>> \n>>>> Many thanks in advance,\n>>>> Okko\n>>>> \n>>>> \n>>>> \n>>>> \n>>> \n>>> \n>>> --\n>>> Computational Biology\n>>> Fred Hutchinson Cancer Research Center\n>>> 1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109\n>>> \n>>> Location: M1-B861\n>>> Telephone: 206 667-2793\n>> \n> \n> \n> -- \n> Computational Biology\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109\n> \n> Location: M1-B861\n> Telephone: 206 667-2793\n\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Martin,\n\nhave many thanks for your prompt and detailed reply. I checked the file and\nmuch to my surprise I found that Dan already changed the line endings! \n\n@Dan: This was very nice of you. Have many",
       "thread_id": "thread-3a70a0a0713a",
       "thread_depth": 4,
-      "month": "2011-04"
+      "month": "2011-04",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110404/42f18cb6/attachment.pl"
+      ]
     },
     {
       "id": "msg-1248891a2c2b",
@@ -255,11 +264,14 @@
         "<6B6C543B7E424A5BB5DFE0B86009331C@IMW00522>",
         "<4D960FDA.2080006@fhcrc.org>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110404/ea157ce4/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110404/ea157ce4/attachment.pl>",
+      "body_plain": "Dear Martin,\n\nThat was it! Thanks a lot. I was completely fooled by the no errors in the\ncompilation.\n\nAlejandro\n\n\n-----Mensaje original-----\nDe: Martin Morgan [mailto:mtmorgan at fhcrc.org]\nEnviado el: viernes, 01 de abril de 2011 19:48\nPara: \"Cáceres Domínguez, Alejandro\"\nCC: bioc-devel at r-project.org\nAsunto: Re: [Bioc-devel] linking LAPACK in windows\n\nOn 04/01/2011 10:07 AM, Cáceres Domínguez, Alejandro wrote:\n> Dear list,\n>\n> I am a new contributor to Bioconductor looking for guidance. My package\n> (inveRsion) does not pass the R CMD check in liverpool. Basically, when\nit\n> compiles the vignette, one of the functions returns NaNs when it should\n> not. I traced back the bug on a windows machine. Although the package\n> installs and compiles the c code without errors, I found that an R\n> function ultimately relying on a LAPACK call returns the NaNs (source of\n> the bug), when in Mac and Linux it does not. Would this be a problem of\n> linking LAPACK in windows?\n>\n> I've got a Makevars file with the line\n>\n> PKG_LIBS = $(SUBLIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)\n\nHi Alejandro --\n\nThis looks correct to me. When I compile the code below I see\n\nnewFreq.c: In function ‘newFreq’:\nnewFreq.c:36:5: warning: statement with no effect\n\ndid you mean\n\n   maxfreq = -1.0;\n\n? Otherwise maxfreq is used uninitialized. I see this also in\ninversionModel.c:94 and when running your test code under valgrind\n\n   R -d valgrind -f test.R\n\nMartin\n\n>\n> that seems to work in lamb1 and pelham. I've been back and forth the\n> R-extension manual and feel a bit out of my depth. I cannot figure out\n> what I should do. I imagine that a way out would be to provide the\nLAPACK\n> routines with the package and compile them with it. My question is: Is\n> this an acceptable practice? Otherwise, some light into which sort of\n> things I would have to do in the Makevars (Makevars.win?) file will be\n> much appreciated. Or am I missing something else?\n>\n> Please see bellow for particulars.\n>\n> Many thanks,\n> Alejandro\n>\n> Alejandro Caceres\n> Centre de Recerca en Epidemiologia Ambiental\n> Doctor Aiguader 88, 0803\n> Barcelona, Spain\n>\n>\n> -------------\n> newFreq.c compiled with\n> -------------\n>\n> R CMD SHLIB newFreq.c\n>\n> (with a Makevars in the local dir having the line:\n> PKG_LIBS = $(SUBLIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS))\n>\n> --------\n> R code\n> --------\n>\n> Resp<-c(0.93,0.98,1,0.97,1,1,1,1,0.93,1)\n> block<-c(4,1,7,2,5,1,5,1,4,1)\n> nsub<-10\n> lev<-7\n> nlev<-7\n>\n> dyn.load(\"newFreq.dll\")\n> # dyn.load(\"newFreq.so\")\n>\n> .C(\"newFreq\", as.double(Resp), as.double(block), as.double(lev),\n> as.integer(nlev),as.integer(nsub), as.double(rep(0,nlev)))[[6]]\n>\n> ---------\n> C code, file: newFreq.c\n> ----------\n> #include<stdio.h>\n> #include<R.h>\n> #include<R_ext/Lapack.h>\n> #include<R_ext/BLAS.h>\n>\n>\n> void newFreq( double *Resp, double *block, double *lev, int *nlev, int\n> *nsub, double *out)\n> {\n>\n>    int level, subject, row, col, inx;\n>    double freqLev[*nlev];\n>    double bb[*nlev];\n>\n>    double *AA= (double *)malloc(((*nsub)*(*nsub))*sizeof(*AA));\n>\n>    double maxfreq;\n>\n>    /* compute freqLev */\n>    for (level=0; level<*nlev; ++level)\n>      freqLev[level]=0.0;\n>\n>\n>    for (subject=0; subject<*nsub; ++subject)\n>    {\n>      for (level=0; level<*nlev; ++level)\n>      {\n>        if(block[subject]==lev[level])\n>        {\n>         freqLev[level]=freqLev[level]+Resp[subject];\n>        }\n>       }\n>     }\n>\n>    /*register max freq*/\n>    maxfreq==-1.0;\n>    inx=0;\n>    for (level=0; level<*nlev; ++level)\n>    {\n>      if(freqLev[level]>maxfreq)\n>      {\n>        maxfreq=freqLev[level];\n>        inx=level;\n>      }\n>     }\n>\n>\n>      for (row=0; row<*nlev; ++row)\n>      {\n>          for (col=0; col<*nlev; ++col)\n>          {\n>            if (row==col)\n>            {\n>              AA[row*(*nlev)+col]=1.0;\n>            }\n>            else\n>            {\n>              AA[row*(*nlev)+col]=0.0;\n>            }\n>\n>            if (row==inx)\n>            {\n>              AA[row*(*nlev)+col]=-freqLev[col]/maxfreq;\n>            }\n>\n>            if (col==inx)\n>            {\n>              AA[row*(*nlev)+col]=1;\n>            }\n>          }\n>\n>      }\n>\n>      /*define bb*/\n>      for (row=0; row<*nlev; ++row)\n>      {\n>        bb[row]=0.0;\n>        if(row==inx)\n>          bb[inx]=1;\n>      }\n>\n>\n>      /*solve linear algebra*/\n>      int nr=1;\n>      int *pnr;\n>      pnr=&nr;\n>      *pnr=nr;\n>\n>      int inf=0;\n>      int *pinf;\n>      pinf=&inf;\n>      *pinf=inf;\n>\n>      int ipiv[*nlev];\n>\n>      F77_NAME(dgesv)(nlev, pnr, AA, nlev, ipiv, bb, nlev, pinf);\n>\n>      for (row=0; row<*nlev; ++row)\n>       out[row]=bb[row];\n>\n>     free(AA);\n>     AA=NULL;\n>\n> }\n>\n>\n>\n>\n>\n>\n>\n>\n>\n>\n>\n> \t[[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n--\nComputational Biology\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109\n\nLocation: M1-B861\nTelephone: 206 667-2793\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Dear Martin,\n\nThat was it! Thanks a lot. I was completely fooled by the no errors in the\ncompilation.\n\nAlejandro\n\n\n-----Mensaje original-----\nDe: Martin Morgan [mailto:mtmorgan at fhcrc.org]\nEnviado e",
       "thread_id": "thread-256230e6b96a",
       "thread_depth": 2,
-      "month": "2011-04"
+      "month": "2011-04",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110404/ea157ce4/attachment.pl"
+      ]
     },
     {
       "id": "msg-c7f9e426ebd9",
@@ -312,11 +324,14 @@
       "references": [
         "<4D9A0A3F.7040604@jimmy.harvard.edu>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110404/7b90040d/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110404/7b90040d/attachment.pl>",
+      "body_plain": "dear members of the BioC-devel list,\n\nMarkus and I are pleased to announce that the survcomp and genefu packages are now available  \non BioConductor.\n\n-----------------\n| survcomp |\n-----------------\n\n'survcomp' is an R/BioConductor package for performance assessment and statistical comparison of risk (survival) prediction models. We implemented numerous performance criteria widely used in survival analysis but which, to the best of our knowledge, have never been put together in a single package. These performance criteria are:\n\t- The traditional Hazard ratio ('hazard.ratio(...)')\n\t- The D index ('D.index(...)')\n\t- The concordance index ('concordance.index(...)', fast C implementation and estimation of confidence interval + significance)\n\t- The time-dependent ROC curve ('tdrocc(...)')\n\t- The Brier score ('sbrier.score2proba(...)')\n\t- The cross-validated partial likelihood ('cvpl(...)')\nStatistical comparison is done by paired statistical tests (e.g., 'cindex.comp(...)'). Moreover we implemented functions to compute the meta-estimators for most of these performance criteria using traditional meta-analytical formula used to combine estimates from multiple independent datasets (e.g., 'combine.est(...)').\n\nLatest development version: http://www.bioconductor.org/help/bioc-views/devel/bioc/html/survcomp.html\nLatest release version (available soon): http://www.bioconductor.org/help/bioc-views/release/bioc/html/survcomp.html\n\n\n-------------\n| genefu |\n-------------\n\n'genefu' is an R/BioConductor package containing numerous functions to analyze gene expression data related to cancer, with a particular emphasis on breast cancer. We implemented several state-of-the-art prognostic gene signatures (gene70, gene76, pik3cags, genius, ggi, ...) and classifiers for identifying breast cancer molecular subtypes (pam50, ssp2006, ssp2003, scmod1, scmod2, and scmgene). Additional functions are also available for displaying results (Kaplan-Meier curves, boxplot and forestplot with specific options which may be useful in the field) and to identify robust cluster and/or gene signatures.\n\nLatest development version: http://www.bioconductor.org/help/bioc-views/devel/bioc/html/genefu.html\nLatest release version (available soon): http://www.bioconductor.org/help/bioc-views/release/bioc/html/genefu.html\n\n---\nBenjamin Haibe-Kains and Markus Schroder\nComputational Biology and Functional Genomics Laboratory\nCenter for Cancer Computational Biology\nHarvard School of Public Health, Dana-Farber Cancer Institute\n\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "dear members of the BioC-devel list,\n\nMarkus and I are pleased to announce that the survcomp and genefu packages are now available  \non BioConductor.\n\n-----------------\n| survcomp |\n-----------------\n",
       "thread_id": "thread-4aa413df367e",
       "thread_depth": 0,
-      "month": "2011-04"
+      "month": "2011-04",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110404/7b90040d/attachment.pl"
+      ]
     },
     {
       "id": "msg-d95f8ed44980",
@@ -344,11 +359,14 @@
       "subject_clean": "[Bioc-devel] what to do with microarray outliers",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110410/e21a4783/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110410/e21a4783/attachment.pl>",
+      "body_plain": "Hello,\n\n   I would like to ask what to do if there are outlying microarrays on PCA\nplot. Should I remove them from the further analysis or not?\n   I have two groups of samples and these groups are clearly separated on\nthe PCA plot (first and second PC). But a few microarrays are not in the\n\"correct\" group.\n   What to do in a situation that one of the samples is much different from\nall the others (but technically it as a good microarray)? What would you do\nin such a situation?\n\nSincerely,\nTheresa\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hello,\n\n   I would like to ask what to do if there are outlying microarrays on PCA\nplot. Should I remove them from the further analysis or not?\n   I have two groups of samples and these groups are cle",
       "thread_id": "thread-8425e8b73a9d",
       "thread_depth": 0,
-      "month": "2011-04"
+      "month": "2011-04",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110410/e21a4783/attachment.pl"
+      ]
     },
     {
       "id": "msg-0d9d592b70b7",
@@ -621,11 +639,14 @@
       "subject_clean": "[Bioc-devel] Bioc needs better support for variants",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110415/9275e291/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110415/9275e291/attachment.pl>",
+      "body_plain": "Hi guys,\n\nCongrats on the release. For this next one, one focus, in my opinion, should\nbe on analyzing variants in the context of sequencing data. This includes\ninfrastructure for things like calling variants (in DNA and RNA), as well as\ndetermining their effects (e.g., coding and splicing changes). It would be\ngood if we could come up with a plan. If we had one, we could commit some\nresources here to the problem.\n\nIs anyone willing to help out on this? What do you guys think?\n\nThanks,\nMichael\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi guys,\n\nCongrats on the release. For this next one, one focus, in my opinion, should\nbe on analyzing variants in the context of sequencing data. This includes\ninfrastructure for things like calling ",
       "thread_id": "thread-3366eafdf2d0",
       "thread_depth": 0,
-      "month": "2011-04"
+      "month": "2011-04",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110415/9275e291/attachment.pl"
+      ]
     },
     {
       "id": "msg-ab27e39b991a",
@@ -716,11 +737,14 @@
         "<BANLkTindVZ7Lm-wfgkiXUQP=Kp4o2e3vGw@mail.gmail.com>",
         "<4DA85401.8050904@fhcrc.org>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110415/36a62131/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110415/36a62131/attachment.pl>",
+      "body_plain": "On Fri, Apr 15, 2011 at 7:19 AM, Martin Morgan <mtmorgan at fhcrc.org> wrote:\n\n> On 04/15/2011 06:05 AM, Vincent Carey wrote:\n>\n>> I will comment on my limited view and progress.  I need to work from\n>> an exemplar.  I committed cheung2010 in the experimental data archive\n>> (devel only).  This relates to PMID 20856902, genetics of expression\n>> in immortalized B cells.\n>>\n>> There are 147 individuals with hapmap phase 3 genotypes and hgfocus\n>> arrays (:-( but about 45 have RNA-seq data in GEO.  fastq is available\n>> with the SRAtools fastq-dump and you can get the sra data reasonably\n>> quickly using ascp.  I will eventually make a sample from their\n>> RNA-seq data available in this package to look at SNP-driven\n>> allele-specific expression and other aspects of SNP-dependent\n>> expression regulation.\n>>\n>> Probably there is DNA-seq data out there on these coriell cell lines\n>> but for the moment I will be looking at the chip-based SNPs and\n>> imputation on those.  Better representations for 8 million SNP per\n>> sample would probably come in handy, but breaking them up by\n>> chromosome in SnpMatrix instances is OK so far.  I think we have to\n>> recognize that in any of these paradigms discrete calls are often not\n>> going to cut it, and uncertainty representations will be important.\n>>\n>> VCF representations of indels in 1000 genomes are available, but I\n>> don't know that we have good tools for importing and modeling those.\n>> Another exemplar that should be considered.\n>>\n>> On Fri, Apr 15, 2011 at 7:16 AM, Michael Lawrence\n>> <lawrence.michael at gene.com>  wrote:\n>>\n>>> Hi guys,\n>>>\n>>> Congrats on the release. For this next one, one focus, in my opinion,\n>>> should\n>>> be on analyzing variants in the context of sequencing data. This includes\n>>> infrastructure for things like calling variants (in DNA and RNA), as well\n>>> as\n>>> determining their effects (e.g., coding and splicing changes). It would\n>>> be\n>>> good if we could come up with a plan. If we had one, we could commit some\n>>> resources here to the problem.\n>>>\n>>> Is anyone willing to help out on this? What do you guys think?\n>>>\n>>\n> We could certainly play a role in annotation of variants and support for\n> interfacing with established 3rd party formats. Obviously also the\n> representation of variants that overlap with IRanges / Biostrings\n> infrastructure. Martin\n>\n>\n\nGreat, this is in line with what I was thinking. We need a way to formally\nrepresent sets of variants, as well as transcripts and proteins (i.e.,\nsomething based on a GRange[List]). Then we can map between coordinate\nsystems and request the consequences of mutations. I was looking at the\nEnsembl variations Perl API;  it might be good for inspiration.\n\nIs there somewhere like a wiki where we could start hashing this out?\n\nMichael\n\n\n>\n>\n>>> Thanks,\n>>> Michael\n>>>\n>>>        [[alternative HTML version deleted]]\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at r-project.org mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>\n>>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>\n>\n> --\n> Computational Biology\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109\n>\n> Location: M1-B861\n> Telephone: 206 667-2793\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "On Fri, Apr 15, 2011 at 7:19 AM, Martin Morgan <mtmorgan at fhcrc.org> wrote:\n\n> On 04/15/2011 06:05 AM, Vincent Carey wrote:\n>\n>> I will comment on my limited view and progress.  I need to work from\n",
       "thread_id": "thread-3366eafdf2d0",
       "thread_depth": 3,
-      "month": "2011-04"
+      "month": "2011-04",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110415/36a62131/attachment.pl"
+      ]
     },
     {
       "id": "msg-5a84102368be",
@@ -753,11 +777,14 @@
       "subject_clean": "[Bioc-devel] graph package needs to be fixed",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110419/7b079d1f/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110419/7b079d1f/attachment.pl>",
+      "body_plain": "Hi guys,\n\nThe graph package needs to be fixed. Since it fails R CMD check, there is no\ntarball available in 2.9. This causes biocLite() to get the version off of\nCRAN (1.28), which is ancient.\n\nThanks,\nMichael\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi guys,\n\nThe graph package needs to be fixed. Since it fails R CMD check, there is no\ntarball available in 2.9. This causes biocLite() to get the version off of\nCRAN (1.28), which is ancient.\n\nThanks",
       "thread_id": "thread-162b1626282a",
       "thread_depth": 0,
-      "month": "2011-04"
+      "month": "2011-04",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110419/7b079d1f/attachment.pl"
+      ]
     },
     {
       "id": "msg-a7c2600071ef",
@@ -787,11 +814,14 @@
       "subject_clean": "[Bioc-devel] svn pre-commit hook problem",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110429/27add549/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110429/27add549/attachment.pl>",
+      "body_plain": "Dear BioC devel,\n\nI committed changes to an R package in BioC, and forgot to add commit\nmessage (-m option). Now pre-commit hook prevents any commits to this and\nalso other packages that I am authoring with the following error message:\n\nTransmitting file data .........svn: Commit failed (details follow):\nsvn: 'pre-commit' hook failed with error output:\nPlease enter a commit message which details what has changed during this\ncommit.\n\nI tried new checkouts, commits from another computer etc but I cannot get\nthe issue fixed, and commits to the packages that I maintain are now halted.\nSo far I have not found out how to remove the pre-commit hook to allow new\ncommits. Any tips?\n\nbr.\nLeo\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Dear BioC devel,\n\nI committed changes to an R package in BioC, and forgot to add commit\nmessage (-m option). Now pre-commit hook prevents any commits to this and\nalso other packages that I am authorin",
       "thread_id": "thread-c7ead81b0d08",
       "thread_depth": 0,
-      "month": "2011-04"
+      "month": "2011-04",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110429/27add549/attachment.pl"
+      ]
     },
     {
       "id": "msg-e0aba87c8b6c",
@@ -824,11 +854,14 @@
         "<26234_1304026713_4DB9DE59_26234_8611_1_BANLkTimoqjR=cJK4DTSsByDP9ZQLijUOig@mail.gmail.com>",
         "<BANLkTik5edMm4Y8yt0+bbjUSy4bKp6UmwA@mail.gmail.com>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110429/22cbf36a/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110429/22cbf36a/attachment.pl>",
+      "body_plain": "This solved the issue. Thanks!\n\nLeo\n\nOn Fri, Apr 29, 2011 at 1:16 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n\n> On Thu, Apr 28, 2011 at 2:38 PM, Leo Lahti <leo.lahti at iki.fi> wrote:\n> > Dear BioC devel,\n> >\n> > I committed changes to an R package in BioC, and forgot to add commit\n> > message (-m option). Now pre-commit hook prevents any commits to this and\n> > also other packages that I am authoring with the following error message:\n> >\n> > Transmitting file data .........svn: Commit failed (details follow):\n> > svn: 'pre-commit' hook failed with error output:\n> > Please enter a commit message which details what has changed during this\n> > commit.\n> >\n> > I tried new checkouts, commits from another computer etc but I cannot get\n> > the issue fixed, and commits to the packages that I maintain are now\n> halted.\n> > So far I have not found out how to remove the pre-commit hook to allow\n> new\n> > commits. Any tips?\n>\n> Hi Leo,\n>\n> This pre-commit hook requires that all commit messages be at least 10\n> characters long.\n>\n> Let me know if longer commit messages do not solve the problem.\n>\n> Dan\n>\n>\n> >\n> > br.\n> > Leo\n> >\n> >        [[alternative HTML version deleted]]\n> >\n> > _______________________________________________\n> > Bioc-devel at r-project.org mailing list\n> > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> >\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "This solved the issue. Thanks!\n\nLeo\n\nOn Fri, Apr 29, 2011 at 1:16 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n\n> On Thu, Apr 28, 2011 at 2:38 PM, Leo Lahti <leo.lahti at iki.fi> wrote:\n> > Dear B",
       "thread_id": "thread-e0aba87c8b6c",
       "thread_depth": 1,
-      "month": "2011-04"
+      "month": "2011-04",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20110429/22cbf36a/attachment.pl"
+      ]
     },
     {
       "id": "msg-b74363746725",

@@ -83,11 +83,14 @@
       "references": [
         "<CAHA9McNmAALi_ChR1ojLsz1prZSkGupAeOo=bUr5JJjYavX4FA@mail.gmail.com>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140108/cc811c11/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140108/cc811c11/attachment.pl>",
+      "body_plain": "That's the first I've heard of that function. I've always done factor(f),\nbut I can see this as a convenience for tables.\n\nJust added methods for DataFrame and Rle.\n\nMichael\n\n\nOn Wed, Jan 8, 2014 at 11:28 AM, Steve Lianoglou\n<lianoglou.steve at gene.com>wrote:\n\n> Greetings,\n>\n> (surprised this hasn't come up before ... which probably means that it\n> has but I didn't see (or just forgot) it)\n>\n> I was surprised that `droplevels(mcols(something))` didn't work ...\n>\n> We should define such a droplevels generic + droplevels,DataFrame, no?\n>\n> While we're at it, maybe droplevels,Rle for factor Rle's, too?\n>\n> ... and ... can someone get me a coffee? Cream, no sugar.\n>\n> Thanks,\n>\n> -steve\n>\n> --\n> Steve Lianoglou\n> Computational Biologist\n> Genentech\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "That's the first I've heard of that function. I've always done factor(f),\nbut I can see this as a convenience for tables.\n\nJust added methods for DataFrame and Rle.\n\nMichael\n\n\nOn Wed, Jan 8, 2014 at 1",
       "thread_id": "thread-5697f3a58a81",
       "thread_depth": 1,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140108/cc811c11/attachment.pl"
+      ]
     },
     {
       "id": "msg-9a644370f5a5",
@@ -155,11 +158,14 @@
         "<52CFAA3B.3090409@upf.edu>",
         "<52D00925.1040509@fhcrc.org>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140110/9531bbb2/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140110/9531bbb2/attachment.pl>",
+      "body_plain": "Unfortunately, you may want to be careful about making it too robust\n(depending on what you mean).  For example filtering methods could very\nwell be seen as replacing one matrix with a smaller one.  Not sure if these\nmethods use exprs<-, but that is probably how I would do it.\n\nWhat would be better is if in the process of doing the replacement, the\nother slots are harmonized in a relevant way.  That would require row names\non the replacement matrix.\n\nKasper\n\n\nOn Fri, Jan 10, 2014 at 9:52 AM, Martin Morgan <mtmorgan at fhcrc.org> wrote:\n\n> On 01/10/2014 12:07 AM, Maintainer wrote:\n>\n>> dear maintainers of Biobase and lumi,\n>>\n>> this is a question raised from a different thread a few days ago here:\n>>\n>> https://stat.ethz.ch/pipermail/bioc-devel/2014-January/005129.html\n>>\n>> the matrix of genes by samples expression values in an 'ExpressionSet'\n>> object can be accessed and replaced with the \"exprs<-\" method and this\n>> changes automatically the dimension of the 'ExpressionSet' object as\n>> illustrated in the following example:\n>>\n>> library(Biobase)\n>>\n>> data(sample.ExpressionSet)\n>> dim(sample.ExpressionSet)\n>> Features  Samples\n>>        500       26\n>> exprs(sample.ExpressionSet) <- matrix(rnorm(2600), nrow=100)\n>> dim(sample.ExpressionSet)\n>> Features  Samples\n>>        100       26\n>>\n>> however, this does not seem to be happening with 'LumiBatch' objects\n>> which are an extension of 'ExpressionSet' objects:\n>>\n>> library(lumi)\n>>\n>> data(example.lumi)\n>> dim(example.lumi)\n>> Features  Samples\n>>       8000        4\n>> exprs(example.lumi) <- matrix(rnorm(400), nrow=100)\n>> dim(example.lumi) ## NOTE NOW THAT DIMENSION DOES NOT CHANGE!!\n>> Features  Samples\n>>       8000        4\n>>\n>\n> actually, the expression values have been replaced\n>\n> > dim(exprs(example.lumi))\n> [1] 100   4\n>\n> but the object is no longer valid\n>\n> > validObject(example.lumi)\n> Error in validObject(example.lumi) :\n>   invalid class \"LumiBatch\" object: row numbers differ for assayData\n> members\n>\n> This is also true of the ExpressionSet example (the object is no longer\n> valid), it's just that the dims are taken from a different location so\n> reflect the addition.\n>\n> The user should be providing expression values with the same dimensions\n> (and with the same dimnames) as the original. I think the intended use case\n> was more along the lines of replacing the expression matrix with say a\n> transformed version, exprs(x) = log(exprs(x)).\n>\n> Obviously Biobase shouldn't be allowing the user to see an invalid object,\n> but the design of the package does not make it easy to enforce this; I'll\n> work on providing something more robust, but the end result of trying the\n> above assignment will be an error.\n>\n> Martin\n>\n>\n>\n>> a couple of diagnostics are that the expression matrix itself it does\n>> seem to have been replaced:\n>>\n>> dim(exprs(example.lumi))\n>> [1] 100   4\n>>\n>> and the \"exprs<-\" method does not seem to be explicitely defined for\n>> 'LumiBatch' objects:\n>>\n>> showMethods(\"exprs\")\n>> Function: exprs (package Biobase)\n>> object=\"AffyBatch\"\n>> object=\"ExpressionSet\"\n>> object=\"MethyLumiSet\"\n>> object=\"SnpSet\"\n>>\n>> so i guess something is not working at the interaction of\n>> Biobase::exprs<- and LumiBatch-class, whether this should be fixed at\n>> Biobase or lumi, have no idea.\n>>\n>> thanks!\n>> robert.\n>> ps: sessionInfo()\n>>   > sessionInfo()\n>> R version 3.0.2 (2013-09-25)\n>> Platform: x86_64-unknown-linux-gnu (64-bit)\n>>\n>> locale:\n>>    [1] LC_CTYPE=en_US.UTF8       LC_NUMERIC=C\n>> LC_TIME=en_US.UTF8\n>>    [4] LC_COLLATE=en_US.UTF8     LC_MONETARY=en_US.UTF8\n>> LC_MESSAGES=en_US.UTF8\n>>    [7] LC_PAPER=en_US.UTF8       LC_NAME=C                 LC_ADDRESS=C\n>>\n>> [10] LC_TELEPHONE=C            LC_MEASUREMENT=en_US.UTF8\n>> LC_IDENTIFICATION=C\n>>\n>> attached base packages:\n>> [1] parallel  stats     graphics  grDevices utils     datasets  methods\n>>     base\n>>\n>> other attached packages:\n>> [1] lumi_2.14.1        Biobase_2.22.0     BiocGenerics_0.8.0\n>> vimcom_0.9-92\n>> [5] setwidth_1.0-3     colorout_1.0-1\n>>\n>> loaded via a namespace (and not attached):\n>>    [1] affy_1.40.0            affyio_1.30.0          annotate_1.40.0\n>>    [4] AnnotationDbi_1.24.0   base64_1.1             beanplot_1.1\n>>    [7] BiocInstaller_1.12.0   biomaRt_2.18.0         Biostrings_2.30.1\n>> [10] bitops_1.0-6           BSgenome_1.30.0        bumphunter_1.2.0\n>> [13] codetools_0.2-8        colorspace_1.2-4       DBI_0.2-7\n>> [16] digest_0.6.4           doRNG_1.5.5            foreach_1.4.1\n>> [19] genefilter_1.44.0      GenomicFeatures_1.14.2 GenomicRanges_1.14.4\n>> [22] grid_3.0.2             illuminaio_0.4.0       IRanges_1.20.6\n>> [25] iterators_1.0.6        itertools_0.1-1        KernSmooth_2.23-10\n>> [28] lattice_0.20-24        limma_3.18.7           locfit_1.5-9.1\n>> [31] MASS_7.3-29            Matrix_1.1-1.1         matrixStats_0.8.14\n>> [34] mclust_4.2             methylumi_2.8.0        mgcv_1.7-27\n>> [37] minfi_1.8.9            multtest_2.18.0        nleqslv_2.1\n>> [40] nlme_3.1-113           nor1mix_1.1-4          pkgmaker_0.17.4\n>> [43] preprocessCore_1.24.0  RColorBrewer_1.0-5     RCurl_1.95-4.1\n>> [46] registry_0.2           reshape_0.8.4          R.methodsS3_1.6.1\n>> [49] rngtools_1.2.3         Rsamtools_1.14.2       RSQLite_0.11.4\n>> [52] rtracklayer_1.22.0     siggenes_1.36.0        splines_3.0.2\n>> [55] stats4_3.0.2           stringr_0.6.2          survival_2.37-4\n>> [58] tools_3.0.2            XML_3.98-1.1           xtable_1.7-1\n>> [61] XVector_0.2.0          zlibbioc_1.8.0\n>>\n>> ________________________________________________________________________\n>> devteam-bioc mailing list\n>> To unsubscribe from this mailing list send a blank email to\n>> devteam-bioc-leave at lists.fhcrc.org\n>> You can also unsubscribe or change your personal options at\n>> https://lists.fhcrc.org/mailman/listinfo/devteam-bioc\n>>\n>>\n>\n> --\n> Computational Biology / Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N.\n> PO Box 19024 Seattle, WA 98109\n>\n> Location: Arnold Building M1 B861\n> Phone: (206) 667-2793\n>\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Unfortunately, you may want to be careful about making it too robust\n(depending on what you mean).  For example filtering methods could very\nwell be seen as replacing one matrix with a smaller one.  N",
       "thread_id": "thread-ace542634bc3",
       "thread_depth": 2,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140110/9531bbb2/attachment.pl"
+      ]
     },
     {
       "id": "msg-93c0ceec333a",
@@ -195,11 +201,14 @@
         "<52D00925.1040509@fhcrc.org>",
         "<CAC2h7uucuBsNOn4xGFSgM+P7vV1mnNov3eCpiMKRfpVRiMk4Rw@mail.gmail.com>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140110/dce0bfa7/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140110/dce0bfa7/attachment.pl>",
+      "body_plain": "On Fri, Jan 10, 2014 at 9:59 AM, Kasper Daniel Hansen <\nkasperdanielhansen at gmail.com> wrote:\n\n> Unfortunately, you may want to be careful about making it too robust\n> (depending on what you mean).  For example filtering methods could very\n> well be seen as replacing one matrix with a smaller one.  Not sure if these\n> methods use exprs<-, but that is probably how I would do it.\n>\n> What would be better is if in the process of doing the replacement, the\n> other slots are harmonized in a relevant way.  That would require row names\n> on the replacement matrix.\n>\n\nI suspect I also have used exprs<- to change the number of rows of an\nExpressionSet during analyses, when there were no featureData. Not that I\nmind changing, but it may not be unusual \"out there.\"\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "On Fri, Jan 10, 2014 at 9:59 AM, Kasper Daniel Hansen <\nkasperdanielhansen at gmail.com> wrote:\n\n> Unfortunately, you may want to be careful about making it too robust\n> (depending on what you mean). ",
       "thread_id": "thread-ace542634bc3",
       "thread_depth": 3,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140110/dce0bfa7/attachment.pl"
+      ]
     },
     {
       "id": "msg-3749e9f8e4d8",
@@ -216,11 +225,14 @@
         "<CAC2h7uucuBsNOn4xGFSgM+P7vV1mnNov3eCpiMKRfpVRiMk4Rw@mail.gmail.com>",
         "<CAOUXvx6wpYh7mAnjzdikheJFwEWP6HC_kp+G2ghsGnhiB+t8hA@mail.gmail.com>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140110/3f6528bf/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140110/3f6528bf/attachment.pl>",
+      "body_plain": "Robert: The alternative to using exprs<- is to instantiate a new object,\njust copying the old phenodata.\n\nKasper\n\n\nOn Fri, Jan 10, 2014 at 10:58 AM, Levi Waldron <levi.waldron at hunter.cuny.edu\n> wrote:\n\n> On Fri, Jan 10, 2014 at 9:59 AM, Kasper Daniel Hansen <\n> kasperdanielhansen at gmail.com> wrote:\n>\n>> Unfortunately, you may want to be careful about making it too robust\n>> (depending on what you mean).  For example filtering methods could very\n>> well be seen as replacing one matrix with a smaller one.  Not sure if\n>> these\n>> methods use exprs<-, but that is probably how I would do it.\n>>\n>> What would be better is if in the process of doing the replacement, the\n>> other slots are harmonized in a relevant way.  That would require row\n>> names\n>> on the replacement matrix.\n>>\n>\n> I suspect I also have used exprs<- to change the number of rows of an\n> ExpressionSet during analyses, when there were no featureData. Not that I\n> mind changing, but it may not be unusual \"out there.\"\n>\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Robert: The alternative to using exprs<- is to instantiate a new object,\njust copying the old phenodata.\n\nKasper\n\n\nOn Fri, Jan 10, 2014 at 10:58 AM, Levi Waldron <levi.waldron at hunter.cuny.edu\n> wro",
       "thread_id": "thread-ace542634bc3",
       "thread_depth": 4,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140110/3f6528bf/attachment.pl"
+      ]
     },
     {
       "id": "msg-91e9c1db3304",
@@ -261,11 +273,14 @@
         "<CAC2h7uuD0=32dzE8LyNiW=51C0HYiFyajaA=cUsvz95y3hm+mQ@mail.gmail.com>",
         "<52D06D15.8030101@upf.edu>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140110/98a8c3a2/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140110/98a8c3a2/attachment.pl>",
+      "body_plain": "No Robert, in my opinion you did the right thing.  You're right to expect\nthe replacement operation to do the right thing and it is a bug that it\ndoesn't work.\n\nKasper\n\n\nOn Fri, Jan 10, 2014 at 4:58 PM, Robert Castelo <robert.castelo at upf.edu>wrote:\n\n> hi Kasper,\n>\n> you're right. i should have done this upfront, this was too much S4 magic\n> to be true :)\n>\n> cheers,\n> robert.\n>\n>\n>\n> On 1/10/14 5:14 PM, Kasper Daniel Hansen wrote:\n>\n>> Robert: The alternative to using exprs<- is to instantiate a new object,\n>> just copying the old phenodata.\n>>\n>> Kasper\n>>\n>>\n>> On Fri, Jan 10, 2014 at 10:58 AM, Levi Waldron <\n>> levi.waldron at hunter.cuny.edu\n>>\n>>> wrote:\n>>> On Fri, Jan 10, 2014 at 9:59 AM, Kasper Daniel Hansen <\n>>> kasperdanielhansen at gmail.com> wrote:\n>>>\n>>>  Unfortunately, you may want to be careful about making it too robust\n>>>> (depending on what you mean).  For example filtering methods could very\n>>>> well be seen as replacing one matrix with a smaller one.  Not sure if\n>>>> these\n>>>> methods use exprs<-, but that is probably how I would do it.\n>>>>\n>>>> What would be better is if in the process of doing the replacement, the\n>>>> other slots are harmonized in a relevant way.  That would require row\n>>>> names\n>>>> on the replacement matrix.\n>>>>\n>>>>  I suspect I also have used exprs<- to change the number of rows of an\n>>> ExpressionSet during analyses, when there were no featureData. Not that I\n>>> mind changing, but it may not be unusual \"out there.\"\n>>>\n>>>\n>>>          [[alternative HTML version deleted]]\n>>\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "No Robert, in my opinion you did the right thing.  You're right to expect\nthe replacement operation to do the right thing and it is a bug that it\ndoesn't work.\n\nKasper\n\n\nOn Fri, Jan 10, 2014 at 4:58 P",
       "thread_id": "thread-ace542634bc3",
       "thread_depth": 6,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140110/98a8c3a2/attachment.pl"
+      ]
     },
     {
       "id": "msg-6c2429ccf85d",
@@ -277,11 +292,14 @@
       "subject_clean": "[Bioc-devel] S3 method best practices",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140111/852c45c6/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140111/852c45c6/attachment.pl>",
+      "body_plain": "Hi,\n\nDefining S3 methods for our data types is obviously useful, because it\nhelps them work with code that only sees the S3 generic. We should\nencourage the definition of S3 methods whenever there is an existing\ngeneric. Given that, some questions:\n\nIs it still worth it to define the corresponding S4 method? Now that S3\ndispatch accounts for S4 inheritance, I'm not sure there is a functional\ndifference. Obviously, it would be nice if there were one interface for\ndiscovering methods. Right now, we're split between\nselectMethod()/showMethods() and methods().\n\nIn particular, there are many setAs() calls where \"to\" is an S3 class. For\nmany of the basic classes, the methods package already defines a coerce\nmethod that delegates to the as.X S3 generic. So those definitions are\nredundant. For example:\n\n> showMethods(coerce, classes=\"list\")\nFunction: coerce (package methods)\nfrom=\"ANY\", to=\"list\"\nfrom=\"CompressedAtomicList\", to=\"list\"\nfrom=\"Hits\", to=\"list\"\nfrom=\"List\", to=\"list\"\nfrom=\"Rle\", to=\"list\"\n\nThose four methods are unneeded if there is an as.list method. I've noticed\nthat there is no coerce,ANY,data.frame so perhaps that could be added to\nBiocGenerics or requested of the methods package?\n\nFinally, the \"c\" function. There's no need for an S3 method here, since \"c\"\nis a primitive. But there are notes in IRanges-class.R about how the S4\ngeneric for \"c\" does not correctly account for inheritance when the\narguments are named. This is probably a bug in the methods package. But it\ndoes seem that the S3 generic for 'c' correctly dispatches (on its first\nargument) regardless of whether the arguments are named. The only downside\nis that it does not enforce that all arguments in '...' are of the same\ntype.\n\nMichael\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi,\n\nDefining S3 methods for our data types is obviously useful, because it\nhelps them work with code that only sees the S3 generic. We should\nencourage the definition of S3 methods whenever there is ",
       "thread_id": "thread-6c2429ccf85d",
       "thread_depth": 0,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140111/852c45c6/attachment.pl"
+      ]
     },
     {
       "id": "msg-5def1984c1b8",
@@ -314,11 +332,14 @@
         "<CAOQ5NyeRtTcMACyWhpxgdbSQzYXDxYFVK7WyMuTU8a6o9ii8DQ@mail.gmail.com>",
         "<52D1A583.2020002@fhcrc.org>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140111/e7ac04fb/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140111/e7ac04fb/attachment.pl>",
+      "body_plain": "On Sat, Jan 11, 2014 at 12:11 PM, Martin Morgan <mtmorgan at fhcrc.org> wrote:\n\n> Comments inline below. Two bugs and a feature request would seem to be\n> steps in the right direction, but repeat previous ideas that seem not to\n> have gained traction / appropriate notice.\n>\n> bug 1. showMethods apparently ignores the default value for 'where'\n>\n>   http://r.789695.n4.nabble.com/problem-with-showMethods-td4676667.html\n>\n> bug 2. getGeneric(\"c\") has an argument 'x' (no longer necessary?) that\n> interferes with concentration of named S4 instances (illustrated below). I\n> think this has been reported to R-devel before, but I couldn't find the\n> thread...\n>\n> feature request 1. unify S3 and S4 method discovery. I think Martin\n> Maechler has expressed interest in this in the past.\n>\n>\n>\n\n> On 01/11/2014 06:39 AM, Michael Lawrence wrote:\n>\n>> Hi,\n>>\n>> Defining S3 methods for our data types is obviously useful, because it\n>> helps them work with code that only sees the S3 generic. We should\n>> encourage the definition of S3 methods whenever there is an existing\n>> generic. Given that, some questions:\n>>\n>> Is it still worth it to define the corresponding S4 method? Now that S3\n>>\n>\n> I think the 'best practices' are laid out in the ?Methods documentation\n> under 'Methods for S3 Generic Functions' which suggests (and provides\n> justification for) writing both S3 and S4 methods.\n>\n>\nYes, thanks, I see: someone could override my S3 method simply by defining\nan S4 method on a superclass. Of course, if we all decided to *only* use S3\nmethods for S3 generics, this would not be a problem. But there's no way to\nenforce that, so we're stuck with the overhead of defining so many\nfundamental methods *twice*. Seems like the methods package could somehow\nbe smart enough to define (and handle the namespacing) of an S3 method when\ndefining a method on an S4 generic that has a corresponding S3 generic\n(obeying certain constraints, like the S4 generic only dispatching on the\nargument considered by S3).\n\n\n>\n>  dispatch accounts for S4 inheritance, I'm not sure there is a functional\n>> difference. Obviously, it would be nice if there were one interface for\n>> discovering methods. Right now, we're split between\n>> selectMethod()/showMethods() and methods().\n>>\n>\n> This really does seem unfortunate and not impossible to correct, but the\n> current reality is that discovering / seeking help requires facility with\n> both S3 and S4 approaches; I believe Martin Maechler solicited comments\n> about this on the R-devel mailing list several years ago, so there is some\n> hope for progress. Providing users with consistent guidance is helpful. For\n> showMethods this includes using where=search() when the command is invoked.\n> For help I find method?\"coerc<tab>\" or ?\"coer<tab>\" to be helpful. I don't\n> know how well Rstudio plays with this, though.\n>\n>\n>  In particular, there are many setAs() calls where \"to\" is an S3 class. For\n>> many of the basic classes, the methods package already defines a coerce\n>> method that delegates to the as.X S3 generic. So those definitions are\n>> redundant. For example:\n>>\n>>  showMethods(coerce, classes=\"list\")\n>>>\n>> Function: coerce (package methods)\n>> from=\"ANY\", to=\"list\"\n>> from=\"CompressedAtomicList\", to=\"list\"\n>> from=\"Hits\", to=\"list\"\n>> from=\"List\", to=\"list\"\n>> from=\"Rle\", to=\"list\"\n>>\n>> Those four methods are unneeded if there is an as.list method. I've\n>> noticed\n>> that there is no coerce,ANY,data.frame so perhaps that could be added to\n>> BiocGenerics or requested of the methods package?\n>>\n>\n> I think that the need for both S3 and S4 methods are covered by the\n> ?Methods documentation mentioned above?\n>\n>\n>  Finally, the \"c\" function. There's no need for an S3 method here, since\n>> \"c\"\n>> is a primitive. But there are notes in IRanges-class.R about how the S4\n>> generic for \"c\" does not correctly account for inheritance when the\n>> arguments are named. This is probably a bug in the methods package. But it\n>> does seem that the S3 generic for 'c' correctly dispatches (on its first\n>> argument) regardless of whether the arguments are named. The only downside\n>> is that it does not enforce that all arguments in '...' are of the same\n>> type.\n>>\n>\n> The challenge with names and 'c' is that it can disrupt order of the\n> concatenation\n>\n> > c(IRanges(1, 2), IRanges(2, 3))\n> IRanges of length 2\n>     start end width\n> [1]     1   2     2\n> [2]     2   3     2\n> > c(a=IRanges(1, 2), IRanges(2, 3))\n> IRanges of length 2\n>     start end width\n> [1]     2   3     2\n> [2]     1   2     2\n> > base::c(a=IRanges(1, 2), IRanges(2, 3))\n> IRanges of length 2\n>     start end width\n> [1]     2   3     2\n> [2]     1   2     2\n>\n>\nYea, there are multiple problems with \"c\". Was just a thought that we could\ndefine S3 methods, since the S3 generic does not have the \"x\" artifact. But\nit's a bug in the methods package that should be addressed. Might be hard\nthough, considering it's a primitive, and the C-level dispatch is likely\nnot smart enough to correctly handle variadic generics (is 'c' the only one\nin this category?).\n\n\n\n\n> Martin Morgan\n>\n>\n>> Michael\n>>\n>>         [[alternative HTML version deleted]]\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>>\n>\n> --\n> Computational Biology / Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N.\n> PO Box 19024 Seattle, WA 98109\n>\n> Location: Arnold Building M1 B861\n> Phone: (206) 667-2793\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "On Sat, Jan 11, 2014 at 12:11 PM, Martin Morgan <mtmorgan at fhcrc.org> wrote:\n\n> Comments inline below. Two bugs and a feature request would seem to be\n> steps in the right direction, but repeat prev",
       "thread_id": "thread-6c2429ccf85d",
       "thread_depth": 2,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140111/e7ac04fb/attachment.pl"
+      ]
     },
     {
       "id": "msg-44a0e6e81753",
@@ -330,11 +351,14 @@
       "subject_clean": "[Bioc-devel] no method for coercing this S4 class to a vector",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140112/fb8f9442/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140112/fb8f9442/attachment.pl>",
+      "body_plain": "Dear guys,\n\nI want to convert S4 object into list.\n\nWhen I perform the following on RStudio, the expected result can be obtained.\n\nx <- as.list(hgu133aENTREZID)\n#hgu133aENTREZID is a S4 object, after the above command, x can be converted into list.\n\nWhen I try to build above command into an R package and check it, there is an error during the checking phase.\n\nError in as.list.default((hgu133aENTREZID)) :\n  no method for coercing this S4 class to a vector\nCalls: -> as.list -> as.list.default\nExecution halted\n   \nWhy I can not convert S4 into list during the checking package.\n\n\nAny help would be appreciated.\n\n\n\n\n\n\nturinglife\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Dear guys,\n\nI want to convert S4 object into list.\n\nWhen I perform the following on RStudio, the expected result can be obtained.\n\nx <- as.list(hgu133aENTREZID)\n#hgu133aENTREZID is a S4 object, after ",
       "thread_id": "thread-44a0e6e81753",
       "thread_depth": 0,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140112/fb8f9442/attachment.pl"
+      ]
     },
     {
       "id": "msg-888bc37a1bf1",
@@ -348,11 +372,14 @@
       "references": [
         "<201401121750272573264@gmail.com>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140112/6480f6b4/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140112/6480f6b4/attachment.pl>",
+      "body_plain": "This is because your package NAMESPACE does not import the S4 generic for\nas.list. Since you're relying on S4 methods for as.list from AnnotationDbi,\nadd importMethodsFrom(AnnotationDbi, as.list).\n\n\nOn Sat, Jan 11, 2014 at 11:50 PM, turinglife <turinglife at gmail.com> wrote:\n\n>\n> Dear guys,\n>\n> I want to convert S4 object into list.\n>\n> When I perform the following on RStudio, the expected result can be\n> obtained.\n>\n> x <- as.list(hgu133aENTREZID)\n> #hgu133aENTREZID is a S4 object, after the above command, x can be\n> converted into list.\n>\n> When I try to build above command into an R package and check it, there is\n> an error during the checking phase.\n>\n> Error in as.list.default((hgu133aENTREZID)) :\n>   no method for coercing this S4 class to a vector\n> Calls: -> as.list -> as.list.default\n> Execution halted\n>\n> Why I can not convert S4 into list during the checking package.\n>\n>\n> Any help would be appreciated.\n>\n>\n>\n>\n>\n>\n> turinglife\n>         [[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "This is because your package NAMESPACE does not import the S4 generic for\nas.list. Since you're relying on S4 methods for as.list from AnnotationDbi,\nadd importMethodsFrom(AnnotationDbi, as.list).\n\n\nO",
       "thread_id": "thread-44a0e6e81753",
       "thread_depth": 1,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140112/6480f6b4/attachment.pl"
+      ]
     },
     {
       "id": "msg-a9a930cbaa9b",
@@ -364,11 +391,14 @@
       "subject_clean": "[Bioc-devel] seq*apply deprecation",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140112/be9696a6/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140112/be9696a6/attachment.pl>",
+      "body_plain": "Hi,\n\n\nIt may be time to deprecate the seq*apply family of functions, including\nseqapply, mseqapply, tseqapply, seqby and seqsplit. These are ancient\nfunctions named in referece to the \"Sequence\" class, now called \"Vector\".\nIt would seem better for the user to write: asList(lapply(...)) instead of\ncoming up with an alias for that. For readability, we should probably\nexport asList() as an alias for as(x, \"List\"), which I just cleaned up.\n\nThere is one caveat though: mseqapply has been particularly useful, because\nit delegates to mapply_List, which is smart enough to handle any vector\nargument in \"...\". The mapply,List method of course restricts everything to\nList. We should probably export mapply_List, probably with a better name.\nSuggestions?\n\nMichael\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi,\n\n\nIt may be time to deprecate the seq*apply family of functions, including\nseqapply, mseqapply, tseqapply, seqby and seqsplit. These are ancient\nfunctions named in referece to the \"Sequence\" class",
       "thread_id": "thread-a9a930cbaa9b",
       "thread_depth": 0,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140112/be9696a6/attachment.pl"
+      ]
     },
     {
       "id": "msg-76b7d23fadab",
@@ -383,11 +413,14 @@
         "<201401121750272573264@gmail.com>",
         "<CAOQ5NycGv=iiVqpat2ZtR0bHy5o9UoC6snZR=GgiP5X7qnSW0w@mail.gmail.com>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140113/41d49dd0/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140113/41d49dd0/attachment.pl>",
+      "body_plain": "Hi Michael,\n\nMany thanks for helping.\n\n\nAs your suggestion, i added \"importMethodsFrom(AnnotationDbi, as.list)\" in NAMESPACE and added \"Depends: AnnotationDbi\" in DESCRIPTION.\nFinally, it worked correctly.\n\n\n\n\n\nturinglife\n\nFrom: Michael Lawrence\nDate: 2014-01-12 22:12\nTo: turinglife\nCC: bioc-devel\nSubject: Re: [Bioc-devel] no method for coercing this S4 class to a vector\nThis is because your package NAMESPACE does not import the S4 generic for as.list. Since you're relying on S4 methods for as.list from AnnotationDbi, add importMethodsFrom(AnnotationDbi, as.list).\n\n\n\n\nOn Sat, Jan 11, 2014 at 11:50 PM, turinglife <turinglife at gmail.com> wrote:\n\n\nDear guys,\n\nI want to convert S4 object into list.\n\nWhen I perform the following on RStudio, the expected result can be obtained.\n\nx <- as.list(hgu133aENTREZID)\n#hgu133aENTREZID is a S4 object, after the above command, x can be converted into list.\n\nWhen I try to build above command into an R package and check it, there is an error during the checking phase.\n\nError in as.list.default((hgu133aENTREZID)) :\n  no method for coercing this S4 class to a vector\nCalls: -> as.list -> as.list.default\nExecution halted\n\nWhy I can not convert S4 into list during the checking package.\n\n\nAny help would be appreciated.\n\n\n\n\n\n\nturinglife\n        [[alternative HTML version deleted]]\n\n_______________________________________________\nBioc-devel at r-project.org mailing list\nhttps://stat.ethz.ch/mailman/listinfo/bioc-devel\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi Michael,\n\nMany thanks for helping.\n\n\nAs your suggestion, i added \"importMethodsFrom(AnnotationDbi, as.list)\" in NAMESPACE and added \"Depends: AnnotationDbi\" in DESCRIPTION.\nFinally, it worked corre",
       "thread_id": "thread-44a0e6e81753",
       "thread_depth": 2,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140113/41d49dd0/attachment.pl"
+      ]
     },
     {
       "id": "msg-f676bec72e98",
@@ -455,11 +488,14 @@
       "subject_clean": "[Bioc-devel] Willing To Contribute",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140122/7502c4da/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140122/7502c4da/attachment.pl>",
+      "body_plain": "Hello,\n\nI am Hasil Sharma from Birla Institute of Technology and Science, Pilani,\nIndia. I am interested in Data Mining and Data Science and had recently\nlearnt R programming language . I would really like to contribute to your\norganization and enhance my R programming skills. Apart from R, I know\npython, C, C++ and Java as well. If any project related to Data Science is\navailable I am very much willing to contribute to it.\n\n-- \nRegards,\n\nHasil Sharma\nVice Chair, Association For Computing Machinery, BITS Pilani Chapter\nWeb Team Lead, BITS Embryo, Pilani\nWebmaster, Chemical Engineering Association, BITS Pilani\n\n*Birla Instit**ute of Technology & Science,* Pilani\n\nPilani Campus, Rajasthan 333031, INDIA\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hello,\n\nI am Hasil Sharma from Birla Institute of Technology and Science, Pilani,\nIndia. I am interested in Data Mining and Data Science and had recently\nlearnt R programming language . I would really",
       "thread_id": "thread-c4358bdf3a33",
       "thread_depth": 0,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140122/7502c4da/attachment.pl"
+      ]
     },
     {
       "id": "msg-6de35fbe5d91",
@@ -471,11 +507,14 @@
       "subject_clean": "[Bioc-devel] Summer Internship at Genentech",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140122/39a854a4/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140122/39a854a4/attachment.pl>",
+      "body_plain": "Dear Bioconductor Developers,\n\nWe are excited to announce openings at Genentech for several summer\ninternship positions in the Department of Bioinformatics and Computational\nBiology.  An internship at Genentech is a great way to get exposure to\nscientific research in an industry setting.\n\nFor more details on the openings, please visit the following postings:\n\nhttp://www.gene.com/careers/detail/00428207/Intern-Bioinformatics-PhD-Student\n\nhttp://www.gene.com/careers/detail/00427842/Intern-Bioinformatics\n\nAll interested candidates should send their CV to larson.jessica at gene.com or\napply online:\n\n\nThanks,\nJessica\n\n\nJessica Larson, Ph.D\nDepartment of Bioinformatics and Computational Biology\nGenentech, Inc.\nlarson.jessica at gene.com\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Dear Bioconductor Developers,\n\nWe are excited to announce openings at Genentech for several summer\ninternship positions in the Department of Bioinformatics and Computational\nBiology.  An internship at",
       "thread_id": "thread-6de35fbe5d91",
       "thread_depth": 0,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140122/39a854a4/attachment.pl"
+      ]
     },
     {
       "id": "msg-4862f991a23e",
@@ -524,11 +563,14 @@
         "<CAOQ5Nyf5ZwZs75bsXU_+pT_=QvjYOji0Rkyr6mHV5jg+UoB1XQ@mail.gmail.com>",
         "<52E0384C.9000701@fhcrc.org>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140122/07177f73/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140122/07177f73/attachment.pl>",
+      "body_plain": "On Wed, Jan 22, 2014 at 1:29 PM, Hervé Pagès <hpages at fhcrc.org> wrote:\n\n> Hi Michael,\n>\n>\n> On 01/12/2014 05:16 AM, Michael Lawrence wrote:\n>\n>> Hi,\n>>\n>>\n>> It may be time to deprecate the seq*apply family of functions, including\n>> seqapply, mseqapply, tseqapply, seqby and seqsplit. These are ancient\n>> functions named in referece to the \"Sequence\" class, now called \"Vector\".\n>> It would seem better for the user to write: asList(lapply(...)) instead of\n>> coming up with an alias for that. For readability, we should probably\n>> export asList() as an alias for as(x, \"List\"), which I just cleaned up.\n>>\n>\n> Sounds good to me.\n>\n>\n>\n>> There is one caveat though: mseqapply has been particularly useful,\n>> because\n>> it delegates to mapply_List, which is smart enough to handle any vector\n>> argument in \"...\". The mapply,List method of course restricts everything\n>> to\n>> List. We should probably export mapply_List, probably with a better name.\n>> Suggestions?\n>>\n>\n> Why do we need all this?\n>\n\nNeat. Presumably due to this patch:\n\ncommit 42139699d91a34c401eedd36db62716a607d0b06\nAuthor: maechler <maechler at 00db46b3-68df-0310-9c12-caf00c1e9a41>\nDate:   Wed Nov 28 10:31:42 2012 +0000\n\n    mapply(F, <S4>) now works thanks to a version of Herve's patch\n\nWe should do away with mapply_List now that this is part of released R.\n\n\n\n>\n>   x <- RleList(11:14, 3:1)\n>\n> Then:\n>\n>   > IRanges:::mapply_List(function(a, b) {a+b}, x, 10)\n>   [[1]]\n>   numeric-Rle of length 4 with 4 runs\n>     Lengths:  1  1  1  1\n>     Values : 21 22 23 24\n>\n>   [[2]]\n>   numeric-Rle of length 3 with 3 runs\n>     Lengths:  1  1  1\n>     Values : 13 12 11\n>\n> But also:\n>\n>   > base::mapply(function(a, b) {a+b}, x, 10)\n>   [[1]]\n>   numeric-Rle of length 4 with 4 runs\n>     Lengths:  1  1  1  1\n>     Values : 21 22 23 24\n>\n>   [[2]]\n>   numeric-Rle of length 3 with 3 runs\n>     Lengths:  1  1  1\n>     Values : 13 12 11\n>\n> What am I missing?\n>\n> Thanks,\n> H.\n>\n>\n>> Michael\n>>\n>>         [[alternative HTML version deleted]]\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>>\n> --\n> Hervé Pagès\n>\n> Program in Computational Biology\n> Division of Public Health Sciences\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N, M1-B514\n> P.O. Box 19024\n> Seattle, WA 98109-1024\n>\n> E-mail: hpages at fhcrc.org\n> Phone:  (206) 667-5791\n> Fax:    (206) 667-1319\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "On Wed, Jan 22, 2014 at 1:29 PM, Hervé Pagès <hpages at fhcrc.org> wrote:\n\n> Hi Michael,\n>\n>\n> On 01/12/2014 05:16 AM, Michael Lawrence wrote:\n>\n>> Hi,\n>>\n>>\n>> It may be time to deprecate the seq*app",
       "thread_id": "thread-a9a930cbaa9b",
       "thread_depth": 2,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140122/07177f73/attachment.pl"
+      ]
     },
     {
       "id": "msg-3ec91424cf8c",
@@ -565,11 +607,14 @@
         "<CAOQ5NycZy3MhFB5+WGGqYwYXG4cWOH-RhK4dnSSVVP6utn1gVQ@mail.gmail.com>",
         "<52E058B2.4000809@fhcrc.org>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140122/3b5a0600/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140122/3b5a0600/attachment.pl>",
+      "body_plain": "Sounds good. But who is \"she\"?\n\n\nOn Wed, Jan 22, 2014 at 3:48 PM, Hervé Pagès <hpages at fhcrc.org> wrote:\n\n> On 01/22/2014 03:02 PM, Michael Lawrence wrote:\n>\n>>\n>>\n>>\n>> On Wed, Jan 22, 2014 at 1:29 PM, Hervé Pagès <hpages at fhcrc.org\n>> <mailto:hpages at fhcrc.org>> wrote:\n>>\n>>     Hi Michael,\n>>\n>>\n>>     On 01/12/2014 05:16 AM, Michael Lawrence wrote:\n>>\n>>         Hi,\n>>\n>>\n>>         It may be time to deprecate the seq*apply family of functions,\n>>         including\n>>         seqapply, mseqapply, tseqapply, seqby and seqsplit. These are\n>>         ancient\n>>         functions named in referece to the \"Sequence\" class, now called\n>>         \"Vector\".\n>>         It would seem better for the user to write: asList(lapply(...))\n>>         instead of\n>>         coming up with an alias for that. For readability, we should\n>>         probably\n>>         export asList() as an alias for as(x, \"List\"), which I just\n>>         cleaned up.\n>>\n>>\n>>     Sounds good to me.\n>>\n>>\n>>\n>>         There is one caveat though: mseqapply has been particularly\n>>         useful, because\n>>         it delegates to mapply_List, which is smart enough to handle any\n>>         vector\n>>         argument in \"...\". The mapply,List method of course restricts\n>>         everything to\n>>         List. We should probably export mapply_List, probably with a\n>>         better name.\n>>         Suggestions?\n>>\n>>\n>>     Why do we need all this?\n>>\n>>\n>> Neat. Presumably due to this patch:\n>>\n>> commit 42139699d91a34c401eedd36db62716a607d0b06\n>> Author: maechler <maechler at 00db46b3-68df-0310-9c12-caf00c1e9a41>\n>> Date:   Wed Nov 28 10:31:42 2012 +0000\n>>\n>>      mapply(F, <S4>) now works thanks to a version of Herve's patch\n>>\n>> We should do away with mapply_List now that this is part of released R.\n>>\n>\n> Furthermore, maybe she should also remove the mapply() S4 generic from\n> the BiocGenerics package. It's not needed anymore. base::mapply() should\n> work out-of-the-box on any object for which length() and [[ are\n> implemented.\n>\n> H.\n>\n>\n>>\n>>        x <- RleList(11:14, 3:1)\n>>\n>>     Then:\n>>\n>>        > IRanges:::mapply_List(__function(a, b) {a+b}, x, 10)\n>>\n>>        [[1]]\n>>        numeric-Rle of length 4 with 4 runs\n>>          Lengths:  1  1  1  1\n>>          Values : 21 22 23 24\n>>\n>>        [[2]]\n>>        numeric-Rle of length 3 with 3 runs\n>>          Lengths:  1  1  1\n>>          Values : 13 12 11\n>>\n>>     But also:\n>>\n>>        > base::mapply(function(a, b) {a+b}, x, 10)\n>>        [[1]]\n>>        numeric-Rle of length 4 with 4 runs\n>>          Lengths:  1  1  1  1\n>>          Values : 21 22 23 24\n>>\n>>        [[2]]\n>>        numeric-Rle of length 3 with 3 runs\n>>          Lengths:  1  1  1\n>>          Values : 13 12 11\n>>\n>>     What am I missing?\n>>\n>>     Thanks,\n>>     H.\n>>\n>>\n>>         Michael\n>>\n>>                  [[alternative HTML version deleted]]\n>>\n>>         _________________________________________________\n>>         Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>\n>>         mailing list\n>>         https://stat.ethz.ch/mailman/__listinfo/bioc-devel\n>>\n>>         <https://stat.ethz.ch/mailman/listinfo/bioc-devel>\n>>\n>>\n>>     --\n>>     Hervé Pagès\n>>\n>>     Program in Computational Biology\n>>     Division of Public Health Sciences\n>>     Fred Hutchinson Cancer Research Center\n>>     1100 Fairview Ave. N, M1-B514\n>>     P.O. Box 19024\n>>     Seattle, WA 98109-1024\n>>\n>>     E-mail: hpages at fhcrc.org <mailto:hpages at fhcrc.org>\n>>     Phone: (206) 667-5791 <tel:%28206%29%20667-5791>\n>>     Fax: (206) 667-1319 <tel:%28206%29%20667-1319>\n>>\n>>\n>>\n> --\n> Hervé Pagès\n>\n> Program in Computational Biology\n> Division of Public Health Sciences\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N, M1-B514\n> P.O. Box 19024\n> Seattle, WA 98109-1024\n>\n> E-mail: hpages at fhcrc.org\n> Phone:  (206) 667-5791\n> Fax:    (206) 667-1319\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Sounds good. But who is \"she\"?\n\n\nOn Wed, Jan 22, 2014 at 3:48 PM, Hervé Pagès <hpages at fhcrc.org> wrote:\n\n> On 01/22/2014 03:02 PM, Michael Lawrence wrote:\n>\n>>\n>>\n>>\n>> On Wed, Jan 22, 2014 at 1:29",
       "thread_id": "thread-a9a930cbaa9b",
       "thread_depth": 4,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140122/3b5a0600/attachment.pl"
+      ]
     },
     {
       "id": "msg-d6e8b9ada3cc",
@@ -637,11 +682,14 @@
       "references": [
         "<d8743f0676fe423c800efec9e65db18a@BY2PR01MB041.prod.exchangelabs.com>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140123/7a0a4079/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140123/7a0a4079/attachment.pl>",
+      "body_plain": "Dario, you should really report these issues directly to the package\nmaintainer.  At least cc them on posts like this.\n\nKasper\n\n\nOn Thu, Jan 23, 2014 at 1:00 AM, Dario Strbenac\n<dstr7320 at uni.sydney.edu.au>wrote:\n\n> Hello,\n>\n> In the documentation, it is described as :\n>\n> C1Mean        The mean of each transcript within Condition 1 (adjusted by\n> normalization factors).\n>\n> C2Mean        The mean of each transcript within Condition 2 (adjusted by\n> normalization factors).\n>\n> However, when I look at it :\n>\n> > str(test32vs24$C1Mean)\n> List of 3\n>  $ : Named num [1:43503] 0.301 2.078 6.217 3.035 0.239 ...\n>   ..- attr(*, \"names\")= chr [1:43503] \"comp10246_c0_seq1\"\n> \"comp102905_c0_seq1\" \"comp10314_c0_seq1\" \"comp10323_c0_seq1\" ...\n>  $ : Named num [1:28426] 2.99 1.62 2.61 0 0 ...\n>   ..- attr(*, \"names\")= chr [1:28426] \"comp10084_c0_seq1\"\n> \"comp10094_c0_seq1\" \"comp10154_c0_seq1\" \"comp10161_c0_seq1\" ...\n>  $ : Named num [1:118329] 2385.71 419.68 2926.13 7.39 6.39 ...\n>   ..- attr(*, \"names\")= chr [1:118329] \"comp139431_c0_seq1\"\n> \"comp139431_c0_seq2\" \"comp139431_c0_seq3\" \"comp156500_c0_seq1\" ...\n>\n> Presumably, the data is split into the three lists because of NgVector. It\n> would be better if it was returned as one vector, in the same order as the\n> input data. That would make it consistent with how PostFC and GetPP\n> functions return their data.\n>\n> Hopefully in the future, there can be a topTable function, like in limma\n> and edgeR, that puts all of these results nicely into a data frame.\n>\n> --------------------------------------\n> Dario Strbenac\n> PhD Student\n> University of Sydney\n> Camperdown NSW 2050\n> Australia\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Dario, you should really report these issues directly to the package\nmaintainer.  At least cc them on posts like this.\n\nKasper\n\n\nOn Thu, Jan 23, 2014 at 1:00 AM, Dario Strbenac\n<dstr7320 at uni.sydney",
       "thread_id": "thread-45160709c050",
       "thread_depth": 1,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140123/7a0a4079/attachment.pl"
+      ]
     },
     {
       "id": "msg-760011cfc150",
@@ -653,11 +701,14 @@
       "subject_clean": "[Bioc-devel] Problem running Perl script with R-devel",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140127/0954492f/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140127/0954492f/attachment.pl>",
+      "body_plain": "Hi,\n\nI am testing out my newly released COHCAP package:\n\nhttp://bioconductor.org/packages/devel/bioc/html/COHCAP.html\n\nI didn't see any warnings when I created the package, and there weren't any warnings when Bioconductor tests the package (on any of the operating systems).\n\nHowever, I have been testing the package using R-devel (since the package is a currently only available as a devel package, it looks like I can only use lazy loading with R-devel), and I've noticed that the Perl command (creating the .wig files within the function COHCAP.site()) doesn't work properly for either the truncated demo dataset that is included with the package or the entire dataset that I am trying to use to test the package.\n\nTo be clear, I can download COHCAP and COHCAPanno and use R CMD INSTALL to run the package in the normal version of R (v.3.0.2), and the package runs just fine with both the truncated and full datasets.\n\nI am trying to provide users with instructions on how to use the package while it is only available as a devel version.  I'm trying to make the instructions as simple as possible, so I was hoping to use the lazy loading via biocLite(\"COHCAP\").\n\nI am running R-devel on Windows (v.3.1.0 pre-release) and the system() command script is existing with status 2.\n\nDoes anyone know what is causing this error to specifically occur with R-devel?\n\nThanks,\nCharles\n\n\n\n---------------------------------------------------------------------\n*SECURITY/CONFIDENTIALITY WARNING:\nThis message and any attachments are intended solely for the individual or entity to which they are addressed. This communication may contain information that is privileged, confidential, or exempt from disclosure under applicable law (e.g., personal health information, research data, financial information). Because this e-mail has been sent without encryption, individuals other than the intended recipient may be able to view the information, forward it to others or tamper with the information without the knowledge or consent of the sender. If you are not the intended recipient, or the employee or person responsible for delivering the message to the intended recipient, any dissemination, distribution or copying of the communication is strictly prohibited. If you received the communication in error, please notify the sender immediately by replying to this message and deleting the message and any accompanying files from your system. If, due to the security risks, you do not wish to receive further communications via e-mail, please reply to this message and inform the sender that you do not wish to receive further e-mail from the sender. (fpc5p)\n---------------------------------------------------------------------\n\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi,\n\nI am testing out my newly released COHCAP package:\n\nhttp://bioconductor.org/packages/devel/bioc/html/COHCAP.html\n\nI didn't see any warnings when I created the package, and there weren't any warni",
       "thread_id": "thread-760011cfc150",
       "thread_depth": 0,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140127/0954492f/attachment.pl"
+      ]
     },
     {
       "id": "msg-64c6c26bac75",
@@ -989,11 +1040,14 @@
         "<52EA15B1.8080004@embl.de>",
         "<203468114.1447458.1391098313416.JavaMail.root@fhcrc.org>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140130/219ea19c/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140130/219ea19c/attachment.pl>",
+      "body_plain": "The svn-git bridge sounds great.  I'll look forward to playing with it in\nthe next week\n\nKasper\n\n\nOn Thu, Jan 30, 2014 at 11:11 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n\n> Hi Julian,\n>\n> ----- Original Message -----\n> > From: \"Julian Gehring\" <julian.gehring at embl.de>\n> > To: \"Dan Tenenbaum\" <dtenenba at fhcrc.org>\n> > Cc: bioc-devel at r-project.org\n> > Sent: Thursday, January 30, 2014 1:04:49 AM\n> > Subject: Re: [Bioc-devel] Bioconductor git-svn bridge is available\n> >\n> > Hi Dan,\n> >\n> > This looks impressive!  Will this also work for experimental data\n> > packages which are split in two parts in the bioc SVN, separating the\n> > external data from the actual package?\n> >\n>\n>\n> We have no plans for that at this time.\n>\n> Dan\n>\n>\n> > Best wishes\n> > Julian\n> >\n> >\n> > On 01/29/2014 09:32 PM, Dan Tenenbaum wrote:\n> > > Hi all,\n> > >\n> > > We've made available a bridge between Github and the Bioconductor\n> > > Subversion repository.\n> > > It allows you to do all your work in git and github. Git pushes\n> > > will propagate to our Subversion server, and SVN commits will\n> > > propagate back to git.\n> > >\n> > > If you like git, and the social coding features of Github (issue\n> > > tracking, contributing code via pull requests, etc.), you can\n> > > check out the bridge, it's documented here:\n> > >\n> > > http://bioconductor.org/developers/how-to/git-svn/\n> > >\n> > > If you like Subversion, and/or you don't know what git is, you\n> > > don't need to do anything. You can continue to use Subversion like\n> > > you have been for maintaining your Bioconductor packages.\n> > >\n> > > This is new software so there may be issues. If you have questions\n> > > or problems, please email the bioc-devel list.\n> > >\n> > > Thanks!\n> > > Dan\n> > >\n> > > _______________________________________________\n> > > Bioc-devel at r-project.org mailing list\n> > > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> > >\n> >\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "The svn-git bridge sounds great.  I'll look forward to playing with it in\nthe next week\n\nKasper\n\n\nOn Thu, Jan 30, 2014 at 11:11 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n\n> Hi Julian,\n>\n> -----",
       "thread_id": "thread-6ed12fb7db1c",
       "thread_depth": 3,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140130/219ea19c/attachment.pl"
+      ]
     },
     {
       "id": "msg-fde5b4063d15",
@@ -1023,11 +1077,14 @@
       "references": [
         "<CAHA9McPG=_NHyove7BpepT=EESvDpWYXc=wXyjX1wC42KO0uLA@mail.gmail.com>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140131/76f1e5c1/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140131/76f1e5c1/attachment.pl>",
+      "body_plain": "Honestly, I can't think of a good reason for ever considering strand, but\ndropping the argument seems undesirable. Given that VRanges extends\nGRanges, it should present a super-set of the interface. I'm a little wary\nabout changing the default, which is kept consisent across all of\nGenomicRanges. At the very least, we should probably enforce\nignore.strand=TRUE, but that would be annoying.\n\nThe reason VRanges has \"+\" strand is that the alt/ref nucleotides are\nconsistent with the \"+\" strand on the reference. But for overlap\noperations, we wish it was \"*\". Perhaps this means we should enforce \"*\"\ninstead of \"+\" as the strand on VRanges? After all, the strand is\nirrelevant, and it's a simple matter of documenting that the alleles are on\nthe positive strand (as is the convention). The getSeq() functions treat\n\"*\" as \"+\" already, I think.\n\nMichael\n\nOn Fri, Jan 31, 2014 at 12:09 AM, Steve Lianoglou\n<lianoglou.steve at gene.com>wrote:\n\n> Comrades,\n>\n> Forgive my n00briety in these matters, as I've only recently starting\n> dealing w/ genomic variants, but since the strand of a VRanges object\n> is always constrained to be `+`, does it make sense for the strand of\n> a potential non-VRanges 'subject' object (like a GRanges) be\n> considered when looking for overlaps between the two?\n>\n> For instance, assume we load up the VRanges object returned by\n> `example(vr)`, which results in to ranges\n>\n> Then:\n>\n> R> gr <- as(vr, 'GRanges')\n> R> strand(gr) <- c('+', '-')\n> R> length(subsetByOverlaps(vr, gr))\n> [1] 1\n>\n> Only the first variant from `vr` is returned, unless we explicitly set\n> ignore.strand=TRUE:\n>\n> R> length(subsetByOverlaps(vr, gr, ignore.strand=TRUE))\n> [1] 2\n>\n> Wouldn't it make more sense for these overlap (and match) methods to\n> default to ignore.strand=TRUE when either the query (and maybe even\n> the subject) are a VRanges object, even if the other is a GRanges?\n>\n> Thanks,\n> -steve\n>\n> --\n> Steve Lianoglou\n> Computational Biologist\n> Genentech\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Honestly, I can't think of a good reason for ever considering strand, but\ndropping the argument seems undesirable. Given that VRanges extends\nGRanges, it should present a super-set of the interface. I",
       "thread_id": "thread-fde5b4063d15",
       "thread_depth": 1,
-      "month": "2014-01"
+      "month": "2014-01",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20140131/76f1e5c1/attachment.pl"
+      ]
     }
   ],
   "threads": [

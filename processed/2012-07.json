@@ -81,11 +81,14 @@
       "references": [
         "<CAC2h7uvm5MOG3NMEifzzZsbqNBfWe26_4Gkrvh3tbaAupa_6MQ@mail.gmail.com>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120706/6f7eaa68/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120706/6f7eaa68/attachment.pl>",
+      "body_plain": "Hi Kasper,\n\nI think Herve was going to look into some optimizations to the lapply\nbehavior over the next release cycle. But I like the idea of leveraging\nparallelism better. The user would specify options(mc.cores=), so that we\ncould avoid having to pass down more arguments.\n\nIn the bigger picture, it would be nice if there were some general way for\nthe user to request parallelism. Setting options(mc.cores=) is a nice\napproach, but it is specific to mclapply. I'm aware that mclapply has the\nadvantage of the slaves inheriting the session from the master, but often\nmore than one computer is available for a task. I admit that in this case\nof overlap computation, the network overhead may not be worth it.  But\nmethods that e.g. operate over a BamFileList might benefit a lot.\n\nI wonder if the general clusterApply mechanism could be leveraged. The user\nwould specify a global default cluster using setDefaultCluster().\nCurrently, the cluster implementations beyond the mclapply forking is\npretty limited. One possible direction would be to implement a parallel\npackage backend using the new CRAN BatchJobs package, which supports\nsubmitting jobs to LSF, SSH, etc, clusters. That API is currently\nasynchronous, so some work would need to be done to make it behave\nsynchronously.\n\nMichael\n\nOn Fri, Jul 6, 2012 at 8:51 AM, Kasper Daniel Hansen <\nkasperdanielhansen at gmail.com> wrote:\n\n> This is about the findOverlaps method for (query = \"GenomicRanges\",\n> subject = \"GenomicRanges\") in GenomicRanges.\n>\n> This function is really slow when the set of distinct seqnames is\n> really big.  Example\n>\n> library(BSgenome.Amellifera.BeeBase.assembly4)\n> Un <- Amellifera$GroupUn\n> gr <- GRanges(seqnames = names(Un),\n>               ranges= IRanges(start = 1 , width = width(Un)))\n> length(gr)\n>\n> ## Only 9244 in length\n>\n> system.time(findOverlaps(gr[1], gr))\n>   user  system elapsed\n>  297.202   0.021 297.279\n>\n> Pretty slow for finding overlaps between a Granges with length 1 and a\n> Granges with length roughly 10000.\n>\n> This is because the function essentially does an lapply over distinct\n> seqnames.  I raised this issue a while ago, and Michael said that he\n> might consider building an IntervalTree over both seqnames and ranges.\n>  So this is really only an issue in organisms with many small contigs.\n>  However, in the mean time, I would appreciate making the function\n> mclapply-aware, which is pretty simple and at least makes the function\n> roughly #cores faster.\n>\n> My fix (which I have been using for a while) adds\n>   mc.cores = 1, mc.preschedule = TRUE\n> to the specific method as well as\n>\n>         matchMatrix <- do.call(rbind, mclapply(commonSeqnames,\n>                                                function(seqnm) {\n> <SNIP>\n>                                                }, mc.cores = mc.cores,\n> mc.preschedule = mc.preschedule))\n>\n> inside the methods definition.  Also needed is making the package\n> depend on parallel.\n>\n> I am raising this issue because I am submitting a package containing\n> this fix, and I felt it might be good to propagate.  I can commit it\n> to subversion as well, if there is any interest.\n>\n> Best,\n> Kasper\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi Kasper,\n\nI think Herve was going to look into some optimizations to the lapply\nbehavior over the next release cycle. But I like the idea of leveraging\nparallelism better. The user would specify opt",
       "thread_id": "thread-b1ecfc971aa2",
       "thread_depth": 1,
-      "month": "2012-07"
+      "month": "2012-07",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120706/6f7eaa68/attachment.pl"
+      ]
     },
     {
       "id": "msg-1678b0a37f06",
@@ -100,11 +103,14 @@
         "<CAC2h7uvm5MOG3NMEifzzZsbqNBfWe26_4Gkrvh3tbaAupa_6MQ@mail.gmail.com>",
         "<CAOQ5Nyf5GYso+Jt4=MRWivxzVW=2mxBup=MxLdQm2EAjrmNthg@mail.gmail.com>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120707/1bfc1e3d/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120707/1bfc1e3d/attachment.pl>",
+      "body_plain": "Let's try to get an overview of these issues together for discussion at\ndeveloper day.\nI will start a wiki node for developer day and drop this exchange within.\n\nOn Fri, Jul 6, 2012 at 10:33 PM, Michael Lawrence <lawrence.michael at gene.com\n> wrote:\n\n> Hi Kasper,\n>\n> I think Herve was going to look into some optimizations to the lapply\n> behavior over the next release cycle. But I like the idea of leveraging\n> parallelism better. The user would specify options(mc.cores=), so that we\n> could avoid having to pass down more arguments.\n>\n> In the bigger picture, it would be nice if there were some general way for\n> the user to request parallelism. Setting options(mc.cores=) is a nice\n> approach, but it is specific to mclapply. I'm aware that mclapply has the\n> advantage of the slaves inheriting the session from the master, but often\n> more than one computer is available for a task. I admit that in this case\n> of overlap computation, the network overhead may not be worth it.  But\n> methods that e.g. operate over a BamFileList might benefit a lot.\n>\n> I wonder if the general clusterApply mechanism could be leveraged. The user\n> would specify a global default cluster using setDefaultCluster().\n> Currently, the cluster implementations beyond the mclapply forking is\n> pretty limited. One possible direction would be to implement a parallel\n> package backend using the new CRAN BatchJobs package, which supports\n> submitting jobs to LSF, SSH, etc, clusters. That API is currently\n> asynchronous, so some work would need to be done to make it behave\n> synchronously.\n>\n> Michael\n>\n> On Fri, Jul 6, 2012 at 8:51 AM, Kasper Daniel Hansen <\n> kasperdanielhansen at gmail.com> wrote:\n>\n> > This is about the findOverlaps method for (query = \"GenomicRanges\",\n> > subject = \"GenomicRanges\") in GenomicRanges.\n> >\n> > This function is really slow when the set of distinct seqnames is\n> > really big.  Example\n> >\n> > library(BSgenome.Amellifera.BeeBase.assembly4)\n> > Un <- Amellifera$GroupUn\n> > gr <- GRanges(seqnames = names(Un),\n> >               ranges= IRanges(start = 1 , width = width(Un)))\n> > length(gr)\n> >\n> > ## Only 9244 in length\n> >\n> > system.time(findOverlaps(gr[1], gr))\n> >   user  system elapsed\n> >  297.202   0.021 297.279\n> >\n> > Pretty slow for finding overlaps between a Granges with length 1 and a\n> > Granges with length roughly 10000.\n> >\n> > This is because the function essentially does an lapply over distinct\n> > seqnames.  I raised this issue a while ago, and Michael said that he\n> > might consider building an IntervalTree over both seqnames and ranges.\n> >  So this is really only an issue in organisms with many small contigs.\n> >  However, in the mean time, I would appreciate making the function\n> > mclapply-aware, which is pretty simple and at least makes the function\n> > roughly #cores faster.\n> >\n> > My fix (which I have been using for a while) adds\n> >   mc.cores = 1, mc.preschedule = TRUE\n> > to the specific method as well as\n> >\n> >         matchMatrix <- do.call(rbind, mclapply(commonSeqnames,\n> >                                                function(seqnm) {\n> > <SNIP>\n> >                                                }, mc.cores = mc.cores,\n> > mc.preschedule = mc.preschedule))\n> >\n> > inside the methods definition.  Also needed is making the package\n> > depend on parallel.\n> >\n> > I am raising this issue because I am submitting a package containing\n> > this fix, and I felt it might be good to propagate.  I can commit it\n> > to subversion as well, if there is any interest.\n> >\n> > Best,\n> > Kasper\n> >\n> > _______________________________________________\n> > Bioc-devel at r-project.org mailing list\n> > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> >\n>\n>         [[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Let's try to get an overview of these issues together for discussion at\ndeveloper day.\nI will start a wiki node for developer day and drop this exchange within.\n\nOn Fri, Jul 6, 2012 at 10:33 PM, Micha",
       "thread_id": "thread-b1ecfc971aa2",
       "thread_depth": 2,
-      "month": "2012-07"
+      "month": "2012-07",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120707/1bfc1e3d/attachment.pl"
+      ]
     },
     {
       "id": "msg-c92e4292be4e",
@@ -120,11 +126,14 @@
         "<CAOQ5Nyf5GYso+Jt4=MRWivxzVW=2mxBup=MxLdQm2EAjrmNthg@mail.gmail.com>",
         "<CAANT7+V=D3OSpROvx4Uy4ojOD-zfjysTdm_GQFX1ew64F-xhxA@mail.gmail.com>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120707/53b1a3e7/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120707/53b1a3e7/attachment.pl>",
+      "body_plain": "Done.  See http://wiki.fhcrc.org/bioc/Seattle_Dev_Meeting_2012\n\nOn Sat, Jul 7, 2012 at 9:11 AM, Vincent Carey <stvjc at channing.harvard.edu>wrote:\n\n> Let's try to get an overview of these issues together for discussion at\n> developer day.\n> I will start a wiki node for developer day and drop this exchange within.\n>\n>\n> On Fri, Jul 6, 2012 at 10:33 PM, Michael Lawrence <\n> lawrence.michael at gene.com> wrote:\n>\n>> Hi Kasper,\n>>\n>> I think Herve was going to look into some optimizations to the lapply\n>> behavior over the next release cycle. But I like the idea of leveraging\n>> parallelism better. The user would specify options(mc.cores=), so that we\n>> could avoid having to pass down more arguments.\n>>\n>> In the bigger picture, it would be nice if there were some general way for\n>> the user to request parallelism. Setting options(mc.cores=) is a nice\n>> approach, but it is specific to mclapply. I'm aware that mclapply has the\n>> advantage of the slaves inheriting the session from the master, but often\n>> more than one computer is available for a task. I admit that in this case\n>> of overlap computation, the network overhead may not be worth it.  But\n>> methods that e.g. operate over a BamFileList might benefit a lot.\n>>\n>> I wonder if the general clusterApply mechanism could be leveraged. The\n>> user\n>> would specify a global default cluster using setDefaultCluster().\n>> Currently, the cluster implementations beyond the mclapply forking is\n>> pretty limited. One possible direction would be to implement a parallel\n>> package backend using the new CRAN BatchJobs package, which supports\n>> submitting jobs to LSF, SSH, etc, clusters. That API is currently\n>> asynchronous, so some work would need to be done to make it behave\n>> synchronously.\n>>\n>> Michael\n>>\n>> On Fri, Jul 6, 2012 at 8:51 AM, Kasper Daniel Hansen <\n>> kasperdanielhansen at gmail.com> wrote:\n>>\n>> > This is about the findOverlaps method for (query = \"GenomicRanges\",\n>> > subject = \"GenomicRanges\") in GenomicRanges.\n>> >\n>> > This function is really slow when the set of distinct seqnames is\n>> > really big.  Example\n>> >\n>> > library(BSgenome.Amellifera.BeeBase.assembly4)\n>> > Un <- Amellifera$GroupUn\n>> > gr <- GRanges(seqnames = names(Un),\n>> >               ranges= IRanges(start = 1 , width = width(Un)))\n>> > length(gr)\n>> >\n>> > ## Only 9244 in length\n>> >\n>> > system.time(findOverlaps(gr[1], gr))\n>> >   user  system elapsed\n>> >  297.202   0.021 297.279\n>> >\n>> > Pretty slow for finding overlaps between a Granges with length 1 and a\n>> > Granges with length roughly 10000.\n>> >\n>> > This is because the function essentially does an lapply over distinct\n>> > seqnames.  I raised this issue a while ago, and Michael said that he\n>> > might consider building an IntervalTree over both seqnames and ranges.\n>> >  So this is really only an issue in organisms with many small contigs.\n>> >  However, in the mean time, I would appreciate making the function\n>> > mclapply-aware, which is pretty simple and at least makes the function\n>> > roughly #cores faster.\n>> >\n>> > My fix (which I have been using for a while) adds\n>> >   mc.cores = 1, mc.preschedule = TRUE\n>> > to the specific method as well as\n>> >\n>> >         matchMatrix <- do.call(rbind, mclapply(commonSeqnames,\n>> >                                                function(seqnm) {\n>> > <SNIP>\n>> >                                                }, mc.cores = mc.cores,\n>> > mc.preschedule = mc.preschedule))\n>> >\n>> > inside the methods definition.  Also needed is making the package\n>> > depend on parallel.\n>> >\n>> > I am raising this issue because I am submitting a package containing\n>> > this fix, and I felt it might be good to propagate.  I can commit it\n>> > to subversion as well, if there is any interest.\n>> >\n>> > Best,\n>> > Kasper\n>> >\n>> > _______________________________________________\n>> > Bioc-devel at r-project.org mailing list\n>> > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>> >\n>>\n>>         [[alternative HTML version deleted]]\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Done.  See http://wiki.fhcrc.org/bioc/Seattle_Dev_Meeting_2012\n\nOn Sat, Jul 7, 2012 at 9:11 AM, Vincent Carey <stvjc at channing.harvard.edu>wrote:\n\n> Let's try to get an overview of these issues toge",
       "thread_id": "thread-b1ecfc971aa2",
       "thread_depth": 3,
-      "month": "2012-07"
+      "month": "2012-07",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120707/53b1a3e7/attachment.pl"
+      ]
     },
     {
       "id": "msg-c74ca4df18f1",
@@ -172,11 +181,14 @@
       "references": [
         "<20120711061112.253FF15F567@lamb2.fhcrc.org>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120711/db0806fe/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120711/db0806fe/attachment.pl>",
+      "body_plain": "Dear mailing list,\nI recieved the following error from compilaltion on lamb:\n\n\"Error in function (type, msg, asError = TRUE)  :\n  Server denied you to change to the given directory\nExecution halted\"\n\nSeems, that the compilation stops at chunk 3 of the vignette, however,\nI did not do any changes to my code in the last weeks.\nThe chunk uses the GEOquery package, were there any fundamental\nchanges to that package?\n\nThanks,\nAndreas\n\n\n\n2012/7/11 <BBS-noreply at bioconductor.org>\n\n> [This is an automatically generated email. Please don't reply.]\n>\n> Hi virtualArray maintainer,\n>\n> According to the \"Build/check report\" for BioC 2.10,\n> the virtualArray package has the following problem(s):\n>\n>   o ERROR for 'R CMD build' on lamb2. See the details here:\n>\n> http://bioconductor.org/checkResults/2.10/bioc-LATEST/virtualArray/lamb2-buildsrc.html\n>\n> Please take the time to address this then use your Subversion account\n> when you are ready to commit a fix to your package.\n>\n> Notes:\n>\n>   * This was the status of your package at the time this email was sent to\n> you.\n>     Given that the online report is updated daily (in normal conditions)\n> you\n>     could see something different when you visit the URL(s) above,\n> especially if\n>     you do so several days after you received this email.\n>\n>   * It is possible that the problems reported in this report are false\n> positives,\n>     either because another package (from CRAN or Bioconductor) breaks your\n>     package (if yours depends on it) or because of a Build System problem.\n>     If this is the case, then you can ignore this email.\n>\n>   * Please check the report again 24h after you've committed your changes\n> to the\n>     package and make sure that all the problems have gone.\n>\n>   * If you have questions about this report or need help with the\n>     maintenance of your package, please use the Bioc-devel mailing list:\n>\n>       http://bioconductor.org/help/mailing-list/\n>\n>     (all package maintainers are requested to subscribe to this list)\n>\n> Thanks for contributing to the Bioconductor project!\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Dear mailing list,\nI recieved the following error from compilaltion on lamb:\n\n\"Error in function (type, msg, asError = TRUE)  :\n  Server denied you to change to the given directory\nExecution halted\"\n\n",
       "thread_id": "thread-b1807a546dcf",
       "thread_depth": 0,
-      "month": "2012-07"
+      "month": "2012-07",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120711/db0806fe/attachment.pl"
+      ]
     },
     {
       "id": "msg-277cb1f721f3",
@@ -191,11 +203,14 @@
         "<20120711061112.253FF15F567@lamb2.fhcrc.org>",
         "<CANHV6YADSkJ19mifg5XopMMjJvdA4cY58OVBKEj5Yb6j5H8AOQ@mail.gmail.com>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120711/2a7d0780/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120711/2a7d0780/attachment.pl>",
+      "body_plain": "Oh, I'm sorry!\nI just saw, that GEOquery itself failed to built!\n\n2012/7/11 Andreas Heider <aheider at trm.uni-leipzig.de>\n\n> Dear mailing list,\n> I recieved the following error from compilaltion on lamb:\n>\n> \"Error in function (type, msg, asError = TRUE)  :\n>   Server denied you to change to the given directory\n> Execution halted\"\n>\n> Seems, that the compilation stops at chunk 3 of the vignette, however, I did not do any changes to my code in the last weeks.\n> The chunk uses the GEOquery package, were there any fundamental changes to that package?\n>\n>\n> Thanks,\n> Andreas\n>\n>\n>\n> 2012/7/11 <BBS-noreply at bioconductor.org>\n>\n> [This is an automatically generated email. Please don't reply.]\n>>\n>> Hi virtualArray maintainer,\n>>\n>> According to the \"Build/check report\" for BioC 2.10,\n>> the virtualArray package has the following problem(s):\n>>\n>>   o ERROR for 'R CMD build' on lamb2. See the details here:\n>>\n>> http://bioconductor.org/checkResults/2.10/bioc-LATEST/virtualArray/lamb2-buildsrc.html\n>>\n>> Please take the time to address this then use your Subversion account\n>> when you are ready to commit a fix to your package.\n>>\n>> Notes:\n>>\n>>   * This was the status of your package at the time this email was sent\n>> to you.\n>>     Given that the online report is updated daily (in normal conditions)\n>> you\n>>     could see something different when you visit the URL(s) above,\n>> especially if\n>>     you do so several days after you received this email.\n>>\n>>   * It is possible that the problems reported in this report are false\n>> positives,\n>>     either because another package (from CRAN or Bioconductor) breaks your\n>>     package (if yours depends on it) or because of a Build System problem.\n>>     If this is the case, then you can ignore this email.\n>>\n>>   * Please check the report again 24h after you've committed your changes\n>> to the\n>>     package and make sure that all the problems have gone.\n>>\n>>   * If you have questions about this report or need help with the\n>>     maintenance of your package, please use the Bioc-devel mailing list:\n>>\n>>       http://bioconductor.org/help/mailing-list/\n>>\n>>     (all package maintainers are requested to subscribe to this list)\n>>\n>> Thanks for contributing to the Bioconductor project!\n>>\n>\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Oh, I'm sorry!\nI just saw, that GEOquery itself failed to built!\n\n2012/7/11 Andreas Heider <aheider at trm.uni-leipzig.de>\n\n> Dear mailing list,\n> I recieved the following error from compilaltion on l",
       "thread_id": "thread-b1807a546dcf",
       "thread_depth": 1,
-      "month": "2012-07"
+      "month": "2012-07",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120711/2a7d0780/attachment.pl"
+      ]
     },
     {
       "id": "msg-ca9d38c428de",
@@ -241,11 +256,14 @@
       "references": [
         "<CA+uNOzhxdUw2HSoYYDgEUUgup9aGaGFeysYquKvQ-LQ8yxkxfA@mail.gmail.com>"
       ],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120711/2c376456/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120711/2c376456/attachment.pl>",
+      "body_plain": "alternative way.  i will find the doc.  basically there is a data_store\nfolder parallel to pkgs and the add_data.py utility works with that\nso that software and doc can be maintained separately from voluminous data.\n\nOn Wed, Jul 11, 2012 at 12:30 PM, Laurent Gatto <laurent.gatto at gmail.com>wrote:\n\n> Dear all,\n>\n> I have checked a complete working copy of a data package out, as\n> described in [1]. After updating infrastructure files (DESCRIPTION and\n> NEWS) and the actual data, svn status tells me the following\n> ?       data\n> M       DESCRIPTION\n> M       NEWS\n> ?       inst/extdata\n>\n> Should I 'svn add data inst/data' and then commit, as usual, or is\n> there an alternative way to explicitly commit  data files to the\n> external data_store separately?\n>\n> Thank you in advance,\n>\n> Best wishes,\n>\n> Laurent\n>\n>\n> [1] http://www.bioconductor.org/developers/source-control/\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "alternative way.  i will find the doc.  basically there is a data_store\nfolder parallel to pkgs and the add_data.py utility works with that\nso that software and doc can be maintained separately from v",
       "thread_id": "thread-e944b5910041",
       "thread_depth": 1,
-      "month": "2012-07"
+      "month": "2012-07",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120711/2c376456/attachment.pl"
+      ]
     },
     {
       "id": "msg-c180dc48da04",
@@ -457,11 +475,14 @@
       "subject_clean": "[Bioc-devel] best practices for callGeneric()",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120722/a1135f95/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120722/a1135f95/attachment.pl>",
+      "body_plain": "Hi guys,\n\nWe often use callGeneric in wrapper methods when delegating. In some ways,\nthis is nice, because it conveys the wrapper semantic. However, it can also\nbe problematic e.g. when searching the code for all calls to a generic,\nsince the actual name of the generic is obscured. It's also maybe a little\ntougher to read, because when I see \"callGeneric\" I have to recall the name\nof the generic for the current method. Also, we sometimes use\ncallGeneric(), i.e., with no arguments. This is kind of a cool shortcut,\nbut it also hurts readability, since it is drawing the arguments from the\ncurrent frame, which we have to construct in our head. Are we having too\nmuch fun with this function?\n\nMichael\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi guys,\n\nWe often use callGeneric in wrapper methods when delegating. In some ways,\nthis is nice, because it conveys the wrapper semantic. However, it can also\nbe problematic e.g. when searching the ",
       "thread_id": "thread-0a074d4cdb56",
       "thread_depth": 0,
-      "month": "2012-07"
+      "month": "2012-07",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120722/a1135f95/attachment.pl"
+      ]
     },
     {
       "id": "msg-cf5d5b032d44",
@@ -507,11 +528,14 @@
       "subject_clean": "[Bioc-devel] unsunscribe",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120723/8e25bd75/attachment.pl>",
-      "body_snippet": "An embedded and charset-unspecified text was scrubbed...\nName: not available\nURL: <https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120723/8e25bd75/attachment.pl>",
+      "body_plain": "Suresh Vijay\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Suresh Vijay\n\t[[alternative HTML version deleted]]",
       "thread_id": "thread-3c23d549ff38",
       "thread_depth": 0,
-      "month": "2012-07"
+      "month": "2012-07",
+      "restored_from": [
+        "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120723/8e25bd75/attachment.pl"
+      ]
     },
     {
       "id": "msg-5bac5577bd2e",
