@@ -17,7 +17,8 @@
       "body_snippet": "Hello,\n\nI maintain gDRplots, submitted on 4 August (BiocContributions issue #128).\nTwo of the three check platforms have been failing since submission, and I\nthink the cause is on the infrastructure s",
       "thread_id": "thread-5de13775cfa7",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021494.html"
     },
     {
       "id": "msg-57159b03d3a3",
@@ -35,7 +36,8 @@
       "body_snippet": "There is a slight misconception on what release and devel mean in this scenario.  They are not referring to release and devel of Bioconductor, they are referring to the release or devel version of R. ",
       "thread_id": "thread-5de13775cfa7",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021495.html"
     },
     {
       "id": "msg-427f4a755b74",
@@ -50,11 +52,12 @@
         "<CAMsP4e2MtfCQsF3TVr3OAVMfuGsNO+xzFPQdtCQvPu_kC=wanA@mail.gmail.com>",
         "<BL1PR12MB5301013C975D657D5F3969BAF9A82@BL1PR12MB5301.namprd12.prod.outlook.com>"
       ],
-      "body_plain": "Hi Lori,\n\nThank you ? that resolves two of my questions and lets me correct a third\nthat was my own imprecision. I went back to the job logs and to the\nr-universe configuration, and I think I can now point at the exact line\nthat produces the difference.\n\nFirst, my correction. You are right that the software repository is the\nBioconductor r-universe. Every job in the run uses BioCsoft =\nhttps://bioc.r-universe.dev. The URLs I quoted were BioCann and BioCexp ?\nthe annotation and experiment-data repositories, which r-universe itself\npoints at bioconductor.posit.co. I should have named the repositories\ninstead of just pasting URLs; that was misleading, sorry.\n\nSecond, on release and devel referring to R rather than Bioconductor. That\nmatches the job names, but I don't believe it explains this case, because\njobs running the same R end up on different Bioconductor branches. From run\n33407606944:\n\n  job                     R                  BioCexp   gDRtestData   result\n  R-release for Linux     4.6.1              devel     1.11.7        OK\n  R-devel   for Linux     R-devel r90452     devel     1.11.7        OK\n  R-release for Windows   4.6.1              3.23      1.10.0        ERROR\n  R-devel   for Windows   R-devel r90452     3.23      1.10.0        ERROR\n  R-release for MacOS     4.6.1              3.23      1.10.0        ERROR\n  R-oldrel  for Windows   4.5.3              3.22      1.8.0         ERROR\n  R-oldrel  for MacOS     4.5.3              3.22      1.8.0         ERROR\n\nVerbatim from the two R-release jobs, both on R 4.6.1:\n\n  R-release for Linux\n\nhttps://github.com/r-universe/biocstaging/actions/runs/33407606944/job/99540810756\n      $BioCsoft\n      [1] \"https://bioc.r-universe.dev/bin/linux/resolute-x86_64/4.6\"\n      $BioCexp\n      [1] \"https://bioconductor.posit.co/packages/devel/data/experiment\"\n      trying URL\n'.../packages/devel/data/experiment/src/contrib/gDRtestData_1.11.7.tar.gz'\n\n  R-release for Windows\n\nhttps://github.com/r-universe/biocstaging/actions/runs/33407606944/job/99540811117\n      $BioCsoft\n      [1] \"https://bioc.r-universe.dev\"\n      $BioCexp\n      [1] \"https://bioconductor.posit.co/packages/3.23/data/experiment\"\n      trying URL\n'.../packages/3.23/data/experiment/src/contrib/gDRtestData_1.10.0.tar.gz'\n\nThe R-devel Windows job (\nhttps://github.com/r-universe/biocstaging/actions/runs/33407606944/job/99540811162)\nprints the same 3.23 URLs while running \"R Under development (unstable)\n(2026-08-27 r90452)\". Since config.yaml currently has release_version 3.23\nand devel_version 3.24, those jobs are installing experiment-data packages\nfrom the release branch, and the R version is not what decides it.\n\nThird, where that comes from. There are two Rprofiles and they disagree:\n\nhttps://github.com/r-universe-org/actions/blob/v12/Rprofile (line 1:\n\"currently used on Win and Mac but NOT Linux\") branches on UNIVERSE_NAME.\nFor 'bioc' it hardcodes devel; for anything else, lines 41-42:\n\n      bioc_anno <- sprintf(\"\nhttps://bioconductor.posit.co/packages/%s/data/annotation\",\n\n utils:::.BioC_version_associated_with_R_version())\n      bioc_exp  <- sprintf(\"\nhttps://bioconductor.posit.co/packages/%s/data/experiment\",\n\n utils:::.BioC_version_associated_with_R_version())\n\nhttps://github.com/r-universe-org/base-image/blob/master/Rprofile (Linux)\nhas the same branch structure, but its final else hardcodes devel:\n\n      BioCann = \"\nhttps://bioconductor.posit.co/packages/devel/data/annotation\"\n      BioCexp = \"\nhttps://bioconductor.posit.co/packages/devel/data/experiment\"\n\nOur universe is biocstaging ? the logs print $universe = \"\nhttps://biocstaging.r-universe.dev\" ? so it takes the final else in both\nfiles: devel on Linux, R-version-derived release on Windows and macOS.\n\nSo the request to whoever maintains this: could biocstaging be treated like\nbioc in r-universe-org/actions/Rprofile, so that the Windows and macOS data\nrepositories point at devel as they already do on Linux? As far as I can\ntell it is a one-line condition. It is not specific to my package: any\nsubmission depending on an ExperimentData or annotation package that\nchanged during the current devel cycle will fail on exactly those platforms\nand pass on Linux, and the failure looks like a package bug rather than a\nrepository difference.\n\nFourth, on gDRtestData not appearing in the universes ? I think that is\nexpected and there may be nothing to find.\nhttps://bioc.r-universe.dev/api/ls lists 2425 packages and they are all\nsoftware packages; airway, curatedTCGAData and org.Hs.eg.db are absent as\nwell, and gDRtestData is ExperimentData (biocViews: ExperimentData,\nTechnologyData). That is exactly why BioCexp decides the outcome here ?\nthere is no universe copy to fall back on. (There is also a\nbioconductor.r-universe.dev, distinct from bioc.r-universe.dev, which\ncontains only BiocManager; if that is where you looked, everything would be\nmissing from it.)\n\nAnd you are right that the DESCRIPTION entry is stale. inst/depmap_data/\nwas added in gDRtestData 1.11.2, so (>= 1.6.0) does not describe what the\nexamples actually need. I would rather settle the repository question\nbefore changing it, since which constraint is the correct one depends on\nwhich branch the checks resolve.\n\nUnderstood on reviewer assignment being automatic ? I would rather not ask\nfor an override yet. I have the examples guarded locally so they skip when\nthe data is absent, which would make the builds green immediately, but that\nwould also stop them running on Windows and macOS for the rest of the cycle\nand hide the repository difference. If the Rprofile condition can be\nchanged, I would prefer to adjust the DESCRIPTION entry, rebuild, and let\nthe examples actually run.\n\nThanks again for digging into this,\nArek Gladki\n\nOn Tue, 1 Sept 2026 at 13:59, Kern, Lori <Lori.Shepherd at roswellpark.org>\nwrote:\n\n> There is a slight misconception on what release and devel mean in this\n> scenario.  They are not referring to release and devel of Bioconductor,\n> they are referring to the release or devel version of R.  In this current\n> cycle Bioconductor devel is still using  R-release for testing not R-devel\n> (in prep for the new release next year).\n>\n> I'm looking at your comment on the issue as well,  you reference posit\n> repositories for bioconductor packages but those are not utilized and I'm\n> curious as to why or how you came to that conclusion?   The Bioconductor\n> r-universe repositories are what are being utilized for dependencies and\n> from the detailed looks of the run, it is pulling dependencies from the\n> correct devel r-universe of Bioconductor.\n>\n> Also,  if your package is needing the higher version of gdrtestdata then\n> that should be changed in your description file as you are also still\n> referencing 1.6.0 version of the package.\n>\n> It does seem strange that I cannot find gDRtestData in the list of\n> installed packages during the run log; and I'm not finding it in the\n> current Bioconductor universes.   We will follow up on this to find out why\n> and perhaps that will clear the issue.\n>\n> As far as reviewer assignment: It is an automatic system, so it waits for\n> a clean build for the reviewer to be assigned. There is a way to override\n> it, but let's see if we can get it resolved first by making sure the\n> gDRtestData is available in the universe.  (I would still recommend upping\n> the version needed in the description as that does appear to be inaccurate\n> then) . If that does not help once its available,  we can override and go\n> ahead with assignment while we all investigate the issue.\n>\n> Cheers,\n>\n> Lori Kern\n>\n> Bioconductor Core Team\n>\n> Roswell Park Comprehensive Cancer Center\n>\n> Department of Biostatistics & Bioinformatics\n>\n> Elm & Carlton Streets\n>\n> Buffalo, New York 14263\n> ------------------------------\n> *From:* Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Arek\n> G?adki <gladki.arkadiusz at gmail.com>\n> *Sent:* Tuesday, September 1, 2026 1:35 AM\n> *To:* bioc-devel at r-project.org <bioc-devel at r-project.org>\n> *Subject:* [Bioc-devel] Submission #128 (gDRplots): macOS and Windows\n> check runners resolve release, Linux resolves devel\n>\n> Hello,\n>\n> I maintain gDRplots, submitted on 4 August (BiocContributions issue #128).\n> Two of the three check platforms have been failing since submission, and I\n> think the cause is on the infrastructure side rather than in my package, so\n> I'd like to ask about it here.\n>\n> In a single r-universe run, the runners resolve Bioconductor dependencies\n> from two different branches:\n>\n>   linux-release-x86_64    bioconductor.posit.co/packages/devel\n> gDRtestData 1.11.7   OK\n>   macos-release-arm64     bioconductor.posit.co/packages/3.23\n>  gDRtestData 1.10.0   ERROR\n>   windows-release-x86_64  bioconductor.posit.co/packages/3.23\n>  gDRtestData 1.10.0   ERROR\n>\n> My examples use a directory that was added to gDRtestData during the\n> current devel cycle, so system.file() finds it on Linux and returns \"\" on\n> macOS and Windows. That single difference is the only ERROR left on either\n> platform.\n>\n> Is this intentional? It doesn't look specific to gDRplots ? any submission\n> depending on something added to a Bioconductor package during the current\n> cycle would fail on exactly those two platforms and pass on the third.\n>\n> And a related question I genuinely don't know the answer to: is a clean\n> build on all platforms a precondition for a reviewer being assigned, or can\n> review start in parallel? My submission has been in pre-review for four\n> weeks and I'd like to know whether I'm waiting on this or on something\n> else.\n>\n> I do have a local workaround ? guarding the affected examples so they skip\n> when the data isn't installed ? but I'd rather not push it if the runners\n> are meant to resolve devel, since it would just hide the difference.\n>\n> Thanks,\n> Arek Gladki\n>\n>         [[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n>\n> https://secure-web.cisco.com/10LixFBFMGLCNwBNsgAjt9bv1d9EBUboQJ_9GFlQoeSlf1wJEm2ZGXGRIplo0L6S-QFXvuwODI85y-M2clBkWxuhRZ0OiDbpgapjV-1HJ4lyubHyp61GNSzwy-yc6fmDRbXD0cSfkg0CrXMGtxZmwc2n3VUcNtiJMpCofwusz3cEsjcgwiDaoe7yq7CnpeieVYL2MktnvGpG_beD_AcUYw0NYf-S0m2obUdT1xbWqGMsGk48E2BoJNemnWj2m0JhQMDY3ymxQxIkgJXwjnk0dZjWMCK7F-HheAJCt2C7SRk7lUCyBYTw6tkPiHR3DbnpC/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n>\n>\n> This email message may contain legally privileged and/or confidential\n> information. If you are not the intended recipient(s), or the employee or\n> agent responsible for the delivery of this message to the intended\n> recipient(s), you are hereby notified that any disclosure, copying,\n> distribution, or use of this email message is prohibited. If you have\n> received this message in error, please notify the sender immediately by\n> e-mail and delete this email message from your computer. Thank you.\n>\n\n\t[[alternative HTML version deleted]]",
-      "body_snippet": "Hi Lori,\n\nThank you ? that resolves two of my questions and lets me correct a third\nthat was my own imprecision. I went back to the job logs and to the\nr-universe configuration, and I think I can now ",
+      "body_plain": "Hi Lori,\n\nThank you — that resolves two of my questions and lets me correct a third\nthat was my own imprecision. I went back to the job logs and to the\nr-universe configuration, and I think I can now point at the exact line\nthat produces the difference.\n\nFirst, my correction. You are right that the software repository is the\nBioconductor r-universe. Every job in the run uses BioCsoft =\nhttps://bioc.r-universe.dev. The URLs I quoted were BioCann and BioCexp —\nthe annotation and experiment-data repositories, which r-universe itself\npoints at bioconductor.posit.co. I should have named the repositories\ninstead of just pasting URLs; that was misleading, sorry.\n\nSecond, on release and devel referring to R rather than Bioconductor. That\nmatches the job names, but I don't believe it explains this case, because\njobs running the same R end up on different Bioconductor branches. From run\n33407606944:\n\n  job                     R                  BioCexp   gDRtestData   result\n  R-release for Linux     4.6.1              devel     1.11.7        OK\n  R-devel   for Linux     R-devel r90452     devel     1.11.7        OK\n  R-release for Windows   4.6.1              3.23      1.10.0        ERROR\n  R-devel   for Windows   R-devel r90452     3.23      1.10.0        ERROR\n  R-release for MacOS     4.6.1              3.23      1.10.0        ERROR\n  R-oldrel  for Windows   4.5.3              3.22      1.8.0         ERROR\n  R-oldrel  for MacOS     4.5.3              3.22      1.8.0         ERROR\n\nVerbatim from the two R-release jobs, both on R 4.6.1:\n\n  R-release for Linux\n\nhttps://github.com/r-universe/biocstaging/actions/runs/33407606944/job/99540810756\n      $BioCsoft\n      [1] \"https://bioc.r-universe.dev/bin/linux/resolute-x86_64/4.6\"\n      $BioCexp\n      [1] \"https://bioconductor.posit.co/packages/devel/data/experiment\"\n      trying URL\n'.../packages/devel/data/experiment/src/contrib/gDRtestData_1.11.7.tar.gz'\n\n  R-release for Windows\n\nhttps://github.com/r-universe/biocstaging/actions/runs/33407606944/job/99540811117\n      $BioCsoft\n      [1] \"https://bioc.r-universe.dev\"\n      $BioCexp\n      [1] \"https://bioconductor.posit.co/packages/3.23/data/experiment\"\n      trying URL\n'.../packages/3.23/data/experiment/src/contrib/gDRtestData_1.10.0.tar.gz'\n\nThe R-devel Windows job (\nhttps://github.com/r-universe/biocstaging/actions/runs/33407606944/job/99540811162)\nprints the same 3.23 URLs while running \"R Under development (unstable)\n(2026-08-27 r90452)\". Since config.yaml currently has release_version 3.23\nand devel_version 3.24, those jobs are installing experiment-data packages\nfrom the release branch, and the R version is not what decides it.\n\nThird, where that comes from. There are two Rprofiles and they disagree:\n\nhttps://github.com/r-universe-org/actions/blob/v12/Rprofile (line 1:\n\"currently used on Win and Mac but NOT Linux\") branches on UNIVERSE_NAME.\nFor 'bioc' it hardcodes devel; for anything else, lines 41-42:\n\n      bioc_anno <- sprintf(\"\nhttps://bioconductor.posit.co/packages/%s/data/annotation\",\n\n utils:::.BioC_version_associated_with_R_version())\n      bioc_exp  <- sprintf(\"\nhttps://bioconductor.posit.co/packages/%s/data/experiment\",\n\n utils:::.BioC_version_associated_with_R_version())\n\nhttps://github.com/r-universe-org/base-image/blob/master/Rprofile (Linux)\nhas the same branch structure, but its final else hardcodes devel:\n\n      BioCann = \"\nhttps://bioconductor.posit.co/packages/devel/data/annotation\"\n      BioCexp = \"\nhttps://bioconductor.posit.co/packages/devel/data/experiment\"\n\nOur universe is biocstaging — the logs print $universe = \"\nhttps://biocstaging.r-universe.dev\" — so it takes the final else in both\nfiles: devel on Linux, R-version-derived release on Windows and macOS.\n\nSo the request to whoever maintains this: could biocstaging be treated like\nbioc in r-universe-org/actions/Rprofile, so that the Windows and macOS data\nrepositories point at devel as they already do on Linux? As far as I can\ntell it is a one-line condition. It is not specific to my package: any\nsubmission depending on an ExperimentData or annotation package that\nchanged during the current devel cycle will fail on exactly those platforms\nand pass on Linux, and the failure looks like a package bug rather than a\nrepository difference.\n\nFourth, on gDRtestData not appearing in the universes — I think that is\nexpected and there may be nothing to find.\nhttps://bioc.r-universe.dev/api/ls lists 2425 packages and they are all\nsoftware packages; airway, curatedTCGAData and org.Hs.eg.db are absent as\nwell, and gDRtestData is ExperimentData (biocViews: ExperimentData,\nTechnologyData). That is exactly why BioCexp decides the outcome here —\nthere is no universe copy to fall back on. (There is also a\nbioconductor.r-universe.dev, distinct from bioc.r-universe.dev, which\ncontains only BiocManager; if that is where you looked, everything would be\nmissing from it.)\n\nAnd you are right that the DESCRIPTION entry is stale. inst/depmap_data/\nwas added in gDRtestData 1.11.2, so (>= 1.6.0) does not describe what the\nexamples actually need. I would rather settle the repository question\nbefore changing it, since which constraint is the correct one depends on\nwhich branch the checks resolve.\n\nUnderstood on reviewer assignment being automatic — I would rather not ask\nfor an override yet. I have the examples guarded locally so they skip when\nthe data is absent, which would make the builds green immediately, but that\nwould also stop them running on Windows and macOS for the rest of the cycle\nand hide the repository difference. If the Rprofile condition can be\nchanged, I would prefer to adjust the DESCRIPTION entry, rebuild, and let\nthe examples actually run.\n\nThanks again for digging into this,\nArek Gladki\n\nOn Tue, 1 Sept 2026 at 13:59, Kern, Lori <Lori.Shepherd at roswellpark.org>\nwrote:\n\n> There is a slight misconception on what release and devel mean in this\n> scenario.  They are not referring to release and devel of Bioconductor,\n> they are referring to the release or devel version of R.  In this current\n> cycle Bioconductor devel is still using  R-release for testing not R-devel\n> (in prep for the new release next year).\n>\n> I'm looking at your comment on the issue as well,  you reference posit\n> repositories for bioconductor packages but those are not utilized and I'm\n> curious as to why or how you came to that conclusion?   The Bioconductor\n> r-universe repositories are what are being utilized for dependencies and\n> from the detailed looks of the run, it is pulling dependencies from the\n> correct devel r-universe of Bioconductor.\n>\n> Also,  if your package is needing the higher version of gdrtestdata then\n> that should be changed in your description file as you are also still\n> referencing 1.6.0 version of the package.\n>\n> It does seem strange that I cannot find gDRtestData in the list of\n> installed packages during the run log; and I'm not finding it in the\n> current Bioconductor universes.   We will follow up on this to find out why\n> and perhaps that will clear the issue.\n>\n> As far as reviewer assignment: It is an automatic system, so it waits for\n> a clean build for the reviewer to be assigned. There is a way to override\n> it, but let's see if we can get it resolved first by making sure the\n> gDRtestData is available in the universe.  (I would still recommend upping\n> the version needed in the description as that does appear to be inaccurate\n> then) . If that does not help once its available,  we can override and go\n> ahead with assignment while we all investigate the issue.\n>\n> Cheers,\n>\n> Lori Kern\n>\n> Bioconductor Core Team\n>\n> Roswell Park Comprehensive Cancer Center\n>\n> Department of Biostatistics & Bioinformatics\n>\n> Elm & Carlton Streets\n>\n> Buffalo, New York 14263\n> ------------------------------\n> *From:* Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Arek\n> Gładki <gladki.arkadiusz at gmail.com>\n> *Sent:* Tuesday, September 1, 2026 1:35 AM\n> *To:* bioc-devel at r-project.org <bioc-devel at r-project.org>\n> *Subject:* [Bioc-devel] Submission #128 (gDRplots): macOS and Windows\n> check runners resolve release, Linux resolves devel\n>\n> Hello,\n>\n> I maintain gDRplots, submitted on 4 August (BiocContributions issue #128).\n> Two of the three check platforms have been failing since submission, and I\n> think the cause is on the infrastructure side rather than in my package, so\n> I'd like to ask about it here.\n>\n> In a single r-universe run, the runners resolve Bioconductor dependencies\n> from two different branches:\n>\n>   linux-release-x86_64    bioconductor.posit.co/packages/devel\n> gDRtestData 1.11.7   OK\n>   macos-release-arm64     bioconductor.posit.co/packages/3.23\n>  gDRtestData 1.10.0   ERROR\n>   windows-release-x86_64  bioconductor.posit.co/packages/3.23\n>  gDRtestData 1.10.0   ERROR\n>\n> My examples use a directory that was added to gDRtestData during the\n> current devel cycle, so system.file() finds it on Linux and returns \"\" on\n> macOS and Windows. That single difference is the only ERROR left on either\n> platform.\n>\n> Is this intentional? It doesn't look specific to gDRplots — any submission\n> depending on something added to a Bioconductor package during the current\n> cycle would fail on exactly those two platforms and pass on the third.\n>\n> And a related question I genuinely don't know the answer to: is a clean\n> build on all platforms a precondition for a reviewer being assigned, or can\n> review start in parallel? My submission has been in pre-review for four\n> weeks and I'd like to know whether I'm waiting on this or on something\n> else.\n>\n> I do have a local workaround — guarding the affected examples so they skip\n> when the data isn't installed — but I'd rather not push it if the runners\n> are meant to resolve devel, since it would just hide the difference.\n>\n> Thanks,\n> Arek Gladki\n>\n>         [[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n>\n> https://secure-web.cisco.com/10LixFBFMGLCNwBNsgAjt9bv1d9EBUboQJ_9GFlQoeSlf1wJEm2ZGXGRIplo0L6S-QFXvuwODI85y-M2clBkWxuhRZ0OiDbpgapjV-1HJ4lyubHyp61GNSzwy-yc6fmDRbXD0cSfkg0CrXMGtxZmwc2n3VUcNtiJMpCofwusz3cEsjcgwiDaoe7yq7CnpeieVYL2MktnvGpG_beD_AcUYw0NYf-S0m2obUdT1xbWqGMsGk48E2BoJNemnWj2m0JhQMDY3ymxQxIkgJXwjnk0dZjWMCK7F-HheAJCt2C7SRk7lUCyBYTw6tkPiHR3DbnpC/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n>\n>\n> This email message may contain legally privileged and/or confidential\n> information. If you are not the intended recipient(s), or the employee or\n> agent responsible for the delivery of this message to the intended\n> recipient(s), you are hereby notified that any disclosure, copying,\n> distribution, or use of this email message is prohibited. If you have\n> received this message in error, please notify the sender immediately by\n> e-mail and delete this email message from your computer. Thank you.\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Hi Lori,\n\nThank you — that resolves two of my questions and lets me correct a third\nthat was my own imprecision. I went back to the job logs and to the\nr-universe configuration, and I think I can now ",
       "thread_id": "thread-5de13775cfa7",
       "thread_depth": 2,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021496.html"
     },
     {
       "id": "msg-aad5bf4896d8",
@@ -73,7 +76,8 @@
       "body_snippet": "Hi Andres,\n\nThank you for the Rfast rebuild. I could verify it now works.\n\nHowever, according to\n\nhttps://github.com/RfastOfficial/Rfast/issues/140#issuecomment-5505356613\n\nThe bioconductor docker bin",
       "thread_id": "thread-aad5bf4896d8",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021497.html"
     },
     {
       "id": "msg-7fe73fc0533f",
@@ -89,7 +93,8 @@
       "body_snippet": "Hello,\nI'm Giovanni Micale, one of the authors of geneslator annotation data package (part of devel version 3.24).\nI noticed that last build failed with the following error, that seems to be unrelated",
       "thread_id": "thread-7fe73fc0533f",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021498.html"
     },
     {
       "id": "msg-25030d774215",
@@ -109,7 +114,8 @@
       "body_snippet": "[Sorry, accidentally posted off list]\n\nHi Giovanni,\n\nAh, my mistake. Thank you for pointing me to the annotation package tree. So if I click on the \"raw results\" and go to the directory containing mor",
       "thread_id": "thread-25030d774215",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021499.html"
     },
     {
       "id": "msg-30246c05f3a1",
@@ -130,7 +136,8 @@
       "body_snippet": "Thanks for raising this. I'll look at the builds.\n\nAndres Wokaty (they/them)\n\nWaldron Lab at CUNY SPH\nBioconductor Core Team\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-",
       "thread_id": "thread-25030d774215",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021500.html"
     },
     {
       "id": "msg-0ecece0aca7c",
@@ -152,7 +159,8 @@
       "body_snippet": "I am maintainer of DAssemble and I also just got notified of the same issue being discussed in the thread.\n\nAttaching the link of the issue: https://bioconductor.org/checkResults/3.24/bioc-LATEST/DAss",
       "thread_id": "thread-25030d774215",
       "thread_depth": 2,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021501.html"
     },
     {
       "id": "msg-a4f596358ded",
@@ -168,7 +176,8 @@
       "body_snippet": "Hi Bioc-devel team,\nMy package SpatialArtifacts is currently showing a BUILD ERROR on both nebbiolo2 and lconway: https://bioconductor.org/checkResults/3.24/bioc-LATEST/SpatialArtifacts/nebbiolo2-buil",
       "thread_id": "thread-a4f596358ded",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021502.html"
     },
     {
       "id": "msg-f3229dedc72f",
@@ -186,7 +195,8 @@
       "body_snippet": "Hi Harriet,\n\nAndres Wokaty is aware of the issue and looking into it. That error is \nimpacting many packages.\n\nPariksheet\n\nOn 9/2/26 12:21, Harriet Jiali He via Bioc-devel wrote:\n> Hi Bioc-devel team,",
       "thread_id": "thread-a4f596358ded",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021503.html"
     },
     {
       "id": "msg-3c256706f912",
@@ -207,7 +217,8 @@
       "body_snippet": "Hi Pariksheet,\nno problem.\nThe messages you sent refer to the previous version (0.99.12) of geneslator package and that problem was already fixed.\nThe report I sent refers to version 0.99.14, whose re",
       "thread_id": "thread-25030d774215",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021504.html"
     },
     {
       "id": "msg-37b90f45ea9f",
@@ -230,7 +241,8 @@
       "body_snippet": "If you were just notified today of package errors and didn't push any recent changes to your packages, it's likely a problem with the builder. Yesterday a new version of rmarkdown was published on CRA",
       "thread_id": "thread-25030d774215",
       "thread_depth": 3,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021505.html"
     },
     {
       "id": "msg-884f8eb29850",
@@ -246,7 +258,8 @@
       "body_snippet": "Dear Bioconductor team,\nI maintain the EMTscore package (version 0.99.10) on the BioC 3.24 build\nreport. In the latest daily builds, R CMD build fails at the vignette step\nwith:\nError: processing vign",
       "thread_id": "thread-884f8eb29850",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021506.html"
     },
     {
       "id": "msg-31ce1159f8c6",
@@ -262,7 +275,8 @@
       "body_snippet": "Hi,\n\nIf you recently received a notification or noticed build errors related to pandoc, it's an error related to the version of pandoc on the builders. Yesterday a new version of rmarkdown was publish",
       "thread_id": "thread-31ce1159f8c6",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021507.html"
     },
     {
       "id": "msg-cec489c39993",
@@ -278,7 +292,8 @@
       "body_snippet": "Dear Bioconductor team,\n\nI am the maintainer of CEMiTool. CEMiTool 1.37.0 (commit dffeb39) is\ncurrently failing on the nebbiolo2 builder while creating the vignette\nCEMiTool.Rmd.\n\nThe reported error i",
       "thread_id": "thread-cec489c39993",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021508.html"
     },
     {
       "id": "msg-dc85283e7b9b",
@@ -296,7 +311,8 @@
       "body_snippet": "Please try and glance at previous mailing list posts before posting.  There have been several today including this one addressing this error:\nhttps://stat.ethz.ch/pipermail/bioc-devel/2026-September/0",
       "thread_id": "thread-cec489c39993",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021509.html"
     },
     {
       "id": "msg-3ed3f2e32fa9",
@@ -308,11 +324,12 @@
       "subject_clean": "[Bioc-devel] Update Bioconductor package",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "Dear Bioconductor devel staff,\n\nI'm a maintainer of MDP (Molecular Degree of Perturbation) package and the\nPI, Helder Nakaya, received an error about the package vignette. I fixed\nthe error but I'm unable to git fetch stream, create a RELEASE_3_24 branch\nand commit the modification to remote repo.\n\nCould you assist us to have it sorted out?\n\nAll the best,\n\n\n--\n*Andr? Gon?alves*\nSenior Post-doctoral Research Associate\nBioinformatics PhD\nOxford Vaccine Group\nUniversity of Oxford\nOxford\n\n\t[[alternative HTML version deleted]]",
+      "body_plain": "Dear Bioconductor devel staff,\n\nI'm a maintainer of MDP (Molecular Degree of Perturbation) package and the\nPI, Helder Nakaya, received an error about the package vignette. I fixed\nthe error but I'm unable to git fetch stream, create a RELEASE_3_24 branch\nand commit the modification to remote repo.\n\nCould you assist us to have it sorted out?\n\nAll the best,\n\n\n--\n*André Gonçalves*\nSenior Post-doctoral Research Associate\nBioinformatics PhD\nOxford Vaccine Group\nUniversity of Oxford\nOxford\n\n\t[[alternative HTML version deleted]]",
       "body_snippet": "Dear Bioconductor devel staff,\n\nI'm a maintainer of MDP (Molecular Degree of Perturbation) package and the\nPI, Helder Nakaya, received an error about the package vignette. I fixed\nthe error but I'm un",
       "thread_id": "thread-3ed3f2e32fa9",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021510.html"
     },
     {
       "id": "msg-86d0ff9b3d2e",
@@ -330,7 +347,8 @@
       "body_snippet": "A few things,\n\nIf the maintainer, Helder Nakaya would like you to have direct push access, please have them verify.  We will need to create you a BiocCredentials account and grant push access on our s",
       "thread_id": "thread-3ed3f2e32fa9",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021511.html"
     },
     {
       "id": "msg-f095b8b3312a",
@@ -345,11 +363,12 @@
         "<CAO9HKv9HtKyhy4Fa05hd5E=5SV0VwpK3iUKTUOAQug3Wzn7cLw@mail.gmail.com>",
         "<BL1PR12MB530124FB98FFE94576A3807EF9B62@BL1PR12MB5301.namprd12.prod.outlook.com>"
       ],
-      "body_plain": "Dear Lori,\n\nThank you very much for the prompt response. I'm including the maintainer,\nHelder Nakaya, to approve my push access.\n\nThank you very much.\n\n--\n*Andr? Gon?alves*\n\n\nEm qui., 3 de set. de 2026 ?s 15:42, Kern, Lori <\nLori.Shepherd at roswellpark.org> escreveu:\n\n> A few things,\n>\n> If the maintainer, Helder Nakaya would like you to have direct push\n> access, please have them verify.  We will need to create you a\n> BiocCredentials account and grant push access on our system to allow that.\n> We require the maintainer permission to add access.\n>\n> There is no RELEASE_3_24 branch. The current release version of\n> Bioconductor is only 3.23.  So there is a RELEASE_3_23.  If you are looking\n> to update the devel branch of Bioconductor that will be equivalent to 3.24,\n> you should be updating devel.\n>\n> See https://contributions.bioconductor.org/git-version-control.html\n> For more information.\n>\n> Maintainers should never be creating branches on the Bioconductor\n> canonical location of source code.\n>\n>\n> Cheers,\n>\n>\n> Lori Kern\n>\n> Bioconductor Core Team\n>\n> Roswell Park Comprehensive Cancer Center\n>\n> Department of Biostatistics & Bioinformatics\n>\n> Elm & Carlton Streets\n>\n> Buffalo, New York 14263\n> ------------------------------\n> *From:* Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Andr?\n> Gon?alves <anicolau85 at gmail.com>\n> *Sent:* Thursday, September 3, 2026 10:35 AM\n> *To:* bioc-devel at r-project.org <bioc-devel at r-project.org>\n> *Subject:* [Bioc-devel] Update Bioconductor package\n>\n> Dear Bioconductor devel staff,\n>\n> I'm a maintainer of MDP (Molecular Degree of Perturbation) package and the\n> PI, Helder Nakaya, received an error about the package vignette. I fixed\n> the error but I'm unable to git fetch stream, create a RELEASE_3_24 branch\n> and commit the modification to remote repo.\n>\n> Could you assist us to have it sorted out?\n>\n> All the best,\n>\n>\n> --\n> *Andr? Gon?alves*\n> Senior Post-doctoral Research Associate\n> Bioinformatics PhD\n> Oxford Vaccine Group\n> University of Oxford\n> Oxford\n>\n>         [[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n>\n> https://secure-web.cisco.com/1O27UgsDmke8v0YKuxs6f5OKqD0GaW7gYlwmiNHS3Hd1WJeWnzJEcxXp38NRL5mTKWrwKlk1MuzdgC9ubF8zqn3csUjhJT6ujlhlhZMBcXRhzZinA4biRgfijC8ym9IWtbzN7mLcqbxH02jUdb0ITtohtfiQKQHtnVgwY5fXN3yLvhZbS04vS1LsPM7Re0WAljxsEec2Qd3FwPgG9RDs2BkDFhEgyLwD9au0FBeMCK_ICNKgtYyOH-bNXcfjjswTiiXhsVcDLI-bT5L8xT9iD-aNwkGfuOlInCuogshOELvAqRnBCBTeIB1sg_bHP-YUe/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n>\n>\n> This email message may contain legally privileged and/or confidential\n> information. If you are not the intended recipient(s), or the employee or\n> agent responsible for the delivery of this message to the intended\n> recipient(s), you are hereby notified that any disclosure, copying,\n> distribution, or use of this email message is prohibited. If you have\n> received this message in error, please notify the sender immediately by\n> e-mail and delete this email message from your computer. Thank you.\n>\n\n\t[[alternative HTML version deleted]]",
-      "body_snippet": "Dear Lori,\n\nThank you very much for the prompt response. I'm including the maintainer,\nHelder Nakaya, to approve my push access.\n\nThank you very much.\n\n--\n*Andr? Gon?alves*\n\n\nEm qui., 3 de set. de 202",
+      "body_plain": "Dear Lori,\n\nThank you very much for the prompt response. I'm including the maintainer,\nHelder Nakaya, to approve my push access.\n\nThank you very much.\n\n--\n*André Gonçalves*\n\n\nEm qui., 3 de set. de 2026 às 15:42, Kern, Lori <\nLori.Shepherd at roswellpark.org> escreveu:\n\n> A few things,\n>\n> If the maintainer, Helder Nakaya would like you to have direct push\n> access, please have them verify.  We will need to create you a\n> BiocCredentials account and grant push access on our system to allow that.\n> We require the maintainer permission to add access.\n>\n> There is no RELEASE_3_24 branch. The current release version of\n> Bioconductor is only 3.23.  So there is a RELEASE_3_23.  If you are looking\n> to update the devel branch of Bioconductor that will be equivalent to 3.24,\n> you should be updating devel.\n>\n> See https://contributions.bioconductor.org/git-version-control.html\n> For more information.\n>\n> Maintainers should never be creating branches on the Bioconductor\n> canonical location of source code.\n>\n>\n> Cheers,\n>\n>\n> Lori Kern\n>\n> Bioconductor Core Team\n>\n> Roswell Park Comprehensive Cancer Center\n>\n> Department of Biostatistics & Bioinformatics\n>\n> Elm & Carlton Streets\n>\n> Buffalo, New York 14263\n> ------------------------------\n> *From:* Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of André\n> Gonçalves <anicolau85 at gmail.com>\n> *Sent:* Thursday, September 3, 2026 10:35 AM\n> *To:* bioc-devel at r-project.org <bioc-devel at r-project.org>\n> *Subject:* [Bioc-devel] Update Bioconductor package\n>\n> Dear Bioconductor devel staff,\n>\n> I'm a maintainer of MDP (Molecular Degree of Perturbation) package and the\n> PI, Helder Nakaya, received an error about the package vignette. I fixed\n> the error but I'm unable to git fetch stream, create a RELEASE_3_24 branch\n> and commit the modification to remote repo.\n>\n> Could you assist us to have it sorted out?\n>\n> All the best,\n>\n>\n> --\n> *André Gonçalves*\n> Senior Post-doctoral Research Associate\n> Bioinformatics PhD\n> Oxford Vaccine Group\n> University of Oxford\n> Oxford\n>\n>         [[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n>\n> https://secure-web.cisco.com/1O27UgsDmke8v0YKuxs6f5OKqD0GaW7gYlwmiNHS3Hd1WJeWnzJEcxXp38NRL5mTKWrwKlk1MuzdgC9ubF8zqn3csUjhJT6ujlhlhZMBcXRhzZinA4biRgfijC8ym9IWtbzN7mLcqbxH02jUdb0ITtohtfiQKQHtnVgwY5fXN3yLvhZbS04vS1LsPM7Re0WAljxsEec2Qd3FwPgG9RDs2BkDFhEgyLwD9au0FBeMCK_ICNKgtYyOH-bNXcfjjswTiiXhsVcDLI-bT5L8xT9iD-aNwkGfuOlInCuogshOELvAqRnBCBTeIB1sg_bHP-YUe/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel\n>\n>\n> This email message may contain legally privileged and/or confidential\n> information. If you are not the intended recipient(s), or the employee or\n> agent responsible for the delivery of this message to the intended\n> recipient(s), you are hereby notified that any disclosure, copying,\n> distribution, or use of this email message is prohibited. If you have\n> received this message in error, please notify the sender immediately by\n> e-mail and delete this email message from your computer. Thank you.\n>\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Dear Lori,\n\nThank you very much for the prompt response. I'm including the maintainer,\nHelder Nakaya, to approve my push access.\n\nThank you very much.\n\n--\n*André Gonçalves*\n\n\nEm qui., 3 de set. de 202",
       "thread_id": "thread-3ed3f2e32fa9",
       "thread_depth": 2,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021512.html"
     },
     {
       "id": "msg-21c4a8f5e19b",
@@ -365,7 +384,8 @@
       "body_snippet": "Dear Bioconductor core team,\n\nI maintain BamScale, which was accepted on 4 May 2026 (Bioconductor/Contributions issue #4128) and is currently in the 3.24 devel nightly builds at version 0.99.14. The p",
       "thread_id": "thread-21c4a8f5e19b",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021513.html"
     },
     {
       "id": "msg-67b840ba2a02",
@@ -381,7 +401,8 @@
       "body_snippet": "Dear Bioconductor Team,\n\nI'm writing regarding the error reported for my package 'parati'.\n\nparati 1.1.0 now fails during R CMD build on both nebbiolo2 and lconway.\nThe vignette error is:\n\n  pandoc ve",
       "thread_id": "thread-67b840ba2a02",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021514.html"
     },
     {
       "id": "msg-dd780ab3bfbc",
@@ -399,7 +420,8 @@
       "body_snippet": "Thank you for your inquiry.\n\nI agree there is no need to deprecate and we can handle the renaming.\n\nI would however recommend still submitting onto BiocContributions as the renamed package including a",
       "thread_id": "thread-21c4a8f5e19b",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021516.html"
     },
     {
       "id": "msg-3e2f9ffe6c7f",
@@ -417,7 +439,8 @@
       "body_snippet": "Please see previous posts.  There are several over the last few days including this one\nhttps://stat.ethz.ch/pipermail/bioc-devel/2026-September/021507.html\n\n\nLori Kern\n\nBioconductor Core Team\n\nRoswel",
       "thread_id": "thread-67b840ba2a02",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021515.html"
     },
     {
       "id": "msg-a14a2e5921e0",
@@ -435,7 +458,8 @@
       "body_snippet": "Hi All,\n\nI got the following email regarding the build fail of my package\n\"TissueEnrich\" on the nebbiolo2 server but I don't see any error when I go\non the build results. Is this build server specific",
       "thread_id": "thread-a14a2e5921e0",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021517.html"
     },
     {
       "id": "msg-975ed6c3a28c",
@@ -454,7 +478,8 @@
       "body_snippet": "Build Reports are daily.   It looks like the date of the email was for the build report on Wed Sept 2 (where the reported pandoc error was causing trouble for everyone and has since been resolved).  T",
       "thread_id": "thread-a14a2e5921e0",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021518.html"
     },
     {
       "id": "msg-13600a41ef0c",
@@ -474,7 +499,8 @@
       "body_snippet": "Thank you so much for the update Lori!!\n\nRegards,\nAshish Jain\n\nOn Fri, Sep 4, 2026, 7:45?AM Kern, Lori <Lori.Shepherd at roswellpark.org>\nwrote:\n\n> Build Reports are daily.   It looks like the date of",
       "thread_id": "thread-a14a2e5921e0",
       "thread_depth": 2,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021519.html"
     },
     {
       "id": "msg-a59ec073a134",
@@ -494,7 +520,8 @@
       "body_snippet": "Hi Sergio,\n\nRfast in the RELEASE_3_22 container is archived, so there won't be a new build. As you suggested, a user could reinstall or use a newer container.\n\nAndres Wokaty (they/them)\n\nWaldron Lab a",
       "thread_id": "thread-aad5bf4896d8",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021520.html"
     },
     {
       "id": "msg-062c215b2089",
@@ -510,7 +537,8 @@
       "body_snippet": "To whom it may concern,\n\nMy name is Veronica Quarato, PhD candidate at the Norwegian University of Life Sciences (NMBU), Norway.\n\nI am preparing a new package submission to Bioconductor for OmniCorr, ",
       "thread_id": "thread-062c215b2089",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021521.html"
     },
     {
       "id": "msg-2db904bfd0cb",
@@ -528,7 +556,8 @@
       "body_snippet": "You can submit your forked version.   In the end, Bioconductor creates a mirror on a Bioconductor location that is different than both of those Github repos.  However you want to keep the Bioconductor",
       "thread_id": "thread-062c215b2089",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021522.html"
     },
     {
       "id": "msg-914694ac735b",
@@ -547,7 +576,8 @@
       "body_snippet": "Dear Lori,\n\nThank you very much for the clarification. This is very helpful.\n\nI will submit my forked repository for the Bioconductor review and keep the original repository associated with the publis",
       "thread_id": "thread-062c215b2089",
       "thread_depth": 2,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021523.html"
     },
     {
       "id": "msg-f55a481ef731",
@@ -563,7 +593,8 @@
       "body_snippet": "Dear Bioconductor Team,\n\nsince my package GOfuncR is failing to build, I wish to deprecate the\npackage.\nEven though it might be a quick fix to make the build work again, I don't\nhave the time to reall",
       "thread_id": "thread-f55a481ef731",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021525.html"
     },
     {
       "id": "msg-05e71753dc90",
@@ -579,7 +610,8 @@
       "body_snippet": "Dear Bioconductor team and developers,\n\nI am te maintenair of the HiCDOC package and I am not able to reproduce the latest errors on the devel version of Bioconductor.\n\nThe devel build of HiCDOC (1.15",
       "thread_id": "thread-05e71753dc90",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021524.html"
     },
     {
       "id": "msg-5e62631f0adb",
@@ -597,7 +629,8 @@
       "body_snippet": "Thank you for letting us know. We will begin the deprecation process\n\n\nLori Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & ",
       "thread_id": "thread-f55a481ef731",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021526.html"
     },
     {
       "id": "msg-2c93f76b4668",
@@ -615,7 +648,8 @@
       "body_snippet": "? Thu, 17 Sep 2026 09:45:03 +0000\nElise Maigne <elise.maigne at inrae.fr> ?????:\n\n> After merging on package name, all 223 packages I have installed\n> show identical versions to those listed for nebbi",
       "thread_id": "thread-05e71753dc90",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021527.html"
     },
     {
       "id": "msg-8e95f8c449cd",
@@ -631,7 +665,8 @@
       "body_snippet": "Hello,\n\nDoes anyone know what could be causing the below error when issuing the command ?git push upstream master?? Thank you.\n\nEnumerating objects: 222, done.\nCounting objects: 100% (207/207), done.\n",
       "thread_id": "thread-8e95f8c449cd",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021528.html"
     },
     {
       "id": "msg-2efc110023e2",
@@ -649,7 +684,8 @@
       "body_snippet": "There is no master branch on Bioconductor.  You should be pushing to devel.\n\nSee  item 5 at https://contributions.bioconductor.org/git-version-control.html#new-package-workflow\n\nYou need to do somethi",
       "thread_id": "thread-8e95f8c449cd",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021529.html"
     },
     {
       "id": "msg-8e3cb232ed16",
@@ -664,11 +700,12 @@
         "<31dd34610c51442793c39db8a118739f@inrae.fr>",
         "<20260917171749.655a1994@arachnoid>"
       ],
-      "body_plain": "Thank you very much\n\nI?m now able to reproduce the errors, so now all that?s left is to fix them!\n\n\n\nI'm still a bit confused since when I checked the S4Vector was on version 0.51.9 on the list of packages installed.I guess it takes the latest commit, even whithout version bump ?\n\n\nThanks again\n\nElise\n\n________________________________\nDe : Ivan Krylov <ikrylov at disroot.org>\nEnvoy? : jeudi 17 septembre 2026 16:17:49\n? : Elise Maigne\nCc : bioc-devel at r-project.org\nObjet : Re: [Bioc-devel] HiCDOC package - Fail to reproduce error on bioconductor devel build\n\n? Thu, 17 Sep 2026 09:45:03 +0000\nElise Maigne <elise.maigne at inrae.fr> ?????:\n\n> After merging on package name, all 223 packages I have installed\n> show identical versions to those listed for nebbiolo2:\n\nThe build machines appear to be having a newer version of S4Vectors\ninstalled, the one where S4Vectors:::.as.data.frame.Vector exists:\n\nhttps://github.com/Bioconductor/S4Vectors/commit/79e0c50e8ca44ed621de69ca63b3e744c53f5d6e\n\nInstalling S4Vectors_0.51.9.tar.gz from the Bioconductor repository\nprevents the error. Installing the latest (currently 0.51.10) version\nfrom https://github.com/Bioconductor/S4Vectors reproduces the problem.\n\nIndeed, the commit that introduces .as.data.frame.Vector predates the\ncommit that changed the version from 0.51.9 to 0.51.10.\n\n--\nBest regards,\nIvan\n\n\n\n\n\n\t[[alternative HTML version deleted]]",
-      "body_snippet": "Thank you very much\n\nI?m now able to reproduce the errors, so now all that?s left is to fix them!\n\n\n\nI'm still a bit confused since when I checked the S4Vector was on version 0.51.9 on the list of pac",
+      "body_plain": "Thank you very much\n\nI’m now able to reproduce the errors, so now all that’s left is to fix them!\n\n\n\nI'm still a bit confused since when I checked the S4Vector was on version 0.51.9 on the list of packages installed.I guess it takes the latest commit, even whithout version bump ?\n\n\nThanks again\n\nElise\n\n________________________________\nDe : Ivan Krylov <ikrylov at disroot.org>\nEnvoyé : jeudi 17 septembre 2026 16:17:49\nÀ : Elise Maigne\nCc : bioc-devel at r-project.org\nObjet : Re: [Bioc-devel] HiCDOC package - Fail to reproduce error on bioconductor devel build\n\nВ Thu, 17 Sep 2026 09:45:03 +0000\nElise Maigne <elise.maigne at inrae.fr> пишет:\n\n> After merging on package name, all 223 packages I have installed\n> show identical versions to those listed for nebbiolo2:\n\nThe build machines appear to be having a newer version of S4Vectors\ninstalled, the one where S4Vectors:::.as.data.frame.Vector exists:\n\nhttps://github.com/Bioconductor/S4Vectors/commit/79e0c50e8ca44ed621de69ca63b3e744c53f5d6e\n\nInstalling S4Vectors_0.51.9.tar.gz from the Bioconductor repository\nprevents the error. Installing the latest (currently 0.51.10) version\nfrom https://github.com/Bioconductor/S4Vectors reproduces the problem.\n\nIndeed, the commit that introduces .as.data.frame.Vector predates the\ncommit that changed the version from 0.51.9 to 0.51.10.\n\n--\nBest regards,\nIvan\n\n\n\n\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Thank you very much\n\nI’m now able to reproduce the errors, so now all that’s left is to fix them!\n\n\n\nI'm still a bit confused since when I checked the S4Vector was on version 0.51.9 on the list of pac",
       "thread_id": "thread-8e3cb232ed16",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021530.html"
     },
     {
       "id": "msg-0eb2b9761665",
@@ -687,7 +724,8 @@
       "body_snippet": "Thank you.\nBill\n\nFrom: Kern, Lori <Lori.Shepherd at RoswellPark.org>\nSent: Thursday, September 17, 2026 1:52 PM\nTo: bioc-devel at r-project.org; Wheeler, Bill (IMS) <WheelerB at imsweb.com>\nSubject: [",
       "thread_id": "thread-8e95f8c449cd",
       "thread_depth": 2,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021531.html"
     },
     {
       "id": "msg-26af578455c6",
@@ -703,7 +741,8 @@
       "body_snippet": "Hi folks,\n\nFor the September Developer Forum we will have Andrew Ghazi presenting on:\n\nManaging dependencies and improving performance in R package development\n\nThis talk will focus on two complementa",
       "thread_id": "thread-26af578455c6",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021532.html"
     },
     {
       "id": "msg-30c2e60726bc",
@@ -723,7 +762,8 @@
       "body_snippet": "? Fri, 18 Sep 2026 07:23:43 +0000\nElise Maigne <elise.maigne at inrae.fr> ?????:\n\n> I'm still a bit confused since when I checked the S4Vector was on\n> version 0.51.9 on the list of packages installed",
       "thread_id": "thread-8e3cb232ed16",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021533.html"
     },
     {
       "id": "msg-bcc180a462f7",
@@ -739,7 +779,8 @@
       "body_snippet": "Hi folks,\n\nWe are running a survey through the end of September to collect general information about the Bioconductor community. The survey is focused on developers, but anyone in the community is inv",
       "thread_id": "thread-bcc180a462f7",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021534.html"
     },
     {
       "id": "msg-a4b9225fabce",
@@ -755,7 +796,8 @@
       "body_snippet": "Hi Rujin,\n\nI'm reaching out because we've identified your Bioconductor package WGSmapp as having a source package greater than 100MB. WGSmapp is 196MB. As you may know Bioconductor is transitioning to",
       "thread_id": "thread-a4b9225fabce",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021535.html"
     },
     {
       "id": "msg-2a65a3383833",
@@ -771,7 +813,8 @@
       "body_snippet": "Dear Bioconductor team,\n\n  I am the current maintainer of ExpressionAtlas \n(https://www.bioconductor.org/packages/release/bioc/html/ExpressionAtlas.html) \nand would like to transfer maintainership to ",
       "thread_id": "thread-2a65a3383833",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021537.html"
     },
     {
       "id": "msg-fc3a3455dabd",
@@ -787,11 +830,12 @@
         "<BL1PR12MB5301BE7EE32CB123A2001EC1F91D2@BL1PR12MB5301.namprd12.prod.outlook.com>",
         "<PATP264MB668702FE6C14388B01776DF59CE22@PATP264MB6687.FRAP264.PROD.OUTLOOK.COM>"
       ],
-      "body_plain": "Dear all,\n\nA few months and gone by and this has not progressed for what I understand.\n\nUnfortunately I won?t have time to maintain MoonlightR any further, therefore I would like to be removed as a maintainer, meaning the package will be orphaned and I assume deprecated?\n\nIf Antonio will pick up the maintainer duty before it?s removed from BioC, I?m still happy to do the swap\n\nKind regards,\n\nMatteo\n\nFrom: Colaprico Antonio <antonio.colaprico at curie.fr>\nDate: Friday, 19 June 2026 at 14.52\nTo: Kern, Lori <Lori.Shepherd at RoswellPark.org>; bioc-devel at r-project.org <bioc-devel at r-project.org>; Matteo Tiberti <tiberti at cancer.dk>\nSubject: Re: Change of maintainer for MoonlightR package\n\nDear Lori,\nThank you for your email and for your help with this transition.\nFirst of all, my apologies for the delay in getting back to you.\nI confirm that I will take over as the maintainer of the MoonlightR package and would like to proceed with the requested change.\nFor the BiocCredentials account, please use my personal email address:\nantonio.colaprico at gmail.com<mailto:antonio.colaprico at gmail.com>\nMy GitHub username is:\ntorongs82\nOnce the configuration has been updated on your end and the account is activated, I will update the package configuration and test that the access change was successful.\nPlease let me know if you need any additional information or if there is anything else I should do on my side.\nThank you again for your support.\nBest regards,\nAntonio Colaprico, PhD\nInstitut Curie, Paris, France\n\n________________________________\nFrom: Kern, Lori <Lori.Shepherd at RoswellPark.org>\nSent: Tuesday, June 9, 2026 13:15\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>; Matteo Tiberti <tiberti at cancer.dk>\nCc: Colaprico Antonio <antonio.colaprico at curie.fr>\nSubject: Re: Change of maintainer for MoonlightR package\n\nThank you for reaching out.\n\nWe can proceed with this request as the current maintainer.  Please have Antonio confirm and we can make this change on the configuration on our end.\n\nWe recommend Antonio make the change once we finish up change the configuration as then they can test that change of access was successful.\n\nOnce the configuration on our end is changed, it is immediate on both branches.\n\n\nAntonio,\nI do not see a BiocCredentials account yet for you.  We will need to create this in order to update the configuration.  Please let us know what email you would like to use for login and your github username. We will send activation email directly to you. Once activated you will be able to manage ssh keys for access.\n\n\nCheers,\n\n\nLori Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Matteo Tiberti via Bioc-devel <bioc-devel at r-project.org>\nSent: Tuesday, June 9, 2026 3:25 AM\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>\nCc: Colaprico Antonio <antonio.colaprico at curie.fr>\nSubject: [Bioc-devel] Change of maintainer for MoonlightR package\n\n\nDear BioC,\n\nWe would like to change the maintainer for the MoonlightR package from me to Antonio Colaprico (antonio.colaprico at curie.fr<mailto:antonio.colaprico at curie.fr> ; cc?d).\n\nWhat do we need to do to make this happen? I assume we need confirmation form Antonio at the very least (he should already be part of BioConductor)\n\nI know I?m supposed to request the change here, but I am a bit fuzzy on the details:\n\n  1.\nI assume we need to change the maintainer role in the DESCRIPTION file - does this need to be done immediately both in the release and devel branch? And before or after the official change?\n  2.\nOnce you do the switch, will the change be effective for both branches immediately?\n\nThank you and kind regards,\n\nMatteo\n\n        [[alternative HTML version deleted]]\n\n\nThis email message may contain legally privileged and/or confidential information. If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited. If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\n\t[[alternative HTML version deleted]]",
-      "body_snippet": "Dear all,\n\nA few months and gone by and this has not progressed for what I understand.\n\nUnfortunately I won?t have time to maintain MoonlightR any further, therefore I would like to be removed as a ma",
+      "body_plain": "Dear all,\n\nA few months and gone by and this has not progressed for what I understand.\n\nUnfortunately I won’t have time to maintain MoonlightR any further, therefore I would like to be removed as a maintainer, meaning the package will be orphaned and I assume deprecated?\n\nIf Antonio will pick up the maintainer duty before it’s removed from BioC, I’m still happy to do the swap\n\nKind regards,\n\nMatteo\n\nFrom: Colaprico Antonio <antonio.colaprico at curie.fr>\nDate: Friday, 19 June 2026 at 14.52\nTo: Kern, Lori <Lori.Shepherd at RoswellPark.org>; bioc-devel at r-project.org <bioc-devel at r-project.org>; Matteo Tiberti <tiberti at cancer.dk>\nSubject: Re: Change of maintainer for MoonlightR package\n\nDear Lori,\nThank you for your email and for your help with this transition.\nFirst of all, my apologies for the delay in getting back to you.\nI confirm that I will take over as the maintainer of the MoonlightR package and would like to proceed with the requested change.\nFor the BiocCredentials account, please use my personal email address:\nantonio.colaprico at gmail.com<mailto:antonio.colaprico at gmail.com>\nMy GitHub username is:\ntorongs82\nOnce the configuration has been updated on your end and the account is activated, I will update the package configuration and test that the access change was successful.\nPlease let me know if you need any additional information or if there is anything else I should do on my side.\nThank you again for your support.\nBest regards,\nAntonio Colaprico, PhD\nInstitut Curie, Paris, France\n\n________________________________\nFrom: Kern, Lori <Lori.Shepherd at RoswellPark.org>\nSent: Tuesday, June 9, 2026 13:15\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>; Matteo Tiberti <tiberti at cancer.dk>\nCc: Colaprico Antonio <antonio.colaprico at curie.fr>\nSubject: Re: Change of maintainer for MoonlightR package\n\nThank you for reaching out.\n\nWe can proceed with this request as the current maintainer.  Please have Antonio confirm and we can make this change on the configuration on our end.\n\nWe recommend Antonio make the change once we finish up change the configuration as then they can test that change of access was successful.\n\nOnce the configuration on our end is changed, it is immediate on both branches.\n\n\nAntonio,\nI do not see a BiocCredentials account yet for you.  We will need to create this in order to update the configuration.  Please let us know what email you would like to use for login and your github username. We will send activation email directly to you. Once activated you will be able to manage ssh keys for access.\n\n\nCheers,\n\n\nLori Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Matteo Tiberti via Bioc-devel <bioc-devel at r-project.org>\nSent: Tuesday, June 9, 2026 3:25 AM\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>\nCc: Colaprico Antonio <antonio.colaprico at curie.fr>\nSubject: [Bioc-devel] Change of maintainer for MoonlightR package\n\n\nDear BioC,\n\nWe would like to change the maintainer for the MoonlightR package from me to Antonio Colaprico (antonio.colaprico at curie.fr<mailto:antonio.colaprico at curie.fr> ; cc?d).\n\nWhat do we need to do to make this happen? I assume we need confirmation form Antonio at the very least (he should already be part of BioConductor)\n\nI know I?m supposed to request the change here, but I am a bit fuzzy on the details:\n\n  1.\nI assume we need to change the maintainer role in the DESCRIPTION file - does this need to be done immediately both in the release and devel branch? And before or after the official change?\n  2.\nOnce you do the switch, will the change be effective for both branches immediately?\n\nThank you and kind regards,\n\nMatteo\n\n        [[alternative HTML version deleted]]\n\n\nThis email message may contain legally privileged and/or confidential information. If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited. If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\n\t[[alternative HTML version deleted]]",
+      "body_snippet": "Dear all,\n\nA few months and gone by and this has not progressed for what I understand.\n\nUnfortunately I won’t have time to maintain MoonlightR any further, therefore I would like to be removed as a ma",
       "thread_id": "thread-fc3a3455dabd",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021536.html"
     },
     {
       "id": "msg-68ccbd914744",
@@ -808,11 +852,12 @@
         "<PATP264MB668702FE6C14388B01776DF59CE22@PATP264MB6687.FRAP264.PROD.OUTLOOK.COM>",
         "<VI2PR09MB85136236851BE718BFE13FCFB6802@VI2PR09MB8513.eurprd09.prod.outlook.com>"
       ],
-      "body_plain": "We will mark the package as deprecated.  If someone is willing to maintain the package, please reach back out and we will un-deprecate.\n\n\nLori Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Matteo Tiberti <tiberti at cancer.dk>\nSent: Friday, September 25, 2026 4:41 AM\nTo: Colaprico Antonio <antonio.colaprico at curie.fr>; Kern, Lori <Lori.Shepherd at RoswellPark.org>; bioc-devel at r-project.org <bioc-devel at r-project.org>\nSubject: Re: Change of maintainer for MoonlightR package\n\nDear all,\n\nA few months and gone by and this has not progressed for what I understand.\n\nUnfortunately I won?t have time to maintain MoonlightR any further, therefore I would like to be removed as a maintainer, meaning the package will be orphaned and I assume deprecated?\n\nIf Antonio will pick up the maintainer duty before it?s removed from BioC, I?m still happy to do the swap\n\nKind regards,\n\nMatteo\n\nFrom: Colaprico Antonio <antonio.colaprico at curie.fr>\nDate: Friday, 19 June 2026 at 14.52\nTo: Kern, Lori <Lori.Shepherd at RoswellPark.org>; bioc-devel at r-project.org <bioc-devel at r-project.org>; Matteo Tiberti <tiberti at cancer.dk>\nSubject: Re: Change of maintainer for MoonlightR package\n\nDear Lori,\nThank you for your email and for your help with this transition.\nFirst of all, my apologies for the delay in getting back to you.\nI confirm that I will take over as the maintainer of the MoonlightR package and would like to proceed with the requested change.\nFor the BiocCredentials account, please use my personal email address:\nantonio.colaprico at gmail.com<mailto:antonio.colaprico at gmail.com>\nMy GitHub username is:\ntorongs82\nOnce the configuration has been updated on your end and the account is activated, I will update the package configuration and test that the access change was successful.\nPlease let me know if you need any additional information or if there is anything else I should do on my side.\nThank you again for your support.\nBest regards,\nAntonio Colaprico, PhD\nInstitut Curie, Paris, France\n\n________________________________\nFrom: Kern, Lori <Lori.Shepherd at RoswellPark.org>\nSent: Tuesday, June 9, 2026 13:15\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>; Matteo Tiberti <tiberti at cancer.dk>\nCc: Colaprico Antonio <antonio.colaprico at curie.fr>\nSubject: Re: Change of maintainer for MoonlightR package\n\nThank you for reaching out.\n\nWe can proceed with this request as the current maintainer.  Please have Antonio confirm and we can make this change on the configuration on our end.\n\nWe recommend Antonio make the change once we finish up change the configuration as then they can test that change of access was successful.\n\nOnce the configuration on our end is changed, it is immediate on both branches.\n\n\nAntonio,\nI do not see a BiocCredentials account yet for you.  We will need to create this in order to update the configuration.  Please let us know what email you would like to use for login and your github username. We will send activation email directly to you. Once activated you will be able to manage ssh keys for access.\n\n\nCheers,\n\n\nLori Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Matteo Tiberti via Bioc-devel <bioc-devel at r-project.org>\nSent: Tuesday, June 9, 2026 3:25 AM\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>\nCc: Colaprico Antonio <antonio.colaprico at curie.fr>\nSubject: [Bioc-devel] Change of maintainer for MoonlightR package\n\n\nDear BioC,\n\nWe would like to change the maintainer for the MoonlightR package from me to Antonio Colaprico (antonio.colaprico at curie.fr<mailto:antonio.colaprico at curie.fr> ; cc?d).\n\nWhat do we need to do to make this happen? I assume we need confirmation form Antonio at the very least (he should already be part of BioConductor)\n\nI know I?m supposed to request the change here, but I am a bit fuzzy on the details:\n\n  1.\nI assume we need to change the maintainer role in the DESCRIPTION file - does this need to be done immediately both in the release and devel branch? And before or after the official change?\n  2.\nOnce you do the switch, will the change be effective for both branches immediately?\n\nThank you and kind regards,\n\nMatteo\n\n        [[alternative HTML version deleted]]\n\n\nThis email message may contain legally privileged and/or confidential information. If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited. If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\n\nThis email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\t[[alternative HTML version deleted]]",
+      "body_plain": "We will mark the package as deprecated.  If someone is willing to maintain the package, please reach back out and we will un-deprecate.\n\n\nLori Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Matteo Tiberti <tiberti at cancer.dk>\nSent: Friday, September 25, 2026 4:41 AM\nTo: Colaprico Antonio <antonio.colaprico at curie.fr>; Kern, Lori <Lori.Shepherd at RoswellPark.org>; bioc-devel at r-project.org <bioc-devel at r-project.org>\nSubject: Re: Change of maintainer for MoonlightR package\n\nDear all,\n\nA few months and gone by and this has not progressed for what I understand.\n\nUnfortunately I won’t have time to maintain MoonlightR any further, therefore I would like to be removed as a maintainer, meaning the package will be orphaned and I assume deprecated?\n\nIf Antonio will pick up the maintainer duty before it’s removed from BioC, I’m still happy to do the swap\n\nKind regards,\n\nMatteo\n\nFrom: Colaprico Antonio <antonio.colaprico at curie.fr>\nDate: Friday, 19 June 2026 at 14.52\nTo: Kern, Lori <Lori.Shepherd at RoswellPark.org>; bioc-devel at r-project.org <bioc-devel at r-project.org>; Matteo Tiberti <tiberti at cancer.dk>\nSubject: Re: Change of maintainer for MoonlightR package\n\nDear Lori,\nThank you for your email and for your help with this transition.\nFirst of all, my apologies for the delay in getting back to you.\nI confirm that I will take over as the maintainer of the MoonlightR package and would like to proceed with the requested change.\nFor the BiocCredentials account, please use my personal email address:\nantonio.colaprico at gmail.com<mailto:antonio.colaprico at gmail.com>\nMy GitHub username is:\ntorongs82\nOnce the configuration has been updated on your end and the account is activated, I will update the package configuration and test that the access change was successful.\nPlease let me know if you need any additional information or if there is anything else I should do on my side.\nThank you again for your support.\nBest regards,\nAntonio Colaprico, PhD\nInstitut Curie, Paris, France\n\n________________________________\nFrom: Kern, Lori <Lori.Shepherd at RoswellPark.org>\nSent: Tuesday, June 9, 2026 13:15\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>; Matteo Tiberti <tiberti at cancer.dk>\nCc: Colaprico Antonio <antonio.colaprico at curie.fr>\nSubject: Re: Change of maintainer for MoonlightR package\n\nThank you for reaching out.\n\nWe can proceed with this request as the current maintainer.  Please have Antonio confirm and we can make this change on the configuration on our end.\n\nWe recommend Antonio make the change once we finish up change the configuration as then they can test that change of access was successful.\n\nOnce the configuration on our end is changed, it is immediate on both branches.\n\n\nAntonio,\nI do not see a BiocCredentials account yet for you.  We will need to create this in order to update the configuration.  Please let us know what email you would like to use for login and your github username. We will send activation email directly to you. Once activated you will be able to manage ssh keys for access.\n\n\nCheers,\n\n\nLori Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartment of Biostatistics & Bioinformatics\n\nElm & Carlton Streets\n\nBuffalo, New York 14263\n\n________________________________\nFrom: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Matteo Tiberti via Bioc-devel <bioc-devel at r-project.org>\nSent: Tuesday, June 9, 2026 3:25 AM\nTo: bioc-devel at r-project.org <bioc-devel at r-project.org>\nCc: Colaprico Antonio <antonio.colaprico at curie.fr>\nSubject: [Bioc-devel] Change of maintainer for MoonlightR package\n\n\nDear BioC,\n\nWe would like to change the maintainer for the MoonlightR package from me to Antonio Colaprico (antonio.colaprico at curie.fr<mailto:antonio.colaprico at curie.fr> ; cc?d).\n\nWhat do we need to do to make this happen? I assume we need confirmation form Antonio at the very least (he should already be part of BioConductor)\n\nI know I?m supposed to request the change here, but I am a bit fuzzy on the details:\n\n  1.\nI assume we need to change the maintainer role in the DESCRIPTION file - does this need to be done immediately both in the release and devel branch? And before or after the official change?\n  2.\nOnce you do the switch, will the change be effective for both branches immediately?\n\nThank you and kind regards,\n\nMatteo\n\n        [[alternative HTML version deleted]]\n\n\nThis email message may contain legally privileged and/or confidential information. If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited. If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\n\nThis email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.\n\t[[alternative HTML version deleted]]",
       "body_snippet": "We will mark the package as deprecated.  If someone is willing to maintain the package, please reach back out and we will un-deprecate.\n\n\nLori Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive ",
       "thread_id": "thread-fc3a3455dabd",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021538.html"
     },
     {
       "id": "msg-0a0322b0a46a",
@@ -830,7 +875,8 @@
       "body_snippet": "We have updated the configuration on our end.  We will send separate emails to Iris and Renata to activate their accounts.\n\n\nLori Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center",
       "thread_id": "thread-2a65a3383833",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021539.html"
     },
     {
       "id": "msg-d921d57e1e09",
@@ -846,7 +892,8 @@
       "body_snippet": "We are preparing a new package submission. BiocCheck reports set.seed() at two sites. One is in a verbatim port of the frozen manuscript inference implementation, retained and regression-tested for ex",
       "thread_id": "thread-d921d57e1e09",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021540.html"
     },
     {
       "id": "msg-702eceba811e",
@@ -864,7 +911,8 @@
       "body_snippet": "Hi Luce,\n\n From the way you've described it, you don't need the latter.  Why is \nsetting the seed in the function any different than setting it outside? \nInstead, you can mention in the documentation ",
       "thread_id": "thread-d921d57e1e09",
       "thread_depth": 1,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021541.html"
     },
     {
       "id": "msg-ec5e3e5871b6",
@@ -880,7 +928,8 @@
       "body_snippet": "Hello Bioconductor,\n\nWe are planning on some maintenance and updates on the main bioconductor.org website this afternoon around 1 pm ET that includes access to the current release and devel packages. ",
       "thread_id": "thread-ec5e3e5871b6",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021542.html"
     },
     {
       "id": "msg-8617c89ce1d5",
@@ -896,7 +945,8 @@
       "body_snippet": "Hi,\n\nI'm getting some build errors for extraChIPs (\nhttps://bioconductor.org/checkResults/3.23/bioc-LATEST/extraChIPs/nebbiolo1-checksrc.html)\nwhich I can't recreate locally. Everything builds fine on",
       "thread_id": "thread-8617c89ce1d5",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021543.html"
     },
     {
       "id": "msg-258af702f9d0",
@@ -912,7 +962,8 @@
       "body_snippet": "Hi folks,\n\nJust a reminder, this is the last day for the Developer Survey. Every response we get is a big help!\n\nhttps://forms.gle/WWCZAX7uuPfr1Tw66\n\nCheers,\nNick\n\nNicholas Cooley, PhD (he/him)\nDevelo",
       "thread_id": "thread-258af702f9d0",
       "thread_depth": 0,
-      "month": "2026-09"
+      "month": "2026-09",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2026-September/021544.html"
     }
   ],
   "threads": [
