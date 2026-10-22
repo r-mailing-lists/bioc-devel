@@ -17,7 +17,8 @@
       "body_snippet": "Hello,\n\nThe latest builds of my package 'pareg' started failing on BioC 3.17 for\nLinux and macOS but not Windows:\nhttps://master.bioconductor.org/checkResults/3.17/bioc-LATEST/pareg/nebbiolo1-buildsrc",
       "thread_id": "thread-38f645041450",
       "thread_depth": 0,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019781.html"
     },
     {
       "id": "msg-a7cc92bb7ad0",
@@ -35,7 +36,8 @@
       "body_snippet": "Sorry to hear about this.  Our informal outlook on python\ninteroperation in Bioconductor packages is that\nthe basilisk discipline should be used.  This allows you to pin\nspecific versions of all pytho",
       "thread_id": "thread-38f645041450",
       "thread_depth": 1,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019782.html"
     },
     {
       "id": "msg-3d466bc00107",
@@ -54,7 +56,8 @@
       "body_snippet": "Thanks a lot for your response!\n\nThe Config/reticulate approach in DESCRIPTION looks very neat. I hope we\ncan use it at some point.\n\nCould the issue you are facing with the conda install be, that the ",
       "thread_id": "thread-38f645041450",
       "thread_depth": 2,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019783.html"
     },
     {
       "id": "msg-8ccd1707aff7",
@@ -70,11 +73,12 @@
         "<CAANT7+Xy33EvQqcnvfA=2tNgfLdrcxrBw6wMitBkZX=OZFHCmw@mail.gmail.com>",
         "<CAH=zyB71jJfJVyyu5rKP8FR-un8W1tF1+w=+iv3YpTh2LkmQ=w@mail.gmail.com>"
       ],
-      "body_plain": "I'll try to get clearer on the basilisk situation; I forked your repo\nand will plunge in soon.\nIt may take a while.  In the mean time I hope the BBS python stack can\nbe looked at\nto see what the issue might be.  @Jennifer Wokaty is it possible with\nthe recent R upgrades that\ntensorflow and tensorflow-probability might need to be installed/updated?\n\nOn Wed, Jul 5, 2023 at 3:01?PM Kim Philipp Jablonski\n<kim.philipp.jablonski at gmail.com> wrote:\n>\n> Thanks a lot for your response!\n>\n> The Config/reticulate approach in DESCRIPTION looks very neat. I hope we can use it at some point.\n>\n> Could the issue you are facing with the conda install be, that the package is called \"tensorflow-probability\" instead of \"tensorflow_probability\" (https://anaconda.org/conda-forge/tensorflow-probability)?\n>\n> I have followed the basilisk advice and incorporated it into my package here: https://github.com/cbg-ethz/pareg/tree/feature-basilisk.\n> The basilisk docs say \"Any R functions that use Python code should do so via basiliskRun()\".\n> This does not seem possible in my case as I am using tensorflow(probability) wrappers instead of calling them directly.\n> Building the vignettes with Github Actions fails because tensorflow could not be found: https://github.com/cbg-ethz/pareg/actions/runs/5466980003/jobs/9952690137#step:15:39 (I might have to activate basilisk somehow, but using basiliskStart seems to only make sense with basiliskRun). I could also not find any advice on this elsewhere.\n> Do you have a suggestion how to best handle this (or should it *just* work)?\n>\n>\n> On Tue, Jul 4, 2023 at 1:04?PM Vincent Carey <stvjc at channing.harvard.edu> wrote:\n>>\n>> Sorry to hear about this.  Our informal outlook on python\n>> interoperation in Bioconductor packages is that\n>> the basilisk discipline should be used.  This allows you to pin\n>> specific versions of all python dependencies\n>> and use python for your R functions from an insulated conda environment.\n>>\n>> There is also information about specifying python dependencies in the\n>> DESCRIPTION file at\n>> https://rstudio.github.io/reticulate/articles/python_dependencies.html\n>>  I do not know if our build\n>> system or R CMD install take effective advantage of that approach at this time.\n>>\n>> I was surprised to see that my attempt to use reticulate::py_install()\n>> to install tensorflow_probabiliity\n>> on my laptop failed:\n>>\n>> '/home/stvjc/.local/share/r-miniconda/bin/conda' 'install' '--yes'\n>> '--prefix' '/home/stvjc/.local/share/r-miniconda/envs/r-reticulate'\n>> '-c' 'conda-forge' 'tensorflow_probability'\n>> Retrieving notices: ...working... done\n>> Collecting package metadata (current_repodata.json): done\n>> Solving environment: unsuccessful initial attempt using frozen solve.\n>> Retrying with flexible solve.\n>> Collecting package metadata (repodata.json): done\n>> Solving environment: unsuccessful initial attempt using frozen solve.\n>> Retrying with flexible solve.\n>>\n>> PackagesNotFoundError: The following packages are not available from\n>> current channels:\n>>\n>>   - tensorflow_probability\n>>\n>> Current channels:\n>>\n>>   - https://conda.anaconda.org/conda-forge/linux-64\n>>   - https://conda.anaconda.org/conda-forge/noarch\n>>   - https://repo.anaconda.com/pkgs/main/linux-64\n>>   - https://repo.anaconda.com/pkgs/main/noarch\n>>   - https://repo.anaconda.com/pkgs/r/linux-64\n>>   - https://repo.anaconda.com/pkgs/r/noarch\n>>\n>> To search for alternate channels that may provide the conda package you're\n>> looking for, navigate to\n>>\n>>     https://anaconda.org\n>>\n>> and use the search bar at the top of the page.\n>>\n>>\n>> Error: one or more Python packages failed to install [error code 1]\n>>\n>> Enter a frame number, or 0 to exit\n>>\n>> 1: py_install(\"tensorflow_probability\")\n>>\n>> So the \"current channels\" used by reticulate in my pretty stock\n>> installation of R/reticulate seem flawed\n>> for this purpose.  I had hoped to write a bit of code that would check\n>> for the desired module and install\n>> it if missing, that you could include in your package.\n>>\n>> get_pippath = function() {\n>>    pypath = reticulate::conda_list() |> (\\(x)x[x$name==\"r-reticulate\",])()\n>>    gsub(\"python$\", \"pip\", pypath$python)\n>> }\n>>\n>> check_tfp = function() {\n>>    pippath = get_pippath()\n>>    peek = system(paste0(pippath, \" list | grep tensor\"), intern=TRUE)\n>>    peek = gsub(\" +\", \" \", peek)\n>>    tfdf = do.call(rbind, lapply(strsplit(peek, \" \"), function(x)\n>> data.frame(pkg=x[1], version=x[2])))\n>>    \"tensorflow_probability\" %in% tfdf$pkg\n>> }\n>>\n>> install_tfp = function() {\n>>    pippath = get_pippath()\n>>    chk = system(paste(pippath, \"install tensorflow_probability\"), intern=TRUE)\n>>    chk2 = check_tfp()\n>>    list(sysout=chk, tfp_installed=chk2)\n>> }\n>>\n>> The first two functions seem to do what I want, the latter does not.\n>>\n>> Suggestion -- read the basilisk vignettes, use it if at all possible.\n>> Certainly we can take\n>> care of this in our build system when the holiday ends, but it would\n>> be great to have the software\n>> arrange the solution when necessary, and I don't see a way to\n>> accomplish this at the moment.\n>>\n>>\n>>\n>> On Tue, Jul 4, 2023 at 5:32?AM Kim Philipp Jablonski\n>> <kim.philipp.jablonski at gmail.com> wrote:\n>> >\n>> > Hello,\n>> >\n>> > The latest builds of my package 'pareg' started failing on BioC 3.17 for\n>> > Linux and macOS but not Windows:\n>> > https://master.bioconductor.org/checkResults/3.17/bioc-LATEST/pareg/nebbiolo1-buildsrc.html\n>> > .\n>> > In both cases, the error messages is \"Python module tensorflow_probability\n>> > was not found\". This wasn't an issue in earlier releases.\n>> >\n>> > Do you know what the reason for this is and how I can fix it?\n>> > Thanks a lot for your help!\n>> >\n>> > Best regards,\n>> > Kim\n>> >\n>> >         [[alternative HTML version deleted]]\n>> >\n>> > _______________________________________________\n>> > Bioc-devel at r-project.org mailing list\n>> > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>> --\n>> The information in this e-mail is intended only for the person to whom it\n>> is\n>> addressed. If you believe this e-mail was sent to you in error and the\n>> e-mail\n>> contains patient information, please contact the Partners Compliance\n>> HelpLine at\n>> http://www.partners.org/complianceline\n>> <http://www.partners.org/complianceline> . If the e-mail was sent to you in\n>> error\n>> but does not contain patient information, please contact the sender\n>> and properly\n>> dispose of the e-mail.\n\n-- \nThe information in this e-mail is intended only for the person to whom it \nis\naddressed. If you believe this e-mail was sent to you in error and the \ne-mail\ncontains patient information, please contact the Partners?Compliance?\nHelpLine at\nhttp://www.partners.org/complianceline \n<http://www.partners.org/complianceline>?. If the e-mail was sent to you in \nerror\nbut does not contain patient information, please contact the sender \nand properly\ndispose of the e-mail.",
+      "body_plain": "I'll try to get clearer on the basilisk situation; I forked your repo\nand will plunge in soon.\nIt may take a while.  In the mean time I hope the BBS python stack can\nbe looked at\nto see what the issue might be.  @Jennifer Wokaty is it possible with\nthe recent R upgrades that\ntensorflow and tensorflow-probability might need to be installed/updated?\n\nOn Wed, Jul 5, 2023 at 3:01 PM Kim Philipp Jablonski\n<kim.philipp.jablonski at gmail.com> wrote:\n>\n> Thanks a lot for your response!\n>\n> The Config/reticulate approach in DESCRIPTION looks very neat. I hope we can use it at some point.\n>\n> Could the issue you are facing with the conda install be, that the package is called \"tensorflow-probability\" instead of \"tensorflow_probability\" (https://anaconda.org/conda-forge/tensorflow-probability)?\n>\n> I have followed the basilisk advice and incorporated it into my package here: https://github.com/cbg-ethz/pareg/tree/feature-basilisk.\n> The basilisk docs say \"Any R functions that use Python code should do so via basiliskRun()\".\n> This does not seem possible in my case as I am using tensorflow(probability) wrappers instead of calling them directly.\n> Building the vignettes with Github Actions fails because tensorflow could not be found: https://github.com/cbg-ethz/pareg/actions/runs/5466980003/jobs/9952690137#step:15:39 (I might have to activate basilisk somehow, but using basiliskStart seems to only make sense with basiliskRun). I could also not find any advice on this elsewhere.\n> Do you have a suggestion how to best handle this (or should it *just* work)?\n>\n>\n> On Tue, Jul 4, 2023 at 1:04 PM Vincent Carey <stvjc at channing.harvard.edu> wrote:\n>>\n>> Sorry to hear about this.  Our informal outlook on python\n>> interoperation in Bioconductor packages is that\n>> the basilisk discipline should be used.  This allows you to pin\n>> specific versions of all python dependencies\n>> and use python for your R functions from an insulated conda environment.\n>>\n>> There is also information about specifying python dependencies in the\n>> DESCRIPTION file at\n>> https://rstudio.github.io/reticulate/articles/python_dependencies.html\n>>  I do not know if our build\n>> system or R CMD install take effective advantage of that approach at this time.\n>>\n>> I was surprised to see that my attempt to use reticulate::py_install()\n>> to install tensorflow_probabiliity\n>> on my laptop failed:\n>>\n>> '/home/stvjc/.local/share/r-miniconda/bin/conda' 'install' '--yes'\n>> '--prefix' '/home/stvjc/.local/share/r-miniconda/envs/r-reticulate'\n>> '-c' 'conda-forge' 'tensorflow_probability'\n>> Retrieving notices: ...working... done\n>> Collecting package metadata (current_repodata.json): done\n>> Solving environment: unsuccessful initial attempt using frozen solve.\n>> Retrying with flexible solve.\n>> Collecting package metadata (repodata.json): done\n>> Solving environment: unsuccessful initial attempt using frozen solve.\n>> Retrying with flexible solve.\n>>\n>> PackagesNotFoundError: The following packages are not available from\n>> current channels:\n>>\n>>   - tensorflow_probability\n>>\n>> Current channels:\n>>\n>>   - https://conda.anaconda.org/conda-forge/linux-64\n>>   - https://conda.anaconda.org/conda-forge/noarch\n>>   - https://repo.anaconda.com/pkgs/main/linux-64\n>>   - https://repo.anaconda.com/pkgs/main/noarch\n>>   - https://repo.anaconda.com/pkgs/r/linux-64\n>>   - https://repo.anaconda.com/pkgs/r/noarch\n>>\n>> To search for alternate channels that may provide the conda package you're\n>> looking for, navigate to\n>>\n>>     https://anaconda.org\n>>\n>> and use the search bar at the top of the page.\n>>\n>>\n>> Error: one or more Python packages failed to install [error code 1]\n>>\n>> Enter a frame number, or 0 to exit\n>>\n>> 1: py_install(\"tensorflow_probability\")\n>>\n>> So the \"current channels\" used by reticulate in my pretty stock\n>> installation of R/reticulate seem flawed\n>> for this purpose.  I had hoped to write a bit of code that would check\n>> for the desired module and install\n>> it if missing, that you could include in your package.\n>>\n>> get_pippath = function() {\n>>    pypath = reticulate::conda_list() |> (\\(x)x[x$name==\"r-reticulate\",])()\n>>    gsub(\"python$\", \"pip\", pypath$python)\n>> }\n>>\n>> check_tfp = function() {\n>>    pippath = get_pippath()\n>>    peek = system(paste0(pippath, \" list | grep tensor\"), intern=TRUE)\n>>    peek = gsub(\" +\", \" \", peek)\n>>    tfdf = do.call(rbind, lapply(strsplit(peek, \" \"), function(x)\n>> data.frame(pkg=x[1], version=x[2])))\n>>    \"tensorflow_probability\" %in% tfdf$pkg\n>> }\n>>\n>> install_tfp = function() {\n>>    pippath = get_pippath()\n>>    chk = system(paste(pippath, \"install tensorflow_probability\"), intern=TRUE)\n>>    chk2 = check_tfp()\n>>    list(sysout=chk, tfp_installed=chk2)\n>> }\n>>\n>> The first two functions seem to do what I want, the latter does not.\n>>\n>> Suggestion -- read the basilisk vignettes, use it if at all possible.\n>> Certainly we can take\n>> care of this in our build system when the holiday ends, but it would\n>> be great to have the software\n>> arrange the solution when necessary, and I don't see a way to\n>> accomplish this at the moment.\n>>\n>>\n>>\n>> On Tue, Jul 4, 2023 at 5:32 AM Kim Philipp Jablonski\n>> <kim.philipp.jablonski at gmail.com> wrote:\n>> >\n>> > Hello,\n>> >\n>> > The latest builds of my package 'pareg' started failing on BioC 3.17 for\n>> > Linux and macOS but not Windows:\n>> > https://master.bioconductor.org/checkResults/3.17/bioc-LATEST/pareg/nebbiolo1-buildsrc.html\n>> > .\n>> > In both cases, the error messages is \"Python module tensorflow_probability\n>> > was not found\". This wasn't an issue in earlier releases.\n>> >\n>> > Do you know what the reason for this is and how I can fix it?\n>> > Thanks a lot for your help!\n>> >\n>> > Best regards,\n>> > Kim\n>> >\n>> >         [[alternative HTML version deleted]]\n>> >\n>> > _______________________________________________\n>> > Bioc-devel at r-project.org mailing list\n>> > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>> --\n>> The information in this e-mail is intended only for the person to whom it\n>> is\n>> addressed. If you believe this e-mail was sent to you in error and the\n>> e-mail\n>> contains patient information, please contact the Partners Compliance\n>> HelpLine at\n>> http://www.partners.org/complianceline\n>> <http://www.partners.org/complianceline> . If the e-mail was sent to you in\n>> error\n>> but does not contain patient information, please contact the sender\n>> and properly\n>> dispose of the e-mail.\n\n-- \nThe information in this e-mail is intended only for the person to whom it \nis\naddressed. If you believe this e-mail was sent to you in error and the \ne-mail\ncontains patient information, please contact the Partners?Compliance \nHelpLine at\nhttp://www.partners.org/complianceline \n<http://www.partners.org/complianceline> . If the e-mail was sent to you in \nerror\nbut does not contain patient information, please contact the sender \nand properly\ndispose of the e-mail.",
       "body_snippet": "I'll try to get clearer on the basilisk situation; I forked your repo\nand will plunge in soon.\nIt may take a while.  In the mean time I hope the BBS python stack can\nbe looked at\nto see what the issue",
       "thread_id": "thread-38f645041450",
       "thread_depth": 3,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019784.html"
     },
     {
       "id": "msg-350c68a77b6e",
@@ -95,7 +99,8 @@
       "body_snippet": "So I think Kim is interfacing to tensorflow by using the keras package from\nCRAN (partly authored by the Rstudio people). This package leaves it to the\nuser to install tensorflow, which is a highly no",
       "thread_id": "thread-38f645041450",
       "thread_depth": 4,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019785.html"
     },
     {
       "id": "msg-fda6b361b744",
@@ -115,7 +120,8 @@
       "body_snippet": "Hey,\n\nI haven't received any responses from the maintainer of ClusterCrit so I\nguess I will have to re-write the code used. How can I properly go about\nthis and credit the authors as well? Thanks!\n\nCh",
       "thread_id": "thread-fda6b361b744",
       "thread_depth": 0,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019786.html"
     },
     {
       "id": "msg-c16a7d3315a8",
@@ -136,7 +142,8 @@
       "body_snippet": "https://nonstationarity.sciencesconf.org/resource/page/id/7\nThat is, perhaps, not surprising...\n\nPackage seems to be too good to be abandoned. I wonder if anyone from their\nlab <https://modalx.parisna",
       "thread_id": "thread-fda6b361b744",
       "thread_depth": 1,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019787.html"
     },
     {
       "id": "msg-f88fdad88e63",
@@ -203,7 +210,8 @@
       "body_snippet": "We would not hunt down the lab especially for CRAN packages,  but you could reach out if you like.  That would probably be a recommended action to either ask someone from their lab to maintain or if y",
       "thread_id": "thread-fda6b361b744",
       "thread_depth": 2,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019791.html"
     },
     {
       "id": "msg-0641ce4560cc",
@@ -227,7 +235,8 @@
       "body_snippet": "Thank you all so much for your input and the references!\n\n@Kasper: I mostly rely on tensorflow and tensorflow-probability, so I might\nsomehow get rid of the keras dependency but it would require some ",
       "thread_id": "thread-38f645041450",
       "thread_depth": 7,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019792.html"
     },
     {
       "id": "msg-623c8222177d",
@@ -252,7 +261,8 @@
       "body_snippet": "This sounds excellent Kim!\n\nHere you can get 2.10 for Windows: https://anaconda.org/anaconda/tensorflow\nalthough my experience is that I hate mixing channels on conda. It is also\nquite interesting tha",
       "thread_id": "thread-38f645041450",
       "thread_depth": 8,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019793.html"
     },
     {
       "id": "msg-c3d17a3032ba",
@@ -278,7 +288,8 @@
       "body_snippet": "Thanks! I now only used the anaconda channel to install both tensorflow and\ntensorflow-probability.\nThis works fine for Linux and Windows, but now macOS crashes with \"Intel\nMKL FATAL ERROR: Cannot loa",
       "thread_id": "thread-38f645041450",
       "thread_depth": 9,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019794.html"
     },
     {
       "id": "msg-a16d65525edb",
@@ -304,7 +315,8 @@
       "body_snippet": "Not hard to have OS-specific environments, see for example:\n\nhttps://github.com/alanocallaghan/snifter/blob/devel/R/basilisk.R\n\n-A\n\nOn 7/6/23 20:23, Kasper Daniel Hansen wrote:\n> This sounds excellent",
       "thread_id": "thread-38f645041450",
       "thread_depth": 9,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019795.html"
     },
     {
       "id": "msg-99222b030e68",
@@ -331,7 +343,8 @@
       "body_snippet": "Thanks for the suggestion. I am already only installing \"nomkl\" for macOS\nwith \"if (Sys.info()[\"sysname\"] == \"Darwin\") \"nomkl==3.0\" else c()\".\n\nOn Sat, Jul 8, 2023 at 11:09?PM Aaron Lun <\ninfinite.mon",
       "thread_id": "thread-38f645041450",
       "thread_depth": 10,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019796.html"
     },
     {
       "id": "msg-1ec1200d15e6",
@@ -354,7 +367,8 @@
       "body_snippet": "Hey both,\n\nI have checked the package license (GPL) and it should be fine to use the\ncode. However, I am having difficulty finding the actual code to calculate\nthe internal metrics I am using (used in",
       "thread_id": "thread-fda6b361b744",
       "thread_depth": 3,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019797.html"
     },
     {
       "id": "msg-f3ee48750e9a",
@@ -372,7 +386,8 @@
       "body_snippet": "Hi,\nThank you for bringing this to my attention.\nI see the problem is the package is marked as time out in check.\nI have reached out to your team for assistance but I have not received guidance with t",
       "thread_id": "thread-f3ee48750e9a",
       "thread_depth": 0,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019798.html"
     },
     {
       "id": "msg-b31b39f96c4d",
@@ -396,7 +411,8 @@
       "body_snippet": "We can give you a little more time (a few weeks) to fix the package but please fix as soon as possible to avoid deprecation.\n\nCheers,\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Compr",
       "thread_id": "thread-fda6b361b744",
       "thread_depth": 4,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019799.html"
     },
     {
       "id": "msg-316e962e76ea",
@@ -412,7 +428,8 @@
       "body_snippet": "Dear all,\n\nJust one week left for in-person registration for BioC2023! Register before the deadline on Wednesday, 19th July.\n\nClick here to register: https://bioc2023.bioconductor.org/registration/\n\nH",
       "thread_id": "thread-316e962e76ea",
       "thread_depth": 0,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019800.html"
     },
     {
       "id": "msg-1c4f8bdf54dd",
@@ -428,7 +445,8 @@
       "body_snippet": "The Bioconductor Team is continuing to identify packages that will be deprecated in the next release to allow for the Bioconductor community to respond accordingly. This is the current list of depreca",
       "thread_id": "thread-1c4f8bdf54dd",
       "thread_depth": 0,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019801.html"
     },
     {
       "id": "msg-f9c437d84d1c",
@@ -444,7 +462,8 @@
       "body_snippet": "Dear all,\nmy package benchdamic has been giving TIMEOUT in the build results on\nmerida1\n<http://bioconductor.org/checkResults/release/bioc-LATEST/benchdamic/>\n(release macOS) and kunpeng2\n<https://bio",
       "thread_id": "thread-f9c437d84d1c",
       "thread_depth": 0,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019802.html"
     },
     {
       "id": "msg-3957d691269a",
@@ -462,7 +481,8 @@
       "body_snippet": "HI,\n\nI don't have a good explanation why it was timing out on kunpeng2 but I\nthink it will pass from now on!\n\nHere is what I did:\n\n1) I tried to build benchdamic on kunpeng2:\n\n$ R CMD build --keep-emp",
       "thread_id": "thread-f9c437d84d1c",
       "thread_depth": 1,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019803.html"
     },
     {
       "id": "msg-16d500373af8",
@@ -478,7 +498,8 @@
       "body_snippet": "Dear bio-devel list/team,\n\nI am writing this e-mail to ask whether\n\n\nz.gu at dkfz.de\n\n\nmay be added as co-maintainer to the software package YAPSA?\n\n\nThank you very much in advance and best regards Da",
       "thread_id": "thread-16d500373af8",
       "thread_depth": 0,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019806.html"
     },
     {
       "id": "msg-19de48429705",
@@ -497,7 +518,8 @@
       "body_snippet": "It looks to me like benchdamic doesn't actually use the HMP16SData package,\nbut a repackaged example dataset placed in the data/ directory. I do notice\nthat the vignette takes very long to run, especi",
       "thread_id": "thread-f9c437d84d1c",
       "thread_depth": 2,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019804.html"
     },
     {
       "id": "msg-49638ff1a8c3",
@@ -513,7 +535,8 @@
       "body_snippet": "Dear Bioc,\n\nI read in the previous email that the YAPSA package will be deprecated in\nthe next bioc release. I am one of the authors of this package but not the\nmaintainer. Can you add me to the repo ",
       "thread_id": "thread-49638ff1a8c3",
       "thread_depth": 0,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019805.html"
     },
     {
       "id": "msg-7bebd082246c",
@@ -531,7 +554,8 @@
       "body_snippet": "Yes we can add a co maintainer.  I will contact Zuguang Gu off mailing list to set up credentials for access.\n\n\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center",
       "thread_id": "thread-16d500373af8",
       "thread_depth": 1,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019807.html"
     },
     {
       "id": "msg-02a2e6f0dae5",
@@ -551,7 +575,8 @@
       "body_snippet": "Dear Martin and Levi,\nI truly appreciate your tips and the time you took to assist me. I'm going\nto look further into your suggestions by trying to reduce the computational\ntime needed to build the vi",
       "thread_id": "thread-f9c437d84d1c",
       "thread_depth": 3,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019808.html"
     },
     {
       "id": "msg-93943fb32606",
@@ -567,7 +592,8 @@
       "body_snippet": "Hi. I am having trouble analysing own data in champ. Error keep appearing\nas pd file and green file does not match. There is no error in the file.\nThe application run smoothly when the test data is us",
       "thread_id": "thread-93943fb32606",
       "thread_depth": 0,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019809.html"
     },
     {
       "id": "msg-fd6b804c2782",
@@ -585,7 +611,8 @@
       "body_snippet": "These questions are better asked on the support.bioconductor.org website.  Please also include the code you are using that depicts the ERROR as well as your sessionInfo when posting.\n\n\nLori Shepherd -",
       "thread_id": "thread-93943fb32606",
       "thread_depth": 1,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019810.html"
     },
     {
       "id": "msg-75a7f471b5f0",
@@ -603,7 +630,8 @@
       "body_snippet": "Thank you for your note.  This list is for package development.  Please\nregister\nat support.bioconductor.org and post your question there\n\nOn Fri, Jul 21, 2023 at 7:14?AM Keasiykan Selvaraju <keasiyka",
       "thread_id": "thread-93943fb32606",
       "thread_depth": 1,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019811.html"
     },
     {
       "id": "msg-619b091d89a6",
@@ -619,7 +647,8 @@
       "body_snippet": "Dear Bioc team,\n\nplease find attached word doc with screenshots. I am having trouble updating a newly submitted package. I do know the ssh keys were added to biocredentials and github, but I lack perm",
       "thread_id": "thread-619b091d89a6",
       "thread_depth": 0,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019812.html"
     },
     {
       "id": "msg-db2370de97d7",
@@ -637,7 +666,8 @@
       "body_snippet": "The mailing list did not allow the attachment to come through. I have responded in a different email with some additional information.\n\nCheers\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell P",
       "thread_id": "thread-619b091d89a6",
       "thread_depth": 1,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019813.html"
     },
     {
       "id": "msg-f7cf5fda8e04",
@@ -656,7 +686,8 @@
       "body_snippet": "Thanks Lori that worked. Unfortunately, I am getting another error now which I think is blocking pushing or interacting with upstream/devel.\n\nC:\\Users\\nkp68\\OneDrive - Newcastle University\\SARC\\SARC>g",
       "thread_id": "thread-619b091d89a6",
       "thread_depth": 2,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019814.html"
     },
     {
       "id": "msg-cdf6fbfcd683",
@@ -672,7 +703,8 @@
       "body_snippet": "Over the next day or two we will be running some updates on the Single Package Builder which may cause some intermittent downtime.  We apologize for any inconvenience and appreciate your understanding",
       "thread_id": "thread-cdf6fbfcd683",
       "thread_depth": 0,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019815.html"
     },
     {
       "id": "msg-96c5709d22dd",
@@ -692,7 +724,8 @@
       "body_snippet": "This might be helpful: http://contributions.bioconductor.org/git-version-control.html#faq  specifically #14 / #15\n\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Cen",
       "thread_id": "thread-619b091d89a6",
       "thread_depth": 3,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019816.html"
     },
     {
       "id": "msg-ea864d13700c",
@@ -717,7 +750,8 @@
       "body_snippet": "Hey both,\n\nI have edited the package code but I'm having some difficulties pushing it\nto trigger another build (github passphrase). Is there another way to\ntrigger the build? Thanks!\n\nCheers,\nSokratis",
       "thread_id": "thread-fda6b361b744",
       "thread_depth": 5,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019817.html"
     },
     {
       "id": "msg-b5e8a08c92d7",
@@ -743,7 +777,8 @@
       "body_snippet": "The package code needs to be pushed to git.bioconductor.org  not github.  Just wanted to be sure you are trying to push to the right place.  Could you please show the commands you are using with full ",
       "thread_id": "thread-fda6b361b744",
       "thread_depth": 6,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019818.html"
     },
     {
       "id": "msg-169cac5f804f",
@@ -769,7 +804,8 @@
       "body_snippet": "Also of note,  When you push you will need to have a valid version bump but the build will not be triggered by a push instantly.  The daily builder will pull, build, check all packages only once a day",
       "thread_id": "thread-fda6b361b744",
       "thread_depth": 6,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019819.html"
     },
     {
       "id": "msg-b1562a88fab0",
@@ -795,7 +831,8 @@
       "body_snippet": "Hi Sokratis,\n\nEverything in Bioconductor is built around the central Bioconductor git\nrepositories.  The only way to get changes out to users is to commit them\nto git.bioconductor.org and then the bui",
       "thread_id": "thread-fda6b361b744",
       "thread_depth": 6,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019820.html"
     },
     {
       "id": "msg-73db131c9255",
@@ -822,7 +859,8 @@
       "body_snippet": "Hey all,\n\nI created a new key and now I can commit etc but there is a conflict that\nis not allowing me to go ahead.\n\nMy commands:\ngit add .\ngit commit -m \"Update metrics\"\ngit push upstream main:devel\n",
       "thread_id": "thread-fda6b361b744",
       "thread_depth": 7,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019821.html"
     },
     {
       "id": "msg-33aa05c487b7",
@@ -850,7 +888,8 @@
       "body_snippet": "Hi Sokratis,\n\nYou need to do \"git pull --rebase\" before trying to push.\nMost probably the version has been bumped upstream.\n\nRegards,\nMartin\n\nOn Mon, Jul 31, 2023 at 2:16?PM Sokratis Kariotis <\nsokrat",
       "thread_id": "thread-fda6b361b744",
       "thread_depth": 8,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019822.html"
     },
     {
       "id": "msg-3b9d7d19ada2",
@@ -879,7 +918,8 @@
       "body_snippet": "Tried but its Already up to date.\n\nOn Mon, 31 Jul 2023, 7:22 pm Martin Grigorov, <martin.grigorov at gmail.com>\nwrote:\n\n> Hi Sokratis,\n>\n> You need to do \"git pull --rebase\" before trying to push.\n> M",
       "thread_id": "thread-fda6b361b744",
       "thread_depth": 9,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019823.html"
     },
     {
       "id": "msg-6b9ea4164fe6",
@@ -909,7 +949,8 @@
       "body_snippet": "You'll need to find the merge conflicts and resolve them. Recommit those files and then it should go.\n\n\nLori Shepherd - Kern\n\nBioconductor Core Team\n\nRoswell Park Comprehensive Cancer Center\n\nDepartme",
       "thread_id": "thread-fda6b361b744",
       "thread_depth": 10,
-      "month": "2023-07"
+      "month": "2023-07",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2023-July/019824.html"
     }
   ],
   "threads": [
