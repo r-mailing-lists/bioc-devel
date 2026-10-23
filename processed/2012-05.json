@@ -17,7 +17,8 @@
       "body_snippet": "Hi all,\n\nIn R 2.15.0, Bioc 2.10, the following works:\n\nlibrary(Biostrings)\nc(\"TTGCGA\",\"ATGGCT\",\"ACACTG\") %in% DNAStringSet(c(\"TTGCGA\",\"ATGRCT\",\"ACASTG\"))\n[1]  TRUE FALSE FALSE\n> sessionInfo()R version",
       "thread_id": "thread-087764fd76fa",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003359.html"
     },
     {
       "id": "msg-5bcf54ccd4f8",
@@ -33,7 +34,8 @@
       "body_snippet": "Hi Steffen, hi Wolfgang,\n\nWhen trying to list the marts available from an ensembl mirror, I get the following:\n\nlistMarts(host=\"uswest.ensembl.org\")\nSpace required after the Public Identifier\nSystemLi",
       "thread_id": "thread-5bcf54ccd4f8",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003360.html"
     },
     {
       "id": "msg-4e1812988d7c",
@@ -52,6 +54,7 @@
       "thread_id": "thread-5bcf54ccd4f8",
       "thread_depth": 1,
       "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003361.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120502/9c01e23f/attachment.pl"
       ]
@@ -68,11 +71,12 @@
       "references": [
         "<06B18C11-D3F8-41E5-B526-A14C30AD7A78@embl.de>"
       ],
-      "body_plain": "Hi Nico,\n\nLast week I did some improvements/reorganization of the match(),\n%in%, duplicated(), and unique() stuff in \nIRanges/GenomicRanges/Biostrings, and apparently forgot to define the \n\"%in%\" method\nfor ANY,Vector. Thanks for the catch!\n\nThis is fixed in IRanges 1.15.8. FWIW I also added an \"%in%\" method\nfor Vector,ANY so now this works too:\n\n   > DNAStringSet(c(\"TTGCGA\",\"ATGRCT\",\"ACASTG\")) %in% \nc(\"TTGCGA\",\"ATGGCT\",\"ACACTG\")\n   [1]  TRUE FALSE FALSE\n\n<rant mode>\n\nIt is so sad that we have to redefine \"%in%\" methods that do exactly\nthe same thing as base::`%in%`:\n\n   > base::`%in%`\n   function (x, table)\n   match(x, table, nomatch = 0L) > 0L\n   <environment: namespace:base>\n\njust because base::`%in%` cannot dispatch on the appropriate\n\"match\" method. A well-known issue of the way generics, methods\nand NAMESPACE interact with each other... but still an unfortunate\none.\n\n</rant mode>\n\nThe good news is that we have on our TODO list to explicitly define\nthe match() and %in% generics in BiocGenerics so there will be an\nopportunity to overwrite the \"%in%\" default method:\n\n   setMethod(\"%in%\", c(\"ANY\", \"ANY\"), function (x, table) match(x, \ntable, nomatch = 0L) > 0L)\n\n(I'm still hesitant about this though. What could be the drawbacks\nof overwriting the default method?)\n\nAlso last week at the same time I did the changes on match() and\nfamily, I also reimplemented the \"match\" method for DNAStringSet\nobjects (which is called when either 'x' or 'table' or both are\nDNAStringSet). The new implementation is in Biostrings 2.25.3.\nIt uses a hash-based algorithm instead of the quicksort-based algo\nthat was used so far. The resulting speedup varies a lot depending\non the sizes of 'x' and 'table', and will typically be important\n(10x or more) for big (i.e. > 1M elements) DNAStringSet objects.\n\nThis benefits directly %in%, duplicated() and unique() on\nDNAStringSet objects.\n\nWith Biostrings 2.25.3 (Bioc 2.11):\n\n   > library(Biostrings)\n   > probes <- DNAStringSet(hgu133aprobe)\n   > system.time(isdup <- duplicated(probes))\n      user  system elapsed\n     0.048   0.000   0.050\n\nWith Bioc <= 2.10:\n\n   > system.time(isdup <- duplicated(probes))\n      user  system elapsed\n     0.232   0.000   0.233\n\nFinally I should mention that, even though the hash function I use\nfor DNAStringSet (and RNAStringSet, AAStringSet, BStringSet) is the\nsame as the function used in base R for hashing the strings of a\nstandard character vector, calling match(), %in%, duplicated() or\nunique() on a standard character vector is still slightly faster\n(2x) than on a DNAStringSet. This can probably be explained by the\nfact that all the strings in all the character vectors defined in\na session are pre-hashed i.e. hashed the 1st time the string is\ncreated and the result of the hash stored in the \"global CHARSXP\nhash table\".\n\nCheers,\nH.\n\nOn 05/01/2012 05:28 AM, Nicolas Delhomme wrote:\n> Hi all,\n>\n> In R 2.15.0, Bioc 2.10, the following works:\n>\n> library(Biostrings)\n> c(\"TTGCGA\",\"ATGGCT\",\"ACACTG\") %in% DNAStringSet(c(\"TTGCGA\",\"ATGRCT\",\"ACASTG\"))\n> [1]  TRUE FALSE FALSE\n>> sessionInfo()R version 2.15.0 (2012-03-30)\n> Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)\n>\n> locale:\n> [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8\n>\n> attached base packages:\n> [1] stats     graphics  grDevices utils     datasets  methods   base\n>\n> other attached packages:\n> [1] Biostrings_2.24.1  IRanges_1.14.2     BiocGenerics_0.2.0\n>\n> loaded via a namespace (and not attached):\n> [1] stats4_2.15.0\n>\n>\n> While in Bioc 2.11 it fails:\n>\n> Error in match(x, table, nomatch = 0L) :\n>    'match' requires vector arguments\n>> sessionInfo()\n> R version 2.15.0 (2012-03-30)\n> Platform: x86_64-apple-darwin10.8.0 (64-bit)\n>\n> locale:\n> [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8\n>\n> attached base packages:\n> [1] stats     graphics  grDevices utils     datasets  methods   base\n>\n> other attached packages:\n> [1] Biostrings_2.25.3  IRanges_1.15.7     BiocGenerics_0.3.0\n>\n> loaded via a namespace (and not attached):\n> [1] stats4_2.15.0\n>\n>\n>\n> I'd just like to know if that is that a change of API or not. If yes, I'd need to adapt my code that currently fails building.\n>\n> Cheers,\n>\n> Nico\n>\n> ---------------------------------------------------------------\n> Nicolas Delhomme\n>\n> Genome Biology Computational Support\n>\n> European Molecular Biology Laboratory\n>\n> Tel: +49 6221 387 8310\n> Email: nicolas.delhomme at embl.de\n> Meyerhofstrasse 1 - Postfach 10.2209\n> 69102 Heidelberg, Germany\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi Nico,\n\nLast week I did some improvements/reorganization of the match(),\n%in%, duplicated(), and unique() stuff in \nIRanges/GenomicRanges/Biostrings, and apparently forgot to define the \n\"%in%\" method\nfor ANY,Vector. Thanks for the catch!\n\nThis is fixed in IRanges 1.15.8. FWIW I also added an \"%in%\" method\nfor Vector,ANY so now this works too:\n\n   > DNAStringSet(c(\"TTGCGA\",\"ATGRCT\",\"ACASTG\")) %in% \nc(\"TTGCGA\",\"ATGGCT\",\"ACACTG\")\n   [1]  TRUE FALSE FALSE\n\n<rant mode>\n\nIt is so sad that we have to redefine \"%in%\" methods that do exactly\nthe same thing as base::`%in%`:\n\n   > base::`%in%`\n   function (x, table)\n   match(x, table, nomatch = 0L) > 0L\n   <environment: namespace:base>\n\njust because base::`%in%` cannot dispatch on the appropriate\n\"match\" method. A well-known issue of the way generics, methods\nand NAMESPACE interact with each other... but still an unfortunate\none.\n\n</rant mode>\n\nThe good news is that we have on our TODO list to explicitly define\nthe match() and %in% generics in BiocGenerics so there will be an\nopportunity to overwrite the \"%in%\" default method:\n\n   setMethod(\"%in%\", c(\"ANY\", \"ANY\"), function (x, table) match(x, \ntable, nomatch = 0L) > 0L)\n\n(I'm still hesitant about this though. What could be the drawbacks\nof overwriting the default method?)\n\nAlso last week at the same time I did the changes on match() and\nfamily, I also reimplemented the \"match\" method for DNAStringSet\nobjects (which is called when either 'x' or 'table' or both are\nDNAStringSet). The new implementation is in Biostrings 2.25.3.\nIt uses a hash-based algorithm instead of the quicksort-based algo\nthat was used so far. The resulting speedup varies a lot depending\non the sizes of 'x' and 'table', and will typically be important\n(10x or more) for big (i.e. > 1M elements) DNAStringSet objects.\n\nThis benefits directly %in%, duplicated() and unique() on\nDNAStringSet objects.\n\nWith Biostrings 2.25.3 (Bioc 2.11):\n\n   > library(Biostrings)\n   > probes <- DNAStringSet(hgu133aprobe)\n   > system.time(isdup <- duplicated(probes))\n      user  system elapsed\n     0.048   0.000   0.050\n\nWith Bioc <= 2.10:\n\n   > system.time(isdup <- duplicated(probes))\n      user  system elapsed\n     0.232   0.000   0.233\n\nFinally I should mention that, even though the hash function I use\nfor DNAStringSet (and RNAStringSet, AAStringSet, BStringSet) is the\nsame as the function used in base R for hashing the strings of a\nstandard character vector, calling match(), %in%, duplicated() or\nunique() on a standard character vector is still slightly faster\n(2x) than on a DNAStringSet. This can probably be explained by the\nfact that all the strings in all the character vectors defined in\na session are pre-hashed i.e. hashed the 1st time the string is\ncreated and the result of the hash stored in the \"global CHARSXP\nhash table\".\n\nCheers,\nH.\n\nOn 05/01/2012 05:28 AM, Nicolas Delhomme wrote:\n> Hi all,\n>\n> In R 2.15.0, Bioc 2.10, the following works:\n>\n> library(Biostrings)\n> c(\"TTGCGA\",\"ATGGCT\",\"ACACTG\") %in% DNAStringSet(c(\"TTGCGA\",\"ATGRCT\",\"ACASTG\"))\n> [1]  TRUE FALSE FALSE\n>> sessionInfo()R version 2.15.0 (2012-03-30)\n> Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)\n>\n> locale:\n> [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8\n>\n> attached base packages:\n> [1] stats     graphics  grDevices utils     datasets  methods   base\n>\n> other attached packages:\n> [1] Biostrings_2.24.1  IRanges_1.14.2     BiocGenerics_0.2.0\n>\n> loaded via a namespace (and not attached):\n> [1] stats4_2.15.0\n>\n>\n> While in Bioc 2.11 it fails:\n>\n> Error in match(x, table, nomatch = 0L) :\n>    'match' requires vector arguments\n>> sessionInfo()\n> R version 2.15.0 (2012-03-30)\n> Platform: x86_64-apple-darwin10.8.0 (64-bit)\n>\n> locale:\n> [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8\n>\n> attached base packages:\n> [1] stats     graphics  grDevices utils     datasets  methods   base\n>\n> other attached packages:\n> [1] Biostrings_2.25.3  IRanges_1.15.7     BiocGenerics_0.3.0\n>\n> loaded via a namespace (and not attached):\n> [1] stats4_2.15.0\n>\n>\n>\n> I'd just like to know if that is that a change of API or not. If yes, I'd need to adapt my code that currently fails building.\n>\n> Cheers,\n>\n> Nico\n>\n> ---------------------------------------------------------------\n> Nicolas Delhomme\n>\n> Genome Biology Computational Support\n>\n> European Molecular Biology Laboratory\n>\n> Tel: +49 6221 387 8310\n> Email: nicolas.delhomme at embl.de\n> Meyerhofstrasse 1 - Postfach 10.2209\n> 69102 Heidelberg, Germany\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi Nico,\n\nLast week I did some improvements/reorganization of the match(),\n%in%, duplicated(), and unique() stuff in \nIRanges/GenomicRanges/Biostrings, and apparently forgot to define the \n\"%in%\" meth",
       "thread_id": "thread-087764fd76fa",
       "thread_depth": 1,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003362.html"
     },
     {
       "id": "msg-ccb8f76fcbda",
@@ -87,11 +91,12 @@
         "<06B18C11-D3F8-41E5-B526-A14C30AD7A78@embl.de>",
         "<4FA3373D.4070304@fhcrc.org>"
       ],
-      "body_plain": "Hi Herv?,\n\nThanks a lot for fixing it and for the super detailed description! Learned a lot :-) And thanks for the benchmarking, that's really useful as well!\n\nI can't really think of any drawbacks there, but my %in% usage is certainly limited. What do the R developer guys say about it? Wouldn't it make sense to have it that way in base R?\n\nCheers,\n\nNico\n\n\nOn May 4, 2012, at 3:56 AM, Herv? Pag?s wrote:\n\n> Hi Nico,\n> \n> Last week I did some improvements/reorganization of the match(),\n> %in%, duplicated(), and unique() stuff in IRanges/GenomicRanges/Biostrings, and apparently forgot to define the \"%in%\" method\n> for ANY,Vector. Thanks for the catch!\n> \n> This is fixed in IRanges 1.15.8. FWIW I also added an \"%in%\" method\n> for Vector,ANY so now this works too:\n> \n>  > DNAStringSet(c(\"TTGCGA\",\"ATGRCT\",\"ACASTG\")) %in% c(\"TTGCGA\",\"ATGGCT\",\"ACACTG\")\n>  [1]  TRUE FALSE FALSE\n> \n> <rant mode>\n> \n> It is so sad that we have to redefine \"%in%\" methods that do exactly\n> the same thing as base::`%in%`:\n> \n>  > base::`%in%`\n>  function (x, table)\n>  match(x, table, nomatch = 0L) > 0L\n>  <environment: namespace:base>\n> \n> just because base::`%in%` cannot dispatch on the appropriate\n> \"match\" method. A well-known issue of the way generics, methods\n> and NAMESPACE interact with each other... but still an unfortunate\n> one.\n> \n> </rant mode>\n> \n> The good news is that we have on our TODO list to explicitly define\n> the match() and %in% generics in BiocGenerics so there will be an\n> opportunity to overwrite the \"%in%\" default method:\n> \n>  setMethod(\"%in%\", c(\"ANY\", \"ANY\"), function (x, table) match(x, table, nomatch = 0L) > 0L)\n> \n> (I'm still hesitant about this though. What could be the drawbacks\n> of overwriting the default method?)\n> \n> Also last week at the same time I did the changes on match() and\n> family, I also reimplemented the \"match\" method for DNAStringSet\n> objects (which is called when either 'x' or 'table' or both are\n> DNAStringSet). The new implementation is in Biostrings 2.25.3.\n> It uses a hash-based algorithm instead of the quicksort-based algo\n> that was used so far. The resulting speedup varies a lot depending\n> on the sizes of 'x' and 'table', and will typically be important\n> (10x or more) for big (i.e. > 1M elements) DNAStringSet objects.\n> \n> This benefits directly %in%, duplicated() and unique() on\n> DNAStringSet objects.\n> \n> With Biostrings 2.25.3 (Bioc 2.11):\n> \n>  > library(Biostrings)\n>  > probes <- DNAStringSet(hgu133aprobe)\n>  > system.time(isdup <- duplicated(probes))\n>     user  system elapsed\n>    0.048   0.000   0.050\n> \n> With Bioc <= 2.10:\n> \n>  > system.time(isdup <- duplicated(probes))\n>     user  system elapsed\n>    0.232   0.000   0.233\n> \n> Finally I should mention that, even though the hash function I use\n> for DNAStringSet (and RNAStringSet, AAStringSet, BStringSet) is the\n> same as the function used in base R for hashing the strings of a\n> standard character vector, calling match(), %in%, duplicated() or\n> unique() on a standard character vector is still slightly faster\n> (2x) than on a DNAStringSet. This can probably be explained by the\n> fact that all the strings in all the character vectors defined in\n> a session are pre-hashed i.e. hashed the 1st time the string is\n> created and the result of the hash stored in the \"global CHARSXP\n> hash table\".\n> \n> Cheers,\n> H.\n> \n> On 05/01/2012 05:28 AM, Nicolas Delhomme wrote:\n>> Hi all,\n>> \n>> In R 2.15.0, Bioc 2.10, the following works:\n>> \n>> library(Biostrings)\n>> c(\"TTGCGA\",\"ATGGCT\",\"ACACTG\") %in% DNAStringSet(c(\"TTGCGA\",\"ATGRCT\",\"ACASTG\"))\n>> [1]  TRUE FALSE FALSE\n>>> sessionInfo()R version 2.15.0 (2012-03-30)\n>> Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)\n>> \n>> locale:\n>> [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8\n>> \n>> attached base packages:\n>> [1] stats     graphics  grDevices utils     datasets  methods   base\n>> \n>> other attached packages:\n>> [1] Biostrings_2.24.1  IRanges_1.14.2     BiocGenerics_0.2.0\n>> \n>> loaded via a namespace (and not attached):\n>> [1] stats4_2.15.0\n>> \n>> \n>> While in Bioc 2.11 it fails:\n>> \n>> Error in match(x, table, nomatch = 0L) :\n>>   'match' requires vector arguments\n>>> sessionInfo()\n>> R version 2.15.0 (2012-03-30)\n>> Platform: x86_64-apple-darwin10.8.0 (64-bit)\n>> \n>> locale:\n>> [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8\n>> \n>> attached base packages:\n>> [1] stats     graphics  grDevices utils     datasets  methods   base\n>> \n>> other attached packages:\n>> [1] Biostrings_2.25.3  IRanges_1.15.7     BiocGenerics_0.3.0\n>> \n>> loaded via a namespace (and not attached):\n>> [1] stats4_2.15.0\n>> \n>> \n>> \n>> I'd just like to know if that is that a change of API or not. If yes, I'd need to adapt my code that currently fails building.\n>> \n>> Cheers,\n>> \n>> Nico\n>> \n>> ---------------------------------------------------------------\n>> Nicolas Delhomme\n>> \n>> Genome Biology Computational Support\n>> \n>> European Molecular Biology Laboratory\n>> \n>> Tel: +49 6221 387 8310\n>> Email: nicolas.delhomme at embl.de\n>> Meyerhofstrasse 1 - Postfach 10.2209\n>> 69102 Heidelberg, Germany\n>> \n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n> \n> -- \n> Herv? Pag?s\n> \n> Program in Computational Biology\n> Division of Public Health Sciences\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N, M1-B514\n> P.O. Box 19024\n> Seattle, WA 98109-1024\n> \n> E-mail: hpages at fhcrc.org\n> Phone:  (206) 667-5791\n> Fax:    (206) 667-1319\n\n---------------------------------------------------------------\nNicolas Delhomme\n\nGenome Biology Computational Support\n\nEuropean Molecular Biology Laboratory\n\nTel: +49 6221 387 8310\nEmail: nicolas.delhomme at embl.de\nMeyerhofstrasse 1 - Postfach 10.2209\n69102 Heidelberg, Germany",
-      "body_snippet": "Hi Herv?,\n\nThanks a lot for fixing it and for the super detailed description! Learned a lot :-) And thanks for the benchmarking, that's really useful as well!\n\nI can't really think of any drawbacks th",
+      "body_plain": "Hi Hervé,\n\nThanks a lot for fixing it and for the super detailed description! Learned a lot :-) And thanks for the benchmarking, that's really useful as well!\n\nI can't really think of any drawbacks there, but my %in% usage is certainly limited. What do the R developer guys say about it? Wouldn't it make sense to have it that way in base R?\n\nCheers,\n\nNico\n\n\nOn May 4, 2012, at 3:56 AM, Hervé Pagès wrote:\n\n> Hi Nico,\n> \n> Last week I did some improvements/reorganization of the match(),\n> %in%, duplicated(), and unique() stuff in IRanges/GenomicRanges/Biostrings, and apparently forgot to define the \"%in%\" method\n> for ANY,Vector. Thanks for the catch!\n> \n> This is fixed in IRanges 1.15.8. FWIW I also added an \"%in%\" method\n> for Vector,ANY so now this works too:\n> \n>  > DNAStringSet(c(\"TTGCGA\",\"ATGRCT\",\"ACASTG\")) %in% c(\"TTGCGA\",\"ATGGCT\",\"ACACTG\")\n>  [1]  TRUE FALSE FALSE\n> \n> <rant mode>\n> \n> It is so sad that we have to redefine \"%in%\" methods that do exactly\n> the same thing as base::`%in%`:\n> \n>  > base::`%in%`\n>  function (x, table)\n>  match(x, table, nomatch = 0L) > 0L\n>  <environment: namespace:base>\n> \n> just because base::`%in%` cannot dispatch on the appropriate\n> \"match\" method. A well-known issue of the way generics, methods\n> and NAMESPACE interact with each other... but still an unfortunate\n> one.\n> \n> </rant mode>\n> \n> The good news is that we have on our TODO list to explicitly define\n> the match() and %in% generics in BiocGenerics so there will be an\n> opportunity to overwrite the \"%in%\" default method:\n> \n>  setMethod(\"%in%\", c(\"ANY\", \"ANY\"), function (x, table) match(x, table, nomatch = 0L) > 0L)\n> \n> (I'm still hesitant about this though. What could be the drawbacks\n> of overwriting the default method?)\n> \n> Also last week at the same time I did the changes on match() and\n> family, I also reimplemented the \"match\" method for DNAStringSet\n> objects (which is called when either 'x' or 'table' or both are\n> DNAStringSet). The new implementation is in Biostrings 2.25.3.\n> It uses a hash-based algorithm instead of the quicksort-based algo\n> that was used so far. The resulting speedup varies a lot depending\n> on the sizes of 'x' and 'table', and will typically be important\n> (10x or more) for big (i.e. > 1M elements) DNAStringSet objects.\n> \n> This benefits directly %in%, duplicated() and unique() on\n> DNAStringSet objects.\n> \n> With Biostrings 2.25.3 (Bioc 2.11):\n> \n>  > library(Biostrings)\n>  > probes <- DNAStringSet(hgu133aprobe)\n>  > system.time(isdup <- duplicated(probes))\n>     user  system elapsed\n>    0.048   0.000   0.050\n> \n> With Bioc <= 2.10:\n> \n>  > system.time(isdup <- duplicated(probes))\n>     user  system elapsed\n>    0.232   0.000   0.233\n> \n> Finally I should mention that, even though the hash function I use\n> for DNAStringSet (and RNAStringSet, AAStringSet, BStringSet) is the\n> same as the function used in base R for hashing the strings of a\n> standard character vector, calling match(), %in%, duplicated() or\n> unique() on a standard character vector is still slightly faster\n> (2x) than on a DNAStringSet. This can probably be explained by the\n> fact that all the strings in all the character vectors defined in\n> a session are pre-hashed i.e. hashed the 1st time the string is\n> created and the result of the hash stored in the \"global CHARSXP\n> hash table\".\n> \n> Cheers,\n> H.\n> \n> On 05/01/2012 05:28 AM, Nicolas Delhomme wrote:\n>> Hi all,\n>> \n>> In R 2.15.0, Bioc 2.10, the following works:\n>> \n>> library(Biostrings)\n>> c(\"TTGCGA\",\"ATGGCT\",\"ACACTG\") %in% DNAStringSet(c(\"TTGCGA\",\"ATGRCT\",\"ACASTG\"))\n>> [1]  TRUE FALSE FALSE\n>>> sessionInfo()R version 2.15.0 (2012-03-30)\n>> Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)\n>> \n>> locale:\n>> [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8\n>> \n>> attached base packages:\n>> [1] stats     graphics  grDevices utils     datasets  methods   base\n>> \n>> other attached packages:\n>> [1] Biostrings_2.24.1  IRanges_1.14.2     BiocGenerics_0.2.0\n>> \n>> loaded via a namespace (and not attached):\n>> [1] stats4_2.15.0\n>> \n>> \n>> While in Bioc 2.11 it fails:\n>> \n>> Error in match(x, table, nomatch = 0L) :\n>>   'match' requires vector arguments\n>>> sessionInfo()\n>> R version 2.15.0 (2012-03-30)\n>> Platform: x86_64-apple-darwin10.8.0 (64-bit)\n>> \n>> locale:\n>> [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8\n>> \n>> attached base packages:\n>> [1] stats     graphics  grDevices utils     datasets  methods   base\n>> \n>> other attached packages:\n>> [1] Biostrings_2.25.3  IRanges_1.15.7     BiocGenerics_0.3.0\n>> \n>> loaded via a namespace (and not attached):\n>> [1] stats4_2.15.0\n>> \n>> \n>> \n>> I'd just like to know if that is that a change of API or not. If yes, I'd need to adapt my code that currently fails building.\n>> \n>> Cheers,\n>> \n>> Nico\n>> \n>> ---------------------------------------------------------------\n>> Nicolas Delhomme\n>> \n>> Genome Biology Computational Support\n>> \n>> European Molecular Biology Laboratory\n>> \n>> Tel: +49 6221 387 8310\n>> Email: nicolas.delhomme at embl.de\n>> Meyerhofstrasse 1 - Postfach 10.2209\n>> 69102 Heidelberg, Germany\n>> \n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n> \n> -- \n> Hervé Pagès\n> \n> Program in Computational Biology\n> Division of Public Health Sciences\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N, M1-B514\n> P.O. Box 19024\n> Seattle, WA 98109-1024\n> \n> E-mail: hpages at fhcrc.org\n> Phone:  (206) 667-5791\n> Fax:    (206) 667-1319\n\n---------------------------------------------------------------\nNicolas Delhomme\n\nGenome Biology Computational Support\n\nEuropean Molecular Biology Laboratory\n\nTel: +49 6221 387 8310\nEmail: nicolas.delhomme at embl.de\nMeyerhofstrasse 1 - Postfach 10.2209\n69102 Heidelberg, Germany",
+      "body_snippet": "Hi Hervé,\n\nThanks a lot for fixing it and for the super detailed description! Learned a lot :-) And thanks for the benchmarking, that's really useful as well!\n\nI can't really think of any drawbacks th",
       "thread_id": "thread-087764fd76fa",
       "thread_depth": 2,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003363.html"
     },
     {
       "id": "msg-7b2d340e9775",
@@ -108,6 +113,7 @@
       "thread_id": "thread-7b2d340e9775",
       "thread_depth": 0,
       "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003364.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120504/40877b8a/attachment.pl"
       ]
@@ -126,7 +132,8 @@
       "body_snippet": "Hi,\n\nIt seems some data has been added to the EST data table in UCSC that GenomicFeatures cannot parse.\n\n> ESTs <- makeFeatureDbFromUCSC(genome = \"hg19\", track = \"est\", tablename = \"all_est\")\nDownload",
       "thread_id": "thread-76e14adbee8d",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003365.html"
     },
     {
       "id": "msg-e925cc073d86",
@@ -145,6 +152,7 @@
       "thread_id": "thread-76e14adbee8d",
       "thread_depth": 1,
       "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003366.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120506/8031e62a/attachment.pl"
       ]
@@ -163,7 +171,8 @@
       "body_snippet": "Hi All,\n\nI am developing a new package using the info from KEGG.db. I used the following command to map  KEGG pathway identifiers to Entrez Gene:\n\n  mapped.genes <-as.list(KEGGPATHID2EXTID)  \n\nWhen I ",
       "thread_id": "thread-92d7d3b78025",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003367.html"
     },
     {
       "id": "msg-5bc7ca51a61b",
@@ -181,7 +190,8 @@
       "body_snippet": "Hi,\n\nAlthough I am not sure if you should be using the KEGG.db package any\nmore, since it is deprecated.\nSee the following message when you load the KEGG.db package:\nKEGG.db contains mappings based on",
       "thread_id": "thread-92d7d3b78025",
       "thread_depth": 1,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003368.html"
     },
     {
       "id": "msg-2b43319bdd6f",
@@ -200,7 +210,8 @@
       "body_snippet": "I e-mailed UCSC and they said the preferred way is to download by FTP. Which means more lines of code to parse the text file into columns, then split the exons and widths columns up to be able to make",
       "thread_id": "thread-76e14adbee8d",
       "thread_depth": 2,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003369.html"
     },
     {
       "id": "msg-23a021fdd17f",
@@ -221,6 +232,7 @@
       "thread_id": "thread-76e14adbee8d",
       "thread_depth": 3,
       "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003370.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120507/cae2541e/attachment.pl"
       ]
@@ -240,6 +252,7 @@
       "thread_id": "thread-cabdd076422f",
       "thread_depth": 0,
       "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003371.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120508/22b90855/attachment.pl"
       ]
@@ -261,7 +274,8 @@
       "body_snippet": "Willem is right.  The as.list() method you want is the one from \nAnnotationDbi.  Other as.list methods will not know what to do with the \nbimap object in question.  So in the usage context you are dex",
       "thread_id": "thread-92d7d3b78025",
       "thread_depth": 2,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003372.html"
     },
     {
       "id": "msg-bc246cad6f5e",
@@ -277,7 +291,8 @@
       "body_snippet": "When FastqStreamer or FastqSampler are called within another function in\ncombination with a writeFastq step then this usually returns an error.\nHowever, the same code runs just fine outside of a funct",
       "thread_id": "thread-bc246cad6f5e",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003373.html"
     },
     {
       "id": "msg-f2d0ec425e17",
@@ -295,7 +310,8 @@
       "body_snippet": "On 05/09/2012 09:53 PM, Thomas Girke wrote:\n> When FastqStreamer or FastqSampler are called within another function in\n> combination with a writeFastq step then this usually returns an error.\n> Howeve",
       "thread_id": "thread-bc246cad6f5e",
       "thread_depth": 1,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003374.html"
     },
     {
       "id": "msg-47d10ca15a27",
@@ -311,7 +327,8 @@
       "body_snippet": "Dario Strbenac <D.Strbenac at garvan.org.au>???\n\n>I e-mailed UCSC and they said the preferred way is to download by FTP. Which means more lines of code to parse the text file into columns, then split ",
       "thread_id": "thread-47d10ca15a27",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003375.html"
     },
     {
       "id": "msg-058b6bfa884e",
@@ -328,6 +345,7 @@
       "thread_id": "thread-058b6bfa884e",
       "thread_depth": 0,
       "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003376.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120510/7f16f2d5/attachment.pl"
       ]
@@ -348,7 +366,8 @@
       "body_snippet": "Your release version is in sync with the svn copy (release branch)...\nso everything is fine there:\n\nhttp://bioconductor.org/packages/2.10/bioc/html/sigaR.html\n\nSimilarly, your devel version is in sync",
       "thread_id": "thread-058b6bfa884e",
       "thread_depth": 1,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003377.html"
     },
     {
       "id": "msg-7a1818900c8e",
@@ -367,7 +386,8 @@
       "body_snippet": "Martin,\n\nThere is indeed no problem with those functions, I just had a typo in \nmy code. I guess I shouldn't send out bug reports when it is well past \nmy bed time. Sorry for the false alarm. \n\nI love",
       "thread_id": "thread-7a1818900c8e",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003378.html"
     },
     {
       "id": "msg-5b4c6d80270a",
@@ -383,7 +403,8 @@
       "body_snippet": "Dear Sirs,\n\nHere, I would like to announce that my package, MiRaGE, was added to\ndevelopment slot.\nhttp://www.bioconductor.org/packages/devel/bioc/html/MiRaGE.html\n\nThis is a localized version of Web ",
       "thread_id": "thread-5b4c6d80270a",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003379.html"
     },
     {
       "id": "msg-08ce7c83747f",
@@ -399,7 +420,8 @@
       "body_snippet": "Hello,\n\nI got the following compilation error while installing the package 'mzR' (devel version 1.3.6) in arch linux (fully updated) (my package, TargetSearch, depends on mzR). Here is the relevant pa",
       "thread_id": "thread-08ce7c83747f",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003380.html"
     },
     {
       "id": "msg-02bffee1896b",
@@ -417,7 +439,8 @@
       "body_snippet": "Hi Alvaro,\n\nOn Tue, 2012-05-15 at 07:34 +0000, Alvaro Cuadros Inostroza wrote:\n> I got the following compilation error while installing the package\n> 'mzR' (devel version 1.3.6) in arch linux (fully u",
       "thread_id": "thread-08ce7c83747f",
       "thread_depth": 1,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003381.html"
     },
     {
       "id": "msg-c3f58cf32aa8",
@@ -433,7 +456,8 @@
       "body_snippet": "Hello,\n\nI thought I'd suggest reordering the steps that are taken when makeFeatureDbFromUCSC is called. It would be better if the column name checking step was done before an entire table of data was ",
       "thread_id": "thread-c3f58cf32aa8",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003382.html"
     },
     {
       "id": "msg-23bce6cca74a",
@@ -452,6 +476,7 @@
       "thread_id": "thread-c3f58cf32aa8",
       "thread_depth": 1,
       "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003383.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20120515/e699ba8d/attachment.pl"
       ]
@@ -469,11 +494,12 @@
         "<20120516150021.BXA20991@gimr.garvan.unsw.edu.au>",
         "<CAC+N9BVyMRe6Xmb=LR262zrgjPuDJg2cpeTOYLkvqOu6ze-7Vg@mail.gmail.com>"
       ],
-      "body_plain": "Hi Dario, Tim,\n\nCan you guys show an example so we know exactly what you mean. Sorry if\nit's obvious. Thanks!\n\nH.\n\n\nOn 05/15/2012 10:12 PM, Tim Triche, Jr. wrote:\n> seconding this!\n>\n>\n> On Tue, May 15, 2012 at 10:00 PM, Dario Strbenac\n> <D.Strbenac at garvan.org.au>wrote:\n>\n>> Hello,\n>>\n>> I thought I'd suggest reordering the steps that are taken when\n>> makeFeatureDbFromUCSC is called. It would be better if the column name\n>> checking step was done before an entire table of data was downloaded and\n>> then an error was thrown.\n>>\n>> --------------------------------------\n>> Dario Strbenac\n>> Research Assistant\n>> Cancer Epigenetics\n>> Garvan Institute of Medical Research\n>> Darlinghurst NSW 2010\n>> Australia\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>\n>\n>\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi Dario, Tim,\n\nCan you guys show an example so we know exactly what you mean. Sorry if\nit's obvious. Thanks!\n\nH.\n\n\nOn 05/15/2012 10:12 PM, Tim Triche, Jr. wrote:\n> seconding this!\n>\n>\n> On Tue, May 15, 2012 at 10:00 PM, Dario Strbenac\n> <D.Strbenac at garvan.org.au>wrote:\n>\n>> Hello,\n>>\n>> I thought I'd suggest reordering the steps that are taken when\n>> makeFeatureDbFromUCSC is called. It would be better if the column name\n>> checking step was done before an entire table of data was downloaded and\n>> then an error was thrown.\n>>\n>> --------------------------------------\n>> Dario Strbenac\n>> Research Assistant\n>> Cancer Epigenetics\n>> Garvan Institute of Medical Research\n>> Darlinghurst NSW 2010\n>> Australia\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>\n>\n>\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi Dario, Tim,\n\nCan you guys show an example so we know exactly what you mean. Sorry if\nit's obvious. Thanks!\n\nH.\n\n\nOn 05/15/2012 10:12 PM, Tim Triche, Jr. wrote:\n> seconding this!\n>\n>\n> On Tue, May 1",
       "thread_id": "thread-c3f58cf32aa8",
       "thread_depth": 2,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003384.html"
     },
     {
       "id": "msg-d9ea1745101a",
@@ -485,11 +511,12 @@
       "subject_clean": "[Bioc-devel] makeFeatureDbFromUCSC Column Checking",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "> repeatDB <- makeFeatureDbFromUCSC(\"hg18\", \"RepeatMasker\", \"rmsk\")\nDownload the rmsk table ... OK    # Takes a few minutes\nChecking that required Columns are present ... \nError in makeFeatureDbFromUCSC(\"hg18\", \"RepeatMasker\", \"rmsk\") : \n  GenomicFeatures internal error: rmsk table doesn't contain a 'chrom', 'chromStart', or 'chromEnd' column and no reasonable substitute has been designated via the 'chromCol''chromStartCol' or 'chromEndCol' arguments.\n\n---- Original message ----\n>Date: Tue, 15 May 2012 22:21:56 -0700\n>From: Herv? Pag?s <hpages at fhcrc.org>  \n>Subject: Re: [Bioc-devel] makeFeatureDbFromUCSC Column Checking  \n>To: ttriche at usc.edu\n>Cc: \"Tim Triche, Jr.\" <tim.triche at gmail.com>, D.Strbenac at garvan.org.au, bioc-devel at r-project.org\n>\n>Hi Dario, Tim,\n>\n>Can you guys show an example so we know exactly what you mean. Sorry if\n>it's obvious. Thanks!\n>\n>H.\n>\n>\n>On 05/15/2012 10:12 PM, Tim Triche, Jr. wrote:\n>> seconding this!\n>>\n>>\n>> On Tue, May 15, 2012 at 10:00 PM, Dario Strbenac\n>> <D.Strbenac at garvan.org.au>wrote:\n>>\n>>> Hello,\n>>>\n>>> I thought I'd suggest reordering the steps that are taken when\n>>> makeFeatureDbFromUCSC is called. It would be better if the column name\n>>> checking step was done before an entire table of data was downloaded and\n>>> then an error was thrown.\n>>>\n>>> --------------------------------------\n>>> Dario Strbenac\n>>> Research Assistant\n>>> Cancer Epigenetics\n>>> Garvan Institute of Medical Research\n>>> Darlinghurst NSW 2010\n>>> Australia\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at r-project.org mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>\n>>\n>>\n>>\n>\n>\n>-- \n>Herv? Pag?s\n>\n>Program in Computational Biology\n>Division of Public Health Sciences\n>Fred Hutchinson Cancer Research Center\n>1100 Fairview Ave. N, M1-B514\n>P.O. Box 19024\n>Seattle, WA 98109-1024\n>\n>E-mail: hpages at fhcrc.org\n>Phone:  (206) 667-5791\n>Fax:    (206) 667-1319",
+      "body_plain": "> repeatDB <- makeFeatureDbFromUCSC(\"hg18\", \"RepeatMasker\", \"rmsk\")\nDownload the rmsk table ... OK    # Takes a few minutes\nChecking that required Columns are present ... \nError in makeFeatureDbFromUCSC(\"hg18\", \"RepeatMasker\", \"rmsk\") : \n  GenomicFeatures internal error: rmsk table doesn't contain a 'chrom', 'chromStart', or 'chromEnd' column and no reasonable substitute has been designated via the 'chromCol''chromStartCol' or 'chromEndCol' arguments.\n\n---- Original message ----\n>Date: Tue, 15 May 2012 22:21:56 -0700\n>From: Hervé Pagès <hpages at fhcrc.org>  \n>Subject: Re: [Bioc-devel] makeFeatureDbFromUCSC Column Checking  \n>To: ttriche at usc.edu\n>Cc: \"Tim Triche, Jr.\" <tim.triche at gmail.com>, D.Strbenac at garvan.org.au, bioc-devel at r-project.org\n>\n>Hi Dario, Tim,\n>\n>Can you guys show an example so we know exactly what you mean. Sorry if\n>it's obvious. Thanks!\n>\n>H.\n>\n>\n>On 05/15/2012 10:12 PM, Tim Triche, Jr. wrote:\n>> seconding this!\n>>\n>>\n>> On Tue, May 15, 2012 at 10:00 PM, Dario Strbenac\n>> <D.Strbenac at garvan.org.au>wrote:\n>>\n>>> Hello,\n>>>\n>>> I thought I'd suggest reordering the steps that are taken when\n>>> makeFeatureDbFromUCSC is called. It would be better if the column name\n>>> checking step was done before an entire table of data was downloaded and\n>>> then an error was thrown.\n>>>\n>>> --------------------------------------\n>>> Dario Strbenac\n>>> Research Assistant\n>>> Cancer Epigenetics\n>>> Garvan Institute of Medical Research\n>>> Darlinghurst NSW 2010\n>>> Australia\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at r-project.org mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>\n>>\n>>\n>>\n>\n>\n>-- \n>Hervé Pagès\n>\n>Program in Computational Biology\n>Division of Public Health Sciences\n>Fred Hutchinson Cancer Research Center\n>1100 Fairview Ave. N, M1-B514\n>P.O. Box 19024\n>Seattle, WA 98109-1024\n>\n>E-mail: hpages at fhcrc.org\n>Phone:  (206) 667-5791\n>Fax:    (206) 667-1319",
       "body_snippet": "> repeatDB <- makeFeatureDbFromUCSC(\"hg18\", \"RepeatMasker\", \"rmsk\")\nDownload the rmsk table ... OK    # Takes a few minutes\nChecking that required Columns are present ... \nError in makeFeatureDbFromUC",
       "thread_id": "thread-d9ea1745101a",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003385.html"
     },
     {
       "id": "msg-ee0580b51ca5",
@@ -503,11 +530,12 @@
       "references": [
         "<20120516160012.BXA22455@gimr.garvan.unsw.edu.au>"
       ],
-      "body_plain": "On 05/15/2012 11:00 PM, Dario Strbenac wrote:\n>> repeatDB<- makeFeatureDbFromUCSC(\"hg18\", \"RepeatMasker\", \"rmsk\")\n> Download the rmsk table ... OK    # Takes a few minutes\n> Checking that required Columns are present ...\n> Error in makeFeatureDbFromUCSC(\"hg18\", \"RepeatMasker\", \"rmsk\") :\n>    GenomicFeatures internal error: rmsk table doesn't contain a 'chrom', 'chromStart', or 'chromEnd' column and no reasonable substitute has been designated via the 'chromCol''chromStartCol' or 'chromEndCol' arguments.\n\nYes it was obvious (if I had read \"makeFeatureDbFromUCSC\" instead of\n\"makeTranscriptDbFromUCSC\"). Makes a lot of sense and should be an easy\nchange. Thanks!\n\nH.\n\n\n>\n> ---- Original message ----\n>> Date: Tue, 15 May 2012 22:21:56 -0700\n>> From: Herv? Pag?s<hpages at fhcrc.org>\n>> Subject: Re: [Bioc-devel] makeFeatureDbFromUCSC Column Checking\n>> To: ttriche at usc.edu\n>> Cc: \"Tim Triche, Jr.\"<tim.triche at gmail.com>, D.Strbenac at garvan.org.au, bioc-devel at r-project.org\n>>\n>> Hi Dario, Tim,\n>>\n>> Can you guys show an example so we know exactly what you mean. Sorry if\n>> it's obvious. Thanks!\n>>\n>> H.\n>>\n>>\n>> On 05/15/2012 10:12 PM, Tim Triche, Jr. wrote:\n>>> seconding this!\n>>>\n>>>\n>>> On Tue, May 15, 2012 at 10:00 PM, Dario Strbenac\n>>> <D.Strbenac at garvan.org.au>wrote:\n>>>\n>>>> Hello,\n>>>>\n>>>> I thought I'd suggest reordering the steps that are taken when\n>>>> makeFeatureDbFromUCSC is called. It would be better if the column name\n>>>> checking step was done before an entire table of data was downloaded and\n>>>> then an error was thrown.\n>>>>\n>>>> --------------------------------------\n>>>> Dario Strbenac\n>>>> Research Assistant\n>>>> Cancer Epigenetics\n>>>> Garvan Institute of Medical Research\n>>>> Darlinghurst NSW 2010\n>>>> Australia\n>>>>\n>>>> _______________________________________________\n>>>> Bioc-devel at r-project.org mailing list\n>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>\n>>>\n>>>\n>>>\n>>\n>>\n>> --\n>> Herv? Pag?s\n>>\n>> Program in Computational Biology\n>> Division of Public Health Sciences\n>> Fred Hutchinson Cancer Research Center\n>> 1100 Fairview Ave. N, M1-B514\n>> P.O. Box 19024\n>> Seattle, WA 98109-1024\n>>\n>> E-mail: hpages at fhcrc.org\n>> Phone:  (206) 667-5791\n>> Fax:    (206) 667-1319\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "On 05/15/2012 11:00 PM, Dario Strbenac wrote:\n>> repeatDB<- makeFeatureDbFromUCSC(\"hg18\", \"RepeatMasker\", \"rmsk\")\n> Download the rmsk table ... OK    # Takes a few minutes\n> Checking that required Columns are present ...\n> Error in makeFeatureDbFromUCSC(\"hg18\", \"RepeatMasker\", \"rmsk\") :\n>    GenomicFeatures internal error: rmsk table doesn't contain a 'chrom', 'chromStart', or 'chromEnd' column and no reasonable substitute has been designated via the 'chromCol''chromStartCol' or 'chromEndCol' arguments.\n\nYes it was obvious (if I had read \"makeFeatureDbFromUCSC\" instead of\n\"makeTranscriptDbFromUCSC\"). Makes a lot of sense and should be an easy\nchange. Thanks!\n\nH.\n\n\n>\n> ---- Original message ----\n>> Date: Tue, 15 May 2012 22:21:56 -0700\n>> From: Hervé Pagès<hpages at fhcrc.org>\n>> Subject: Re: [Bioc-devel] makeFeatureDbFromUCSC Column Checking\n>> To: ttriche at usc.edu\n>> Cc: \"Tim Triche, Jr.\"<tim.triche at gmail.com>, D.Strbenac at garvan.org.au, bioc-devel at r-project.org\n>>\n>> Hi Dario, Tim,\n>>\n>> Can you guys show an example so we know exactly what you mean. Sorry if\n>> it's obvious. Thanks!\n>>\n>> H.\n>>\n>>\n>> On 05/15/2012 10:12 PM, Tim Triche, Jr. wrote:\n>>> seconding this!\n>>>\n>>>\n>>> On Tue, May 15, 2012 at 10:00 PM, Dario Strbenac\n>>> <D.Strbenac at garvan.org.au>wrote:\n>>>\n>>>> Hello,\n>>>>\n>>>> I thought I'd suggest reordering the steps that are taken when\n>>>> makeFeatureDbFromUCSC is called. It would be better if the column name\n>>>> checking step was done before an entire table of data was downloaded and\n>>>> then an error was thrown.\n>>>>\n>>>> --------------------------------------\n>>>> Dario Strbenac\n>>>> Research Assistant\n>>>> Cancer Epigenetics\n>>>> Garvan Institute of Medical Research\n>>>> Darlinghurst NSW 2010\n>>>> Australia\n>>>>\n>>>> _______________________________________________\n>>>> Bioc-devel at r-project.org mailing list\n>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>>>\n>>>\n>>>\n>>>\n>>\n>>\n>> --\n>> Hervé Pagès\n>>\n>> Program in Computational Biology\n>> Division of Public Health Sciences\n>> Fred Hutchinson Cancer Research Center\n>> 1100 Fairview Ave. N, M1-B514\n>> P.O. Box 19024\n>> Seattle, WA 98109-1024\n>>\n>> E-mail: hpages at fhcrc.org\n>> Phone:  (206) 667-5791\n>> Fax:    (206) 667-1319\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "On 05/15/2012 11:00 PM, Dario Strbenac wrote:\n>> repeatDB<- makeFeatureDbFromUCSC(\"hg18\", \"RepeatMasker\", \"rmsk\")\n> Download the rmsk table ... OK    # Takes a few minutes\n> Checking that required Col",
       "thread_id": "thread-d9ea1745101a",
       "thread_depth": 1,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003386.html"
     },
     {
       "id": "msg-9322ce3f4c81",
@@ -523,7 +551,8 @@
       "body_snippet": "Is is possible to include a link to a package/function/class in the \ndocumentation if that package is only listed in \"Suggests\" rather than \n\"Depends\" or \"Imports\"?  I tried to do this, but I got a wa",
       "thread_id": "thread-9322ce3f4c81",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003387.html"
     },
     {
       "id": "msg-3a1f36e4e61a",
@@ -541,7 +570,8 @@
       "body_snippet": "Dear Steohanie,\n\n2012/5/17 Stephanie M. Gogarten <sdmorris at u.washington.edu>:\n> Is is possible to include a link to a package/function/class in the\n> documentation if that package is only listed in",
       "thread_id": "thread-9322ce3f4c81",
       "thread_depth": 1,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003388.html"
     },
     {
       "id": "msg-5fc469cef48a",
@@ -557,7 +587,8 @@
       "body_snippet": "Hello,\n\nI'm interested in filtering a BAM file by read ID. I've read in two BAM files of two different mappings of the same FASTQ file, found which IDs are unique to one of them, and want to create a ",
       "thread_id": "thread-5fc469cef48a",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003389.html"
     },
     {
       "id": "msg-30dd2d5af9f4",
@@ -573,7 +604,8 @@
       "body_snippet": "Hi,\n\ndid I miss it, or has nobody celebrated that \nthe Bioconductor project had released BioC 1.0 \nback on May 1st, 2002 TEN YEARS AGO ? \n\nIn any case: happy Birthday to Bioconductor, \ncongratulations",
       "thread_id": "thread-30dd2d5af9f4",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003390.html"
     },
     {
       "id": "msg-71f91e2489d0",
@@ -591,7 +623,8 @@
       "body_snippet": "The package is installed on my system.  If it is listed in the \n\"Suggests\" field, I get the warning\n\n* checking Rd cross-references ... WARNING\nMissing link(s) in documentation object \n?/Volumes/genev",
       "thread_id": "thread-71f91e2489d0",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003391.html"
     },
     {
       "id": "msg-2515d675e947",
@@ -610,7 +643,8 @@
       "body_snippet": "On 05/17/2012 08:16 AM, Stephanie M. Gogarten wrote:\n> The package is installed on my system. If it is listed in the \"Suggests\"\n> field, I get the warning\n>\n> * checking Rd cross-references ... WARNIN",
       "thread_id": "thread-71f91e2489d0",
       "thread_depth": 1,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003392.html"
     },
     {
       "id": "msg-cbec8f7a1821",
@@ -628,7 +662,8 @@
       "body_snippet": "On 05/17/2012 04:57 AM, Steffen Neumann wrote:\n> Hi,\n>\n> did I miss it, or has nobody celebrated that\n> the Bioconductor project had released BioC 1.0\n> back on May 1st, 2002 TEN YEARS AGO ?\n>\n> In an",
       "thread_id": "thread-30dd2d5af9f4",
       "thread_depth": 1,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003393.html"
     },
     {
       "id": "msg-bb81b03109b2",
@@ -644,7 +679,8 @@
       "body_snippet": "Hello Bioconductors!\n\nBioC2012 is fast approaching. We have a diverse line up of morning talks\nand afternoon practicals. Check them out at\n\n    https://secure.bioconductor.org/BioC2012/\n\nIf you are in",
       "thread_id": "thread-bb81b03109b2",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003394.html"
     },
     {
       "id": "msg-e1a54ce8fed9",
@@ -660,7 +696,8 @@
       "body_snippet": "Hello,\n\n         I am developing a R package. As I have to use a proxy to\naccess the internet, so I used the function \"setInternet2()\" in R to\ndownload CRAN packages. But now I am writing a sweave bas",
       "thread_id": "thread-e1a54ce8fed9",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003395.html"
     },
     {
       "id": "msg-a6a09a128e9f",
@@ -678,7 +715,8 @@
       "body_snippet": "On 05/22/2012 06:14 AM, slzhao wrote:\n> Hello,\n> \n>           I am developing a R package. As I have to use a proxy to\n> access the internet, so I used the function \"setInternet2()\" in R to\n> download",
       "thread_id": "thread-e1a54ce8fed9",
       "thread_depth": 1,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003396.html"
     },
     {
       "id": "msg-d10a0a890b6c",
@@ -694,7 +732,8 @@
       "body_snippet": "Currently, spaces in sequences are handled inconsistently by the FASTA\nread functions in Biostrings. This applies to spaces in or at the end of\nsequence strings. Because of this users often think Bios",
       "thread_id": "thread-d10a0a890b6c",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003397.html"
     },
     {
       "id": "msg-71334bcf2036",
@@ -708,11 +747,12 @@
       "references": [
         "<20120522175847.GA730@genomics-59-108.bulk.ucr.edu>"
       ],
-      "body_plain": "Hi Thomas,\n\nOn 05/22/2012 10:58 AM, Thomas Girke wrote:\n> Currently, spaces in sequences are handled inconsistently by the FASTA\n> read functions in Biostrings. This applies to spaces in or at the end of\n> sequence strings. Because of this users often think Biostrings cannot\n> handle their sequence data and give up using it which I find\n> unfortunate.\n>\n> For instance, given this sequence stored in \"test.fasta\":\n>> 123\n> AATTTAAA GGGG\n>\n> read.DNAStringSet fails to import this sequence which is the\n> least desirable outcome.\n>\n>> read.DNAStringSet(\"test.fasta\")\n> Error in .Call2(\"read_fasta_in_XStringSet\", efp_list, nrec, skip, use.names,  :\n>    key 32 (char ' ') not in lookup table\n>\n> however, read.AAStringSet imports it but maintains the space\n>\n>> read.AAStringSet(\"test.fasta\")\n>    A AAStringSet instance of length 1\n>        width seq                                               names\n>        [1]    13 AATTTAAA GGGG                                     123\n\nNote that this doesn't fail because the letters in an AAStringSet\nobject can be anything right now, but it's on my TODO list to change\nthis i.e. it will become an error to try to store a letter in an\nAAStringSet that doesn't belong to the Amino Acid alphabet (stored\nin predefined constant AA_ALPHABET).\n\nSo the import function to use when one doesn't want to enforce a\nparticular alphabet is read.BStringSet():\n\n   > read.BStringSet(\"test.fasta\")\n     A BStringSet instance of length 1\n       width seq                                               names \n\n   [1]    13 AATTTAAA GGGG                                      123\n\nThe other functions in the family (i.e. read.DNAStringSet,\nread.RNAStringSet, and read.AAStringSet) will fail if the FASTA file\ncontains letters that are not in DNA_ALPHABET, RNA_ALPHABET, or\nAA_ALPHABET, respectively.\n\n>\n> Wouldn't it make most sense to remove/ignore spaces during the import?\n\nAccording to Wikipeddia\n\n   http://en.wikipedia.org/wiki/FASTA_format\n\nyes the spaces and any other invalid code should be ignored. My concern\nwith this behavior though is that removing/ignoring letters in the input \nwill shift the positions of all the remaining letters, which for\nsome use cases is not desirable (maybe everything is fine because all\nthe letters end up at the right position anyway, but maybe not, hard\nto tell without knowing why a space was inserted in the file in the\nfirst place).\n\nNote that we have special letters in the DNA/RNA/AA alphabets that\ncould be used as a replacement for invalid chars:\n\n   > DNA_ALPHABET\n    [1] \"A\" \"C\" \"G\" \"T\" \"M\" \"R\" \"W\" \"S\" \"Y\" \"K\" \"V\" \"H\" \"D\" \"B\" \"N\" \"-\" \"+\"\n   > RNA_ALPHABET\n    [1] \"A\" \"C\" \"G\" \"U\" \"M\" \"R\" \"W\" \"S\" \"Y\" \"K\" \"V\" \"H\" \"D\" \"B\" \"N\" \"-\" \"+\"\n   > AA_ALPHABET\n    [1] \"A\" \"R\" \"N\" \"D\" \"C\" \"Q\" \"E\" \"G\" \"H\" \"I\" \"L\" \"K\" \"M\" \"F\" \"P\" \"S\" \n\"T\" \"W\" \"Y\"\n   [20] \"V\" \"U\" \"B\" \"Z\" \"X\" \"*\" \"-\" \"+\"\n\n\"-\" stands for \"gap\" and \"+\" is used for hard masking. IMO they are\nboth reasonable candidates. I propose to add an extra arg (e.g.\nif.invalid.char) to read.DNAStringSet, read.RNAStringSet, and\nread.AAStringSet to let the user choose what the substitution letter\nshould be, e.g. if.invalid.char=\"+\", or if.invalid.char=\"\" (for\nremoving the invalid letters).\n\nNow should we set its default to \"\" (and strictly follow the FASTA\nspec), or should we set it to NA so by default an error would still\nbe raised if the file contains invalid chars? I prefer the latter\nbecause I think it's good to let the user know that there is something\nuncommon (at best) or potentially wrong with the file.\n\nThanks for your feedback,\nH.\n\n\n>\n> Thomas\n>\n>> sessionInfo()\n> R version 2.15.0 (2012-03-30)\n> Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)\n>\n> locale:\n> [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8\n>\n> attached base packages:\n> [1] stats     graphics  grDevices utils     datasets  methods   base\n>\n> other attached packages:\n> [1] Biostrings_2.24.1  IRanges_1.14.2     BiocGenerics_0.2.0\n>\n> loaded via a namespace (and not attached):\n> [1] stats4_2.15.0 tools_2.15.0\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi Thomas,\n\nOn 05/22/2012 10:58 AM, Thomas Girke wrote:\n> Currently, spaces in sequences are handled inconsistently by the FASTA\n> read functions in Biostrings. This applies to spaces in or at the end of\n> sequence strings. Because of this users often think Biostrings cannot\n> handle their sequence data and give up using it which I find\n> unfortunate.\n>\n> For instance, given this sequence stored in \"test.fasta\":\n>> 123\n> AATTTAAA GGGG\n>\n> read.DNAStringSet fails to import this sequence which is the\n> least desirable outcome.\n>\n>> read.DNAStringSet(\"test.fasta\")\n> Error in .Call2(\"read_fasta_in_XStringSet\", efp_list, nrec, skip, use.names,  :\n>    key 32 (char ' ') not in lookup table\n>\n> however, read.AAStringSet imports it but maintains the space\n>\n>> read.AAStringSet(\"test.fasta\")\n>    A AAStringSet instance of length 1\n>        width seq                                               names\n>        [1]    13 AATTTAAA GGGG                                     123\n\nNote that this doesn't fail because the letters in an AAStringSet\nobject can be anything right now, but it's on my TODO list to change\nthis i.e. it will become an error to try to store a letter in an\nAAStringSet that doesn't belong to the Amino Acid alphabet (stored\nin predefined constant AA_ALPHABET).\n\nSo the import function to use when one doesn't want to enforce a\nparticular alphabet is read.BStringSet():\n\n   > read.BStringSet(\"test.fasta\")\n     A BStringSet instance of length 1\n       width seq                                               names \n\n   [1]    13 AATTTAAA GGGG                                      123\n\nThe other functions in the family (i.e. read.DNAStringSet,\nread.RNAStringSet, and read.AAStringSet) will fail if the FASTA file\ncontains letters that are not in DNA_ALPHABET, RNA_ALPHABET, or\nAA_ALPHABET, respectively.\n\n>\n> Wouldn't it make most sense to remove/ignore spaces during the import?\n\nAccording to Wikipeddia\n\n   http://en.wikipedia.org/wiki/FASTA_format\n\nyes the spaces and any other invalid code should be ignored. My concern\nwith this behavior though is that removing/ignoring letters in the input \nwill shift the positions of all the remaining letters, which for\nsome use cases is not desirable (maybe everything is fine because all\nthe letters end up at the right position anyway, but maybe not, hard\nto tell without knowing why a space was inserted in the file in the\nfirst place).\n\nNote that we have special letters in the DNA/RNA/AA alphabets that\ncould be used as a replacement for invalid chars:\n\n   > DNA_ALPHABET\n    [1] \"A\" \"C\" \"G\" \"T\" \"M\" \"R\" \"W\" \"S\" \"Y\" \"K\" \"V\" \"H\" \"D\" \"B\" \"N\" \"-\" \"+\"\n   > RNA_ALPHABET\n    [1] \"A\" \"C\" \"G\" \"U\" \"M\" \"R\" \"W\" \"S\" \"Y\" \"K\" \"V\" \"H\" \"D\" \"B\" \"N\" \"-\" \"+\"\n   > AA_ALPHABET\n    [1] \"A\" \"R\" \"N\" \"D\" \"C\" \"Q\" \"E\" \"G\" \"H\" \"I\" \"L\" \"K\" \"M\" \"F\" \"P\" \"S\" \n\"T\" \"W\" \"Y\"\n   [20] \"V\" \"U\" \"B\" \"Z\" \"X\" \"*\" \"-\" \"+\"\n\n\"-\" stands for \"gap\" and \"+\" is used for hard masking. IMO they are\nboth reasonable candidates. I propose to add an extra arg (e.g.\nif.invalid.char) to read.DNAStringSet, read.RNAStringSet, and\nread.AAStringSet to let the user choose what the substitution letter\nshould be, e.g. if.invalid.char=\"+\", or if.invalid.char=\"\" (for\nremoving the invalid letters).\n\nNow should we set its default to \"\" (and strictly follow the FASTA\nspec), or should we set it to NA so by default an error would still\nbe raised if the file contains invalid chars? I prefer the latter\nbecause I think it's good to let the user know that there is something\nuncommon (at best) or potentially wrong with the file.\n\nThanks for your feedback,\nH.\n\n\n>\n> Thomas\n>\n>> sessionInfo()\n> R version 2.15.0 (2012-03-30)\n> Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)\n>\n> locale:\n> [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8\n>\n> attached base packages:\n> [1] stats     graphics  grDevices utils     datasets  methods   base\n>\n> other attached packages:\n> [1] Biostrings_2.24.1  IRanges_1.14.2     BiocGenerics_0.2.0\n>\n> loaded via a namespace (and not attached):\n> [1] stats4_2.15.0 tools_2.15.0\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi Thomas,\n\nOn 05/22/2012 10:58 AM, Thomas Girke wrote:\n> Currently, spaces in sequences are handled inconsistently by the FASTA\n> read functions in Biostrings. This applies to spaces in or at the end",
       "thread_id": "thread-d10a0a890b6c",
       "thread_depth": 1,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003398.html"
     },
     {
       "id": "msg-d8d27302c2d1",
@@ -727,11 +767,12 @@
         "<20120522175847.GA730@genomics-59-108.bulk.ucr.edu>",
         "<486d7f5ce8ed4931aaf8d6319acae968@EXCH-HT-2.exch.ucr.edu>"
       ],
-      "body_plain": "Herv?,\n\nI agree, an argument where the user has to explicitly decide how to handle \nunusual characters (e.g. if.invalid.char=\"\") would solve this in the most\nsensible manner.\n\nThomas\n\nOn Tue, May 22, 2012 at 07:39:14PM +0000, Herv? Pag?s wrote:\n> Hi Thomas,\n> \n> On 05/22/2012 10:58 AM, Thomas Girke wrote:\n> > Currently, spaces in sequences are handled inconsistently by the FASTA\n> > read functions in Biostrings. This applies to spaces in or at the end of\n> > sequence strings. Because of this users often think Biostrings cannot\n> > handle their sequence data and give up using it which I find\n> > unfortunate.\n> >\n> > For instance, given this sequence stored in \"test.fasta\":\n> >> 123\n> > AATTTAAA GGGG\n> >\n> > read.DNAStringSet fails to import this sequence which is the\n> > least desirable outcome.\n> >\n> >> read.DNAStringSet(\"test.fasta\")\n> > Error in .Call2(\"read_fasta_in_XStringSet\", efp_list, nrec, skip, use.names,  :\n> >    key 32 (char ' ') not in lookup table\n> >\n> > however, read.AAStringSet imports it but maintains the space\n> >\n> >> read.AAStringSet(\"test.fasta\")\n> >    A AAStringSet instance of length 1\n> >        width seq                                               names\n> >        [1]    13 AATTTAAA GGGG                                     123\n> \n> Note that this doesn't fail because the letters in an AAStringSet\n> object can be anything right now, but it's on my TODO list to change\n> this i.e. it will become an error to try to store a letter in an\n> AAStringSet that doesn't belong to the Amino Acid alphabet (stored\n> in predefined constant AA_ALPHABET).\n> \n> So the import function to use when one doesn't want to enforce a\n> particular alphabet is read.BStringSet():\n> \n>    > read.BStringSet(\"test.fasta\")\n>      A BStringSet instance of length 1\n>        width seq                                               names \n> \n>    [1]    13 AATTTAAA GGGG                                      123\n> \n> The other functions in the family (i.e. read.DNAStringSet,\n> read.RNAStringSet, and read.AAStringSet) will fail if the FASTA file\n> contains letters that are not in DNA_ALPHABET, RNA_ALPHABET, or\n> AA_ALPHABET, respectively.\n> \n> >\n> > Wouldn't it make most sense to remove/ignore spaces during the import?\n> \n> According to Wikipeddia\n> \n>    http://en.wikipedia.org/wiki/FASTA_format\n> \n> yes the spaces and any other invalid code should be ignored. My concern\n> with this behavior though is that removing/ignoring letters in the input \n> will shift the positions of all the remaining letters, which for\n> some use cases is not desirable (maybe everything is fine because all\n> the letters end up at the right position anyway, but maybe not, hard\n> to tell without knowing why a space was inserted in the file in the\n> first place).\n> \n> Note that we have special letters in the DNA/RNA/AA alphabets that\n> could be used as a replacement for invalid chars:\n> \n>    > DNA_ALPHABET\n>     [1] \"A\" \"C\" \"G\" \"T\" \"M\" \"R\" \"W\" \"S\" \"Y\" \"K\" \"V\" \"H\" \"D\" \"B\" \"N\" \"-\" \"+\"\n>    > RNA_ALPHABET\n>     [1] \"A\" \"C\" \"G\" \"U\" \"M\" \"R\" \"W\" \"S\" \"Y\" \"K\" \"V\" \"H\" \"D\" \"B\" \"N\" \"-\" \"+\"\n>    > AA_ALPHABET\n>     [1] \"A\" \"R\" \"N\" \"D\" \"C\" \"Q\" \"E\" \"G\" \"H\" \"I\" \"L\" \"K\" \"M\" \"F\" \"P\" \"S\" \n> \"T\" \"W\" \"Y\"\n>    [20] \"V\" \"U\" \"B\" \"Z\" \"X\" \"*\" \"-\" \"+\"\n> \n> \"-\" stands for \"gap\" and \"+\" is used for hard masking. IMO they are\n> both reasonable candidates. I propose to add an extra arg (e.g.\n> if.invalid.char) to read.DNAStringSet, read.RNAStringSet, and\n> read.AAStringSet to let the user choose what the substitution letter\n> should be, e.g. if.invalid.char=\"+\", or if.invalid.char=\"\" (for\n> removing the invalid letters).\n> \n> Now should we set its default to \"\" (and strictly follow the FASTA\n> spec), or should we set it to NA so by default an error would still\n> be raised if the file contains invalid chars? I prefer the latter\n> because I think it's good to let the user know that there is something\n> uncommon (at best) or potentially wrong with the file.\n> \n> Thanks for your feedback,\n> H.\n> \n> \n> >\n> > Thomas\n> >\n> >> sessionInfo()\n> > R version 2.15.0 (2012-03-30)\n> > Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)\n> >\n> > locale:\n> > [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8\n> >\n> > attached base packages:\n> > [1] stats     graphics  grDevices utils     datasets  methods   base\n> >\n> > other attached packages:\n> > [1] Biostrings_2.24.1  IRanges_1.14.2     BiocGenerics_0.2.0\n> >\n> > loaded via a namespace (and not attached):\n> > [1] stats4_2.15.0 tools_2.15.0\n> >\n> > _______________________________________________\n> > Bioc-devel at r-project.org mailing list\n> > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n> \n> -- \n> Herv? Pag?s\n> \n> Program in Computational Biology\n> Division of Public Health Sciences\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N, M1-B514\n> P.O. Box 19024\n> Seattle, WA 98109-1024\n> \n> E-mail: hpages at fhcrc.org\n> Phone:  (206) 667-5791\n> Fax:    (206) 667-1319",
-      "body_snippet": "Herv?,\n\nI agree, an argument where the user has to explicitly decide how to handle \nunusual characters (e.g. if.invalid.char=\"\") would solve this in the most\nsensible manner.\n\nThomas\n\nOn Tue, May 22, ",
+      "body_plain": "Hervé,\n\nI agree, an argument where the user has to explicitly decide how to handle \nunusual characters (e.g. if.invalid.char=\"\") would solve this in the most\nsensible manner.\n\nThomas\n\nOn Tue, May 22, 2012 at 07:39:14PM +0000, Hervé Pagès wrote:\n> Hi Thomas,\n> \n> On 05/22/2012 10:58 AM, Thomas Girke wrote:\n> > Currently, spaces in sequences are handled inconsistently by the FASTA\n> > read functions in Biostrings. This applies to spaces in or at the end of\n> > sequence strings. Because of this users often think Biostrings cannot\n> > handle their sequence data and give up using it which I find\n> > unfortunate.\n> >\n> > For instance, given this sequence stored in \"test.fasta\":\n> >> 123\n> > AATTTAAA GGGG\n> >\n> > read.DNAStringSet fails to import this sequence which is the\n> > least desirable outcome.\n> >\n> >> read.DNAStringSet(\"test.fasta\")\n> > Error in .Call2(\"read_fasta_in_XStringSet\", efp_list, nrec, skip, use.names,  :\n> >    key 32 (char ' ') not in lookup table\n> >\n> > however, read.AAStringSet imports it but maintains the space\n> >\n> >> read.AAStringSet(\"test.fasta\")\n> >    A AAStringSet instance of length 1\n> >        width seq                                               names\n> >        [1]    13 AATTTAAA GGGG                                     123\n> \n> Note that this doesn't fail because the letters in an AAStringSet\n> object can be anything right now, but it's on my TODO list to change\n> this i.e. it will become an error to try to store a letter in an\n> AAStringSet that doesn't belong to the Amino Acid alphabet (stored\n> in predefined constant AA_ALPHABET).\n> \n> So the import function to use when one doesn't want to enforce a\n> particular alphabet is read.BStringSet():\n> \n>    > read.BStringSet(\"test.fasta\")\n>      A BStringSet instance of length 1\n>        width seq                                               names \n> \n>    [1]    13 AATTTAAA GGGG                                      123\n> \n> The other functions in the family (i.e. read.DNAStringSet,\n> read.RNAStringSet, and read.AAStringSet) will fail if the FASTA file\n> contains letters that are not in DNA_ALPHABET, RNA_ALPHABET, or\n> AA_ALPHABET, respectively.\n> \n> >\n> > Wouldn't it make most sense to remove/ignore spaces during the import?\n> \n> According to Wikipeddia\n> \n>    http://en.wikipedia.org/wiki/FASTA_format\n> \n> yes the spaces and any other invalid code should be ignored. My concern\n> with this behavior though is that removing/ignoring letters in the input \n> will shift the positions of all the remaining letters, which for\n> some use cases is not desirable (maybe everything is fine because all\n> the letters end up at the right position anyway, but maybe not, hard\n> to tell without knowing why a space was inserted in the file in the\n> first place).\n> \n> Note that we have special letters in the DNA/RNA/AA alphabets that\n> could be used as a replacement for invalid chars:\n> \n>    > DNA_ALPHABET\n>     [1] \"A\" \"C\" \"G\" \"T\" \"M\" \"R\" \"W\" \"S\" \"Y\" \"K\" \"V\" \"H\" \"D\" \"B\" \"N\" \"-\" \"+\"\n>    > RNA_ALPHABET\n>     [1] \"A\" \"C\" \"G\" \"U\" \"M\" \"R\" \"W\" \"S\" \"Y\" \"K\" \"V\" \"H\" \"D\" \"B\" \"N\" \"-\" \"+\"\n>    > AA_ALPHABET\n>     [1] \"A\" \"R\" \"N\" \"D\" \"C\" \"Q\" \"E\" \"G\" \"H\" \"I\" \"L\" \"K\" \"M\" \"F\" \"P\" \"S\" \n> \"T\" \"W\" \"Y\"\n>    [20] \"V\" \"U\" \"B\" \"Z\" \"X\" \"*\" \"-\" \"+\"\n> \n> \"-\" stands for \"gap\" and \"+\" is used for hard masking. IMO they are\n> both reasonable candidates. I propose to add an extra arg (e.g.\n> if.invalid.char) to read.DNAStringSet, read.RNAStringSet, and\n> read.AAStringSet to let the user choose what the substitution letter\n> should be, e.g. if.invalid.char=\"+\", or if.invalid.char=\"\" (for\n> removing the invalid letters).\n> \n> Now should we set its default to \"\" (and strictly follow the FASTA\n> spec), or should we set it to NA so by default an error would still\n> be raised if the file contains invalid chars? I prefer the latter\n> because I think it's good to let the user know that there is something\n> uncommon (at best) or potentially wrong with the file.\n> \n> Thanks for your feedback,\n> H.\n> \n> \n> >\n> > Thomas\n> >\n> >> sessionInfo()\n> > R version 2.15.0 (2012-03-30)\n> > Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)\n> >\n> > locale:\n> > [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8\n> >\n> > attached base packages:\n> > [1] stats     graphics  grDevices utils     datasets  methods   base\n> >\n> > other attached packages:\n> > [1] Biostrings_2.24.1  IRanges_1.14.2     BiocGenerics_0.2.0\n> >\n> > loaded via a namespace (and not attached):\n> > [1] stats4_2.15.0 tools_2.15.0\n> >\n> > _______________________________________________\n> > Bioc-devel at r-project.org mailing list\n> > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n> \n> -- \n> Hervé Pagès\n> \n> Program in Computational Biology\n> Division of Public Health Sciences\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N, M1-B514\n> P.O. Box 19024\n> Seattle, WA 98109-1024\n> \n> E-mail: hpages at fhcrc.org\n> Phone:  (206) 667-5791\n> Fax:    (206) 667-1319",
+      "body_snippet": "Hervé,\n\nI agree, an argument where the user has to explicitly decide how to handle \nunusual characters (e.g. if.invalid.char=\"\") would solve this in the most\nsensible manner.\n\nThomas\n\nOn Tue, May 22, ",
       "thread_id": "thread-d8d27302c2d1",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003399.html"
     },
     {
       "id": "msg-8e00d9ef267a",
@@ -747,7 +788,8 @@
       "body_snippet": "Hi Bioc-devel,\nI am the package maintainer for the cummeRbund package and since I'm  \nnot exactly sure to whom I should ask this question, I decided to post  \nto the bioc-devel list.\n\nSince this is my",
       "thread_id": "thread-8e00d9ef267a",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003400.html"
     },
     {
       "id": "msg-2a34ba41a734",
@@ -763,7 +805,8 @@
       "body_snippet": "Hi,\n\nwhile using the 'ShortRead' package for some quality assessment of \naligned reads (see example below), I observed the following behavior:\n\n## Example code ##\n\nlibrary(ShortRead)\nqa1 <- qa(dirPath",
       "thread_id": "thread-2a34ba41a734",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003401.html"
     },
     {
       "id": "msg-188d6ed54ebb",
@@ -781,7 +824,8 @@
       "body_snippet": "Thanks Julian -- these were separate issues (3 was from a recent change \nin Rsamtools, the other is more long-standing). Corrected in svn and \n1.14.4 / 1.15.6 when these become available.\n\nMartin\n\nOn ",
       "thread_id": "thread-2a34ba41a734",
       "thread_depth": 1,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003402.html"
     },
     {
       "id": "msg-07414fb59364",
@@ -795,11 +839,12 @@
       "references": [
         "<20120523175413.15365d9suiqna64l@webmail.csail.mit.edu>"
       ],
-      "body_plain": "Hi Loyal,\n\nThe high ratio between nb of downloads and nb of unique IPs should\nnot be a reason to doubt that these numbers are a true representation\nof the downloads. We've already seen this before. See for example the\nstats for the ChIPpeakAnno package:\n\n   http://bioconductor.org/packages/stats/bioc/ChIPpeakAnno.html\n\nThe package got downloaded 67k times in Oct/Nov 2011 from only 573\ndistinct IPs, so here the ratio is 117 downloads / IP.\n\nThe first time we saw this kind of massive repetitive downloads was\nfor the biomaRt package more than 1 year ago. We investigated it and\ndiscovered that most downloads (> 95%) were coming from a single IP\n(the IP itself was from a University somewhere in the US). We don't\nknow for sure why they needed to download the same package again and\nagain thousands of times every day for more than 20 days in a row, but\none explanation could be that they were using some kind of dumb script\nto install biomaRt on each node of a big cluster. What's strange though\nis that we saw the deluge of downloads for a single package (biomaRt)\nand not for a subset of Bioconductor packages (it sounds to me that\nthe people in charge of a cluster would typically install more than\n1 BioC package). But maybe they were testing a script on 1 package,\nthen realized they could improve it (to download each package only\nonce), and then used the improved script to actually deploy Bioconductor\non their cluster. Hard to know...\n\nAnyway, because those massive repetitive downloads are possible, maybe\nwe should put more emphasis on the nb of distinct IPs. This number is\nprobably more representative of the number of users and therefore is\na better indicator of how much a package is actually used.\n\nCheers,\nH.\n\n\nOn 05/23/2012 02:54 PM, lgoff at csail.mit.edu wrote:\n> Hi Bioc-devel,\n> I am the package maintainer for the cummeRbund package and since I'm not\n> exactly sure to whom I should ask this question, I decided to post to\n> the bioc-devel list.\n>\n> Since this is my first Bioc package I have been keenly interested in the\n> download stats that are tracked and visible on the Bioconductor website,\n> here:\n>\n> http://bioconductor.org/packages/stats/index.html\n>\n> Specifically, I'm noticing that the number of downloads for the\n> cummeRbund package seems to far outpace the number of unique IP\n> addresses downloading the package:\n>\n> http://bioconductor.org/packages/stats/bioc/cummeRbund.html\n>\n> For a few months there was a mean of between 10-20 downloads per unique\n> IP address, and for the current month this is on track to be about 36\n> downloads/IP (and looks to be about 8.7% of the total BioC packages\n> downloaded this month so far). Looking around at several other packages,\n> this does not seem to be the case as most of the packages in the top 30\n> list have a ratio of about 1.8-3 downloads / IP.\n>\n> As ecstatic as these numbers make me, I'm certain that there is some\n> underlying reason for this inflation that is not being appropriately\n> represented here, but without anything else to go on, I'm not really\n> sure where this is coming from. I would obviously like to have an honest\n> representation of the number of downloads for my package, and I was\n> hoping that someone with access to these data could help me track down\n> the cause of this download inflation (unless these numbers are a true\n> representation of the downloads, and then I would also very much like to\n> find out more demographics if possible as well).\n>\n> Any and all advice or information is appreciated! Thanks to all, and a\n> special thanks to everyone that helps to keep BioC such an amazing\n> project. I have enjoyed the benefits of bioconductor for the past 5+\n> years and I'm very happy that I can finally start to contribute back to\n> this wonderful project. (Also, I look forward to meeting some of you at\n> BioC 2012 this year!)\n>\n> Thanks in advance!\n>\n> Cheers,\n>\n> Loyal Goff\n>\n> (lgoff at csail.mit.edu)\n> NSF Postdoctoral Fellow\n> Computer Science and Artificial Intelligence Laboratory, MIT &\n> Stem Cells and Regenerative Biology Department, Harvard University &\n> The Broad Institute\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi Loyal,\n\nThe high ratio between nb of downloads and nb of unique IPs should\nnot be a reason to doubt that these numbers are a true representation\nof the downloads. We've already seen this before. See for example the\nstats for the ChIPpeakAnno package:\n\n   http://bioconductor.org/packages/stats/bioc/ChIPpeakAnno.html\n\nThe package got downloaded 67k times in Oct/Nov 2011 from only 573\ndistinct IPs, so here the ratio is 117 downloads / IP.\n\nThe first time we saw this kind of massive repetitive downloads was\nfor the biomaRt package more than 1 year ago. We investigated it and\ndiscovered that most downloads (> 95%) were coming from a single IP\n(the IP itself was from a University somewhere in the US). We don't\nknow for sure why they needed to download the same package again and\nagain thousands of times every day for more than 20 days in a row, but\none explanation could be that they were using some kind of dumb script\nto install biomaRt on each node of a big cluster. What's strange though\nis that we saw the deluge of downloads for a single package (biomaRt)\nand not for a subset of Bioconductor packages (it sounds to me that\nthe people in charge of a cluster would typically install more than\n1 BioC package). But maybe they were testing a script on 1 package,\nthen realized they could improve it (to download each package only\nonce), and then used the improved script to actually deploy Bioconductor\non their cluster. Hard to know...\n\nAnyway, because those massive repetitive downloads are possible, maybe\nwe should put more emphasis on the nb of distinct IPs. This number is\nprobably more representative of the number of users and therefore is\na better indicator of how much a package is actually used.\n\nCheers,\nH.\n\n\nOn 05/23/2012 02:54 PM, lgoff at csail.mit.edu wrote:\n> Hi Bioc-devel,\n> I am the package maintainer for the cummeRbund package and since I'm not\n> exactly sure to whom I should ask this question, I decided to post to\n> the bioc-devel list.\n>\n> Since this is my first Bioc package I have been keenly interested in the\n> download stats that are tracked and visible on the Bioconductor website,\n> here:\n>\n> http://bioconductor.org/packages/stats/index.html\n>\n> Specifically, I'm noticing that the number of downloads for the\n> cummeRbund package seems to far outpace the number of unique IP\n> addresses downloading the package:\n>\n> http://bioconductor.org/packages/stats/bioc/cummeRbund.html\n>\n> For a few months there was a mean of between 10-20 downloads per unique\n> IP address, and for the current month this is on track to be about 36\n> downloads/IP (and looks to be about 8.7% of the total BioC packages\n> downloaded this month so far). Looking around at several other packages,\n> this does not seem to be the case as most of the packages in the top 30\n> list have a ratio of about 1.8-3 downloads / IP.\n>\n> As ecstatic as these numbers make me, I'm certain that there is some\n> underlying reason for this inflation that is not being appropriately\n> represented here, but without anything else to go on, I'm not really\n> sure where this is coming from. I would obviously like to have an honest\n> representation of the number of downloads for my package, and I was\n> hoping that someone with access to these data could help me track down\n> the cause of this download inflation (unless these numbers are a true\n> representation of the downloads, and then I would also very much like to\n> find out more demographics if possible as well).\n>\n> Any and all advice or information is appreciated! Thanks to all, and a\n> special thanks to everyone that helps to keep BioC such an amazing\n> project. I have enjoyed the benefits of bioconductor for the past 5+\n> years and I'm very happy that I can finally start to contribute back to\n> this wonderful project. (Also, I look forward to meeting some of you at\n> BioC 2012 this year!)\n>\n> Thanks in advance!\n>\n> Cheers,\n>\n> Loyal Goff\n>\n> (lgoff at csail.mit.edu)\n> NSF Postdoctoral Fellow\n> Computer Science and Artificial Intelligence Laboratory, MIT &\n> Stem Cells and Regenerative Biology Department, Harvard University &\n> The Broad Institute\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi Loyal,\n\nThe high ratio between nb of downloads and nb of unique IPs should\nnot be a reason to doubt that these numbers are a true representation\nof the downloads. We've already seen this before. Se",
       "thread_id": "thread-8e00d9ef267a",
       "thread_depth": 1,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003403.html"
     },
     {
       "id": "msg-9fe3b96e75aa",
@@ -818,7 +863,8 @@
       "body_snippet": "Hi Martin,\n\nthanks for fixing these issues so quickly - the reports are now built \nwithout problems.\n\n\nBest\nJulian\n\n\nOn 05/24/2012 05:30 PM, Martin Morgan wrote:\n> Thanks Julian -- these were separate",
       "thread_id": "thread-2a34ba41a734",
       "thread_depth": 2,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003404.html"
     },
     {
       "id": "msg-761a8211a9a0",
@@ -834,7 +880,8 @@
       "body_snippet": "Hi BioC,\n\nA package of mine, Spade, is failing to build in the development release on Windows due to missing dependency (recently released igraph0 package), but building without issue on Linux and OSX",
       "thread_id": "thread-761a8211a9a0",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003405.html"
     },
     {
       "id": "msg-90052a5bc156",
@@ -852,7 +899,8 @@
       "body_snippet": "Hi Michael,\n\nOn Mon, May 28, 2012 at 8:52 AM, Michael Linderman\n<michael.d.linderman at gmail.com> wrote:\n> Hi BioC,\n>\n> A package of mine, Spade, is failing to build in the development release on Win",
       "thread_id": "thread-90052a5bc156",
       "thread_depth": 0,
-      "month": "2012-05"
+      "month": "2012-05",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2012-May/003406.html"
     }
   ],
   "threads": [

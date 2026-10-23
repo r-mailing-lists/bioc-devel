@@ -19,11 +19,12 @@
         "<50D7AD73.8060002@fhcrc.org>",
         "<CAPmAPXP+sNNUqfSvYB5EsB47K5zyen=xBRdmnD86u0PMViKZTw@mail.gmail.com>"
       ],
-      "body_plain": "On 12/28/2012 11:01 AM, Jesper G?din wrote:\n> After some fighting I have now the bleeding edge of R and the bioconductor\n> packages, and my own package was installed without any errors. Perfect!\n\nFor what it's worth I do\n\n   mkdir src/\n   cd src\n   svn checkout https://svn.r-project.org/R/trunk/ R-devel\n   R-devel/tools/rsync-recommended\n   cd ../\n   mkdir -p bin/R-devel\n   cd bin/R-devel\n   ~/src/R-devel/configure && make -j\n\nThis is my interpretation of RShowDoc(\"R-admin\"). Should not be any need to \nspecify type=\"source\" on linux.\n\nMartin\n\n>\n> Even if I finally got everything to work I get this error worth mentioning:\n>\n>  >biocLite(\"Biobase\", type=\"source\")\n>\n> BioC_mirror: http://bioconductor.org\n> Using Bioconductor version 2.12 (BiocInstaller 1.9.6), R version 3.0.0.\n> Installing package(s) 'Biobase'\n> trying URL\n> 'http://bioconductor.org/packages/2.12/bioc/src/contrib/Biobase_2.19.1.tar.gz'\n> Content type 'application/x-gzip' length 1845259 bytes (1.8 Mb)\n> opened URL\n> ==================================================\n> downloaded 1.8 Mb\n>\n> * installing *source* package ?Biobase? ...\n> ** libs\n> gcc -std=gnu99 -I/home/<somepath>/r-devel/include -DNDEBUG\n> -I/usr/local/include    -fpic  -g -O2  -c Rinit.c -o Rinit.o\n> Rinit.c:3:31: fatal error: R_ext/RConverters.h: No such file or directory\n> compilation terminated.\n> make: *** [Rinit.o] Error 1\n> ERROR: compilation failed for package ?Biobase?\n> * removing ?/home/<somepath>/r-devel/library/Biobase?\n> * restoring previous ?/home/<somepath>/r-devel/library/Biobase?\n>\n> Instead I can install Biobase source by,\n> #\"rdev\" is my alias for r-devel\n>  > rdev CMD INSTALL Biobase -l $R_DEV_LIB\n>\n> This is somehow weird...\n>\n> /Jesper\n>\n>  > sessionInfo()\n> R Under development (unstable) (2012-12-28 r61466)\n> Platform: x86_64-unknown-linux-gnu (64-bit)\n>\n> locale:\n>   [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>   [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8\n>   [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>   [7] LC_PAPER=C                 LC_NAME=C\n>   [9] LC_ADDRESS=C               LC_TELEPHONE=C\n> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>\n> attached base packages:\n> [1] stats     graphics  grDevices utils     datasets  methods   base\n>\n> other attached packages:\n> [1] basicASE_1.3.1\n>\n> loaded via a namespace (and not attached):\n>   [1] AnnotationDbi_1.21.9   Biobase_2.19.1         BiocGenerics_0.5.6\n>   [4] biomaRt_2.15.0         Biostrings_2.27.8      bitops_1.0-5\n>   [7] BSgenome_1.27.1        DBI_0.2-5              GenomicFeatures_1.11.5\n> [10] GenomicRanges_1.11.20  IRanges_1.17.23        parallel_3.0.0\n> [13] RCurl_1.95-3           Rsamtools_1.11.14      RSQLite_0.11.2\n> [16] rtracklayer_1.19.6     stats4_3.0.0           tools_3.0.0\n> [19] XML_3.95-0.1           zlibbioc_1.5.0\n>\n>\n>\n> On Mon, Dec 24, 2012 at 2:18 AM, Martin Morgan <mtmorgan at fhcrc.org\n> <mailto:mtmorgan at fhcrc.org>> wrote:\n>\n>     On 12/23/2012 05:07 PM, Jesper G?din wrote:\n>\n>         Thanks!\n>\n>         That helped the problem with the OrgDb warning. Unfortunately when I\n>         installed\n>         the devel AnnotationDbi and BiocGenerics, I got around 40 other warnings\n>         during\n>         the R CMD INSTALL , looking like this:\n>\n>         ** R\n>         ** inst\n>         ** preparing package for lazy loading\n>         Warning in .simpleDuplicateClass(def, prev) :\n>             A specification for S3 class ?AsIs? in package ?IRanges? seems\n>         equivalent to\n>         one from package ?BiocGenerics? and is not turning on duplicate class\n>         definitions for this class\n>         Warning: multiple methods tables found for ?sort?\n>         Warning: multiple methods tables found for ?rank?\n>         Warning: multiple methods tables found for ?as.data.frame?\n>         Warning: multiple methods tables found for ?unlist?\n>         Warning: multiple methods tables found for ?match?\n>         Warning: replacing previous import ?.__C__AsIs? when loading ?IRanges?\n>         Warning: replacing previous import ?as.data.frame? when loading ?IRanges?\n>         Warning: replacing previous import ?match? when loading ?IRanges?\n>         Warning: replacing previous import ?rank? when loading ?IRanges?\n>         ...\n>         ...\n>\n>         Can it be helped? And am very curious also to why all these warnings?\n>\n>         Jesper\n>\n>         NEW SESSIONINFO\n>           > sessionInfo()\n>         R version 2.15.1 (2012-06-22)\n>\n>\n>     You'll need to use R-devel aka R-3.0; this will likely mean 'starting from\n>     scratch' with installing bioc packages, so they'll all then be up-to-date\n>     and most (all?) of these warnings will go away. Right now, you have a mix of\n>     'devel' and release Bioc packages (note the even (release) and odd (devel)\n>     'y' part of the x.y.z version numbers in your Bioc packages), which is a\n>     recipe for disaster. Some of the warnings might persist, but that's life in\n>     the devel lanes -- there is some code re-organization going on at the\n>     moment, and things may be in a temporary state of flux.\n>\n>     Martin\n>\n>         Platform: x86_64-unknown-linux-gnu (64-bit)\n>\n>         locale:\n>            [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>            [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8\n>            [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>            [7] LC_PAPER=C                 LC_NAME=C\n>            [9] LC_ADDRESS=C               LC_TELEPHONE=C\n>         [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>\n>         attached base packages:\n>         [1] stats     graphics  grDevices utils     datasets  methods   base\n>\n>         other attached packages:\n>         [1] basicASE_1.3\n>\n>         loaded via a namespace (and not attached):\n>            [1] AnnotationDbi_1.21.9  Biobase_2.16.0        BiocGenerics_0.5.6\n>            [4] biomaRt_2.12.0        Biostrings_2.24.1     bitops_1.0-5\n>            [7] BSgenome_1.24.0       DBI_0.2-5             GenomicFeatures_1.8.3\n>         [10] GenomicRanges_1.8.13  IRanges_1.14.4        parallel_2.15.1\n>         [13] RCurl_1.95-3          Rsamtools_1.8.6       RSQLite_0.11.2\n>         [16] rtracklayer_1.16.3    stats4_2.15.1         tools_2.15.1\n>         [19] XML_3.95-0.1          zlibbioc_1.2.0\n>           >\n>\n>\n>         On Sun, Dec 23, 2012 at 8:06 AM, Martin Morgan <mtmorgan at fhcrc.org\n>         <mailto:mtmorgan at fhcrc.org>\n>         <mailto:mtmorgan at fhcrc.org <mailto:mtmorgan at fhcrc.org>>> wrote:\n>\n>              Hi Jesper --\n>\n>\n>              On 12/22/2012 05:09 PM, Jesper G?din wrote:\n>\n>                  Hello all,\n>\n>                  #I have been attempting to create a slot in my own class foo\n>         that is\n>                  supposed to contain an OrgDb object from the AnnotationDbi-package.\n>                  Actually it works, but during my build I get this warning:\n>\n>                  ** R\n>                  ** inst\n>                  ** preparing package for lazy loading\n>                  Warning: Class \"OrgDb\" is defined (with package slot\n>         ?AnnotationDbi?) but\n>                  no metadata object found to revise superClass information---not\n>         exported?\n>                  Making a copy in package fooPackage\n>\n>                  #Below the parts of the code that may be relevant to solve the\n>         problem.\n>                  #My AllClasses file contain these lines:\n>                  setClassUnion(\"OrgDbOrNULL\", c(\"OrgDb\",\"NULL\"))\n>                  setClass(\"foo\",representation(\n>\n>                                OrgDb=\"OrgDbOrNULL\",\n>                                TxDbUCSC=\"TranscriptDbOrNULL\"\n>\n>                                )\n>                  )\n>\n>                  #My NAMESPACE file contain these lines:\n>                  importClassesFrom(____AnnotationDbi, AnnotationDb)\n>                  importClassesFrom(____GenomicFeatures, TranscriptDb)\n>\n>\n>                  #My DESCRIPTION file contain these lines:\n>                  Depends: R (>= 2.15.1), AnnotationDbi\n>                  Imports: methods, BiocGenerics, IRanges, GenomicRanges,\n>         GenomicFeatures,\n>                  Rsamtools, AnnotationDbi\n>\n>\n>                  #To add the TranscriptDb works perfectly(no warnings during\n>         build), but not\n>                  the AnnotationDb. I have looked at the source code for\n>         AnnotationDb and\n>                  realized it has reference classes. This might be causing the\n>         warning during\n>                  build, of the reason that I cannot import the OrgDb class in\n>         NAMESPACE, and\n>                  that because it is not exported from AnnotationDbi. Thought\n>         putting it in\n>                  the Depends field in the DESCRIPTION would help, but it did not,\n>                  unfortunately. All kinds of help is appreciated.\n>\n>\n>              Thanks for reporting this. I have updated AnnotationDbi to export\n>         the OrgDb\n>              class. This is in AnnotationDbi 1.21.9, in the 'devel' version of\n>              Bioconductor (available when using the devel version of R). Version\n>         1.21.9\n>              will be available with biocLite after about 10am PST Monday.\n>\n>              You will also need to add\n>\n>                 importClassesFrom(____AnnotationDbi, AnnotationDb, OrgDb)\n>\n>\n>              to your NAMESAPCE.\n>\n>              Best,\n>\n>              Martin\n>\n>\n>                  Sincerely,\n>                  Jesper\n>\n>\n>                      sessionInfo()\n>\n>                  R version 2.15.1 (2012-06-22)\n>                  Platform: x86_64-unknown-linux-gnu (64-bit)\n>\n>                  locale:\n>                     [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>                     [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8\n>                     [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>                     [7] LC_PAPER=C                 LC_NAME=C\n>                     [9] LC_ADDRESS=C               LC_TELEPHONE=C\n>                  [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>\n>                  attached base packages:\n>                  [1] stats     graphics  grDevices utils     datasets  methods\n>         base\n>\n>                  other attached packages:\n>                  [1] basicASE_1.3         AnnotationDbi_1.18.4 Biobase_2.16.0\n>                  [4] BiocGenerics_0.2.0\n>\n>                  loaded via a namespace (and not attached):\n>                     [1] biomaRt_2.12.0        Biostrings_2.24.1     bitops_1.0-5\n>                     [4] BSgenome_1.24.0       DBI_0.2-5\n>         GenomicFeatures_1.8.3\n>                     [7] GenomicRanges_1.8.13  IRanges_1.14.4        RCurl_1.95-3\n>                  [10] Rsamtools_1.8.6       RSQLite_0.11.2        rtracklayer_1.16.3\n>                  [13] stats4_2.15.1         tools_2.15.1          XML_3.95-0.1\n>                  [16] zlibbioc_1.2.0\n>\n>                           [[alternative HTML version deleted]]\n>\n>\n>\n>                  ___________________________________________________\n>         Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>\n>         <mailto:Bioc-devel at r-project.__org <mailto:Bioc-devel at r-project.org>>\n>         mailing list\n>         https://stat.ethz.ch/mailman/____listinfo/bioc-devel\n>         <https://stat.ethz.ch/mailman/__listinfo/bioc-devel>\n>\n>                  <https://stat.ethz.ch/mailman/__listinfo/bioc-devel\n>         <https://stat.ethz.ch/mailman/listinfo/bioc-devel>>\n>\n>\n>\n>              --\n>              Computational Biology / Fred Hutchinson Cancer Research Center\n>              1100 Fairview Ave. N.\n>              PO Box 19024 Seattle, WA 98109\n>\n>              Location: Arnold Building M1 B861\n>              Phone: (206) 667-2793 <tel:%28206%29%20667-2793>\n>         <tel:%28206%29%20667-2793>\n>\n>\n>\n>\n>     --\n>     Computational Biology / Fred Hutchinson Cancer Research Center\n>     1100 Fairview Ave. N.\n>     PO Box 19024 Seattle, WA 98109\n>\n>     Location: Arnold Building M1 B861\n>     Phone: (206) 667-2793 <tel:%28206%29%20667-2793>\n>\n>\n\n\n-- \nComputational Biology / Fred Hutchinson Cancer Research Center\n1100 Fairview Ave. N.\nPO Box 19024 Seattle, WA 98109\n\nLocation: Arnold Building M1 B861\nPhone: (206) 667-2793",
-      "body_snippet": "On 12/28/2012 11:01 AM, Jesper G?din wrote:\n> After some fighting I have now the bleeding edge of R and the bioconductor\n> packages, and my own package was installed without any errors. Perfect!\n\nFor ",
+      "body_plain": "On 12/28/2012 11:01 AM, Jesper Gådin wrote:\n> After some fighting I have now the bleeding edge of R and the bioconductor\n> packages, and my own package was installed without any errors. Perfect!\n\nFor what it's worth I do\n\n   mkdir src/\n   cd src\n   svn checkout https://svn.r-project.org/R/trunk/ R-devel\n   R-devel/tools/rsync-recommended\n   cd ../\n   mkdir -p bin/R-devel\n   cd bin/R-devel\n   ~/src/R-devel/configure && make -j\n\nThis is my interpretation of RShowDoc(\"R-admin\"). Should not be any need to \nspecify type=\"source\" on linux.\n\nMartin\n\n>\n> Even if I finally got everything to work I get this error worth mentioning:\n>\n>  >biocLite(\"Biobase\", type=\"source\")\n>\n> BioC_mirror: http://bioconductor.org\n> Using Bioconductor version 2.12 (BiocInstaller 1.9.6), R version 3.0.0.\n> Installing package(s) 'Biobase'\n> trying URL\n> 'http://bioconductor.org/packages/2.12/bioc/src/contrib/Biobase_2.19.1.tar.gz'\n> Content type 'application/x-gzip' length 1845259 bytes (1.8 Mb)\n> opened URL\n> ==================================================\n> downloaded 1.8 Mb\n>\n> * installing *source* package ‘Biobase’ ...\n> ** libs\n> gcc -std=gnu99 -I/home/<somepath>/r-devel/include -DNDEBUG\n> -I/usr/local/include    -fpic  -g -O2  -c Rinit.c -o Rinit.o\n> Rinit.c:3:31: fatal error: R_ext/RConverters.h: No such file or directory\n> compilation terminated.\n> make: *** [Rinit.o] Error 1\n> ERROR: compilation failed for package ‘Biobase’\n> * removing ‘/home/<somepath>/r-devel/library/Biobase’\n> * restoring previous ‘/home/<somepath>/r-devel/library/Biobase’\n>\n> Instead I can install Biobase source by,\n> #\"rdev\" is my alias for r-devel\n>  > rdev CMD INSTALL Biobase -l $R_DEV_LIB\n>\n> This is somehow weird...\n>\n> /Jesper\n>\n>  > sessionInfo()\n> R Under development (unstable) (2012-12-28 r61466)\n> Platform: x86_64-unknown-linux-gnu (64-bit)\n>\n> locale:\n>   [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>   [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8\n>   [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>   [7] LC_PAPER=C                 LC_NAME=C\n>   [9] LC_ADDRESS=C               LC_TELEPHONE=C\n> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>\n> attached base packages:\n> [1] stats     graphics  grDevices utils     datasets  methods   base\n>\n> other attached packages:\n> [1] basicASE_1.3.1\n>\n> loaded via a namespace (and not attached):\n>   [1] AnnotationDbi_1.21.9   Biobase_2.19.1         BiocGenerics_0.5.6\n>   [4] biomaRt_2.15.0         Biostrings_2.27.8      bitops_1.0-5\n>   [7] BSgenome_1.27.1        DBI_0.2-5              GenomicFeatures_1.11.5\n> [10] GenomicRanges_1.11.20  IRanges_1.17.23        parallel_3.0.0\n> [13] RCurl_1.95-3           Rsamtools_1.11.14      RSQLite_0.11.2\n> [16] rtracklayer_1.19.6     stats4_3.0.0           tools_3.0.0\n> [19] XML_3.95-0.1           zlibbioc_1.5.0\n>\n>\n>\n> On Mon, Dec 24, 2012 at 2:18 AM, Martin Morgan <mtmorgan at fhcrc.org\n> <mailto:mtmorgan at fhcrc.org>> wrote:\n>\n>     On 12/23/2012 05:07 PM, Jesper Gådin wrote:\n>\n>         Thanks!\n>\n>         That helped the problem with the OrgDb warning. Unfortunately when I\n>         installed\n>         the devel AnnotationDbi and BiocGenerics, I got around 40 other warnings\n>         during\n>         the R CMD INSTALL , looking like this:\n>\n>         ** R\n>         ** inst\n>         ** preparing package for lazy loading\n>         Warning in .simpleDuplicateClass(def, prev) :\n>             A specification for S3 class “AsIs” in package ‘IRanges’ seems\n>         equivalent to\n>         one from package ‘BiocGenerics’ and is not turning on duplicate class\n>         definitions for this class\n>         Warning: multiple methods tables found for ‘sort’\n>         Warning: multiple methods tables found for ‘rank’\n>         Warning: multiple methods tables found for ‘as.data.frame’\n>         Warning: multiple methods tables found for ‘unlist’\n>         Warning: multiple methods tables found for ‘match’\n>         Warning: replacing previous import ‘.__C__AsIs’ when loading ‘IRanges’\n>         Warning: replacing previous import ‘as.data.frame’ when loading ‘IRanges’\n>         Warning: replacing previous import ‘match’ when loading ‘IRanges’\n>         Warning: replacing previous import ‘rank’ when loading ‘IRanges’\n>         ...\n>         ...\n>\n>         Can it be helped? And am very curious also to why all these warnings?\n>\n>         Jesper\n>\n>         NEW SESSIONINFO\n>           > sessionInfo()\n>         R version 2.15.1 (2012-06-22)\n>\n>\n>     You'll need to use R-devel aka R-3.0; this will likely mean 'starting from\n>     scratch' with installing bioc packages, so they'll all then be up-to-date\n>     and most (all?) of these warnings will go away. Right now, you have a mix of\n>     'devel' and release Bioc packages (note the even (release) and odd (devel)\n>     'y' part of the x.y.z version numbers in your Bioc packages), which is a\n>     recipe for disaster. Some of the warnings might persist, but that's life in\n>     the devel lanes -- there is some code re-organization going on at the\n>     moment, and things may be in a temporary state of flux.\n>\n>     Martin\n>\n>         Platform: x86_64-unknown-linux-gnu (64-bit)\n>\n>         locale:\n>            [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>            [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8\n>            [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>            [7] LC_PAPER=C                 LC_NAME=C\n>            [9] LC_ADDRESS=C               LC_TELEPHONE=C\n>         [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>\n>         attached base packages:\n>         [1] stats     graphics  grDevices utils     datasets  methods   base\n>\n>         other attached packages:\n>         [1] basicASE_1.3\n>\n>         loaded via a namespace (and not attached):\n>            [1] AnnotationDbi_1.21.9  Biobase_2.16.0        BiocGenerics_0.5.6\n>            [4] biomaRt_2.12.0        Biostrings_2.24.1     bitops_1.0-5\n>            [7] BSgenome_1.24.0       DBI_0.2-5             GenomicFeatures_1.8.3\n>         [10] GenomicRanges_1.8.13  IRanges_1.14.4        parallel_2.15.1\n>         [13] RCurl_1.95-3          Rsamtools_1.8.6       RSQLite_0.11.2\n>         [16] rtracklayer_1.16.3    stats4_2.15.1         tools_2.15.1\n>         [19] XML_3.95-0.1          zlibbioc_1.2.0\n>           >\n>\n>\n>         On Sun, Dec 23, 2012 at 8:06 AM, Martin Morgan <mtmorgan at fhcrc.org\n>         <mailto:mtmorgan at fhcrc.org>\n>         <mailto:mtmorgan at fhcrc.org <mailto:mtmorgan at fhcrc.org>>> wrote:\n>\n>              Hi Jesper --\n>\n>\n>              On 12/22/2012 05:09 PM, Jesper Gådin wrote:\n>\n>                  Hello all,\n>\n>                  #I have been attempting to create a slot in my own class foo\n>         that is\n>                  supposed to contain an OrgDb object from the AnnotationDbi-package.\n>                  Actually it works, but during my build I get this warning:\n>\n>                  ** R\n>                  ** inst\n>                  ** preparing package for lazy loading\n>                  Warning: Class \"OrgDb\" is defined (with package slot\n>         ‘AnnotationDbi’) but\n>                  no metadata object found to revise superClass information---not\n>         exported?\n>                  Making a copy in package fooPackage\n>\n>                  #Below the parts of the code that may be relevant to solve the\n>         problem.\n>                  #My AllClasses file contain these lines:\n>                  setClassUnion(\"OrgDbOrNULL\", c(\"OrgDb\",\"NULL\"))\n>                  setClass(\"foo\",representation(\n>\n>                                OrgDb=\"OrgDbOrNULL\",\n>                                TxDbUCSC=\"TranscriptDbOrNULL\"\n>\n>                                )\n>                  )\n>\n>                  #My NAMESPACE file contain these lines:\n>                  importClassesFrom(____AnnotationDbi, AnnotationDb)\n>                  importClassesFrom(____GenomicFeatures, TranscriptDb)\n>\n>\n>                  #My DESCRIPTION file contain these lines:\n>                  Depends: R (>= 2.15.1), AnnotationDbi\n>                  Imports: methods, BiocGenerics, IRanges, GenomicRanges,\n>         GenomicFeatures,\n>                  Rsamtools, AnnotationDbi\n>\n>\n>                  #To add the TranscriptDb works perfectly(no warnings during\n>         build), but not\n>                  the AnnotationDb. I have looked at the source code for\n>         AnnotationDb and\n>                  realized it has reference classes. This might be causing the\n>         warning during\n>                  build, of the reason that I cannot import the OrgDb class in\n>         NAMESPACE, and\n>                  that because it is not exported from AnnotationDbi. Thought\n>         putting it in\n>                  the Depends field in the DESCRIPTION would help, but it did not,\n>                  unfortunately. All kinds of help is appreciated.\n>\n>\n>              Thanks for reporting this. I have updated AnnotationDbi to export\n>         the OrgDb\n>              class. This is in AnnotationDbi 1.21.9, in the 'devel' version of\n>              Bioconductor (available when using the devel version of R). Version\n>         1.21.9\n>              will be available with biocLite after about 10am PST Monday.\n>\n>              You will also need to add\n>\n>                 importClassesFrom(____AnnotationDbi, AnnotationDb, OrgDb)\n>\n>\n>              to your NAMESAPCE.\n>\n>              Best,\n>\n>              Martin\n>\n>\n>                  Sincerely,\n>                  Jesper\n>\n>\n>                      sessionInfo()\n>\n>                  R version 2.15.1 (2012-06-22)\n>                  Platform: x86_64-unknown-linux-gnu (64-bit)\n>\n>                  locale:\n>                     [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>                     [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8\n>                     [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>                     [7] LC_PAPER=C                 LC_NAME=C\n>                     [9] LC_ADDRESS=C               LC_TELEPHONE=C\n>                  [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>\n>                  attached base packages:\n>                  [1] stats     graphics  grDevices utils     datasets  methods\n>         base\n>\n>                  other attached packages:\n>                  [1] basicASE_1.3         AnnotationDbi_1.18.4 Biobase_2.16.0\n>                  [4] BiocGenerics_0.2.0\n>\n>                  loaded via a namespace (and not attached):\n>                     [1] biomaRt_2.12.0        Biostrings_2.24.1     bitops_1.0-5\n>                     [4] BSgenome_1.24.0       DBI_0.2-5\n>         GenomicFeatures_1.8.3\n>                     [7] GenomicRanges_1.8.13  IRanges_1.14.4        RCurl_1.95-3\n>                  [10] Rsamtools_1.8.6       RSQLite_0.11.2        rtracklayer_1.16.3\n>                  [13] stats4_2.15.1         tools_2.15.1          XML_3.95-0.1\n>                  [16] zlibbioc_1.2.0\n>\n>                           [[alternative HTML version deleted]]\n>\n>\n>\n>                  ___________________________________________________\n>         Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>\n>         <mailto:Bioc-devel at r-project.__org <mailto:Bioc-devel at r-project.org>>\n>         mailing list\n>         https://stat.ethz.ch/mailman/____listinfo/bioc-devel\n>         <https://stat.ethz.ch/mailman/__listinfo/bioc-devel>\n>\n>                  <https://stat.ethz.ch/mailman/__listinfo/bioc-devel\n>         <https://stat.ethz.ch/mailman/listinfo/bioc-devel>>\n>\n>\n>\n>              --\n>              Computational Biology / Fred Hutchinson Cancer Research Center\n>              1100 Fairview Ave. N.\n>              PO Box 19024 Seattle, WA 98109\n>\n>              Location: Arnold Building M1 B861\n>              Phone: (206) 667-2793 <tel:%28206%29%20667-2793>\n>         <tel:%28206%29%20667-2793>\n>\n>\n>\n>\n>     --\n>     Computational Biology / Fred Hutchinson Cancer Research Center\n>     1100 Fairview Ave. N.\n>     PO Box 19024 Seattle, WA 98109\n>\n>     Location: Arnold Building M1 B861\n>     Phone: (206) 667-2793 <tel:%28206%29%20667-2793>\n>\n>\n\n\n-- \nComputational Biology / Fred Hutchinson Cancer Research Center\n1100 Fairview Ave. N.\nPO Box 19024 Seattle, WA 98109\n\nLocation: Arnold Building M1 B861\nPhone: (206) 667-2793",
+      "body_snippet": "On 12/28/2012 11:01 AM, Jesper Gådin wrote:\n> After some fighting I have now the bleeding edge of R and the bioconductor\n> packages, and my own package was installed without any errors. Perfect!\n\nFor ",
       "thread_id": "thread-40caeebd8b7c",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003962.html"
     },
     {
       "id": "msg-73777499527b",
@@ -42,11 +43,12 @@
         "<CAPmAPXP+sNNUqfSvYB5EsB47K5zyen=xBRdmnD86u0PMViKZTw@mail.gmail.com>",
         "<CAF42j226FWxxF9ODxcNLruaq0UKAoAW=wztwcBwFVs12GOD=yA@mail.gmail.com>"
       ],
-      "body_plain": "On Fri, Dec 28, 2012 at 11:31 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n> On Fri, Dec 28, 2012 at 11:01 AM, Jesper G?din <jesper.gadin at gmail.com> wrote:\n>> After some fighting I have now the bleeding edge of R and the bioconductor\n>> packages, and my own package was installed without any errors. Perfect!\n>>\n>> Even if I finally got everything to work I get this error worth mentioning:\n>>\n>>>biocLite(\"Biobase\", type=\"source\")\n>>\n>> BioC_mirror: http://bioconductor.org\n>> Using Bioconductor version 2.12 (BiocInstaller 1.9.6), R version 3.0.0.\n>> Installing package(s) 'Biobase'\n>> trying URL '\n>> http://bioconductor.org/packages/2.12/bioc/src/contrib/Biobase_2.19.1.tar.gz\n>> '\n>> Content type 'application/x-gzip' length 1845259 bytes (1.8 Mb)\n>> opened URL\n>> ==================================================\n>> downloaded 1.8 Mb\n>>\n>> * installing *source* package ?Biobase? ...\n>> ** libs\n>> gcc -std=gnu99 -I/home/<somepath>/r-devel/include -DNDEBUG\n>> -I/usr/local/include    -fpic  -g -O2  -c Rinit.c -o Rinit.o\n>> Rinit.c:3:31: fatal error: R_ext/RConverters.h: No such file or directory\n>> compilation terminated.\n>> make: *** [Rinit.o] Error 1\n>> ERROR: compilation failed for package ?Biobase?\n>> * removing ?/home/<somepath>/r-devel/library/Biobase?\n>> * restoring previous ?/home/<somepath>/r-devel/library/Biobase?\n>>\n>\n> Hmm, this does seem somehow broken, Does the file\n> $R_HOME/include/R_ext/RConverters.h\n> exist?\n> Are you using the same version of R interactively as you are on the\n> command line (rdev)? If not, does this work when you do?\n>\n> Dan\n>\n>\n>> Instead I can install Biobase source by,\n>> #\"rdev\" is my alias for r-devel\n>>> rdev CMD INSTALL Biobase -l $R_DEV_LIB\n>>\n\nSorry, I steered you wrong earlier.\n\nAs I mentioned elsewhere on this list:\n\nRConverters.h has been removed from R-devel in recent days.\n\nBiobase 2.19.2 no longer refers to this file. You can check it out from svn\nhttps://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/Biobase/\n(login: readonly/readonly)\n\nOr install it with biocLite(\"Biobase\") after 10:30AM Seattle time on Friday.\n\nThanks,\nDan\n\n\n>> This is somehow weird...\n>>\n>> /Jesper\n>>\n>>> sessionInfo()\n>> R Under development (unstable) (2012-12-28 r61466)\n>> Platform: x86_64-unknown-linux-gnu (64-bit)\n>>\n>> locale:\n>>  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>>  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8\n>>  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>>  [7] LC_PAPER=C                 LC_NAME=C\n>>  [9] LC_ADDRESS=C               LC_TELEPHONE=C\n>> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>>\n>> attached base packages:\n>> [1] stats     graphics  grDevices utils     datasets  methods   base\n>>\n>> other attached packages:\n>> [1] basicASE_1.3.1\n>>\n>> loaded via a namespace (and not attached):\n>>  [1] AnnotationDbi_1.21.9   Biobase_2.19.1         BiocGenerics_0.5.6\n>>  [4] biomaRt_2.15.0         Biostrings_2.27.8      bitops_1.0-5\n>>  [7] BSgenome_1.27.1        DBI_0.2-5              GenomicFeatures_1.11.5\n>> [10] GenomicRanges_1.11.20  IRanges_1.17.23        parallel_3.0.0\n>> [13] RCurl_1.95-3           Rsamtools_1.11.14      RSQLite_0.11.2\n>> [16] rtracklayer_1.19.6     stats4_3.0.0           tools_3.0.0\n>> [19] XML_3.95-0.1           zlibbioc_1.5.0\n>>\n>>\n>>\n>> On Mon, Dec 24, 2012 at 2:18 AM, Martin Morgan <mtmorgan at fhcrc.org> wrote:\n>>\n>>> On 12/23/2012 05:07 PM, Jesper G?din wrote:\n>>>\n>>>> Thanks!\n>>>>\n>>>> That helped the problem with the OrgDb warning. Unfortunately when I\n>>>> installed\n>>>> the devel AnnotationDbi and BiocGenerics, I got around 40 other warnings\n>>>> during\n>>>> the R CMD INSTALL , looking like this:\n>>>>\n>>>> ** R\n>>>> ** inst\n>>>> ** preparing package for lazy loading\n>>>> Warning in .simpleDuplicateClass(def, prev) :\n>>>>    A specification for S3 class ?AsIs? in package ?IRanges? seems\n>>>> equivalent to\n>>>> one from package ?BiocGenerics? and is not turning on duplicate class\n>>>> definitions for this class\n>>>> Warning: multiple methods tables found for ?sort?\n>>>> Warning: multiple methods tables found for ?rank?\n>>>> Warning: multiple methods tables found for ?as.data.frame?\n>>>> Warning: multiple methods tables found for ?unlist?\n>>>> Warning: multiple methods tables found for ?match?\n>>>> Warning: replacing previous import ?.__C__AsIs? when loading ?IRanges?\n>>>> Warning: replacing previous import ?as.data.frame? when loading ?IRanges?\n>>>> Warning: replacing previous import ?match? when loading ?IRanges?\n>>>> Warning: replacing previous import ?rank? when loading ?IRanges?\n>>>> ...\n>>>> ...\n>>>>\n>>>> Can it be helped? And am very curious also to why all these warnings?\n>>>>\n>>>> Jesper\n>>>>\n>>>> NEW SESSIONINFO\n>>>>  > sessionInfo()\n>>>> R version 2.15.1 (2012-06-22)\n>>>>\n>>>\n>>> You'll need to use R-devel aka R-3.0; this will likely mean 'starting from\n>>> scratch' with installing bioc packages, so they'll all then be up-to-date\n>>> and most (all?) of these warnings will go away. Right now, you have a mix\n>>> of 'devel' and release Bioc packages (note the even (release) and odd\n>>> (devel) 'y' part of the x.y.z version numbers in your Bioc packages), which\n>>> is a recipe for disaster. Some of the warnings might persist, but that's\n>>> life in the devel lanes -- there is some code re-organization going on at\n>>> the moment, and things may be in a temporary state of flux.\n>>>\n>>> Martin\n>>>\n>>>  Platform: x86_64-unknown-linux-gnu (64-bit)\n>>>>\n>>>> locale:\n>>>>   [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>>>>   [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8\n>>>>   [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>>>>   [7] LC_PAPER=C                 LC_NAME=C\n>>>>   [9] LC_ADDRESS=C               LC_TELEPHONE=C\n>>>> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>>>>\n>>>> attached base packages:\n>>>> [1] stats     graphics  grDevices utils     datasets  methods   base\n>>>>\n>>>> other attached packages:\n>>>> [1] basicASE_1.3\n>>>>\n>>>> loaded via a namespace (and not attached):\n>>>>   [1] AnnotationDbi_1.21.9  Biobase_2.16.0        BiocGenerics_0.5.6\n>>>>   [4] biomaRt_2.12.0        Biostrings_2.24.1     bitops_1.0-5\n>>>>   [7] BSgenome_1.24.0       DBI_0.2-5             GenomicFeatures_1.8.3\n>>>> [10] GenomicRanges_1.8.13  IRanges_1.14.4        parallel_2.15.1\n>>>> [13] RCurl_1.95-3          Rsamtools_1.8.6       RSQLite_0.11.2\n>>>> [16] rtracklayer_1.16.3    stats4_2.15.1         tools_2.15.1\n>>>> [19] XML_3.95-0.1          zlibbioc_1.2.0\n>>>>  >\n>>>>\n>>>>\n>>>> On Sun, Dec 23, 2012 at 8:06 AM, Martin Morgan <mtmorgan at fhcrc.org\n>>>> <mailto:mtmorgan at fhcrc.org>> wrote:\n>>>>\n>>>>     Hi Jesper --\n>>>>\n>>>>\n>>>>     On 12/22/2012 05:09 PM, Jesper G?din wrote:\n>>>>\n>>>>         Hello all,\n>>>>\n>>>>         #I have been attempting to create a slot in my own class foo that\n>>>> is\n>>>>         supposed to contain an OrgDb object from the\n>>>> AnnotationDbi-package.\n>>>>         Actually it works, but during my build I get this warning:\n>>>>\n>>>>         ** R\n>>>>         ** inst\n>>>>         ** preparing package for lazy loading\n>>>>         Warning: Class \"OrgDb\" is defined (with package slot\n>>>> ?AnnotationDbi?) but\n>>>>         no metadata object found to revise superClass information---not\n>>>> exported?\n>>>>         Making a copy in package fooPackage\n>>>>\n>>>>         #Below the parts of the code that may be relevant to solve the\n>>>> problem.\n>>>>         #My AllClasses file contain these lines:\n>>>>         setClassUnion(\"OrgDbOrNULL\", c(\"OrgDb\",\"NULL\"))\n>>>>         setClass(\"foo\",representation(\n>>>>\n>>>>                       OrgDb=\"OrgDbOrNULL\",\n>>>>                       TxDbUCSC=\"TranscriptDbOrNULL\"\n>>>>\n>>>>                       )\n>>>>         )\n>>>>\n>>>>         #My NAMESPACE file contain these lines:\n>>>>         importClassesFrom(__**AnnotationDbi, AnnotationDb)\n>>>>         importClassesFrom(__**GenomicFeatures, TranscriptDb)\n>>>>\n>>>>\n>>>>         #My DESCRIPTION file contain these lines:\n>>>>         Depends: R (>= 2.15.1), AnnotationDbi\n>>>>         Imports: methods, BiocGenerics, IRanges, GenomicRanges,\n>>>> GenomicFeatures,\n>>>>         Rsamtools, AnnotationDbi\n>>>>\n>>>>\n>>>>         #To add the TranscriptDb works perfectly(no warnings during\n>>>> build), but not\n>>>>         the AnnotationDb. I have looked at the source code for\n>>>> AnnotationDb and\n>>>>         realized it has reference classes. This might be causing the\n>>>> warning during\n>>>>         build, of the reason that I cannot import the OrgDb class in\n>>>> NAMESPACE, and\n>>>>         that because it is not exported from AnnotationDbi. Thought\n>>>> putting it in\n>>>>         the Depends field in the DESCRIPTION would help, but it did not,\n>>>>         unfortunately. All kinds of help is appreciated.\n>>>>\n>>>>\n>>>>     Thanks for reporting this. I have updated AnnotationDbi to export the\n>>>> OrgDb\n>>>>     class. This is in AnnotationDbi 1.21.9, in the 'devel' version of\n>>>>     Bioconductor (available when using the devel version of R). Version\n>>>> 1.21.9\n>>>>     will be available with biocLite after about 10am PST Monday.\n>>>>\n>>>>     You will also need to add\n>>>>\n>>>>        importClassesFrom(__**AnnotationDbi, AnnotationDb, OrgDb)\n>>>>\n>>>>\n>>>>     to your NAMESAPCE.\n>>>>\n>>>>     Best,\n>>>>\n>>>>     Martin\n>>>>\n>>>>\n>>>>         Sincerely,\n>>>>         Jesper\n>>>>\n>>>>\n>>>>             sessionInfo()\n>>>>\n>>>>         R version 2.15.1 (2012-06-22)\n>>>>         Platform: x86_64-unknown-linux-gnu (64-bit)\n>>>>\n>>>>         locale:\n>>>>            [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>>>>            [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8\n>>>>            [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>>>>            [7] LC_PAPER=C                 LC_NAME=C\n>>>>            [9] LC_ADDRESS=C               LC_TELEPHONE=C\n>>>>         [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>>>>\n>>>>         attached base packages:\n>>>>         [1] stats     graphics  grDevices utils     datasets  methods\n>>>> base\n>>>>\n>>>>         other attached packages:\n>>>>         [1] basicASE_1.3         AnnotationDbi_1.18.4 Biobase_2.16.0\n>>>>         [4] BiocGenerics_0.2.0\n>>>>\n>>>>         loaded via a namespace (and not attached):\n>>>>            [1] biomaRt_2.12.0        Biostrings_2.24.1     bitops_1.0-5\n>>>>            [4] BSgenome_1.24.0       DBI_0.2-5\n>>>> GenomicFeatures_1.8.3\n>>>>            [7] GenomicRanges_1.8.13  IRanges_1.14.4        RCurl_1.95-3\n>>>>         [10] Rsamtools_1.8.6       RSQLite_0.11.2\n>>>>  rtracklayer_1.16.3\n>>>>         [13] stats4_2.15.1         tools_2.15.1          XML_3.95-0.1\n>>>>         [16] zlibbioc_1.2.0\n>>>>\n>>>>                  [[alternative HTML version deleted]]\n>>>>\n>>>>\n>>>>\n>>>>         ______________________________**___________________\n>>>>         Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.**org<Bioc-devel at r-project.org>>\n>>>> mailing list\n>>>>         https://stat.ethz.ch/mailman/_**_listinfo/bioc-devel<https://stat.ethz.ch/mailman/__listinfo/bioc-devel>\n>>>>\n>>>>         <https://stat.ethz.ch/mailman/**listinfo/bioc-devel<https://stat.ethz.ch/mailman/listinfo/bioc-devel>\n>>>> >\n>>>>\n>>>>\n>>>>\n>>>>     --\n>>>>     Computational Biology / Fred Hutchinson Cancer Research Center\n>>>>     1100 Fairview Ave. N.\n>>>>     PO Box 19024 Seattle, WA 98109\n>>>>\n>>>>     Location: Arnold Building M1 B861\n>>>>     Phone: (206) 667-2793 <tel:%28206%29%20667-2793>\n>>>>\n>>>>\n>>>>\n>>>\n>>> --\n>>> Computational Biology / Fred Hutchinson Cancer Research Center\n>>> 1100 Fairview Ave. N.\n>>> PO Box 19024 Seattle, WA 98109\n>>>\n>>> Location: Arnold Building M1 B861\n>>> Phone: (206) 667-2793\n>>>\n>>\n>>         [[alternative HTML version deleted]]\n>>\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>",
-      "body_snippet": "On Fri, Dec 28, 2012 at 11:31 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n> On Fri, Dec 28, 2012 at 11:01 AM, Jesper G?din <jesper.gadin at gmail.com> wrote:\n>> After some fighting I have now the",
+      "body_plain": "On Fri, Dec 28, 2012 at 11:31 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n> On Fri, Dec 28, 2012 at 11:01 AM, Jesper Gådin <jesper.gadin at gmail.com> wrote:\n>> After some fighting I have now the bleeding edge of R and the bioconductor\n>> packages, and my own package was installed without any errors. Perfect!\n>>\n>> Even if I finally got everything to work I get this error worth mentioning:\n>>\n>>>biocLite(\"Biobase\", type=\"source\")\n>>\n>> BioC_mirror: http://bioconductor.org\n>> Using Bioconductor version 2.12 (BiocInstaller 1.9.6), R version 3.0.0.\n>> Installing package(s) 'Biobase'\n>> trying URL '\n>> http://bioconductor.org/packages/2.12/bioc/src/contrib/Biobase_2.19.1.tar.gz\n>> '\n>> Content type 'application/x-gzip' length 1845259 bytes (1.8 Mb)\n>> opened URL\n>> ==================================================\n>> downloaded 1.8 Mb\n>>\n>> * installing *source* package ‘Biobase’ ...\n>> ** libs\n>> gcc -std=gnu99 -I/home/<somepath>/r-devel/include -DNDEBUG\n>> -I/usr/local/include    -fpic  -g -O2  -c Rinit.c -o Rinit.o\n>> Rinit.c:3:31: fatal error: R_ext/RConverters.h: No such file or directory\n>> compilation terminated.\n>> make: *** [Rinit.o] Error 1\n>> ERROR: compilation failed for package ‘Biobase’\n>> * removing ‘/home/<somepath>/r-devel/library/Biobase’\n>> * restoring previous ‘/home/<somepath>/r-devel/library/Biobase’\n>>\n>\n> Hmm, this does seem somehow broken, Does the file\n> $R_HOME/include/R_ext/RConverters.h\n> exist?\n> Are you using the same version of R interactively as you are on the\n> command line (rdev)? If not, does this work when you do?\n>\n> Dan\n>\n>\n>> Instead I can install Biobase source by,\n>> #\"rdev\" is my alias for r-devel\n>>> rdev CMD INSTALL Biobase -l $R_DEV_LIB\n>>\n\nSorry, I steered you wrong earlier.\n\nAs I mentioned elsewhere on this list:\n\nRConverters.h has been removed from R-devel in recent days.\n\nBiobase 2.19.2 no longer refers to this file. You can check it out from svn\nhttps://hedgehog.fhcrc.org/bioconductor/trunk/madman/Rpacks/Biobase/\n(login: readonly/readonly)\n\nOr install it with biocLite(\"Biobase\") after 10:30AM Seattle time on Friday.\n\nThanks,\nDan\n\n\n>> This is somehow weird...\n>>\n>> /Jesper\n>>\n>>> sessionInfo()\n>> R Under development (unstable) (2012-12-28 r61466)\n>> Platform: x86_64-unknown-linux-gnu (64-bit)\n>>\n>> locale:\n>>  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>>  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8\n>>  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>>  [7] LC_PAPER=C                 LC_NAME=C\n>>  [9] LC_ADDRESS=C               LC_TELEPHONE=C\n>> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>>\n>> attached base packages:\n>> [1] stats     graphics  grDevices utils     datasets  methods   base\n>>\n>> other attached packages:\n>> [1] basicASE_1.3.1\n>>\n>> loaded via a namespace (and not attached):\n>>  [1] AnnotationDbi_1.21.9   Biobase_2.19.1         BiocGenerics_0.5.6\n>>  [4] biomaRt_2.15.0         Biostrings_2.27.8      bitops_1.0-5\n>>  [7] BSgenome_1.27.1        DBI_0.2-5              GenomicFeatures_1.11.5\n>> [10] GenomicRanges_1.11.20  IRanges_1.17.23        parallel_3.0.0\n>> [13] RCurl_1.95-3           Rsamtools_1.11.14      RSQLite_0.11.2\n>> [16] rtracklayer_1.19.6     stats4_3.0.0           tools_3.0.0\n>> [19] XML_3.95-0.1           zlibbioc_1.5.0\n>>\n>>\n>>\n>> On Mon, Dec 24, 2012 at 2:18 AM, Martin Morgan <mtmorgan at fhcrc.org> wrote:\n>>\n>>> On 12/23/2012 05:07 PM, Jesper Gådin wrote:\n>>>\n>>>> Thanks!\n>>>>\n>>>> That helped the problem with the OrgDb warning. Unfortunately when I\n>>>> installed\n>>>> the devel AnnotationDbi and BiocGenerics, I got around 40 other warnings\n>>>> during\n>>>> the R CMD INSTALL , looking like this:\n>>>>\n>>>> ** R\n>>>> ** inst\n>>>> ** preparing package for lazy loading\n>>>> Warning in .simpleDuplicateClass(def, prev) :\n>>>>    A specification for S3 class “AsIs” in package ‘IRanges’ seems\n>>>> equivalent to\n>>>> one from package ‘BiocGenerics’ and is not turning on duplicate class\n>>>> definitions for this class\n>>>> Warning: multiple methods tables found for ‘sort’\n>>>> Warning: multiple methods tables found for ‘rank’\n>>>> Warning: multiple methods tables found for ‘as.data.frame’\n>>>> Warning: multiple methods tables found for ‘unlist’\n>>>> Warning: multiple methods tables found for ‘match’\n>>>> Warning: replacing previous import ‘.__C__AsIs’ when loading ‘IRanges’\n>>>> Warning: replacing previous import ‘as.data.frame’ when loading ‘IRanges’\n>>>> Warning: replacing previous import ‘match’ when loading ‘IRanges’\n>>>> Warning: replacing previous import ‘rank’ when loading ‘IRanges’\n>>>> ...\n>>>> ...\n>>>>\n>>>> Can it be helped? And am very curious also to why all these warnings?\n>>>>\n>>>> Jesper\n>>>>\n>>>> NEW SESSIONINFO\n>>>>  > sessionInfo()\n>>>> R version 2.15.1 (2012-06-22)\n>>>>\n>>>\n>>> You'll need to use R-devel aka R-3.0; this will likely mean 'starting from\n>>> scratch' with installing bioc packages, so they'll all then be up-to-date\n>>> and most (all?) of these warnings will go away. Right now, you have a mix\n>>> of 'devel' and release Bioc packages (note the even (release) and odd\n>>> (devel) 'y' part of the x.y.z version numbers in your Bioc packages), which\n>>> is a recipe for disaster. Some of the warnings might persist, but that's\n>>> life in the devel lanes -- there is some code re-organization going on at\n>>> the moment, and things may be in a temporary state of flux.\n>>>\n>>> Martin\n>>>\n>>>  Platform: x86_64-unknown-linux-gnu (64-bit)\n>>>>\n>>>> locale:\n>>>>   [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>>>>   [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8\n>>>>   [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>>>>   [7] LC_PAPER=C                 LC_NAME=C\n>>>>   [9] LC_ADDRESS=C               LC_TELEPHONE=C\n>>>> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>>>>\n>>>> attached base packages:\n>>>> [1] stats     graphics  grDevices utils     datasets  methods   base\n>>>>\n>>>> other attached packages:\n>>>> [1] basicASE_1.3\n>>>>\n>>>> loaded via a namespace (and not attached):\n>>>>   [1] AnnotationDbi_1.21.9  Biobase_2.16.0        BiocGenerics_0.5.6\n>>>>   [4] biomaRt_2.12.0        Biostrings_2.24.1     bitops_1.0-5\n>>>>   [7] BSgenome_1.24.0       DBI_0.2-5             GenomicFeatures_1.8.3\n>>>> [10] GenomicRanges_1.8.13  IRanges_1.14.4        parallel_2.15.1\n>>>> [13] RCurl_1.95-3          Rsamtools_1.8.6       RSQLite_0.11.2\n>>>> [16] rtracklayer_1.16.3    stats4_2.15.1         tools_2.15.1\n>>>> [19] XML_3.95-0.1          zlibbioc_1.2.0\n>>>>  >\n>>>>\n>>>>\n>>>> On Sun, Dec 23, 2012 at 8:06 AM, Martin Morgan <mtmorgan at fhcrc.org\n>>>> <mailto:mtmorgan at fhcrc.org>> wrote:\n>>>>\n>>>>     Hi Jesper --\n>>>>\n>>>>\n>>>>     On 12/22/2012 05:09 PM, Jesper Gådin wrote:\n>>>>\n>>>>         Hello all,\n>>>>\n>>>>         #I have been attempting to create a slot in my own class foo that\n>>>> is\n>>>>         supposed to contain an OrgDb object from the\n>>>> AnnotationDbi-package.\n>>>>         Actually it works, but during my build I get this warning:\n>>>>\n>>>>         ** R\n>>>>         ** inst\n>>>>         ** preparing package for lazy loading\n>>>>         Warning: Class \"OrgDb\" is defined (with package slot\n>>>> ‘AnnotationDbi’) but\n>>>>         no metadata object found to revise superClass information---not\n>>>> exported?\n>>>>         Making a copy in package fooPackage\n>>>>\n>>>>         #Below the parts of the code that may be relevant to solve the\n>>>> problem.\n>>>>         #My AllClasses file contain these lines:\n>>>>         setClassUnion(\"OrgDbOrNULL\", c(\"OrgDb\",\"NULL\"))\n>>>>         setClass(\"foo\",representation(\n>>>>\n>>>>                       OrgDb=\"OrgDbOrNULL\",\n>>>>                       TxDbUCSC=\"TranscriptDbOrNULL\"\n>>>>\n>>>>                       )\n>>>>         )\n>>>>\n>>>>         #My NAMESPACE file contain these lines:\n>>>>         importClassesFrom(__**AnnotationDbi, AnnotationDb)\n>>>>         importClassesFrom(__**GenomicFeatures, TranscriptDb)\n>>>>\n>>>>\n>>>>         #My DESCRIPTION file contain these lines:\n>>>>         Depends: R (>= 2.15.1), AnnotationDbi\n>>>>         Imports: methods, BiocGenerics, IRanges, GenomicRanges,\n>>>> GenomicFeatures,\n>>>>         Rsamtools, AnnotationDbi\n>>>>\n>>>>\n>>>>         #To add the TranscriptDb works perfectly(no warnings during\n>>>> build), but not\n>>>>         the AnnotationDb. I have looked at the source code for\n>>>> AnnotationDb and\n>>>>         realized it has reference classes. This might be causing the\n>>>> warning during\n>>>>         build, of the reason that I cannot import the OrgDb class in\n>>>> NAMESPACE, and\n>>>>         that because it is not exported from AnnotationDbi. Thought\n>>>> putting it in\n>>>>         the Depends field in the DESCRIPTION would help, but it did not,\n>>>>         unfortunately. All kinds of help is appreciated.\n>>>>\n>>>>\n>>>>     Thanks for reporting this. I have updated AnnotationDbi to export the\n>>>> OrgDb\n>>>>     class. This is in AnnotationDbi 1.21.9, in the 'devel' version of\n>>>>     Bioconductor (available when using the devel version of R). Version\n>>>> 1.21.9\n>>>>     will be available with biocLite after about 10am PST Monday.\n>>>>\n>>>>     You will also need to add\n>>>>\n>>>>        importClassesFrom(__**AnnotationDbi, AnnotationDb, OrgDb)\n>>>>\n>>>>\n>>>>     to your NAMESAPCE.\n>>>>\n>>>>     Best,\n>>>>\n>>>>     Martin\n>>>>\n>>>>\n>>>>         Sincerely,\n>>>>         Jesper\n>>>>\n>>>>\n>>>>             sessionInfo()\n>>>>\n>>>>         R version 2.15.1 (2012-06-22)\n>>>>         Platform: x86_64-unknown-linux-gnu (64-bit)\n>>>>\n>>>>         locale:\n>>>>            [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>>>>            [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8\n>>>>            [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>>>>            [7] LC_PAPER=C                 LC_NAME=C\n>>>>            [9] LC_ADDRESS=C               LC_TELEPHONE=C\n>>>>         [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>>>>\n>>>>         attached base packages:\n>>>>         [1] stats     graphics  grDevices utils     datasets  methods\n>>>> base\n>>>>\n>>>>         other attached packages:\n>>>>         [1] basicASE_1.3         AnnotationDbi_1.18.4 Biobase_2.16.0\n>>>>         [4] BiocGenerics_0.2.0\n>>>>\n>>>>         loaded via a namespace (and not attached):\n>>>>            [1] biomaRt_2.12.0        Biostrings_2.24.1     bitops_1.0-5\n>>>>            [4] BSgenome_1.24.0       DBI_0.2-5\n>>>> GenomicFeatures_1.8.3\n>>>>            [7] GenomicRanges_1.8.13  IRanges_1.14.4        RCurl_1.95-3\n>>>>         [10] Rsamtools_1.8.6       RSQLite_0.11.2\n>>>>  rtracklayer_1.16.3\n>>>>         [13] stats4_2.15.1         tools_2.15.1          XML_3.95-0.1\n>>>>         [16] zlibbioc_1.2.0\n>>>>\n>>>>                  [[alternative HTML version deleted]]\n>>>>\n>>>>\n>>>>\n>>>>         ______________________________**___________________\n>>>>         Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.**org<Bioc-devel at r-project.org>>\n>>>> mailing list\n>>>>         https://stat.ethz.ch/mailman/_**_listinfo/bioc-devel<https://stat.ethz.ch/mailman/__listinfo/bioc-devel>\n>>>>\n>>>>         <https://stat.ethz.ch/mailman/**listinfo/bioc-devel<https://stat.ethz.ch/mailman/listinfo/bioc-devel>\n>>>> >\n>>>>\n>>>>\n>>>>\n>>>>     --\n>>>>     Computational Biology / Fred Hutchinson Cancer Research Center\n>>>>     1100 Fairview Ave. N.\n>>>>     PO Box 19024 Seattle, WA 98109\n>>>>\n>>>>     Location: Arnold Building M1 B861\n>>>>     Phone: (206) 667-2793 <tel:%28206%29%20667-2793>\n>>>>\n>>>>\n>>>>\n>>>\n>>> --\n>>> Computational Biology / Fred Hutchinson Cancer Research Center\n>>> 1100 Fairview Ave. N.\n>>> PO Box 19024 Seattle, WA 98109\n>>>\n>>> Location: Arnold Building M1 B861\n>>> Phone: (206) 667-2793\n>>>\n>>\n>>         [[alternative HTML version deleted]]\n>>\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>",
+      "body_snippet": "On Fri, Dec 28, 2012 at 11:31 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n> On Fri, Dec 28, 2012 at 11:01 AM, Jesper Gådin <jesper.gadin at gmail.com> wrote:\n>> After some fighting I have now the",
       "thread_id": "thread-73777499527b",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003963.html"
     },
     {
       "id": "msg-fbec4dd284bf",
@@ -71,6 +73,7 @@
       "thread_id": "thread-73777499527b",
       "thread_depth": 1,
       "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003964.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130105/30176c10/attachment.pl"
       ]
@@ -89,7 +92,8 @@
       "body_snippet": "Hello,\n\nFor a not so large list of GRanges:\n\n> length(blockRanges)\n[1] 4029\n> class(blockRanges)\n[1] \"list\"\n\nWhich don't have an unreasonable number of elements in them:\n\n> summary(sapply(blockRanges,",
       "thread_id": "thread-0b41a5095072",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003965.html"
     },
     {
       "id": "msg-ed8ac6f2088b",
@@ -107,7 +111,8 @@
       "body_snippet": "Hi Dario Strbenac,\n\nAre you asking if you can rewrite your code to work faster, or are you \nasking if the BioC devs need to improve the code to be faster? As a \nfirst test, I would try a few alternati",
       "thread_id": "thread-0b41a5095072",
       "thread_depth": 1,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003966.html"
     },
     {
       "id": "msg-5384fbfc0ce3",
@@ -126,7 +131,8 @@
       "body_snippet": "> Are you asking if you can rewrite your code to work faster, or are you asking if the BioC devs need to improve the code to be faster?\n\nI was suggesting that maybe the c function for GRanges could be",
       "thread_id": "thread-0b41a5095072",
       "thread_depth": 2,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003967.html"
     },
     {
       "id": "msg-051e97fbd607",
@@ -142,7 +148,8 @@
       "body_snippet": "Hi Dario,\nthe most efficient way to transform between list-like structures of\nGRanges objects and single GRanges is to use the GRangesList class in the\nfirst place. Not sure how you came up with your ",
       "thread_id": "thread-0b41a5095072",
       "thread_depth": 1,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003968.html"
     },
     {
       "id": "msg-08e7b33b7bbe",
@@ -162,6 +169,7 @@
       "thread_id": "thread-0b41a5095072",
       "thread_depth": 2,
       "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003969.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130107/1752b007/attachment.pl"
       ]
@@ -184,7 +192,8 @@
       "body_snippet": "With such a huge difference, I would wonder if the \"c\" method for \nGRanges objects is doing N-1 pairwise merges instead of a single N-way \nmerge.\n\nOn Mon 07 Jan 2013 09:08:28 AM PST, Michael Lawrence ",
       "thread_id": "thread-0b41a5095072",
       "thread_depth": 3,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003970.html"
     },
     {
       "id": "msg-6d29ddc0e02d",
@@ -206,6 +215,7 @@
       "thread_id": "thread-0b41a5095072",
       "thread_depth": 4,
       "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003971.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130107/2a1953f7/attachment.pl"
       ]
@@ -224,7 +234,8 @@
       "body_snippet": "Hi Martin, Marc,\n\nI'm now implementing the use of BamFile objects in easyRNASeq and I like them. I think it would be very useful if when constructing a BamFile the existence of the path and index coul",
       "thread_id": "thread-0cc75849b537",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003972.html"
     },
     {
       "id": "msg-0352803e6a15",
@@ -242,7 +253,8 @@
       "body_snippet": "On Mon, Jan 7, 2013 at 12:32 PM, Nicolas Delhomme <delhomme at embl.de> wrote:\n> Hi Martin, Marc,\n>\n> I'm now implementing the use of BamFile objects in easyRNASeq and I like them. I think it would be",
       "thread_id": "thread-0cc75849b537",
       "thread_depth": 1,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003973.html"
     },
     {
       "id": "msg-63299ae2b08c",
@@ -262,6 +274,7 @@
       "thread_id": "thread-0cc75849b537",
       "thread_depth": 2,
       "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003974.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130107/fb87da5e/attachment.pl"
       ]
@@ -284,7 +297,8 @@
       "body_snippet": "Just to clarify. I don't mean it needs to validate the BAM file (i.e. checking that it's properly formatted), so using file.exists on the provided file paths would be sufficient.\n\n--------------------",
       "thread_id": "thread-0cc75849b537",
       "thread_depth": 3,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003975.html"
     },
     {
       "id": "msg-f058722a4b56",
@@ -301,11 +315,12 @@
         "<CAHCt_aacrnZcEaLE7JkAj2AAX7-O8hEZxw61Z1N8nkRSaznvuA@mail.gmail.com>",
         "<EA7829E7-5237-4FBF-A305-B5216A3848B1@embl.de>"
       ],
-      "body_plain": "Hi there,\n\nFWIW system.file() has the 'mustWork' arg for this. Strange name though\nsince the man page suggests it only tests for existence, not that the\nfile can actually be open for reading.\n\nH.\n\nOn 01/07/2013 11:11 PM, Nicolas Delhomme wrote:\n> Just to clarify. I don't mean it needs to validate the BAM file (i.e. checking that it's properly formatted), so using file.exists on the provided file paths would be sufficient.\n>\n> ---------------------------------------------------------------\n> Nicolas Delhomme\n>\n> Genome Biology Computational Support\n>\n> European Molecular Biology Laboratory\n>\n> Tel: +49 6221 387 8310\n> Email: nicolas.delhomme at embl.de\n> Meyerhofstrasse 1 - Postfach 10.2209\n> 69102 Heidelberg, Germany\n> ---------------------------------------------------------------\n>\n>\n>\n>\n>\n> On 8 Jan 2013, at 02:47, Ryan Thompson wrote:\n>\n>> Couldn't one test for existence by trying to open the BamFile object, and possibly read one sequence (or maybe just read the header since I guess a valid bam file can contain zero sequences)?\n>>\n>> On Jan 7, 2013 1:32 PM, \"Henrik Bengtsson\" <hb at biostat.ucsf.edu> wrote:\n>> On Mon, Jan 7, 2013 at 12:32 PM, Nicolas Delhomme <delhomme at embl.de> wrote:\n>>> Hi Martin, Marc,\n>>>\n>>> I'm now implementing the use of BamFile objects in easyRNASeq and I like them. I think it would be very useful if when constructing a BamFile the existence of the path and index could be tested; i.e. this works: BamFile(\"test.bam\",\"test.bam.bai\") although these files do not exist. Is there a reason that this validation is not done? If there is, could a validation parameter be added (set to FALSE by default to keep the current behavior) that would check for the files' existence?\n>>\n>> Good idea - I propose argument 'mustExist'.\n>>\n>> My $0.02\n>>\n>> /Henrik\n>>\n>>> The same goes for the yieldSize argument, i.e. this works BamFile(\"test.bam\",\"test.bam.bai\",yieldSize=-1), although I'm not sure what a -1 yieldSize means. I can of course do these validations within easyRNASeq, but anyone else building packages on top of BamFile would probably want to do the same...\n>>>\n>>>\n>>> A related point unclear at the moment in the documentation is what the index filename should be: i.e. scanBam expects as the index the same value as for the bam filename (that assumes the user has not renamed his bam.bai file  and you never know what users might be doing... :-S ... ) but the BamFile Rd page says:\n>>>\n>>> file: A character vector of BAM file paths\n>>> index:  A character vector of indices (forBamFile);\n>>>\n>>> so it's unclear to me what the index character vector should contain.\n>>>\n>>> Thanks again for this set of class, they're really handy!\n>>>\n>>> Here's my sessionInfo:\n>>>\n>>> R Under development (unstable) (2012-10-02 r60861)\n>>> Platform: x86_64-apple-darwin10.8.0 (64-bit)\n>>>\n>>> locale:\n>>> [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8\n>>>\n>>> attached base packages:\n>>> [1] parallel  stats     graphics  grDevices utils     datasets  methods\n>>> [8] base\n>>>\n>>> other attached packages:\n>>> [1] Rsamtools_1.11.14     Biostrings_2.27.8     GenomicRanges_1.11.21\n>>> [4] IRanges_1.17.24       BiocGenerics_0.5.6    BiocInstaller_1.9.6\n>>>\n>>> loaded via a namespace (and not attached):\n>>> [1] bitops_1.0-5   stats4_2.16.0  tools_2.16.0   zlibbioc_1.5.0\n>>>\n>>> Cheers,\n>>>\n>>> Nico\n>>>\n>>> ---------------------------------------------------------------\n>>> Nicolas Delhomme\n>>>\n>>> Genome Biology Computational Support\n>>>\n>>> European Molecular Biology Laboratory\n>>>\n>>> Tel: +49 6221 387 8310\n>>> Email: nicolas.delhomme at embl.de\n>>> Meyerhofstrasse 1 - Postfach 10.2209\n>>> 69102 Heidelberg, Germany\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at r-project.org mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi there,\n\nFWIW system.file() has the 'mustWork' arg for this. Strange name though\nsince the man page suggests it only tests for existence, not that the\nfile can actually be open for reading.\n\nH.\n\nOn 01/07/2013 11:11 PM, Nicolas Delhomme wrote:\n> Just to clarify. I don't mean it needs to validate the BAM file (i.e. checking that it's properly formatted), so using file.exists on the provided file paths would be sufficient.\n>\n> ---------------------------------------------------------------\n> Nicolas Delhomme\n>\n> Genome Biology Computational Support\n>\n> European Molecular Biology Laboratory\n>\n> Tel: +49 6221 387 8310\n> Email: nicolas.delhomme at embl.de\n> Meyerhofstrasse 1 - Postfach 10.2209\n> 69102 Heidelberg, Germany\n> ---------------------------------------------------------------\n>\n>\n>\n>\n>\n> On 8 Jan 2013, at 02:47, Ryan Thompson wrote:\n>\n>> Couldn't one test for existence by trying to open the BamFile object, and possibly read one sequence (or maybe just read the header since I guess a valid bam file can contain zero sequences)?\n>>\n>> On Jan 7, 2013 1:32 PM, \"Henrik Bengtsson\" <hb at biostat.ucsf.edu> wrote:\n>> On Mon, Jan 7, 2013 at 12:32 PM, Nicolas Delhomme <delhomme at embl.de> wrote:\n>>> Hi Martin, Marc,\n>>>\n>>> I'm now implementing the use of BamFile objects in easyRNASeq and I like them. I think it would be very useful if when constructing a BamFile the existence of the path and index could be tested; i.e. this works: BamFile(\"test.bam\",\"test.bam.bai\") although these files do not exist. Is there a reason that this validation is not done? If there is, could a validation parameter be added (set to FALSE by default to keep the current behavior) that would check for the files' existence?\n>>\n>> Good idea - I propose argument 'mustExist'.\n>>\n>> My $0.02\n>>\n>> /Henrik\n>>\n>>> The same goes for the yieldSize argument, i.e. this works BamFile(\"test.bam\",\"test.bam.bai\",yieldSize=-1), although I'm not sure what a -1 yieldSize means. I can of course do these validations within easyRNASeq, but anyone else building packages on top of BamFile would probably want to do the same...\n>>>\n>>>\n>>> A related point unclear at the moment in the documentation is what the index filename should be: i.e. scanBam expects as the index the same value as for the bam filename (that assumes the user has not renamed his bam.bai file  and you never know what users might be doing... :-S ... ) but the BamFile Rd page says:\n>>>\n>>> file: A character vector of BAM file paths\n>>> index:  A character vector of indices (forBamFile);\n>>>\n>>> so it's unclear to me what the index character vector should contain.\n>>>\n>>> Thanks again for this set of class, they're really handy!\n>>>\n>>> Here's my sessionInfo:\n>>>\n>>> R Under development (unstable) (2012-10-02 r60861)\n>>> Platform: x86_64-apple-darwin10.8.0 (64-bit)\n>>>\n>>> locale:\n>>> [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8\n>>>\n>>> attached base packages:\n>>> [1] parallel  stats     graphics  grDevices utils     datasets  methods\n>>> [8] base\n>>>\n>>> other attached packages:\n>>> [1] Rsamtools_1.11.14     Biostrings_2.27.8     GenomicRanges_1.11.21\n>>> [4] IRanges_1.17.24       BiocGenerics_0.5.6    BiocInstaller_1.9.6\n>>>\n>>> loaded via a namespace (and not attached):\n>>> [1] bitops_1.0-5   stats4_2.16.0  tools_2.16.0   zlibbioc_1.5.0\n>>>\n>>> Cheers,\n>>>\n>>> Nico\n>>>\n>>> ---------------------------------------------------------------\n>>> Nicolas Delhomme\n>>>\n>>> Genome Biology Computational Support\n>>>\n>>> European Molecular Biology Laboratory\n>>>\n>>> Tel: +49 6221 387 8310\n>>> Email: nicolas.delhomme at embl.de\n>>> Meyerhofstrasse 1 - Postfach 10.2209\n>>> 69102 Heidelberg, Germany\n>>>\n>>> _______________________________________________\n>>> Bioc-devel at r-project.org mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi there,\n\nFWIW system.file() has the 'mustWork' arg for this. Strange name though\nsince the man page suggests it only tests for existence, not that the\nfile can actually be open for reading.\n\nH.\n\nOn ",
       "thread_id": "thread-0cc75849b537",
       "thread_depth": 4,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003976.html"
     },
     {
       "id": "msg-9bddfa6783cf",
@@ -321,11 +336,12 @@
         "<50EA3221.20703@thompsonclan.org>",
         "<20130107140011.CCL20013@gimr.garvan.unsw.edu.au>"
       ],
-      "body_plain": "Hi Dario,\n\nOn 01/06/2013 07:00 PM, Dario Strbenac wrote:\n>> Are you asking if you can rewrite your code to work faster, or are you asking if the BioC devs need to improve the code to be faster?\n>\n> I was suggesting that maybe the c function for GRanges could be optimised.\n>\n>> Another would be manually splitting each GRanges objects into its components: seqnames, IRanges, strand, and metadata. Then concatenate these components and build one big GRanges object.\n>\n> This approach gives:\n>\n>     user  system elapsed\n>   63.488  11.092  74.786\n\nI think this is more or less what 'do.call(c, blockRanges)' would give\nyou if all your GRanges objects were naked i.e. if they had no meta\ncolumns.\n\n>\n> which by using c was previously:\n>\n>     user  system elapsed\n> 935.770  23.657 961.952\n\nBy default c() will also combine the meta columns which can be\nexpensive if you have a lot of them and/or if some of them are\ncomplicated objects. You can call c() with 'ignore.mcols=TRUE'\nif you don't need to propagate the meta columns. Which, in the\ncontext of do.call(), translates to something like:\n\n   allRanges <- do.call(c, c(blockRanges, list(ignore.mcols=TRUE)))\n\nIMPORTANT NOTE, related to this thread on the Bioconductor list:\n\n   https://stat.ethz.ch/pipermail/bioconductor/2012-November/049567.html\n\nIn short: if we ask the R core guys to change the implicit c() generic,\nmy understanding is that it won't be possible to support additional\nargs in \"c\" methods anymore, like the 'ignore.mcols' arg of the method\nfor GenomicRanges objects. Should take the time to discuss this before\nI proceed?\n\nThanks,\nH.\n\n>\n> Thanks for the tip. I now remember using this approach at some time in the past.\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi Dario,\n\nOn 01/06/2013 07:00 PM, Dario Strbenac wrote:\n>> Are you asking if you can rewrite your code to work faster, or are you asking if the BioC devs need to improve the code to be faster?\n>\n> I was suggesting that maybe the c function for GRanges could be optimised.\n>\n>> Another would be manually splitting each GRanges objects into its components: seqnames, IRanges, strand, and metadata. Then concatenate these components and build one big GRanges object.\n>\n> This approach gives:\n>\n>     user  system elapsed\n>   63.488  11.092  74.786\n\nI think this is more or less what 'do.call(c, blockRanges)' would give\nyou if all your GRanges objects were naked i.e. if they had no meta\ncolumns.\n\n>\n> which by using c was previously:\n>\n>     user  system elapsed\n> 935.770  23.657 961.952\n\nBy default c() will also combine the meta columns which can be\nexpensive if you have a lot of them and/or if some of them are\ncomplicated objects. You can call c() with 'ignore.mcols=TRUE'\nif you don't need to propagate the meta columns. Which, in the\ncontext of do.call(), translates to something like:\n\n   allRanges <- do.call(c, c(blockRanges, list(ignore.mcols=TRUE)))\n\nIMPORTANT NOTE, related to this thread on the Bioconductor list:\n\n   https://stat.ethz.ch/pipermail/bioconductor/2012-November/049567.html\n\nIn short: if we ask the R core guys to change the implicit c() generic,\nmy understanding is that it won't be possible to support additional\nargs in \"c\" methods anymore, like the 'ignore.mcols' arg of the method\nfor GenomicRanges objects. Should take the time to discuss this before\nI proceed?\n\nThanks,\nH.\n\n>\n> Thanks for the tip. I now remember using this approach at some time in the past.\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi Dario,\n\nOn 01/06/2013 07:00 PM, Dario Strbenac wrote:\n>> Are you asking if you can rewrite your code to work faster, or are you asking if the BioC devs need to improve the code to be faster?\n>\n> I ",
       "thread_id": "thread-0b41a5095072",
       "thread_depth": 3,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003977.html"
     },
     {
       "id": "msg-83c01baeab82",
@@ -343,7 +359,8 @@
       "body_snippet": "On 01/07/2013 12:32 PM, Nicolas Delhomme wrote:\n> Hi Martin, Marc,\n>\n> I'm now implementing the use of BamFile objects in easyRNASeq and I like\n> them. I think it would be very useful if when construc",
       "thread_id": "thread-0cc75849b537",
       "thread_depth": 1,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003978.html"
     },
     {
       "id": "msg-86dcf9651901",
@@ -362,7 +379,8 @@
       "body_snippet": "Hi Martin,\n\nOn 8 Jan 2013, at 19:53, Martin Morgan wrote:\n\n> On 01/07/2013 12:32 PM, Nicolas Delhomme wrote:\n>> Hi Martin, Marc,\n>> \n>> I'm now implementing the use of BamFile objects in easyRNASeq an",
       "thread_id": "thread-0cc75849b537",
       "thread_depth": 2,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003979.html"
     },
     {
       "id": "msg-a6dfe96ac3cd",
@@ -384,6 +402,7 @@
       "thread_id": "thread-0b41a5095072",
       "thread_depth": 4,
       "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003980.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130108/4efdbf4b/attachment.pl"
       ]
@@ -404,11 +423,12 @@
         "<50EC6905.6000502@fhcrc.org>",
         "<CAOQ5Nyf-9NPgW-ThEfockW5J4D6+=Do0CAQq7dF3tN6H5xt0Lw@mail.gmail.com>"
       ],
-      "body_plain": "Michael,\n\nAccording to my timings, here is where c() spends its time on GRanges\nobjects with 1 meta col:\n\n   - merging the seqinfo: 1.5%\n   - combining the seqnames: 5.9%\n   - combining the ranges: 12.4%\n   - combining the strand: 2%\n   - rbinding the mcols: 78.2%\n\nIt seems that any additional meta col would have an impact that is only\nhalf the impact of the first meta col.\n\nWhen doing\n\n   df <- DataFrame(conservation=1:1000000*1e-6)\n   rbind(df, df)\n\nmost of the time (> 90%) is spent on the following line (line 78,\nin IRanges/R/DataFrame-utils.R)\n\n   ans <- do.call(DataFrame, cols)\n\nwhere 'cols' is a (named) list of length 1 containing a numeric vector\nof length 2 millions.\n\nFinally this:\n\n   > system.time(ans <- do.call(DataFrame, cols))\n      user  system elapsed\n     3.684   0.012   3.701\n   > system.time(ans2 <- DataFrame(cols))\n      user  system elapsed\n     3.828   0.008   3.842\n   > system.time(ans3 <- DataFrame(conservation=cols[[1]]))\n      user  system elapsed\n     0.024   0.032   0.057\n\n   > identical(ans, ans2)\n   [1] TRUE\n   > identical(ans, ans3)\n   [1] TRUE\n\nis intriguing. From a naive perspective, it doesn't sound that\n\n   DataFrame(cols)\n\nshould need to do a lot more work than\n\n  DataFrame(conservation=cols[[1]])\n\nbut apparently it does. May be there is room for some speed improvements\nhere...\n\nH.\n\n\nOn 01/08/2013 02:05 PM, Michael Lawrence wrote:\n> That GRanges only had one column, so I'm hoping that's not a lot of\n> overhead. The merging of the thousands of Seqinfo objects is probably\n> the issue. Any way to make that n-ary instead of a Reduce() over a\n> binary merge?\n>\n> Michael\n>\n>\n> On Tue, Jan 8, 2013 at 10:44 AM, Herv? Pag?s <hpages at fhcrc.org\n> <mailto:hpages at fhcrc.org>> wrote:\n>\n>     Hi Dario,\n>\n>\n>     On 01/06/2013 07:00 PM, Dario Strbenac wrote:\n>\n>             Are you asking if you can rewrite your code to work faster,\n>             or are you asking if the BioC devs need to improve the code\n>             to be faster?\n>\n>\n>         I was suggesting that maybe the c function for GRanges could be\n>         optimised.\n>\n>             Another would be manually splitting each GRanges objects\n>             into its components: seqnames, IRanges, strand, and\n>             metadata. Then concatenate these components and build one\n>             big GRanges object.\n>\n>\n>         This approach gives:\n>\n>              user  system elapsed\n>            63.488  11.092  74.786\n>\n>\n>     I think this is more or less what 'do.call(c, blockRanges)' would give\n>     you if all your GRanges objects were naked i.e. if they had no meta\n>     columns.\n>\n>\n>\n>         which by using c was previously:\n>\n>              user  system elapsed\n>         935.770  23.657 961.952\n>\n>\n>     By default c() will also combine the meta columns which can be\n>     expensive if you have a lot of them and/or if some of them are\n>     complicated objects. You can call c() with 'ignore.mcols=TRUE'\n>     if you don't need to propagate the meta columns. Which, in the\n>     context of do.call(), translates to something like:\n>\n>        allRanges <- do.call(c, c(blockRanges, list(ignore.mcols=TRUE)))\n>\n>     IMPORTANT NOTE, related to this thread on the Bioconductor list:\n>\n>     https://stat.ethz.ch/__pipermail/bioconductor/2012-__November/049567.html\n>     <https://stat.ethz.ch/pipermail/bioconductor/2012-November/049567.html>\n>\n>     In short: if we ask the R core guys to change the implicit c() generic,\n>     my understanding is that it won't be possible to support additional\n>     args in \"c\" methods anymore, like the 'ignore.mcols' arg of the method\n>     for GenomicRanges objects. Should take the time to discuss this before\n>     I proceed?\n>\n>     Thanks,\n>     H.\n>\n>\n>\n>         Thanks for the tip. I now remember using this approach at some\n>         time in the past.\n>\n>         _________________________________________________\n>         Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>\n>         mailing list\n>         https://stat.ethz.ch/mailman/__listinfo/bioc-devel\n>         <https://stat.ethz.ch/mailman/listinfo/bioc-devel>\n>\n>\n>     --\n>     Herv? Pag?s\n>\n>     Program in Computational Biology\n>     Division of Public Health Sciences\n>     Fred Hutchinson Cancer Research Center\n>     1100 Fairview Ave. N, M1-B514\n>     P.O. Box 19024\n>     Seattle, WA 98109-1024\n>\n>     E-mail: hpages at fhcrc.org <mailto:hpages at fhcrc.org>\n>     Phone: (206) 667-5791 <tel:%28206%29%20667-5791>\n>     Fax: (206) 667-1319 <tel:%28206%29%20667-1319>\n>\n>\n>     _________________________________________________\n>     Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org> mailing list\n>     https://stat.ethz.ch/mailman/__listinfo/bioc-devel\n>     <https://stat.ethz.ch/mailman/listinfo/bioc-devel>\n>\n>\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Michael,\n\nAccording to my timings, here is where c() spends its time on GRanges\nobjects with 1 meta col:\n\n   - merging the seqinfo: 1.5%\n   - combining the seqnames: 5.9%\n   - combining the ranges: 12.4%\n   - combining the strand: 2%\n   - rbinding the mcols: 78.2%\n\nIt seems that any additional meta col would have an impact that is only\nhalf the impact of the first meta col.\n\nWhen doing\n\n   df <- DataFrame(conservation=1:1000000*1e-6)\n   rbind(df, df)\n\nmost of the time (> 90%) is spent on the following line (line 78,\nin IRanges/R/DataFrame-utils.R)\n\n   ans <- do.call(DataFrame, cols)\n\nwhere 'cols' is a (named) list of length 1 containing a numeric vector\nof length 2 millions.\n\nFinally this:\n\n   > system.time(ans <- do.call(DataFrame, cols))\n      user  system elapsed\n     3.684   0.012   3.701\n   > system.time(ans2 <- DataFrame(cols))\n      user  system elapsed\n     3.828   0.008   3.842\n   > system.time(ans3 <- DataFrame(conservation=cols[[1]]))\n      user  system elapsed\n     0.024   0.032   0.057\n\n   > identical(ans, ans2)\n   [1] TRUE\n   > identical(ans, ans3)\n   [1] TRUE\n\nis intriguing. From a naive perspective, it doesn't sound that\n\n   DataFrame(cols)\n\nshould need to do a lot more work than\n\n  DataFrame(conservation=cols[[1]])\n\nbut apparently it does. May be there is room for some speed improvements\nhere...\n\nH.\n\n\nOn 01/08/2013 02:05 PM, Michael Lawrence wrote:\n> That GRanges only had one column, so I'm hoping that's not a lot of\n> overhead. The merging of the thousands of Seqinfo objects is probably\n> the issue. Any way to make that n-ary instead of a Reduce() over a\n> binary merge?\n>\n> Michael\n>\n>\n> On Tue, Jan 8, 2013 at 10:44 AM, Hervé Pagès <hpages at fhcrc.org\n> <mailto:hpages at fhcrc.org>> wrote:\n>\n>     Hi Dario,\n>\n>\n>     On 01/06/2013 07:00 PM, Dario Strbenac wrote:\n>\n>             Are you asking if you can rewrite your code to work faster,\n>             or are you asking if the BioC devs need to improve the code\n>             to be faster?\n>\n>\n>         I was suggesting that maybe the c function for GRanges could be\n>         optimised.\n>\n>             Another would be manually splitting each GRanges objects\n>             into its components: seqnames, IRanges, strand, and\n>             metadata. Then concatenate these components and build one\n>             big GRanges object.\n>\n>\n>         This approach gives:\n>\n>              user  system elapsed\n>            63.488  11.092  74.786\n>\n>\n>     I think this is more or less what 'do.call(c, blockRanges)' would give\n>     you if all your GRanges objects were naked i.e. if they had no meta\n>     columns.\n>\n>\n>\n>         which by using c was previously:\n>\n>              user  system elapsed\n>         935.770  23.657 961.952\n>\n>\n>     By default c() will also combine the meta columns which can be\n>     expensive if you have a lot of them and/or if some of them are\n>     complicated objects. You can call c() with 'ignore.mcols=TRUE'\n>     if you don't need to propagate the meta columns. Which, in the\n>     context of do.call(), translates to something like:\n>\n>        allRanges <- do.call(c, c(blockRanges, list(ignore.mcols=TRUE)))\n>\n>     IMPORTANT NOTE, related to this thread on the Bioconductor list:\n>\n>     https://stat.ethz.ch/__pipermail/bioconductor/2012-__November/049567.html\n>     <https://stat.ethz.ch/pipermail/bioconductor/2012-November/049567.html>\n>\n>     In short: if we ask the R core guys to change the implicit c() generic,\n>     my understanding is that it won't be possible to support additional\n>     args in \"c\" methods anymore, like the 'ignore.mcols' arg of the method\n>     for GenomicRanges objects. Should take the time to discuss this before\n>     I proceed?\n>\n>     Thanks,\n>     H.\n>\n>\n>\n>         Thanks for the tip. I now remember using this approach at some\n>         time in the past.\n>\n>         _________________________________________________\n>         Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>\n>         mailing list\n>         https://stat.ethz.ch/mailman/__listinfo/bioc-devel\n>         <https://stat.ethz.ch/mailman/listinfo/bioc-devel>\n>\n>\n>     --\n>     Hervé Pagès\n>\n>     Program in Computational Biology\n>     Division of Public Health Sciences\n>     Fred Hutchinson Cancer Research Center\n>     1100 Fairview Ave. N, M1-B514\n>     P.O. Box 19024\n>     Seattle, WA 98109-1024\n>\n>     E-mail: hpages at fhcrc.org <mailto:hpages at fhcrc.org>\n>     Phone: (206) 667-5791 <tel:%28206%29%20667-5791>\n>     Fax: (206) 667-1319 <tel:%28206%29%20667-1319>\n>\n>\n>     _________________________________________________\n>     Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org> mailing list\n>     https://stat.ethz.ch/mailman/__listinfo/bioc-devel\n>     <https://stat.ethz.ch/mailman/listinfo/bioc-devel>\n>\n>\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Michael,\n\nAccording to my timings, here is where c() spends its time on GRanges\nobjects with 1 meta col:\n\n   - merging the seqinfo: 1.5%\n   - combining the seqnames: 5.9%\n   - combining the ranges: 12",
       "thread_id": "thread-0b41a5095072",
       "thread_depth": 5,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003981.html"
     },
     {
       "id": "msg-5c72d811c705",
@@ -424,7 +444,8 @@
       "body_snippet": "Hello,\n\nUsing Sweave to compile a long report, I get \n\ntx19 <- loadDb(\"transcriptsHs19.db\")\n\nError in loadDb(file, dbType, dbPackage, ...) : \n  error in evaluating the argument 'dbType' in selecting a",
       "thread_id": "thread-5c72d811c705",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003982.html"
     },
     {
       "id": "msg-090d881678a6",
@@ -440,7 +461,8 @@
       "body_snippet": "Hi all,\nNovartis in Cambridge is hiring a data analyst to work on large scale\ngenomics data with a background in R/Bioconductor. Take a look if you are\ninterested:\n\nhttps://sjobs.brassring.com/2057/AS",
       "thread_id": "thread-090d881678a6",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003983.html"
     },
     {
       "id": "msg-71605a3c5673",
@@ -456,7 +478,8 @@
       "body_snippet": "Hello,\n\nThe documentation says\n\n'\"[\"', 'c' and '\"[[\"' work on a Views object\n\nBut showMethods(\"c\") doesn't list anything that is related to Views.\n\n--------------------------------------\nDario Strbena",
       "thread_id": "thread-71605a3c5673",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003984.html"
     },
     {
       "id": "msg-c81a43a607e0",
@@ -472,7 +495,8 @@
       "body_snippet": "Bioconductors! Please join us for an intermediate course on use of R / \nBioconductor for high-throughput sequence analysis, a brief outline of which is \nbelow.\n\nMore Information: https://secure.biocon",
       "thread_id": "thread-c81a43a607e0",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003985.html"
     },
     {
       "id": "msg-bdcd6ca225fb",
@@ -488,7 +512,8 @@
       "body_snippet": "Hi Bioconductors,\n\nThe KEGGREST package is now available in devel (Bioconductor 2.12).\n\nhttp://www.bioconductor.org/packages/devel/bioc/html/KEGGREST.html\n\nKEGGREST is intended to replace the KEGGSOAP",
       "thread_id": "thread-bdcd6ca225fb",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003986.html"
     },
     {
       "id": "msg-f69edc3306b4",
@@ -504,7 +529,8 @@
       "body_snippet": "Hi Dan,\n\nThank you for developing this KEGGREST package, this package is very helpful.\n\nBy the way, I have developed my own KEGGREST package for the same\npurpose as your KEGGREST.\nhttps://github.com/k",
       "thread_id": "thread-f69edc3306b4",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003987.html"
     },
     {
       "id": "msg-8ac43b835ab1",
@@ -522,7 +548,8 @@
       "body_snippet": "Hi Kozo,\n\n\n\nOn Wed, Jan 16, 2013 at 1:00 PM, Kozo Nishida <knishida at riken.jp> wrote:\n> Hi Dan,\n>\n> Thank you for developing this KEGGREST package, this package is very helpful.\n>\n> By the way, I ha",
       "thread_id": "thread-8ac43b835ab1",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003988.html"
     },
     {
       "id": "msg-f199630d30a8",
@@ -537,11 +564,12 @@
         "<AABAAB0B27AF5C418FE809F352FB7BA4083CFA47@023-DB3MPN1-081.023d.mgd.msft.net>",
         "<50A2F790.3060703@fhcrc.org>"
       ],
-      "body_plain": "Hi Florian,\n\nStarting with IRanges 1.17.25 / GenomicRanges 1.11.23, reduce()\nsupports the 'with.mapping' arg on IRanges, IRangesList, and GRanges\nobjects (but not on GRangesList yet, could be added though).\n\nMake sure to check ?`inter-range-methods` for typical downstream\nmanipulations of the mapping returned by reduce() when called\nwith 'with.mapping=TRUE'.\n\nLet me know if you find problems with this or have suggestions.\n\nThanks,\nH.\n\n\nOn 11/13/2012 05:44 PM, Herv? Pag?s wrote:\n> Hi Florian,\n>\n> This improvement to reduce() didn't make it in BioC 2.11. It has not\n> been dropped from the agenda though: it's still on our list. Won't\n> be before a couple of weeks though. Thanks for the reminder!\n>\n> H.\n>\n> On 11/09/2012 05:58 AM, Hahne, Florian wrote:\n>> Hi Herve,\n>> a while ago I was asking about the possibility to store the reverse\n>> mapping in the resulting GRanges object after a reduce operation, and as\n>> far as I remember you agreed to put this on the to-do list for 2.11. I\n>> can't find any documentation about it in the man pages, and the code of\n>> the GenomicRanges reduce method looks unchanged. Has this been dropped\n>> from the agenda?\n>> Thanks,\n>> Florian\n>>\n>\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi Florian,\n\nStarting with IRanges 1.17.25 / GenomicRanges 1.11.23, reduce()\nsupports the 'with.mapping' arg on IRanges, IRangesList, and GRanges\nobjects (but not on GRangesList yet, could be added though).\n\nMake sure to check ?`inter-range-methods` for typical downstream\nmanipulations of the mapping returned by reduce() when called\nwith 'with.mapping=TRUE'.\n\nLet me know if you find problems with this or have suggestions.\n\nThanks,\nH.\n\n\nOn 11/13/2012 05:44 PM, Hervé Pagès wrote:\n> Hi Florian,\n>\n> This improvement to reduce() didn't make it in BioC 2.11. It has not\n> been dropped from the agenda though: it's still on our list. Won't\n> be before a couple of weeks though. Thanks for the reminder!\n>\n> H.\n>\n> On 11/09/2012 05:58 AM, Hahne, Florian wrote:\n>> Hi Herve,\n>> a while ago I was asking about the possibility to store the reverse\n>> mapping in the resulting GRanges object after a reduce operation, and as\n>> far as I remember you agreed to put this on the to-do list for 2.11. I\n>> can't find any documentation about it in the man pages, and the code of\n>> the GenomicRanges reduce method looks unchanged. Has this been dropped\n>> from the agenda?\n>> Thanks,\n>> Florian\n>>\n>\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi Florian,\n\nStarting with IRanges 1.17.25 / GenomicRanges 1.11.23, reduce()\nsupports the 'with.mapping' arg on IRanges, IRangesList, and GRanges\nobjects (but not on GRangesList yet, could be added th",
       "thread_id": "thread-f199630d30a8",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003989.html"
     },
     {
       "id": "msg-2c66e64be72e",
@@ -557,7 +585,8 @@
       "body_snippet": "Hi,\n\nConvenience wrappers %over% and %within% (wrappers for overlapsAny())\nare in IRanges 1.17.26. Warnings and deprecation messages for %in%\nbetween range-based objects have been modified to suggest ",
       "thread_id": "thread-2c66e64be72e",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003990.html"
     },
     {
       "id": "msg-3eb3194d7609",
@@ -573,7 +602,8 @@
       "body_snippet": "Hello, I am trying to follow the bioconductor RUnit guidelines (http://www.bioconductor.org/developers/unitTesting-guidelines/#duringDevelopment)\n\nI have followed the the minimal setup so I have:\n\nSug",
       "thread_id": "thread-3eb3194d7609",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003991.html"
     },
     {
       "id": "msg-34123fc99fab",
@@ -591,7 +621,8 @@
       "body_snippet": "On 01/18/2013 08:26 AM, Davide Rambaldi wrote:\n> Hello, I am trying to follow the bioconductor RUnit guidelines (http://www.bioconductor.org/developers/unitTesting-guidelines/#duringDevelopment)\n>\n> I",
       "thread_id": "thread-3eb3194d7609",
       "thread_depth": 1,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003992.html"
     },
     {
       "id": "msg-6dcd74227ff8",
@@ -609,7 +640,8 @@
       "body_snippet": "On Fri, Jan 18, 2013 at 8:26 AM, Davide Rambaldi <davide.rambaldi at ieo.eu> wrote:\n> Hello, I am trying to follow the bioconductor RUnit guidelines (http://www.bioconductor.org/developers/unitTesting",
       "thread_id": "thread-6dcd74227ff8",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003993.html"
     },
     {
       "id": "msg-dccd44d378b9",
@@ -627,7 +659,8 @@
       "body_snippet": "Hi Dario,\n\nThis kind of error probably means that whatever is in your \ntranscriptsHs19.db database is missing a metadata table with appropriate \nfields filled out.  In particular, there needs to be a ",
       "thread_id": "thread-5c72d811c705",
       "thread_depth": 1,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003994.html"
     },
     {
       "id": "msg-cbf444cbe8f4",
@@ -643,7 +676,8 @@
       "body_snippet": "Dear all,\n\nI updated a full source code search engine for Bioconductor 2.12.\n\nBioconductor Code Search\nhttp://search.bioconductor.jp/\n\nThanks!\n\n-itoshi\n\n---\nItoshi NIKAIDO, Ph.D.\nFunctional Genomics U",
       "thread_id": "thread-cbf444cbe8f4",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003995.html"
     },
     {
       "id": "msg-8c6504d4a5b0",
@@ -662,7 +696,8 @@
       "body_snippet": "It turns out that the file wasn't properly copied to where it was being read from. After copying again, and making sure the file size was correct, the commands work.",
       "thread_id": "thread-5c72d811c705",
       "thread_depth": 2,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003996.html"
     },
     {
       "id": "msg-fa890c31c968",
@@ -682,6 +717,7 @@
       "thread_id": "thread-3eb3194d7609",
       "thread_depth": 2,
       "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003997.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130121/6125787e/attachment.pl"
       ]
@@ -704,7 +740,8 @@
       "body_snippet": "On 01/21/2013 04:01 AM, Davide Rambaldi wrote:\n>\n> Hi all, here is  my followup:\n>\n> The output of flowFit.Rcheck/tests/runTests.Rout is:\n>\n> RUNIT TEST PROTOCOL -- Mon Jan 21 11:22:51 2013\n> ********",
       "thread_id": "thread-3eb3194d7609",
       "thread_depth": 3,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003998.html"
     },
     {
       "id": "msg-da32054d7a95",
@@ -720,7 +757,8 @@
       "body_snippet": "Hi\n\na user just alerted me that no binary packages for Mac are being built \nfor my package \"HilbertVis\".\n\nI have some recollection that somebody took it out of the build manifest \na while ago, beacuse",
       "thread_id": "thread-da32054d7a95",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/003999.html"
     },
     {
       "id": "msg-a4f7b34441de",
@@ -738,7 +776,8 @@
       "body_snippet": "Hi Simon,\n\nOn Mon, Jan 21, 2013 at 6:39 AM, Simon Anders <anders at embl.de> wrote:\n> Hi\n>\n> a user just alerted me that no binary packages for Mac are being built for\n> my package \"HilbertVis\".\n>\n> I",
       "thread_id": "thread-a4f7b34441de",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004000.html"
     },
     {
       "id": "msg-623b49ee5553",
@@ -757,7 +796,8 @@
       "body_snippet": "On Mon, Jan 21, 2013 at 10:27 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n> Hi Simon,\n>\n> On Mon, Jan 21, 2013 at 6:39 AM, Simon Anders <anders at embl.de> wrote:\n>> Hi\n>>\n>> a user just alerted ",
       "thread_id": "thread-a4f7b34441de",
       "thread_depth": 1,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004001.html"
     },
     {
       "id": "msg-ffe07643322e",
@@ -773,7 +813,8 @@
       "body_snippet": "hi all,\n\nI am having trouble putting sparse vectors as columns of a DataFrame.  \nThey have 'length' and '[' methods:\n\n > library(Matrix)\n > library(IRanges)\n > y <- as(c(1,0,1,0,1,0),\"sparseVector\")\n ",
       "thread_id": "thread-ffe07643322e",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004002.html"
     },
     {
       "id": "msg-9addce044a3e",
@@ -789,7 +830,8 @@
       "body_snippet": "I believe you have to wrap objects in the I() function to stop DataFrame\ntrying to coerce your parameters to a DataFrame\n\n> y <- as(c(1,0,1,0,1,0),\"sparseVector\")\n> a = DataFrame(spvec = I( y ) )\n> a[",
       "thread_id": "thread-ffe07643322e",
       "thread_depth": 1,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004003.html"
     },
     {
       "id": "msg-853459a49e07",
@@ -809,6 +851,7 @@
       "thread_id": "thread-ffe07643322e",
       "thread_depth": 2,
       "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004004.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130122/4e8c6115/attachment.pl"
       ]
@@ -831,7 +874,8 @@
       "body_snippet": "That makes sense since this metadata table is the very 1st thing that \nwill be looked at when R wants to make an object.  So when you have a \nbad .sqlite file and that table is missing or unreadable t",
       "thread_id": "thread-5c72d811c705",
       "thread_depth": 3,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004005.html"
     },
     {
       "id": "msg-6a0a5ceea4ff",
@@ -847,7 +891,8 @@
       "body_snippet": "To the Bioconductor developer group,\n\nI emailed the author of the affy package (Rafael Irizarry) and he \nadvised me to contact the Bioconductor developers with my problem.\n\nMy problem is with the affy",
       "thread_id": "thread-6a0a5ceea4ff",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004006.html"
     },
     {
       "id": "msg-1dd969cef77a",
@@ -865,7 +910,8 @@
       "body_snippet": "Hi Keith,\n\nOn 1/22/2013 10:44 PM, Keith wrote:\n> To the Bioconductor developer group,\n>\n> I emailed the author of the affy package (Rafael Irizarry) and he \n> advised me to contact the Bioconductor de",
       "thread_id": "thread-6a0a5ceea4ff",
       "thread_depth": 1,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004007.html"
     },
     {
       "id": "msg-ee998cd4cd08",
@@ -881,7 +927,8 @@
       "body_snippet": "Hello everyone,\n\nI recently submitted a package to bioconductor, and couple of days ago, \nthe package started to fail the automated daily build on george2 and \nmoscato2. Today I made some changes that",
       "thread_id": "thread-ee998cd4cd08",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004008.html"
     },
     {
       "id": "msg-61000f3e0717",
@@ -899,7 +946,8 @@
       "body_snippet": "On Wed, Jan 23, 2013 at 10:41 AM, Frederic Fournier\n<frederic.bioinfo at gmail.com> wrote:\n> Hello everyone,\n>\n> I recently submitted a package to bioconductor, and couple of days ago, the\n> package s",
       "thread_id": "thread-61000f3e0717",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004009.html"
     },
     {
       "id": "msg-0e5e9fc8f02d",
@@ -917,7 +965,8 @@
       "body_snippet": "On Wed, Jan 23, 2013 at 1:41 PM, Frederic Fournier\n<frederic.bioinfo at gmail.com> wrote:\n> Hello everyone,\n>\n> I recently submitted a package to bioconductor, and couple of days ago, the\n> package st",
       "thread_id": "thread-ee998cd4cd08",
       "thread_depth": 1,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004010.html"
     },
     {
       "id": "msg-d3edbe6855c3",
@@ -935,7 +984,8 @@
       "body_snippet": "Hi Frederic,\n\nAs long as you have incremented your version number it will be rebuilt \ntonight. There isn't a way to force the build machines to trigger a build.\n\nBest,\n\nJim\n\nOn 1/23/2013 1:41 PM, Fred",
       "thread_id": "thread-ee998cd4cd08",
       "thread_depth": 1,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004011.html"
     },
     {
       "id": "msg-8e51616daf81",
@@ -954,7 +1004,8 @@
       "body_snippet": "On Wed, Jan 23, 2013 at 10:47 AM, James W. MacDonald <jmacdon at uw.edu> wrote:\n> Hi Frederic,\n>\n> As long as you have incremented your version number it will be rebuilt\n> tonight. There isn't a way t",
       "thread_id": "thread-ee998cd4cd08",
       "thread_depth": 2,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004012.html"
     },
     {
       "id": "msg-384f11c42df1",
@@ -974,7 +1025,8 @@
       "body_snippet": "Thanks Dan, my mistake.\n\nOn 1/23/2013 1:51 PM, Dan Tenenbaum wrote:\n> On Wed, Jan 23, 2013 at 10:47 AM, James W. MacDonald<jmacdon at uw.edu>  wrote:\n>> Hi Frederic,\n>>\n>> As long as you have incremen",
       "thread_id": "thread-ee998cd4cd08",
       "thread_depth": 3,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004013.html"
     },
     {
       "id": "msg-5be99b9480b0",
@@ -994,6 +1046,7 @@
       "thread_id": "thread-ee998cd4cd08",
       "thread_depth": 2,
       "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004014.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130123/7bd885dc/attachment.pl"
       ]
@@ -1015,7 +1068,8 @@
       "body_snippet": "On Wed, Jan 23, 2013 at 7:15 AM, James W. MacDonald <jmacdon at uw.edu> wrote:\n> Hi Keith,\n>\n>\n> On 1/22/2013 10:44 PM, Keith wrote:\n>>\n>> To the Bioconductor developer group,\n>>\n>> I emailed the auth",
       "thread_id": "thread-6a0a5ceea4ff",
       "thread_depth": 2,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004015.html"
     },
     {
       "id": "msg-8f8abcbceb76",
@@ -1034,7 +1088,8 @@
       "body_snippet": "Hi Jim,\n\nthanks very much for testing this. However I get a different outcome to you.\n\nI've done this twice with similar results. I did a fresh R-2.15.2 \ninstall, sourced biocLite, ran biocLite(), del",
       "thread_id": "thread-6a0a5ceea4ff",
       "thread_depth": 2,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004016.html"
     },
     {
       "id": "msg-bbcab8fcdeb3",
@@ -1054,7 +1109,8 @@
       "body_snippet": "Hi Keith,\n\nOn Wed, Jan 23, 2013 at 6:28 PM, Keith <keith at wehi.edu.au> wrote:\n> Hi Jim,\n>\n> thanks very much for testing this. However I get a different outcome to you.\n>\n> I've done this twice with",
       "thread_id": "thread-6a0a5ceea4ff",
       "thread_depth": 3,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004017.html"
     },
     {
       "id": "msg-dfda465f89fa",
@@ -1075,7 +1131,8 @@
       "body_snippet": "Many people will use a standard 2.15.2 and not the patched version.\n\nFor this particular case - the automatic download of CDF packages - I\nbelieve Keith has made a very good point, that it is not sens",
       "thread_id": "thread-6a0a5ceea4ff",
       "thread_depth": 4,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004018.html"
     },
     {
       "id": "msg-b654c2673c45",
@@ -1097,7 +1154,8 @@
       "body_snippet": "Thanks Dan for the tip. Got it too late to avoid trying to debug the \nproblem, but one learns from these exercises.\n\nThis patched version of R worked as you predicted.\nR version 2.15.2 Patched (2013-0",
       "thread_id": "thread-6a0a5ceea4ff",
       "thread_depth": 5,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004019.html"
     },
     {
       "id": "msg-f56deedae143",
@@ -1119,7 +1177,8 @@
       "body_snippet": "On 1/23/2013 11:31 PM, Kasper Daniel Hansen wrote:\n> Many people will use a standard 2.15.2 and not the patched version.\n>\n> For this particular case - the automatic download of CDF packages - I\n> bel",
       "thread_id": "thread-6a0a5ceea4ff",
       "thread_depth": 5,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004020.html"
     },
     {
       "id": "msg-6c2859b2e44f",
@@ -1136,6 +1195,7 @@
       "thread_id": "thread-6c2859b2e44f",
       "thread_depth": 0,
       "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004021.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20130125/92170f69/attachment.pl"
       ]
@@ -1156,7 +1216,8 @@
       "body_snippet": "Hi Anita,\n\nOn Thu, Jan 24, 2013 at 2:33 PM, Anita Lerch <lerch.anita at gmail.com> wrote:\n> Hi,\n>\n> is there a way to access the log file of the unit-tests\n> (e.g. QuasR.Rcheck/tests/QuasR_unit_tests.",
       "thread_id": "thread-56e3ae76855a",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004022.html"
     },
     {
       "id": "msg-659e2a0220c2",
@@ -1175,7 +1236,8 @@
       "body_snippet": "On Thu, Jan 24, 2013 at 3:04 PM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n> Hi Anita,\n>\n> On Thu, Jan 24, 2013 at 2:33 PM, Anita Lerch <lerch.anita at gmail.com> wrote:\n>> Hi,\n>>\n>> is there a way",
       "thread_id": "thread-56e3ae76855a",
       "thread_depth": 1,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004023.html"
     },
     {
       "id": "msg-6d7dc7cac0bb",
@@ -1191,7 +1253,8 @@
       "body_snippet": "Bioconductors -- there are a few places and a little time left to enrol in our \nFeb 14 / 15 course here in Seattle\n\n   https://secure.bioconductor.org/Seattle-Feb-2013/\n\nBest,\n\nMartin\n-- \nComputationa",
       "thread_id": "thread-6d7dc7cac0bb",
       "thread_depth": 0,
-      "month": "2013-01"
+      "month": "2013-01",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2013-January/004024.html"
     }
   ],
   "threads": [

@@ -17,7 +17,8 @@
       "body_snippet": "Sorry about the version numbers. I replicated it on another computer, that had old versions of packages without realising this, as you pointed out, and pasted those session details into the report. Ho",
       "thread_id": "thread-982ec7544037",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002931.html"
     },
     {
       "id": "msg-e5b78fbc550b",
@@ -34,6 +35,7 @@
       "thread_id": "thread-e5b78fbc550b",
       "thread_depth": 0,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002932.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111101/d26a06ea/attachment.pl"
       ]
@@ -57,7 +59,8 @@
       "body_snippet": "Thanks for the pointer.\n\nI think those are only in 2.9.... to be released any day now....\n\nCheers,\n\n~Malcolm\n\n\n> -----Original Message-----\n> From: Valerie Obenchain [mailto:vobencha at fhcrc.org]\n> S",
       "thread_id": "thread-f279ea3e88da",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002933.html"
     },
     {
       "id": "msg-c24b7fc9141a",
@@ -75,11 +78,12 @@
         "<4EAB36F1.705@fhcrc.org>",
         "<2C40E43D1F7A56408C4463FD245DDDF98B52D8A6@EXCHMB-02.stowers-institute.org>"
       ],
-      "body_plain": "Hi,\n\nYou can also do:\n\n   seqlevels(gr1) <- sub(\"chr\", \"\", seqlevels(gr1))\n\nThis works on GRanges, GRangesList and GappedAlignments objects, but\nnot on TranscriptDb or BSgenome objects where the seqlevels are\nimmutable (that could be changed though, depends how much need there\nis for it).\n\nCheers,\nH.\n\n\nOn 11-11-01 12:34 PM, Cook, Malcolm wrote:\n> Thanks for the pointer.\n>\n> I think those are only in 2.9.... to be released any day now....\n>\n> Cheers,\n>\n> ~Malcolm\n>\n>\n>> -----Original Message-----\n>> From: Valerie Obenchain [mailto:vobencha at fhcrc.org]\n>> Sent: Friday, October 28, 2011 6:13 PM\n>> To: Liu,Bin\n>> Cc: Cook, Malcolm; 'bioc-devel at r-project.org'\n>> Subject: Re: [Bioc-devel] Modification of seqnames in GRanges\n>>\n>> Liu and Bin,\n>>\n>> For more general use you might be interested in.\n>>\n>> ?keepSeqlevels\n>> ?renameSeqlevels\n>>\n>> in the GenomicRanges package.\n>>\n>> Valerie\n>>\n>>\n>>\n>> On 10/28/2011 02:26 PM, Liu,Bin wrote:\n>>> Thanks a lot! It works!\n>>>\n>>> Bin\n>>>\n>>>\n>>> -----Original Message-----\n>>> From: Cook, Malcolm [mailto:MEC at stowers.org]\n>>> Sent: Friday, October 28, 2011 1:57 PM\n>>> To: Liu,Bin; 'bioc-devel at r-project.org'\n>>> Subject: RE: Modification of seqnames in GRanges\n>>>\n>>> Hi Bin,\n>>>\n>>> I think I have you covered....\n>>>\n>>>\n>>> UCSC2FlybaseGRanges<- function (GRanges) {\n>>> ### Rename the chromosomes in<GRanges>   from UCSC conventions\n>> ('chr1',\n>>> ### etc) to comport with Flybase conventions ('1', etc) by stripping\n>>> ### leading 'chr' and translating 'M' as 'dmel_mitochondrion_genome'.\n>>>     ## old way:?\n>>>     ## levels(seqnames(BSgenome))<-\n>> factor(Rle(sub('chr','',levels(seqnames(BSgenome)))))\n>>>     ##\n>> levels(seqnames(BSgenome))[levels(seqnames(BSgenome))==\"M\"]<-\n>> \"dmel_mitochondrion_genome\"\n>>>     seqlevels(GRanges)<- sub('chr','',seqlevels(GRanges))\n>>>     seqlevels(GRanges)<-\n>> sub('M','dmel_mitochondrion_genome',seqlevels(GRanges))\n>>>     GRanges\n>>> }\n>>>\n>>> Flybase2UCSC_ID<-function(ID)\n>> gsub('^(.*)$','chr\\\\1',sub('dmel_mitochondrion_genome','M',ID))\n>>>\n>>> Flybase2UCSCGRanges<- function (GRanges) {\n>>> ### converse of UCSC2FlybaseGRanges()\n>>>     seqlevels(GRanges)<-\n>> sub('dmel_mitochondrion_genome','M',seqlevels(GRanges))\n>>>     seqlevels(GRanges)<- gsub('^(.*)$','chr\\\\1',seqlevels(GRanges))\n>>>     GRanges\n>>> }\n>>>\n>>> Regards,\n>>>\n>>> ~Malcolm\n>>>\n>>>\n>>>> -----Original Message-----\n>>>> From: bioc-devel-bounces at r-project.org [mailto:bioc-devel-bounces at r-\n>>>> project.org] On Behalf Of Liu,Bin\n>>>> Sent: Friday, October 28, 2011 11:56 AM\n>>>> To: bioc-devel at r-project.org\n>>>> Subject: [Bioc-devel] Modification of seqnames in GRanges\n>>>>\n>>>> Hi,\n>>>>       I have a question about how to modify the seqnames in below. I would\n>> like\n>>>> to remove chr in the seqnames.\n>>>> For example: \"chr2L\" ->   \"2L\". I tried the following code and got an error:\n>>>>\n>>>>> seqnames(gr1)<- sub(\"chr\", \"\", seqnames(gr1))\n>>>> Error in `seqnames<-`(`*tmp*`, value =<S4 object of class \"Rle\">) :\n>>>>     levels of supplied 'seqnames' must be identical to 'seqlevels(x)'\n>>>>\n>>>>\n>>>>     With the following checking, it seems chrM is not in seqnames but is in\n>> the\n>>>> levels.\n>>>>> levels(seqnames(gr1))\n>>>>    [1] \"chr2L\"     \"chr2LHet\"  \"chr2R\"     \"chr2RHet\"  \"chr3L\"     \"chr3LHet\"\n>>>>    [7] \"chr3R\"     \"chr3RHet\"  \"chr4\"      \"chrU\"      \"chrUextra\" \"chrX\"\n>>>> [13] \"chrXHet\"   \"chrYHet\"   \"chrM\"\n>>>>\n>>>>> unique(seqnames(gr1))\n>>>>    [1] chr2L     chr2LHet  chr2R     chr2RHet  chr3L     chr3LHet  chr3R\n>>>>    [8] chr3RHet  chr4      chrU      chrUextra chrX      chrXHet   chrYHet\n>>>> 15 Levels: chr2L chr2LHet chr2R chr2RHet chr3L chr3LHet chr3R chr3RHet ...\n>>>> chrM\n>>>>\n>>>>      Any way to solve the problem?   Thanks for the help.\n>>>>\n>>>> Bin Liu\n>>>>\n>>>>\n>>>>> gr1\n>>>> GRanges with 48498 ranges and 0 elementMetadata values:\n>>>>             seqnames           ranges strand\n>>>>                <Rle>          <IRanges>    <Rle>\n>>>>         [1]    chr2L   [ 8117,  8192]      +\n>>>>         [2]    chr2L   [11345, 11409]      +\n>>>>         [3]    chr2L   [11519, 11778]      +\n>>>>         [4]    chr2L   [12222, 12285]      +\n>>>>         [5]    chr2L   [12929, 13519]      +\n>>>>         [6]    chr2L   [13626, 13682]      +\n>>>>         [7]    chr2L   [14875, 14932]      +\n>>>>         [8]    chr2L   [15712, 17052]      +\n>>>>         [9]    chr2L   [17213, 18025]      +\n>>>>         ...      ...              ...    ...\n>>>>     [48490]  chrYHet [191815, 191893]      +\n>>>>     [48491]  chrYHet [192066, 206119]      +\n>>>>     [48492]  chrYHet [229343, 232315]      +\n>>>>     [48493]  chrYHet [232496, 232758]      +\n>>>>     [48494]  chrYHet [233403, 233455]      +\n>>>>     [48495]  chrYHet [233595, 271120]      +\n>>>>     [48496]  chrYHet [280371, 291285]      +\n>>>>     [48497]  chrYHet [305380, 305531]      +\n>>>>     [48498]  chrYHet [306016, 306486]      +\n>>>>     ---\n>>>>     seqlengths:\n>>>>          chr2L  chr2LHet     chr2R  chr2RHet ...   chrXHet   chrYHet      chrM\n>>>>       23011544    368872  21146708   3288761 ...    204112    347038     19517\n>>>>\n>>>> _______________________________________________\n>>>> Bioc-devel at r-project.org mailing list\n>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>> _______________________________________________\n>>> Bioc-devel at r-project.org mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi,\n\nYou can also do:\n\n   seqlevels(gr1) <- sub(\"chr\", \"\", seqlevels(gr1))\n\nThis works on GRanges, GRangesList and GappedAlignments objects, but\nnot on TranscriptDb or BSgenome objects where the seqlevels are\nimmutable (that could be changed though, depends how much need there\nis for it).\n\nCheers,\nH.\n\n\nOn 11-11-01 12:34 PM, Cook, Malcolm wrote:\n> Thanks for the pointer.\n>\n> I think those are only in 2.9.... to be released any day now....\n>\n> Cheers,\n>\n> ~Malcolm\n>\n>\n>> -----Original Message-----\n>> From: Valerie Obenchain [mailto:vobencha at fhcrc.org]\n>> Sent: Friday, October 28, 2011 6:13 PM\n>> To: Liu,Bin\n>> Cc: Cook, Malcolm; 'bioc-devel at r-project.org'\n>> Subject: Re: [Bioc-devel] Modification of seqnames in GRanges\n>>\n>> Liu and Bin,\n>>\n>> For more general use you might be interested in.\n>>\n>> ?keepSeqlevels\n>> ?renameSeqlevels\n>>\n>> in the GenomicRanges package.\n>>\n>> Valerie\n>>\n>>\n>>\n>> On 10/28/2011 02:26 PM, Liu,Bin wrote:\n>>> Thanks a lot! It works!\n>>>\n>>> Bin\n>>>\n>>>\n>>> -----Original Message-----\n>>> From: Cook, Malcolm [mailto:MEC at stowers.org]\n>>> Sent: Friday, October 28, 2011 1:57 PM\n>>> To: Liu,Bin; 'bioc-devel at r-project.org'\n>>> Subject: RE: Modification of seqnames in GRanges\n>>>\n>>> Hi Bin,\n>>>\n>>> I think I have you covered....\n>>>\n>>>\n>>> UCSC2FlybaseGRanges<- function (GRanges) {\n>>> ### Rename the chromosomes in<GRanges>   from UCSC conventions\n>> ('chr1',\n>>> ### etc) to comport with Flybase conventions ('1', etc) by stripping\n>>> ### leading 'chr' and translating 'M' as 'dmel_mitochondrion_genome'.\n>>>     ## old way:?\n>>>     ## levels(seqnames(BSgenome))<-\n>> factor(Rle(sub('chr','',levels(seqnames(BSgenome)))))\n>>>     ##\n>> levels(seqnames(BSgenome))[levels(seqnames(BSgenome))==\"M\"]<-\n>> \"dmel_mitochondrion_genome\"\n>>>     seqlevels(GRanges)<- sub('chr','',seqlevels(GRanges))\n>>>     seqlevels(GRanges)<-\n>> sub('M','dmel_mitochondrion_genome',seqlevels(GRanges))\n>>>     GRanges\n>>> }\n>>>\n>>> Flybase2UCSC_ID<-function(ID)\n>> gsub('^(.*)$','chr\\\\1',sub('dmel_mitochondrion_genome','M',ID))\n>>>\n>>> Flybase2UCSCGRanges<- function (GRanges) {\n>>> ### converse of UCSC2FlybaseGRanges()\n>>>     seqlevels(GRanges)<-\n>> sub('dmel_mitochondrion_genome','M',seqlevels(GRanges))\n>>>     seqlevels(GRanges)<- gsub('^(.*)$','chr\\\\1',seqlevels(GRanges))\n>>>     GRanges\n>>> }\n>>>\n>>> Regards,\n>>>\n>>> ~Malcolm\n>>>\n>>>\n>>>> -----Original Message-----\n>>>> From: bioc-devel-bounces at r-project.org [mailto:bioc-devel-bounces at r-\n>>>> project.org] On Behalf Of Liu,Bin\n>>>> Sent: Friday, October 28, 2011 11:56 AM\n>>>> To: bioc-devel at r-project.org\n>>>> Subject: [Bioc-devel] Modification of seqnames in GRanges\n>>>>\n>>>> Hi,\n>>>>       I have a question about how to modify the seqnames in below. I would\n>> like\n>>>> to remove chr in the seqnames.\n>>>> For example: \"chr2L\" ->   \"2L\". I tried the following code and got an error:\n>>>>\n>>>>> seqnames(gr1)<- sub(\"chr\", \"\", seqnames(gr1))\n>>>> Error in `seqnames<-`(`*tmp*`, value =<S4 object of class \"Rle\">) :\n>>>>     levels of supplied 'seqnames' must be identical to 'seqlevels(x)'\n>>>>\n>>>>\n>>>>     With the following checking, it seems chrM is not in seqnames but is in\n>> the\n>>>> levels.\n>>>>> levels(seqnames(gr1))\n>>>>    [1] \"chr2L\"     \"chr2LHet\"  \"chr2R\"     \"chr2RHet\"  \"chr3L\"     \"chr3LHet\"\n>>>>    [7] \"chr3R\"     \"chr3RHet\"  \"chr4\"      \"chrU\"      \"chrUextra\" \"chrX\"\n>>>> [13] \"chrXHet\"   \"chrYHet\"   \"chrM\"\n>>>>\n>>>>> unique(seqnames(gr1))\n>>>>    [1] chr2L     chr2LHet  chr2R     chr2RHet  chr3L     chr3LHet  chr3R\n>>>>    [8] chr3RHet  chr4      chrU      chrUextra chrX      chrXHet   chrYHet\n>>>> 15 Levels: chr2L chr2LHet chr2R chr2RHet chr3L chr3LHet chr3R chr3RHet ...\n>>>> chrM\n>>>>\n>>>>      Any way to solve the problem?   Thanks for the help.\n>>>>\n>>>> Bin Liu\n>>>>\n>>>>\n>>>>> gr1\n>>>> GRanges with 48498 ranges and 0 elementMetadata values:\n>>>>             seqnames           ranges strand\n>>>>                <Rle>          <IRanges>    <Rle>\n>>>>         [1]    chr2L   [ 8117,  8192]      +\n>>>>         [2]    chr2L   [11345, 11409]      +\n>>>>         [3]    chr2L   [11519, 11778]      +\n>>>>         [4]    chr2L   [12222, 12285]      +\n>>>>         [5]    chr2L   [12929, 13519]      +\n>>>>         [6]    chr2L   [13626, 13682]      +\n>>>>         [7]    chr2L   [14875, 14932]      +\n>>>>         [8]    chr2L   [15712, 17052]      +\n>>>>         [9]    chr2L   [17213, 18025]      +\n>>>>         ...      ...              ...    ...\n>>>>     [48490]  chrYHet [191815, 191893]      +\n>>>>     [48491]  chrYHet [192066, 206119]      +\n>>>>     [48492]  chrYHet [229343, 232315]      +\n>>>>     [48493]  chrYHet [232496, 232758]      +\n>>>>     [48494]  chrYHet [233403, 233455]      +\n>>>>     [48495]  chrYHet [233595, 271120]      +\n>>>>     [48496]  chrYHet [280371, 291285]      +\n>>>>     [48497]  chrYHet [305380, 305531]      +\n>>>>     [48498]  chrYHet [306016, 306486]      +\n>>>>     ---\n>>>>     seqlengths:\n>>>>          chr2L  chr2LHet     chr2R  chr2RHet ...   chrXHet   chrYHet      chrM\n>>>>       23011544    368872  21146708   3288761 ...    204112    347038     19517\n>>>>\n>>>> _______________________________________________\n>>>> Bioc-devel at r-project.org mailing list\n>>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>>> _______________________________________________\n>>> Bioc-devel at r-project.org mailing list\n>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi,\n\nYou can also do:\n\n   seqlevels(gr1) <- sub(\"chr\", \"\", seqlevels(gr1))\n\nThis works on GRanges, GRangesList and GappedAlignments objects, but\nnot on TranscriptDb or BSgenome objects where the seqle",
       "thread_id": "thread-f279ea3e88da",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002934.html"
     },
     {
       "id": "msg-5cd58dafd0fa",
@@ -98,11 +102,12 @@
         "<2C40E43D1F7A56408C4463FD245DDDF98B52D8A6@EXCHMB-02.stowers-institute.org>",
         "<4EB04E0A.7080009@fhcrc.org>"
       ],
-      "body_plain": "I would be very grateful to be able to update the seqlevels on TranscriptDb/BSgenome objects.\n\n\n~Malcolm\n\n\n> -----Original Message-----\n> From: Herv? Pag?s [mailto:hpages at fhcrc.org]\n> Sent: Tuesday, November 01, 2011 2:53 PM\n> To: Cook, Malcolm\n> Cc: 'Valerie Obenchain'; 'Liu,Bin'; 'bioc-devel at r-project.org'\n> Subject: Re: [Bioc-devel] Modification of seqnames in GRanges\n> \n> Hi,\n> \n> You can also do:\n> \n>    seqlevels(gr1) <- sub(\"chr\", \"\", seqlevels(gr1))\n> \n> This works on GRanges, GRangesList and GappedAlignments objects, but\n> not on TranscriptDb or BSgenome objects where the seqlevels are\n> immutable (that could be changed though, depends how much need there\n> is for it).\n> \n> Cheers,\n> H.\n> \n> \n> On 11-11-01 12:34 PM, Cook, Malcolm wrote:\n> > Thanks for the pointer.\n> >\n> > I think those are only in 2.9.... to be released any day now....\n> >\n> > Cheers,\n> >\n> > ~Malcolm\n> >\n> >\n> >> -----Original Message-----\n> >> From: Valerie Obenchain [mailto:vobencha at fhcrc.org]\n> >> Sent: Friday, October 28, 2011 6:13 PM\n> >> To: Liu,Bin\n> >> Cc: Cook, Malcolm; 'bioc-devel at r-project.org'\n> >> Subject: Re: [Bioc-devel] Modification of seqnames in GRanges\n> >>\n> >> Liu and Bin,\n> >>\n> >> For more general use you might be interested in.\n> >>\n> >> ?keepSeqlevels\n> >> ?renameSeqlevels\n> >>\n> >> in the GenomicRanges package.\n> >>\n> >> Valerie\n> >>\n> >>\n> >>\n> >> On 10/28/2011 02:26 PM, Liu,Bin wrote:\n> >>> Thanks a lot! It works!\n> >>>\n> >>> Bin\n> >>>\n> >>>\n> >>> -----Original Message-----\n> >>> From: Cook, Malcolm [mailto:MEC at stowers.org]\n> >>> Sent: Friday, October 28, 2011 1:57 PM\n> >>> To: Liu,Bin; 'bioc-devel at r-project.org'\n> >>> Subject: RE: Modification of seqnames in GRanges\n> >>>\n> >>> Hi Bin,\n> >>>\n> >>> I think I have you covered....\n> >>>\n> >>>\n> >>> UCSC2FlybaseGRanges<- function (GRanges) {\n> >>> ### Rename the chromosomes in<GRanges>   from UCSC conventions\n> >> ('chr1',\n> >>> ### etc) to comport with Flybase conventions ('1', etc) by stripping\n> >>> ### leading 'chr' and translating 'M' as 'dmel_mitochondrion_genome'.\n> >>>     ## old way:?\n> >>>     ## levels(seqnames(BSgenome))<-\n> >> factor(Rle(sub('chr','',levels(seqnames(BSgenome)))))\n> >>>     ##\n> >> levels(seqnames(BSgenome))[levels(seqnames(BSgenome))==\"M\"]<-\n> >> \"dmel_mitochondrion_genome\"\n> >>>     seqlevels(GRanges)<- sub('chr','',seqlevels(GRanges))\n> >>>     seqlevels(GRanges)<-\n> >> sub('M','dmel_mitochondrion_genome',seqlevels(GRanges))\n> >>>     GRanges\n> >>> }\n> >>>\n> >>> Flybase2UCSC_ID<-function(ID)\n> >> gsub('^(.*)$','chr\\\\1',sub('dmel_mitochondrion_genome','M',ID))\n> >>>\n> >>> Flybase2UCSCGRanges<- function (GRanges) {\n> >>> ### converse of UCSC2FlybaseGRanges()\n> >>>     seqlevels(GRanges)<-\n> >> sub('dmel_mitochondrion_genome','M',seqlevels(GRanges))\n> >>>     seqlevels(GRanges)<- gsub('^(.*)$','chr\\\\1',seqlevels(GRanges))\n> >>>     GRanges\n> >>> }\n> >>>\n> >>> Regards,\n> >>>\n> >>> ~Malcolm\n> >>>\n> >>>\n> >>>> -----Original Message-----\n> >>>> From: bioc-devel-bounces at r-project.org [mailto:bioc-devel-\n> bounces at r-\n> >>>> project.org] On Behalf Of Liu,Bin\n> >>>> Sent: Friday, October 28, 2011 11:56 AM\n> >>>> To: bioc-devel at r-project.org\n> >>>> Subject: [Bioc-devel] Modification of seqnames in GRanges\n> >>>>\n> >>>> Hi,\n> >>>>       I have a question about how to modify the seqnames in below. I\n> would\n> >> like\n> >>>> to remove chr in the seqnames.\n> >>>> For example: \"chr2L\" ->   \"2L\". I tried the following code and got an\n> error:\n> >>>>\n> >>>>> seqnames(gr1)<- sub(\"chr\", \"\", seqnames(gr1))\n> >>>> Error in `seqnames<-`(`*tmp*`, value =<S4 object of class \"Rle\">) :\n> >>>>     levels of supplied 'seqnames' must be identical to 'seqlevels(x)'\n> >>>>\n> >>>>\n> >>>>     With the following checking, it seems chrM is not in seqnames but is\n> in\n> >> the\n> >>>> levels.\n> >>>>> levels(seqnames(gr1))\n> >>>>    [1] \"chr2L\"     \"chr2LHet\"  \"chr2R\"     \"chr2RHet\"  \"chr3L\"     \"chr3LHet\"\n> >>>>    [7] \"chr3R\"     \"chr3RHet\"  \"chr4\"      \"chrU\"      \"chrUextra\" \"chrX\"\n> >>>> [13] \"chrXHet\"   \"chrYHet\"   \"chrM\"\n> >>>>\n> >>>>> unique(seqnames(gr1))\n> >>>>    [1] chr2L     chr2LHet  chr2R     chr2RHet  chr3L     chr3LHet  chr3R\n> >>>>    [8] chr3RHet  chr4      chrU      chrUextra chrX      chrXHet   chrYHet\n> >>>> 15 Levels: chr2L chr2LHet chr2R chr2RHet chr3L chr3LHet chr3R chr3RHet\n> ...\n> >>>> chrM\n> >>>>\n> >>>>      Any way to solve the problem?   Thanks for the help.\n> >>>>\n> >>>> Bin Liu\n> >>>>\n> >>>>\n> >>>>> gr1\n> >>>> GRanges with 48498 ranges and 0 elementMetadata values:\n> >>>>             seqnames           ranges strand\n> >>>>                <Rle>          <IRanges>    <Rle>\n> >>>>         [1]    chr2L   [ 8117,  8192]      +\n> >>>>         [2]    chr2L   [11345, 11409]      +\n> >>>>         [3]    chr2L   [11519, 11778]      +\n> >>>>         [4]    chr2L   [12222, 12285]      +\n> >>>>         [5]    chr2L   [12929, 13519]      +\n> >>>>         [6]    chr2L   [13626, 13682]      +\n> >>>>         [7]    chr2L   [14875, 14932]      +\n> >>>>         [8]    chr2L   [15712, 17052]      +\n> >>>>         [9]    chr2L   [17213, 18025]      +\n> >>>>         ...      ...              ...    ...\n> >>>>     [48490]  chrYHet [191815, 191893]      +\n> >>>>     [48491]  chrYHet [192066, 206119]      +\n> >>>>     [48492]  chrYHet [229343, 232315]      +\n> >>>>     [48493]  chrYHet [232496, 232758]      +\n> >>>>     [48494]  chrYHet [233403, 233455]      +\n> >>>>     [48495]  chrYHet [233595, 271120]      +\n> >>>>     [48496]  chrYHet [280371, 291285]      +\n> >>>>     [48497]  chrYHet [305380, 305531]      +\n> >>>>     [48498]  chrYHet [306016, 306486]      +\n> >>>>     ---\n> >>>>     seqlengths:\n> >>>>          chr2L  chr2LHet     chr2R  chr2RHet ...   chrXHet   chrYHet      chrM\n> >>>>       23011544    368872  21146708   3288761 ...    204112    347038     19517\n> >>>>\n> >>>> _______________________________________________\n> >>>> Bioc-devel at r-project.org mailing list\n> >>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> >>> _______________________________________________\n> >>> Bioc-devel at r-project.org mailing list\n> >>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> >\n> > _______________________________________________\n> > Bioc-devel at r-project.org mailing list\n> > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n> \n> --\n> Herv? Pag?s\n> \n> Program in Computational Biology\n> Division of Public Health Sciences\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N, M1-B514\n> P.O. Box 19024\n> Seattle, WA 98109-1024\n> \n> E-mail: hpages at fhcrc.org\n> Phone:  (206) 667-5791\n> Fax:    (206) 667-1319",
-      "body_snippet": "I would be very grateful to be able to update the seqlevels on TranscriptDb/BSgenome objects.\n\n\n~Malcolm\n\n\n> -----Original Message-----\n> From: Herv? Pag?s [mailto:hpages at fhcrc.org]\n> Sent: Tuesday",
+      "body_plain": "I would be very grateful to be able to update the seqlevels on TranscriptDb/BSgenome objects.\n\n\n~Malcolm\n\n\n> -----Original Message-----\n> From: Hervé Pagès [mailto:hpages at fhcrc.org]\n> Sent: Tuesday, November 01, 2011 2:53 PM\n> To: Cook, Malcolm\n> Cc: 'Valerie Obenchain'; 'Liu,Bin'; 'bioc-devel at r-project.org'\n> Subject: Re: [Bioc-devel] Modification of seqnames in GRanges\n> \n> Hi,\n> \n> You can also do:\n> \n>    seqlevels(gr1) <- sub(\"chr\", \"\", seqlevels(gr1))\n> \n> This works on GRanges, GRangesList and GappedAlignments objects, but\n> not on TranscriptDb or BSgenome objects where the seqlevels are\n> immutable (that could be changed though, depends how much need there\n> is for it).\n> \n> Cheers,\n> H.\n> \n> \n> On 11-11-01 12:34 PM, Cook, Malcolm wrote:\n> > Thanks for the pointer.\n> >\n> > I think those are only in 2.9.... to be released any day now....\n> >\n> > Cheers,\n> >\n> > ~Malcolm\n> >\n> >\n> >> -----Original Message-----\n> >> From: Valerie Obenchain [mailto:vobencha at fhcrc.org]\n> >> Sent: Friday, October 28, 2011 6:13 PM\n> >> To: Liu,Bin\n> >> Cc: Cook, Malcolm; 'bioc-devel at r-project.org'\n> >> Subject: Re: [Bioc-devel] Modification of seqnames in GRanges\n> >>\n> >> Liu and Bin,\n> >>\n> >> For more general use you might be interested in.\n> >>\n> >> ?keepSeqlevels\n> >> ?renameSeqlevels\n> >>\n> >> in the GenomicRanges package.\n> >>\n> >> Valerie\n> >>\n> >>\n> >>\n> >> On 10/28/2011 02:26 PM, Liu,Bin wrote:\n> >>> Thanks a lot! It works!\n> >>>\n> >>> Bin\n> >>>\n> >>>\n> >>> -----Original Message-----\n> >>> From: Cook, Malcolm [mailto:MEC at stowers.org]\n> >>> Sent: Friday, October 28, 2011 1:57 PM\n> >>> To: Liu,Bin; 'bioc-devel at r-project.org'\n> >>> Subject: RE: Modification of seqnames in GRanges\n> >>>\n> >>> Hi Bin,\n> >>>\n> >>> I think I have you covered....\n> >>>\n> >>>\n> >>> UCSC2FlybaseGRanges<- function (GRanges) {\n> >>> ### Rename the chromosomes in<GRanges>   from UCSC conventions\n> >> ('chr1',\n> >>> ### etc) to comport with Flybase conventions ('1', etc) by stripping\n> >>> ### leading 'chr' and translating 'M' as 'dmel_mitochondrion_genome'.\n> >>>     ## old way:?\n> >>>     ## levels(seqnames(BSgenome))<-\n> >> factor(Rle(sub('chr','',levels(seqnames(BSgenome)))))\n> >>>     ##\n> >> levels(seqnames(BSgenome))[levels(seqnames(BSgenome))==\"M\"]<-\n> >> \"dmel_mitochondrion_genome\"\n> >>>     seqlevels(GRanges)<- sub('chr','',seqlevels(GRanges))\n> >>>     seqlevels(GRanges)<-\n> >> sub('M','dmel_mitochondrion_genome',seqlevels(GRanges))\n> >>>     GRanges\n> >>> }\n> >>>\n> >>> Flybase2UCSC_ID<-function(ID)\n> >> gsub('^(.*)$','chr\\\\1',sub('dmel_mitochondrion_genome','M',ID))\n> >>>\n> >>> Flybase2UCSCGRanges<- function (GRanges) {\n> >>> ### converse of UCSC2FlybaseGRanges()\n> >>>     seqlevels(GRanges)<-\n> >> sub('dmel_mitochondrion_genome','M',seqlevels(GRanges))\n> >>>     seqlevels(GRanges)<- gsub('^(.*)$','chr\\\\1',seqlevels(GRanges))\n> >>>     GRanges\n> >>> }\n> >>>\n> >>> Regards,\n> >>>\n> >>> ~Malcolm\n> >>>\n> >>>\n> >>>> -----Original Message-----\n> >>>> From: bioc-devel-bounces at r-project.org [mailto:bioc-devel-\n> bounces at r-\n> >>>> project.org] On Behalf Of Liu,Bin\n> >>>> Sent: Friday, October 28, 2011 11:56 AM\n> >>>> To: bioc-devel at r-project.org\n> >>>> Subject: [Bioc-devel] Modification of seqnames in GRanges\n> >>>>\n> >>>> Hi,\n> >>>>       I have a question about how to modify the seqnames in below. I\n> would\n> >> like\n> >>>> to remove chr in the seqnames.\n> >>>> For example: \"chr2L\" ->   \"2L\". I tried the following code and got an\n> error:\n> >>>>\n> >>>>> seqnames(gr1)<- sub(\"chr\", \"\", seqnames(gr1))\n> >>>> Error in `seqnames<-`(`*tmp*`, value =<S4 object of class \"Rle\">) :\n> >>>>     levels of supplied 'seqnames' must be identical to 'seqlevels(x)'\n> >>>>\n> >>>>\n> >>>>     With the following checking, it seems chrM is not in seqnames but is\n> in\n> >> the\n> >>>> levels.\n> >>>>> levels(seqnames(gr1))\n> >>>>    [1] \"chr2L\"     \"chr2LHet\"  \"chr2R\"     \"chr2RHet\"  \"chr3L\"     \"chr3LHet\"\n> >>>>    [7] \"chr3R\"     \"chr3RHet\"  \"chr4\"      \"chrU\"      \"chrUextra\" \"chrX\"\n> >>>> [13] \"chrXHet\"   \"chrYHet\"   \"chrM\"\n> >>>>\n> >>>>> unique(seqnames(gr1))\n> >>>>    [1] chr2L     chr2LHet  chr2R     chr2RHet  chr3L     chr3LHet  chr3R\n> >>>>    [8] chr3RHet  chr4      chrU      chrUextra chrX      chrXHet   chrYHet\n> >>>> 15 Levels: chr2L chr2LHet chr2R chr2RHet chr3L chr3LHet chr3R chr3RHet\n> ...\n> >>>> chrM\n> >>>>\n> >>>>      Any way to solve the problem?   Thanks for the help.\n> >>>>\n> >>>> Bin Liu\n> >>>>\n> >>>>\n> >>>>> gr1\n> >>>> GRanges with 48498 ranges and 0 elementMetadata values:\n> >>>>             seqnames           ranges strand\n> >>>>                <Rle>          <IRanges>    <Rle>\n> >>>>         [1]    chr2L   [ 8117,  8192]      +\n> >>>>         [2]    chr2L   [11345, 11409]      +\n> >>>>         [3]    chr2L   [11519, 11778]      +\n> >>>>         [4]    chr2L   [12222, 12285]      +\n> >>>>         [5]    chr2L   [12929, 13519]      +\n> >>>>         [6]    chr2L   [13626, 13682]      +\n> >>>>         [7]    chr2L   [14875, 14932]      +\n> >>>>         [8]    chr2L   [15712, 17052]      +\n> >>>>         [9]    chr2L   [17213, 18025]      +\n> >>>>         ...      ...              ...    ...\n> >>>>     [48490]  chrYHet [191815, 191893]      +\n> >>>>     [48491]  chrYHet [192066, 206119]      +\n> >>>>     [48492]  chrYHet [229343, 232315]      +\n> >>>>     [48493]  chrYHet [232496, 232758]      +\n> >>>>     [48494]  chrYHet [233403, 233455]      +\n> >>>>     [48495]  chrYHet [233595, 271120]      +\n> >>>>     [48496]  chrYHet [280371, 291285]      +\n> >>>>     [48497]  chrYHet [305380, 305531]      +\n> >>>>     [48498]  chrYHet [306016, 306486]      +\n> >>>>     ---\n> >>>>     seqlengths:\n> >>>>          chr2L  chr2LHet     chr2R  chr2RHet ...   chrXHet   chrYHet      chrM\n> >>>>       23011544    368872  21146708   3288761 ...    204112    347038     19517\n> >>>>\n> >>>> _______________________________________________\n> >>>> Bioc-devel at r-project.org mailing list\n> >>>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> >>> _______________________________________________\n> >>> Bioc-devel at r-project.org mailing list\n> >>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> >\n> > _______________________________________________\n> > Bioc-devel at r-project.org mailing list\n> > https://stat.ethz.ch/mailman/listinfo/bioc-devel\n> \n> \n> --\n> Hervé Pagès\n> \n> Program in Computational Biology\n> Division of Public Health Sciences\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N, M1-B514\n> P.O. Box 19024\n> Seattle, WA 98109-1024\n> \n> E-mail: hpages at fhcrc.org\n> Phone:  (206) 667-5791\n> Fax:    (206) 667-1319",
+      "body_snippet": "I would be very grateful to be able to update the seqlevels on TranscriptDb/BSgenome objects.\n\n\n~Malcolm\n\n\n> -----Original Message-----\n> From: Hervé Pagès [mailto:hpages at fhcrc.org]\n> Sent: Tuesday",
       "thread_id": "thread-f279ea3e88da",
       "thread_depth": 2,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002935.html"
     },
     {
       "id": "msg-4ccbcadb91aa",
@@ -120,7 +125,8 @@
       "body_snippet": "Thanks for providing the file. The bug is now fixed in IRanges 1.12.1 in \nrelease and 1.13.1 in devel.\n\nValerie\n\n\n\nOn 10/31/2011 08:00 PM, Dario Strbenac wrote:\n> Sorry about the version numbers. I re",
       "thread_id": "thread-982ec7544037",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002936.html"
     },
     {
       "id": "msg-0f7698f4b9ac",
@@ -136,7 +142,8 @@
       "body_snippet": "Bioconductors:\n\nWe are pleased to announce Bioconductor 2.9, consisting of 517\nsoftware packages and more than 500 up-to-date annotation packages.\nThere are 60 new software packages, and many updates ",
       "thread_id": "thread-0f7698f4b9ac",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002937.html"
     },
     {
       "id": "msg-e6287fc1187c",
@@ -152,7 +159,8 @@
       "body_snippet": "Hi Martin,\n\nI prepared a file inst/NEWS.Rd in the limma package, but it isn't included \non the Bioc 2.9 NEWS page:\n\n   http://www.bioconductor.org/news/bioc_2_9_release/\n\nI notice that the same thing ",
       "thread_id": "thread-e6287fc1187c",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002938.html"
     },
     {
       "id": "msg-d49436a9c0a7",
@@ -168,7 +176,8 @@
       "body_snippet": "Martin,\n\nThe inst/NEWS text file in the ChIPpeakAnno package is not included on the\nnews page either. Thanks!\n\nBest regards,\n\nJulie\n\n\nOn 11/2/11 2:55 AM, \"Gordon K Smyth\" <smyth at wehi.EDU.AU> wrote:",
       "thread_id": "thread-e6287fc1187c",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002939.html"
     },
     {
       "id": "msg-9b22795309ac",
@@ -184,7 +193,8 @@
       "body_snippet": "FYI,\n\nhttp://bioconductor.org/checkResults/release/bioc-LATEST/\n\nstill points to\n\nhttp://bioconductor.org/checkResults/2.8/bioc-LATEST/\n\n(The former URL is used on for instance http://www.bioconductor",
       "thread_id": "thread-9b22795309ac",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002940.html"
     },
     {
       "id": "msg-596c1012e5db",
@@ -202,7 +212,8 @@
       "body_snippet": "Hi Henrik,\n\nOn Wed, Nov 2, 2011 at 8:48 AM, Henrik Bengtsson <hb at biostat.ucsf.edu> wrote:\n> FYI,\n>\n> http://bioconductor.org/checkResults/release/bioc-LATEST/\n>\n> still points to\n>\n> http://biocond",
       "thread_id": "thread-596c1012e5db",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002941.html"
     },
     {
       "id": "msg-bed8bb7025a8",
@@ -220,7 +231,8 @@
       "body_snippet": "Hi Gordon, Julie, and others...\n\nOn 11/02/2011 07:18 AM, Zhu, Lihua (Julie) wrote:\n> Martin,\n>\n> The inst/NEWS text file in the ChIPpeakAnno package is not included on the\n> news page either. Thanks!\n",
       "thread_id": "thread-e6287fc1187c",
       "thread_depth": 2,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002942.html"
     },
     {
       "id": "msg-cfa7820c17c7",
@@ -236,7 +248,8 @@
       "body_snippet": "Hi, all.\n\nI'm using a fresh version of R and BiocInstaller and noticed that\nchooseBioCmirror() does not effectively change the bioconductor\nrepository.  Perhaps this was by design until the repositori",
       "thread_id": "thread-cfa7820c17c7",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002943.html"
     },
     {
       "id": "msg-5f53b16b4c0a",
@@ -252,7 +265,8 @@
       "body_snippet": "Martin,\n\nIt works perfectly now. Many thanks for your help!\n\nBest regards,\n\nJulie\n\n\nOn 11/2/11 2:28 PM, \"Martin Morgan\" <mtmorgan at fhcrc.org> wrote:\n\n> Hi Gordon, Julie, and others...\n> \n> On 11/02/",
       "thread_id": "thread-e6287fc1187c",
       "thread_depth": 3,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002944.html"
     },
     {
       "id": "msg-7a12cc88c3a0",
@@ -266,11 +280,12 @@
       "references": [
         "<CANeAVBkMi+WYa=hqf5OFvazLm9E3wh77r4ikaTDSNQdmiComXw@mail.gmail.com>"
       ],
-      "body_plain": "Hi Sean,\n\nThis is addressed in BiocInstaller 1.3.2.\n\nCheers,\nH.\n\n\nOn 11-11-02 11:31 AM, Sean Davis wrote:\n> Hi, all.\n>\n> I'm using a fresh version of R and BiocInstaller and noticed that\n> chooseBioCmirror() does not effectively change the bioconductor\n> repository.  Perhaps this was by design until the repositories sync\n> up, but just wanted to bring it up just in case.\n>\n> Thanks,\n> Sean\n>\n>> chooseBioCmirror()\n> BioC mirror\n>\n> 1: Seattle (USA)\n> 2: Bethesda (USA)\n> 3: Dortmund (Germany)\n> 4: Bergen (Norway)\n> 5: Cambridge (UK)\n>\n> Selection: 2\n>> options('BioC_mirror')\n> $BioC_mirror\n>                           Bethesda (USA)\n> \"http://watson.nci.nih.gov/bioc_mirror\"\n>> BiocInstaller::biocinstallRepos()\n>                                                              BioCsoft\n>                          \"http://bioconductor.org/packages/2.10/bioc\"\n>                                                                  CRAN\n>                               \"http://watson.nci.nih.gov/cran_mirror\"\n>                                                               BioCann\n> \"http://watson.nci.nih.gov/bioc_mirror/packages/2.9/data/annotation\"\n>                                                               BioCexp\n>               \"http://bioconductor.org/packages/2.10/data/experiment\"\n>                                                             BioCextra\n>                         \"http://bioconductor.org/packages/2.10/extra\"\n>> sessionInfo()\n> R version 2.15.0 Under development (unstable) (--)\n> Platform: x86_64-unknown-linux-gnu (64-bit)\n>\n> locale:\n>   [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>   [3] LC_TIME=en_US.UTF-8        LC_COLLATE=C\n>   [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>   [7] LC_PAPER=C                 LC_NAME=C\n>   [9] LC_ADDRESS=C               LC_TELEPHONE=C\n> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>\n> attached base packages:\n> [1] stats     graphics  grDevices utils     datasets  methods   base\n>\n> other attached packages:\n> [1] BiocInstaller_1.3.1\n>\n> loaded via a namespace (and not attached):\n> [1] tools_2.15.0\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi Sean,\n\nThis is addressed in BiocInstaller 1.3.2.\n\nCheers,\nH.\n\n\nOn 11-11-02 11:31 AM, Sean Davis wrote:\n> Hi, all.\n>\n> I'm using a fresh version of R and BiocInstaller and noticed that\n> chooseBioCmirror() does not effectively change the bioconductor\n> repository.  Perhaps this was by design until the repositories sync\n> up, but just wanted to bring it up just in case.\n>\n> Thanks,\n> Sean\n>\n>> chooseBioCmirror()\n> BioC mirror\n>\n> 1: Seattle (USA)\n> 2: Bethesda (USA)\n> 3: Dortmund (Germany)\n> 4: Bergen (Norway)\n> 5: Cambridge (UK)\n>\n> Selection: 2\n>> options('BioC_mirror')\n> $BioC_mirror\n>                           Bethesda (USA)\n> \"http://watson.nci.nih.gov/bioc_mirror\"\n>> BiocInstaller::biocinstallRepos()\n>                                                              BioCsoft\n>                          \"http://bioconductor.org/packages/2.10/bioc\"\n>                                                                  CRAN\n>                               \"http://watson.nci.nih.gov/cran_mirror\"\n>                                                               BioCann\n> \"http://watson.nci.nih.gov/bioc_mirror/packages/2.9/data/annotation\"\n>                                                               BioCexp\n>               \"http://bioconductor.org/packages/2.10/data/experiment\"\n>                                                             BioCextra\n>                         \"http://bioconductor.org/packages/2.10/extra\"\n>> sessionInfo()\n> R version 2.15.0 Under development (unstable) (--)\n> Platform: x86_64-unknown-linux-gnu (64-bit)\n>\n> locale:\n>   [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>   [3] LC_TIME=en_US.UTF-8        LC_COLLATE=C\n>   [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>   [7] LC_PAPER=C                 LC_NAME=C\n>   [9] LC_ADDRESS=C               LC_TELEPHONE=C\n> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>\n> attached base packages:\n> [1] stats     graphics  grDevices utils     datasets  methods   base\n>\n> other attached packages:\n> [1] BiocInstaller_1.3.1\n>\n> loaded via a namespace (and not attached):\n> [1] tools_2.15.0\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi Sean,\n\nThis is addressed in BiocInstaller 1.3.2.\n\nCheers,\nH.\n\n\nOn 11-11-02 11:31 AM, Sean Davis wrote:\n> Hi, all.\n>\n> I'm using a fresh version of R and BiocInstaller and noticed that\n> chooseBioCm",
       "thread_id": "thread-cfa7820c17c7",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002945.html"
     },
     {
       "id": "msg-c0a81e90b78d",
@@ -284,11 +299,12 @@
       "references": [
         "<CAHA9McNV5ypi4+418E79_j2u2fofPuC8x5Xp0sFczVF2_pTVGQ@mail.gmail.com>"
       ],
-      "body_plain": "Hi Steve,\n\nYes we can expose more stuff if needed. There are already a lot of\nfunctions that are exposed (130 of the 274 functions currently defined\nin IRanges) and we can expose more.\n\nIt's good to keep some level of encapsulation though, by exposing only\nwhat's stable and potentially useful. This IRanges C-interface is hard\nto maintain at the moment: adding a function to it or changing the type\nof a function argument requires making more or less the same change in\n3 or 4 different places. I guess this could probably be made easier by\nusing some custom script...\n\nRle_seqselect itself is not a good candidate for exposure because it's\na .Call entry point. We've tried so far to not expose .Call entry points\nbecause the type of their arguments (SEXP) make them less re-usable in\nC code than if those types were low-level C-types like int *, char *\netc... One way to go is to reorganize a little bit our code by adding\nand exposing a lower-level function that does (almost) all the work\nthat Rle_seqselect currently does but with args:\n\n   (SEXP x, const int *start, const int *width, int length)\n\ninstead of\n\n   (SEXP x, SEXP start, SEXP width)\n\nand then have Rle_seqselect call it. This lower-level function is more\nreusable because, in the client code, the 'start' and 'with' vectors\nare not always stored in SEXP's. For example they could be in temporary\nint buffers (typically), and there is no reason why the client code\nwould need to convert those buffers into SEXP's before it can\ncall the C function in IRanges.\n\nI'll make that change and will let you know.\n\nCheers,\nH.\n\nOn 11-10-27 01:31 PM, Steve Lianoglou wrote:\n> Hi,\n>\n> I'm building a package and I want to write some C(++) level code that\n> manipulates Rle's.\n>\n> In particular I'd really like to be able to use the Rle_seqselect\n> function so I can slice and extract data from Rle's that I pass down\n> into my C code.\n>\n> By looking at how Biostrings uses IRanges (at the C level), it seems\n> to me that the only \"externally available\" IRanges C functions are the\n> ones defined in \"IRange_defines.h\" and \"IRange_interface.h\"\n>\n> Is there any chance we can export some more stuff (like Rle_seqselect,\n> for example) for \"outside use\"? I'd be happy to do things to help\n> facilitate that process.\n>\n> Thanks,\n> -steve\n>\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi Steve,\n\nYes we can expose more stuff if needed. There are already a lot of\nfunctions that are exposed (130 of the 274 functions currently defined\nin IRanges) and we can expose more.\n\nIt's good to keep some level of encapsulation though, by exposing only\nwhat's stable and potentially useful. This IRanges C-interface is hard\nto maintain at the moment: adding a function to it or changing the type\nof a function argument requires making more or less the same change in\n3 or 4 different places. I guess this could probably be made easier by\nusing some custom script...\n\nRle_seqselect itself is not a good candidate for exposure because it's\na .Call entry point. We've tried so far to not expose .Call entry points\nbecause the type of their arguments (SEXP) make them less re-usable in\nC code than if those types were low-level C-types like int *, char *\netc... One way to go is to reorganize a little bit our code by adding\nand exposing a lower-level function that does (almost) all the work\nthat Rle_seqselect currently does but with args:\n\n   (SEXP x, const int *start, const int *width, int length)\n\ninstead of\n\n   (SEXP x, SEXP start, SEXP width)\n\nand then have Rle_seqselect call it. This lower-level function is more\nreusable because, in the client code, the 'start' and 'with' vectors\nare not always stored in SEXP's. For example they could be in temporary\nint buffers (typically), and there is no reason why the client code\nwould need to convert those buffers into SEXP's before it can\ncall the C function in IRanges.\n\nI'll make that change and will let you know.\n\nCheers,\nH.\n\nOn 11-10-27 01:31 PM, Steve Lianoglou wrote:\n> Hi,\n>\n> I'm building a package and I want to write some C(++) level code that\n> manipulates Rle's.\n>\n> In particular I'd really like to be able to use the Rle_seqselect\n> function so I can slice and extract data from Rle's that I pass down\n> into my C code.\n>\n> By looking at how Biostrings uses IRanges (at the C level), it seems\n> to me that the only \"externally available\" IRanges C functions are the\n> ones defined in \"IRange_defines.h\" and \"IRange_interface.h\"\n>\n> Is there any chance we can export some more stuff (like Rle_seqselect,\n> for example) for \"outside use\"? I'd be happy to do things to help\n> facilitate that process.\n>\n> Thanks,\n> -steve\n>\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi Steve,\n\nYes we can expose more stuff if needed. There are already a lot of\nfunctions that are exposed (130 of the 274 functions currently defined\nin IRanges) and we can expose more.\n\nIt's good to k",
       "thread_id": "thread-c0a81e90b78d",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002946.html"
     },
     {
       "id": "msg-21aaf3bbdca2",
@@ -303,11 +319,12 @@
         "<CAHA9McNV5ypi4+418E79_j2u2fofPuC8x5Xp0sFczVF2_pTVGQ@mail.gmail.com>",
         "<4EB1BDCE.4020206@fhcrc.org>"
       ],
-      "body_plain": "This is done in IRanges 1.13.2. The exposed function is\n_seqselect_Rle().\n\nCheers,\nH.\n\nOn 11-11-02 03:01 PM, Herv? Pag?s wrote:\n> Hi Steve,\n>\n> Yes we can expose more stuff if needed. There are already a lot of\n> functions that are exposed (130 of the 274 functions currently defined\n> in IRanges) and we can expose more.\n>\n> It's good to keep some level of encapsulation though, by exposing only\n> what's stable and potentially useful. This IRanges C-interface is hard\n> to maintain at the moment: adding a function to it or changing the type\n> of a function argument requires making more or less the same change in\n> 3 or 4 different places. I guess this could probably be made easier by\n> using some custom script...\n>\n> Rle_seqselect itself is not a good candidate for exposure because it's\n> a .Call entry point. We've tried so far to not expose .Call entry points\n> because the type of their arguments (SEXP) make them less re-usable in\n> C code than if those types were low-level C-types like int *, char *\n> etc... One way to go is to reorganize a little bit our code by adding\n> and exposing a lower-level function that does (almost) all the work\n> that Rle_seqselect currently does but with args:\n>\n> (SEXP x, const int *start, const int *width, int length)\n>\n> instead of\n>\n> (SEXP x, SEXP start, SEXP width)\n>\n> and then have Rle_seqselect call it. This lower-level function is more\n> reusable because, in the client code, the 'start' and 'with' vectors\n> are not always stored in SEXP's. For example they could be in temporary\n> int buffers (typically), and there is no reason why the client code\n> would need to convert those buffers into SEXP's before it can\n> call the C function in IRanges.\n>\n> I'll make that change and will let you know.\n>\n> Cheers,\n> H.\n>\n> On 11-10-27 01:31 PM, Steve Lianoglou wrote:\n>> Hi,\n>>\n>> I'm building a package and I want to write some C(++) level code that\n>> manipulates Rle's.\n>>\n>> In particular I'd really like to be able to use the Rle_seqselect\n>> function so I can slice and extract data from Rle's that I pass down\n>> into my C code.\n>>\n>> By looking at how Biostrings uses IRanges (at the C level), it seems\n>> to me that the only \"externally available\" IRanges C functions are the\n>> ones defined in \"IRange_defines.h\" and \"IRange_interface.h\"\n>>\n>> Is there any chance we can export some more stuff (like Rle_seqselect,\n>> for example) for \"outside use\"? I'd be happy to do things to help\n>> facilitate that process.\n>>\n>> Thanks,\n>> -steve\n>>\n>\n>\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
-      "body_snippet": "This is done in IRanges 1.13.2. The exposed function is\n_seqselect_Rle().\n\nCheers,\nH.\n\nOn 11-11-02 03:01 PM, Herv? Pag?s wrote:\n> Hi Steve,\n>\n> Yes we can expose more stuff if needed. There are alread",
+      "body_plain": "This is done in IRanges 1.13.2. The exposed function is\n_seqselect_Rle().\n\nCheers,\nH.\n\nOn 11-11-02 03:01 PM, Hervé Pagès wrote:\n> Hi Steve,\n>\n> Yes we can expose more stuff if needed. There are already a lot of\n> functions that are exposed (130 of the 274 functions currently defined\n> in IRanges) and we can expose more.\n>\n> It's good to keep some level of encapsulation though, by exposing only\n> what's stable and potentially useful. This IRanges C-interface is hard\n> to maintain at the moment: adding a function to it or changing the type\n> of a function argument requires making more or less the same change in\n> 3 or 4 different places. I guess this could probably be made easier by\n> using some custom script...\n>\n> Rle_seqselect itself is not a good candidate for exposure because it's\n> a .Call entry point. We've tried so far to not expose .Call entry points\n> because the type of their arguments (SEXP) make them less re-usable in\n> C code than if those types were low-level C-types like int *, char *\n> etc... One way to go is to reorganize a little bit our code by adding\n> and exposing a lower-level function that does (almost) all the work\n> that Rle_seqselect currently does but with args:\n>\n> (SEXP x, const int *start, const int *width, int length)\n>\n> instead of\n>\n> (SEXP x, SEXP start, SEXP width)\n>\n> and then have Rle_seqselect call it. This lower-level function is more\n> reusable because, in the client code, the 'start' and 'with' vectors\n> are not always stored in SEXP's. For example they could be in temporary\n> int buffers (typically), and there is no reason why the client code\n> would need to convert those buffers into SEXP's before it can\n> call the C function in IRanges.\n>\n> I'll make that change and will let you know.\n>\n> Cheers,\n> H.\n>\n> On 11-10-27 01:31 PM, Steve Lianoglou wrote:\n>> Hi,\n>>\n>> I'm building a package and I want to write some C(++) level code that\n>> manipulates Rle's.\n>>\n>> In particular I'd really like to be able to use the Rle_seqselect\n>> function so I can slice and extract data from Rle's that I pass down\n>> into my C code.\n>>\n>> By looking at how Biostrings uses IRanges (at the C level), it seems\n>> to me that the only \"externally available\" IRanges C functions are the\n>> ones defined in \"IRange_defines.h\" and \"IRange_interface.h\"\n>>\n>> Is there any chance we can export some more stuff (like Rle_seqselect,\n>> for example) for \"outside use\"? I'd be happy to do things to help\n>> facilitate that process.\n>>\n>> Thanks,\n>> -steve\n>>\n>\n>\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_snippet": "This is done in IRanges 1.13.2. The exposed function is\n_seqselect_Rle().\n\nCheers,\nH.\n\nOn 11-11-02 03:01 PM, Hervé Pagès wrote:\n> Hi Steve,\n>\n> Yes we can expose more stuff if needed. There are alread",
       "thread_id": "thread-c0a81e90b78d",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002947.html"
     },
     {
       "id": "msg-436884dca305",
@@ -322,11 +339,12 @@
         "<CANeAVBkMi+WYa=hqf5OFvazLm9E3wh77r4ikaTDSNQdmiComXw@mail.gmail.com>",
         "<4EB1A6E0.8020903@fhcrc.org>"
       ],
-      "body_plain": "Thanks, Herv?.\n\nSean\n\n2011/11/2 Herv? Pag?s <hpages at fhcrc.org>:\n> Hi Sean,\n>\n> This is addressed in BiocInstaller 1.3.2.\n>\n> Cheers,\n> H.\n>\n>\n> On 11-11-02 11:31 AM, Sean Davis wrote:\n>> Hi, all.\n>>\n>> I'm using a fresh version of R and BiocInstaller and noticed that\n>> chooseBioCmirror() does not effectively change the bioconductor\n>> repository. ?Perhaps this was by design until the repositories sync\n>> up, but just wanted to bring it up just in case.\n>>\n>> Thanks,\n>> Sean\n>>\n>>> chooseBioCmirror()\n>> BioC mirror\n>>\n>> 1: Seattle (USA)\n>> 2: Bethesda (USA)\n>> 3: Dortmund (Germany)\n>> 4: Bergen (Norway)\n>> 5: Cambridge (UK)\n>>\n>> Selection: 2\n>>> options('BioC_mirror')\n>> $BioC_mirror\n>> ? ? ? ? ? ? ? ? ? ? ? ? ? Bethesda (USA)\n>> \"http://watson.nci.nih.gov/bioc_mirror\"\n>>> BiocInstaller::biocinstallRepos()\n>> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?BioCsoft\n>> ? ? ? ? ? ? ? ? ? ? ? ? ?\"http://bioconductor.org/packages/2.10/bioc\"\n>> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?CRAN\n>> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? \"http://watson.nci.nih.gov/cran_mirror\"\n>> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? BioCann\n>> \"http://watson.nci.nih.gov/bioc_mirror/packages/2.9/data/annotation\"\n>> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? BioCexp\n>> ? ? ? ? ? ? ? \"http://bioconductor.org/packages/2.10/data/experiment\"\n>> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? BioCextra\n>> ? ? ? ? ? ? ? ? ? ? ? ? \"http://bioconductor.org/packages/2.10/extra\"\n>>> sessionInfo()\n>> R version 2.15.0 Under development (unstable) (--)\n>> Platform: x86_64-unknown-linux-gnu (64-bit)\n>>\n>> locale:\n>> ? [1] LC_CTYPE=en_US.UTF-8 ? ? ? LC_NUMERIC=C\n>> ? [3] LC_TIME=en_US.UTF-8 ? ? ? ?LC_COLLATE=C\n>> ? [5] LC_MONETARY=en_US.UTF-8 ? ?LC_MESSAGES=en_US.UTF-8\n>> ? [7] LC_PAPER=C ? ? ? ? ? ? ? ? LC_NAME=C\n>> ? [9] LC_ADDRESS=C ? ? ? ? ? ? ? LC_TELEPHONE=C\n>> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>>\n>> attached base packages:\n>> [1] stats ? ? graphics ?grDevices utils ? ? datasets ?methods ? base\n>>\n>> other attached packages:\n>> [1] BiocInstaller_1.3.1\n>>\n>> loaded via a namespace (and not attached):\n>> [1] tools_2.15.0\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n>\n> --\n> Herv? Pag?s\n>\n> Program in Computational Biology\n> Division of Public Health Sciences\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N, M1-B514\n> P.O. Box 19024\n> Seattle, WA 98109-1024\n>\n> E-mail: hpages at fhcrc.org\n> Phone: ?(206) 667-5791\n> Fax: ? ?(206) 667-1319\n>",
-      "body_snippet": "Thanks, Herv?.\n\nSean\n\n2011/11/2 Herv? Pag?s <hpages at fhcrc.org>:\n> Hi Sean,\n>\n> This is addressed in BiocInstaller 1.3.2.\n>\n> Cheers,\n> H.\n>\n>\n> On 11-11-02 11:31 AM, Sean Davis wrote:\n>> Hi, all.\n>",
+      "body_plain": "Thanks, Hervé.\n\nSean\n\n2011/11/2 Hervé Pagès <hpages at fhcrc.org>:\n> Hi Sean,\n>\n> This is addressed in BiocInstaller 1.3.2.\n>\n> Cheers,\n> H.\n>\n>\n> On 11-11-02 11:31 AM, Sean Davis wrote:\n>> Hi, all.\n>>\n>> I'm using a fresh version of R and BiocInstaller and noticed that\n>> chooseBioCmirror() does not effectively change the bioconductor\n>> repository.  Perhaps this was by design until the repositories sync\n>> up, but just wanted to bring it up just in case.\n>>\n>> Thanks,\n>> Sean\n>>\n>>> chooseBioCmirror()\n>> BioC mirror\n>>\n>> 1: Seattle (USA)\n>> 2: Bethesda (USA)\n>> 3: Dortmund (Germany)\n>> 4: Bergen (Norway)\n>> 5: Cambridge (UK)\n>>\n>> Selection: 2\n>>> options('BioC_mirror')\n>> $BioC_mirror\n>>   ? ? ? ? ? ? ? ? ? ? ?   Bethesda (USA)\n>> \"http://watson.nci.nih.gov/bioc_mirror\"\n>>> BiocInstaller::biocinstallRepos()\n>>   ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?    BioCsoft\n>>   ? ? ? ? ? ? ? ? ? ?    \"http://bioconductor.org/packages/2.10/bioc\"\n>>   ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?    CRAN\n>>   ? ? ? ? ? ? ? ? ? ? ? ? ?   \"http://watson.nci.nih.gov/cran_mirror\"\n>>   ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?   BioCann\n>> \"http://watson.nci.nih.gov/bioc_mirror/packages/2.9/data/annotation\"\n>>   ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?   BioCexp\n>>   ? ? ? ? ?   \"http://bioconductor.org/packages/2.10/data/experiment\"\n>>   ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?   BioCextra\n>>   ? ? ? ? ? ? ? ? ? ?   \"http://bioconductor.org/packages/2.10/extra\"\n>>> sessionInfo()\n>> R version 2.15.0 Under development (unstable) (--)\n>> Platform: x86_64-unknown-linux-gnu (64-bit)\n>>\n>> locale:\n>>   [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C\n>>   [3] LC_TIME=en_US.UTF-8        LC_COLLATE=C\n>>   [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8\n>>   [7] LC_PAPER=C   ? ? ? ? ? ?   LC_NAME=C\n>>   [9] LC_ADDRESS=C   ? ? ? ? ?   LC_TELEPHONE=C\n>> [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C\n>>\n>> attached base packages:\n>> [1] stats     graphics  grDevices utils     datasets  methods   base\n>>\n>> other attached packages:\n>> [1] BiocInstaller_1.3.1\n>>\n>> loaded via a namespace (and not attached):\n>> [1] tools_2.15.0\n>>\n>> _______________________________________________\n>> Bioc-devel at r-project.org mailing list\n>> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n>\n>\n> --\n> Hervé Pagès\n>\n> Program in Computational Biology\n> Division of Public Health Sciences\n> Fred Hutchinson Cancer Research Center\n> 1100 Fairview Ave. N, M1-B514\n> P.O. Box 19024\n> Seattle, WA 98109-1024\n>\n> E-mail: hpages at fhcrc.org\n> Phone:  (206) 667-5791\n> Fax:    (206) 667-1319\n>",
+      "body_snippet": "Thanks, Hervé.\n\nSean\n\n2011/11/2 Hervé Pagès <hpages at fhcrc.org>:\n> Hi Sean,\n>\n> This is addressed in BiocInstaller 1.3.2.\n>\n> Cheers,\n> H.\n>\n>\n> On 11-11-02 11:31 AM, Sean Davis wrote:\n>> Hi, all.\n>",
       "thread_id": "thread-cfa7820c17c7",
       "thread_depth": 2,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002948.html"
     },
     {
       "id": "msg-a6bb5f961af5",
@@ -345,7 +363,8 @@
       "body_snippet": "On Wed, Nov 2, 2011 at 9:40 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n> Hi Henrik,\n>\n> On Wed, Nov 2, 2011 at 8:48 AM, Henrik Bengtsson <hb at biostat.ucsf.edu> wrote:\n>> FYI,\n>>\n>> http://bioc",
       "thread_id": "thread-596c1012e5db",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002949.html"
     },
     {
       "id": "msg-77279202415b",
@@ -362,6 +381,7 @@
       "thread_id": "thread-77279202415b",
       "thread_depth": 0,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002950.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111102/e80975d3/attachment.pl"
       ]
@@ -378,11 +398,12 @@
       "references": [
         "<CAOQ5NyeeJ=en+ZrGRYC09hmRN-prWvkVCuAks41uioiFTNGk8g@mail.gmail.com>"
       ],
-      "body_plain": "Hi Michael,\n\nOn 11-11-02 08:58 PM, Michael Lawrence wrote:\n> What are the precise meanings of the tokens in the TxDb package names. In\n> particular, is \"UCSC\" the genome provider or the annotation provider? In\n> the official packages, those are one in the same, but if someone wanted to\n> make a package for custom annotations on a UCSC genome?\n\nThe pkg name is generated automatically by internal helper function\nGenomicFeatures:::.makePackageName(). This function extracts all the\ntokens from the txdb's metadata table. It looks like the 3rd token\nin the pkg name is extracted from the 'Data source' field and can only\nbe \"UCSC\" or \"BioMart\", typically indicating whether the txdb was made\nwith makeTranscriptDbFromUCSC() or makeTranscriptDbFromBiomart().\nThe first function downloads annotations from the UCSC genome\nbrowser using rtracklayer. The 2nd one downloads them with biomaRt\nfrom whatever mart/dataset was specified.\n\nFor your custom annotations, the final name of the pkg will depend on\nwhat GenomicFeatures:::.makePackageName() finds in the metadata\ntable of your txdb, but, if 'Data source' is not \"UCSC\" or \"BioMart\",\nit seems that GenomicFeatures:::.makePackageName() will fail (and not\nin a very informative way I'm afraid). If I understand correctly, you\nare making your custom txdb object with a call to makeTranscriptDb()?\nIf that's the case, make sure you provide enough information\nthru its 'metadata' argument. Maybe you could set 'Data source' to\n\"UCSC\" and use some kind of custom name for the table (which in your\ncase is probably not a real UCSC \"table\"). This custom name will become\nthe last token in the package name. So you would end up with something\nlike:\n\n   TxDb.Hsapiens.UCSC.hg19.GenentechGenes\n\nThis solution would have the advantage of having\nGenomicFeatures:::.makePackageName() work out-of-the-box.\nBut maybe it's confusing because it suggests that\nthe txdb was made with makeTranscriptDbFromUCSC()? I hope\nit's not.\n\nH.\n\n>\n> Thanks,\n> Michael\n>\n> \t[[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi Michael,\n\nOn 11-11-02 08:58 PM, Michael Lawrence wrote:\n> What are the precise meanings of the tokens in the TxDb package names. In\n> particular, is \"UCSC\" the genome provider or the annotation provider? In\n> the official packages, those are one in the same, but if someone wanted to\n> make a package for custom annotations on a UCSC genome?\n\nThe pkg name is generated automatically by internal helper function\nGenomicFeatures:::.makePackageName(). This function extracts all the\ntokens from the txdb's metadata table. It looks like the 3rd token\nin the pkg name is extracted from the 'Data source' field and can only\nbe \"UCSC\" or \"BioMart\", typically indicating whether the txdb was made\nwith makeTranscriptDbFromUCSC() or makeTranscriptDbFromBiomart().\nThe first function downloads annotations from the UCSC genome\nbrowser using rtracklayer. The 2nd one downloads them with biomaRt\nfrom whatever mart/dataset was specified.\n\nFor your custom annotations, the final name of the pkg will depend on\nwhat GenomicFeatures:::.makePackageName() finds in the metadata\ntable of your txdb, but, if 'Data source' is not \"UCSC\" or \"BioMart\",\nit seems that GenomicFeatures:::.makePackageName() will fail (and not\nin a very informative way I'm afraid). If I understand correctly, you\nare making your custom txdb object with a call to makeTranscriptDb()?\nIf that's the case, make sure you provide enough information\nthru its 'metadata' argument. Maybe you could set 'Data source' to\n\"UCSC\" and use some kind of custom name for the table (which in your\ncase is probably not a real UCSC \"table\"). This custom name will become\nthe last token in the package name. So you would end up with something\nlike:\n\n   TxDb.Hsapiens.UCSC.hg19.GenentechGenes\n\nThis solution would have the advantage of having\nGenomicFeatures:::.makePackageName() work out-of-the-box.\nBut maybe it's confusing because it suggests that\nthe txdb was made with makeTranscriptDbFromUCSC()? I hope\nit's not.\n\nH.\n\n>\n> Thanks,\n> Michael\n>\n> \t[[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi Michael,\n\nOn 11-11-02 08:58 PM, Michael Lawrence wrote:\n> What are the precise meanings of the tokens in the TxDb package names. In\n> particular, is \"UCSC\" the genome provider or the annotation pro",
       "thread_id": "thread-77279202415b",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002951.html"
     },
     {
       "id": "msg-2dec0657dfa4",
@@ -398,11 +419,12 @@
         "<4EB1BDCE.4020206@fhcrc.org>",
         "<4EB1E470.1000902@fhcrc.org>"
       ],
-      "body_plain": "On 11-11-02 05:46 PM, Herv? Pag?s wrote:\n> This is done in IRanges 1.13.2. The exposed function is\n> _seqselect_Rle().\n\nActually I should say that the exact name of the exposed function\nis seqselect_Rle (no underscore prefix).\n\nCheers,\nH.",
-      "body_snippet": "On 11-11-02 05:46 PM, Herv? Pag?s wrote:\n> This is done in IRanges 1.13.2. The exposed function is\n> _seqselect_Rle().\n\nActually I should say that the exact name of the exposed function\nis seqselect_R",
+      "body_plain": "On 11-11-02 05:46 PM, Hervé Pagès wrote:\n> This is done in IRanges 1.13.2. The exposed function is\n> _seqselect_Rle().\n\nActually I should say that the exact name of the exposed function\nis seqselect_Rle (no underscore prefix).\n\nCheers,\nH.",
+      "body_snippet": "On 11-11-02 05:46 PM, Hervé Pagès wrote:\n> This is done in IRanges 1.13.2. The exposed function is\n> _seqselect_Rle().\n\nActually I should say that the exact name of the exposed function\nis seqselect_R",
       "thread_id": "thread-c0a81e90b78d",
       "thread_depth": 2,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002952.html"
     },
     {
       "id": "msg-4aad83163812",
@@ -419,11 +441,12 @@
         "<4EB1E470.1000902@fhcrc.org>",
         "<4EB2DFFB.5020103@fhcrc.org>"
       ],
-      "body_plain": "Hi Herv?,\n\n2011/11/3 Herv? Pag?s <hpages at fhcrc.org>:\n> On 11-11-02 05:46 PM, Herv? Pag?s wrote:\n>>\n>> This is done in IRanges 1.13.2. The exposed function is\n>> _seqselect_Rle().\n>\n> Actually I should say that the exact name of the exposed function\n> is seqselect_Rle (no underscore prefix).\n\nThanks for whipping that together!\n\nI'll see if I can start messing with it in the next few days or so.\n\nCheers,\n-steve\n\n-- \nSteve Lianoglou\nGraduate Student: Computational Systems Biology\n?| Memorial Sloan-Kettering Cancer Center\n?| Weill Medical College of Cornell University\nContact Info: http://cbio.mskcc.org/~lianos/contact",
-      "body_snippet": "Hi Herv?,\n\n2011/11/3 Herv? Pag?s <hpages at fhcrc.org>:\n> On 11-11-02 05:46 PM, Herv? Pag?s wrote:\n>>\n>> This is done in IRanges 1.13.2. The exposed function is\n>> _seqselect_Rle().\n>\n> Actually I sho",
+      "body_plain": "Hi Hervé,\n\n2011/11/3 Hervé Pagès <hpages at fhcrc.org>:\n> On 11-11-02 05:46 PM, Hervé Pagès wrote:\n>>\n>> This is done in IRanges 1.13.2. The exposed function is\n>> _seqselect_Rle().\n>\n> Actually I should say that the exact name of the exposed function\n> is seqselect_Rle (no underscore prefix).\n\nThanks for whipping that together!\n\nI'll see if I can start messing with it in the next few days or so.\n\nCheers,\n-steve\n\n-- \nSteve Lianoglou\nGraduate Student: Computational Systems Biology\n | Memorial Sloan-Kettering Cancer Center\n | Weill Medical College of Cornell University\nContact Info: http://cbio.mskcc.org/~lianos/contact",
+      "body_snippet": "Hi Hervé,\n\n2011/11/3 Hervé Pagès <hpages at fhcrc.org>:\n> On 11-11-02 05:46 PM, Hervé Pagès wrote:\n>>\n>> This is done in IRanges 1.13.2. The exposed function is\n>> _seqselect_Rle().\n>\n> Actually I sho",
       "thread_id": "thread-c0a81e90b78d",
       "thread_depth": 3,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002953.html"
     },
     {
       "id": "msg-089c0468392e",
@@ -443,6 +466,7 @@
       "thread_id": "thread-77279202415b",
       "thread_depth": 2,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002954.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111103/c9b7d672/attachment.pl"
       ]
@@ -461,7 +485,8 @@
       "body_snippet": "Hi,\n\nThe latest release version of the affy package (v.1.32.0) seems to\nhave introduced a bug in the ReadAffy function which prevents it from\nreading data from non-square arrays (e.g. the GeneST array",
       "thread_id": "thread-5973be8adac5",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002955.html"
     },
     {
       "id": "msg-410b9fdf7972",
@@ -477,11 +502,12 @@
         "<4EB2DB1F.6080601@fhcrc.org>",
         "<CAOQ5NyfCwer0AZLH_BA2qCPyqm4_7Vp6SHUzEVZUQVqdPEUTDQ@mail.gmail.com>"
       ],
-      "body_plain": "Hi Michael,\n\nOn 11-11-03 06:36 PM, Michael Lawrence wrote:\n> We're actually using a patched version of makeTranscriptDbFromBiomart to\n> get models out of an internal biomart.  Patch is on its way to Marc.\n>\n> So it would be like: TxDb.Hsapiens.BioMart.hg19.gneGenes?\n\nThis suggests that you have a Mart called \"hg19\" (see below why).\n\n>\n> Seems weird to mix the technical mode of data retrieval into the name.\n\nThe naming scheme when 'Data source' is \"BioMart\" seems to be a little\nbit different. For example, if I use makeTranscriptDbFromBiomart() with\nbiomart=\"ensembl\" and dataset=\"hsapiens_gene_ensembl\", then I get:\n\n   > GenomicFeatures:::.makePackageName(txdb)\n   [1] \"TxDb.Hsapiens.BioMart.ensembl.GRCh37.p5\"\n\nToken #4 (\"ensembl\") is the name of the Mart. I'm a little bit\nsurprised with token #5 though. I would have expected it to be\nthe ensembl version (eventually followed by the reference genome)\nbecause one can always infer the reference genome from the ensembl\nversion but not the other way around. In other words, if Ensembl\nmakes 2 or more releases based on the same reference genome, our\ncurrent naming scheme won't differentiate the 2 TxDb packages.\nWouldn't it be better if we had something like:\n\n   TxDb.Hsapiens.BioMart.ensembl.63\n   TxDb.Hsapiens.BioMart.ensembl.64\n\nAnyway, back to your problem. Yes in your case the technical mode\ndoesn't really matter so it's really up to you. Maybe being explicit\nabout the reference genome (with *.UCSC.hg19.*) is more important\nthan the technical mode?\n\nH.\n\n>\n> Michael\n>\n> 2011/11/3 Herv? Pag?s <hpages at fhcrc.org <mailto:hpages at fhcrc.org>>\n>\n>     Hi Michael,\n>\n>\n>     On 11-11-02 08:58 PM, Michael Lawrence wrote:\n>\n>         What are the precise meanings of the tokens in the TxDb package\n>         names. In\n>         particular, is \"UCSC\" the genome provider or the annotation\n>         provider? In\n>         the official packages, those are one in the same, but if someone\n>         wanted to\n>         make a package for custom annotations on a UCSC genome?\n>\n>\n>     The pkg name is generated automatically by internal helper function\n>     GenomicFeatures:::.__makePackageName(). This function extracts all the\n>     tokens from the txdb's metadata table. It looks like the 3rd token\n>     in the pkg name is extracted from the 'Data source' field and can only\n>     be \"UCSC\" or \"BioMart\", typically indicating whether the txdb was made\n>     with makeTranscriptDbFromUCSC() or makeTranscriptDbFromBiomart().\n>     The first function downloads annotations from the UCSC genome\n>     browser using rtracklayer. The 2nd one downloads them with biomaRt\n>     from whatever mart/dataset was specified.\n>\n>     For your custom annotations, the final name of the pkg will depend on\n>     what GenomicFeatures:::.__makePackageName() finds in the metadata\n>     table of your txdb, but, if 'Data source' is not \"UCSC\" or \"BioMart\",\n>     it seems that GenomicFeatures:::.__makePackageName() will fail (and not\n>     in a very informative way I'm afraid). If I understand correctly, you\n>     are making your custom txdb object with a call to makeTranscriptDb()?\n>     If that's the case, make sure you provide enough information\n>     thru its 'metadata' argument. Maybe you could set 'Data source' to\n>     \"UCSC\" and use some kind of custom name for the table (which in your\n>     case is probably not a real UCSC \"table\"). This custom name will become\n>     the last token in the package name. So you would end up with something\n>     like:\n>\n>       TxDb.Hsapiens.UCSC.hg19.__GenentechGenes\n>\n>     This solution would have the advantage of having\n>     GenomicFeatures:::.__makePackageName() work out-of-the-box.\n>     But maybe it's confusing because it suggests that\n>     the txdb was made with makeTranscriptDbFromUCSC()? I hope\n>     it's not.\n>\n>     H.\n>\n>\n>         Thanks,\n>         Michael\n>\n>                 [[alternative HTML version deleted]]\n>\n>         _________________________________________________\n>         Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>\n>         mailing list\n>         https://stat.ethz.ch/mailman/__listinfo/bioc-devel\n>         <https://stat.ethz.ch/mailman/listinfo/bioc-devel>\n>\n>\n>\n>     --\n>     Herv? Pag?s\n>\n>     Program in Computational Biology\n>     Division of Public Health Sciences\n>     Fred Hutchinson Cancer Research Center\n>     1100 Fairview Ave. N, M1-B514\n>     P.O. Box 19024\n>     Seattle, WA 98109-1024\n>\n>     E-mail: hpages at fhcrc.org <mailto:hpages at fhcrc.org>\n>     Phone: (206) 667-5791 <tel:%28206%29%20667-5791>\n>     Fax: (206) 667-1319 <tel:%28206%29%20667-1319>\n>\n>\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi Michael,\n\nOn 11-11-03 06:36 PM, Michael Lawrence wrote:\n> We're actually using a patched version of makeTranscriptDbFromBiomart to\n> get models out of an internal biomart.  Patch is on its way to Marc.\n>\n> So it would be like: TxDb.Hsapiens.BioMart.hg19.gneGenes?\n\nThis suggests that you have a Mart called \"hg19\" (see below why).\n\n>\n> Seems weird to mix the technical mode of data retrieval into the name.\n\nThe naming scheme when 'Data source' is \"BioMart\" seems to be a little\nbit different. For example, if I use makeTranscriptDbFromBiomart() with\nbiomart=\"ensembl\" and dataset=\"hsapiens_gene_ensembl\", then I get:\n\n   > GenomicFeatures:::.makePackageName(txdb)\n   [1] \"TxDb.Hsapiens.BioMart.ensembl.GRCh37.p5\"\n\nToken #4 (\"ensembl\") is the name of the Mart. I'm a little bit\nsurprised with token #5 though. I would have expected it to be\nthe ensembl version (eventually followed by the reference genome)\nbecause one can always infer the reference genome from the ensembl\nversion but not the other way around. In other words, if Ensembl\nmakes 2 or more releases based on the same reference genome, our\ncurrent naming scheme won't differentiate the 2 TxDb packages.\nWouldn't it be better if we had something like:\n\n   TxDb.Hsapiens.BioMart.ensembl.63\n   TxDb.Hsapiens.BioMart.ensembl.64\n\nAnyway, back to your problem. Yes in your case the technical mode\ndoesn't really matter so it's really up to you. Maybe being explicit\nabout the reference genome (with *.UCSC.hg19.*) is more important\nthan the technical mode?\n\nH.\n\n>\n> Michael\n>\n> 2011/11/3 Hervé Pagès <hpages at fhcrc.org <mailto:hpages at fhcrc.org>>\n>\n>     Hi Michael,\n>\n>\n>     On 11-11-02 08:58 PM, Michael Lawrence wrote:\n>\n>         What are the precise meanings of the tokens in the TxDb package\n>         names. In\n>         particular, is \"UCSC\" the genome provider or the annotation\n>         provider? In\n>         the official packages, those are one in the same, but if someone\n>         wanted to\n>         make a package for custom annotations on a UCSC genome?\n>\n>\n>     The pkg name is generated automatically by internal helper function\n>     GenomicFeatures:::.__makePackageName(). This function extracts all the\n>     tokens from the txdb's metadata table. It looks like the 3rd token\n>     in the pkg name is extracted from the 'Data source' field and can only\n>     be \"UCSC\" or \"BioMart\", typically indicating whether the txdb was made\n>     with makeTranscriptDbFromUCSC() or makeTranscriptDbFromBiomart().\n>     The first function downloads annotations from the UCSC genome\n>     browser using rtracklayer. The 2nd one downloads them with biomaRt\n>     from whatever mart/dataset was specified.\n>\n>     For your custom annotations, the final name of the pkg will depend on\n>     what GenomicFeatures:::.__makePackageName() finds in the metadata\n>     table of your txdb, but, if 'Data source' is not \"UCSC\" or \"BioMart\",\n>     it seems that GenomicFeatures:::.__makePackageName() will fail (and not\n>     in a very informative way I'm afraid). If I understand correctly, you\n>     are making your custom txdb object with a call to makeTranscriptDb()?\n>     If that's the case, make sure you provide enough information\n>     thru its 'metadata' argument. Maybe you could set 'Data source' to\n>     \"UCSC\" and use some kind of custom name for the table (which in your\n>     case is probably not a real UCSC \"table\"). This custom name will become\n>     the last token in the package name. So you would end up with something\n>     like:\n>\n>       TxDb.Hsapiens.UCSC.hg19.__GenentechGenes\n>\n>     This solution would have the advantage of having\n>     GenomicFeatures:::.__makePackageName() work out-of-the-box.\n>     But maybe it's confusing because it suggests that\n>     the txdb was made with makeTranscriptDbFromUCSC()? I hope\n>     it's not.\n>\n>     H.\n>\n>\n>         Thanks,\n>         Michael\n>\n>                 [[alternative HTML version deleted]]\n>\n>         _________________________________________________\n>         Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>\n>         mailing list\n>         https://stat.ethz.ch/mailman/__listinfo/bioc-devel\n>         <https://stat.ethz.ch/mailman/listinfo/bioc-devel>\n>\n>\n>\n>     --\n>     Hervé Pagès\n>\n>     Program in Computational Biology\n>     Division of Public Health Sciences\n>     Fred Hutchinson Cancer Research Center\n>     1100 Fairview Ave. N, M1-B514\n>     P.O. Box 19024\n>     Seattle, WA 98109-1024\n>\n>     E-mail: hpages at fhcrc.org <mailto:hpages at fhcrc.org>\n>     Phone: (206) 667-5791 <tel:%28206%29%20667-5791>\n>     Fax: (206) 667-1319 <tel:%28206%29%20667-1319>\n>\n>\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi Michael,\n\nOn 11-11-03 06:36 PM, Michael Lawrence wrote:\n> We're actually using a patched version of makeTranscriptDbFromBiomart to\n> get models out of an internal biomart.  Patch is on its way to M",
       "thread_id": "thread-77279202415b",
       "thread_depth": 3,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002956.html"
     },
     {
       "id": "msg-3a8e24395b78",
@@ -497,7 +523,8 @@
       "body_snippet": "Hi all,\n\nIt looks like the `genome` generic function from rtracklayer has moved\nto GenomicRanges in the 2.9 release train, and subsequently lost its\n`...` param.\n\nWould anybody mind if I add the `...`",
       "thread_id": "thread-3a8e24395b78",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002957.html"
     },
     {
       "id": "msg-162319016740",
@@ -511,11 +538,12 @@
       "references": [
         "<CAHA9McMvZZZ+V+f39E_RXxEZ4YcQeA7zDxmcGEuv4EEggjpOqw@mail.gmail.com>"
       ],
-      "body_plain": "Hi Steve,\n\nOn 11-11-04 02:02 PM, Steve Lianoglou wrote:\n> Hi all,\n>\n> It looks like the `genome` generic function from rtracklayer has moved\n> to GenomicRanges in the 2.9 release train, and subsequently lost its\n> `...` param.\n\nI moved it, together with the `genome<-` generic, and dropped the `...`\narg from `genome` because (1) I couldn't find any method in BioC\nthat uses this arg, (2) `genome` (getter) and `genome<-` (setter)\nare aimed to be accessors and it's unusual to have `...` in an\naccessor, (3) it was a little bit ackward to have `...` in the getter\nbut not in the setter.\n\n>\n> Would anybody mind if I add the `...` back to the genome function now\n> defined in GenomicRanges? I'll be careful to update the setMethods\n> where appropriate in GenomicRanges, but I guess other packages will\n> also need to update (rtracklayer) that I can't commit to.\n\nIn devel? Sure. It's a perfect time to break things ;-) I'm not so sure\nabout release though. What other people think?\n\n>\n> I was `importFrom(rtracklayer, genome)`-ing the genome function in one\n> of my packages ... switching it to importFrom GenomicRanges isn't a\n> problem, but I use the `...`\n>\n> (here's another post that touches on the \"need\" for a centralized\n> BiocGenerics (or whatever) package that pops up from time to time).\n\nNot every generic is going to make it to BiocGenerics. Also a generic\nfunction is not just a name, there are also some expectations about what\nkind of operation its methods should do.\n\nCheers,\nH.\n\n>\n> Thanks,\n> -steve\n>\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi Steve,\n\nOn 11-11-04 02:02 PM, Steve Lianoglou wrote:\n> Hi all,\n>\n> It looks like the `genome` generic function from rtracklayer has moved\n> to GenomicRanges in the 2.9 release train, and subsequently lost its\n> `...` param.\n\nI moved it, together with the `genome<-` generic, and dropped the `...`\narg from `genome` because (1) I couldn't find any method in BioC\nthat uses this arg, (2) `genome` (getter) and `genome<-` (setter)\nare aimed to be accessors and it's unusual to have `...` in an\naccessor, (3) it was a little bit ackward to have `...` in the getter\nbut not in the setter.\n\n>\n> Would anybody mind if I add the `...` back to the genome function now\n> defined in GenomicRanges? I'll be careful to update the setMethods\n> where appropriate in GenomicRanges, but I guess other packages will\n> also need to update (rtracklayer) that I can't commit to.\n\nIn devel? Sure. It's a perfect time to break things ;-) I'm not so sure\nabout release though. What other people think?\n\n>\n> I was `importFrom(rtracklayer, genome)`-ing the genome function in one\n> of my packages ... switching it to importFrom GenomicRanges isn't a\n> problem, but I use the `...`\n>\n> (here's another post that touches on the \"need\" for a centralized\n> BiocGenerics (or whatever) package that pops up from time to time).\n\nNot every generic is going to make it to BiocGenerics. Also a generic\nfunction is not just a name, there are also some expectations about what\nkind of operation its methods should do.\n\nCheers,\nH.\n\n>\n> Thanks,\n> -steve\n>\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi Steve,\n\nOn 11-11-04 02:02 PM, Steve Lianoglou wrote:\n> Hi all,\n>\n> It looks like the `genome` generic function from rtracklayer has moved\n> to GenomicRanges in the 2.9 release train, and subsequent",
       "thread_id": "thread-3a8e24395b78",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002958.html"
     },
     {
       "id": "msg-9b171f481c64",
@@ -537,6 +565,7 @@
       "thread_id": "thread-77279202415b",
       "thread_depth": 4,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002959.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111104/1f35b844/attachment.pl"
       ]
@@ -559,6 +588,7 @@
       "thread_id": "thread-3a8e24395b78",
       "thread_depth": 2,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002960.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111104/d2bf57db/attachment.pl"
       ]
@@ -577,11 +607,12 @@
         "<4EB4735E.1050102@fhcrc.org>",
         "<CAOQ5NydQCiQyL_JMC-0WOPrL4qdhPkGViKfghZvsDsaZM0DAKw@mail.gmail.com>"
       ],
-      "body_plain": "Hi Herve & Michael:\n\n2011/11/4 Michael Lawrence <lawrence.michael at gene.com>:\n>\n>\n> 2011/11/4 Herv? Pag?s <hpages at fhcrc.org>\n>>\n>> Hi Steve,\n>>\n>> On 11-11-04 02:02 PM, Steve Lianoglou wrote:\n>>>\n>>> Hi all,\n>>>\n>>> It looks like the `genome` generic function from rtracklayer has moved\n>>> to GenomicRanges in the 2.9 release train, and subsequently lost its\n>>> `...` param.\n>>\n>> I moved it, together with the `genome<-` generic, and dropped the `...`\n>> arg from `genome` because (1) I couldn't find any method in BioC\n>> that uses this arg, (2) `genome` (getter) and `genome<-` (setter)\n>> are aimed to be accessors and it's unusual to have `...` in an\n>> accessor, (3) it was a little bit ackward to have `...` in the getter\n>> but not in the setter.\n\nI guess we share different opinions of what \"awkward\" means :-)\n\nGoing backwards: is it possible to have `...` in a setter anyway? I\nmean, I guess I don't see where `...` would go in:\n\nsomething(object) <- 'something'\n\nthough I do see `...` in the def for `setReplaceMethod` ... hmm.\n\nanyway, with respect to (1) I'd argue that it's better err on the side\nof things that \"might be\" (even if they don't yet exist in the\nbioc-universe). Especially with functions as \"generic\" (excuse the\noverloaded term -- here I mean non-specificly named) as a function\nnamed \"genome\" (vs. \"exonsByOverlaps\") ... not that I'm arguing\nanything, it seems like you're open to adding it back in to devel\n(which is fine by me).\n\n>>> Would anybody mind if I add the `...` back to the genome function now\n>>> defined in GenomicRanges? I'll be careful to update the setMethods\n>>> where appropriate in GenomicRanges, but I guess other packages will\n>>> also need to update (rtracklayer) that I can't commit to.\n>>\n>> In devel? Sure. It's a perfect time to break things ;-) I'm not so sure\n>> about release though. What other people think?\n\nI'm fine w/ only adding it to devel if that's ok w/ everyone.\n\nAnd Michael:\n\n> Do we really need to modify every method? I think changing the generic is\n> all that is really necessary.\n\nI wasn't sure if packages would pass checks if the generic defines a\nfunction to take `...` but a setMethod() didn't include the `...` If\nit's not necessary, then I wouldn't suggest modifying every method, I\nwas just anticipating the worst.\n\n>>> I was `importFrom(rtracklayer, genome)`-ing the genome function in one\n>>> of my packages ... switching it to importFrom GenomicRanges isn't a\n>>> problem, but I use the `...`\n>>>\n>>> (here's another post that touches on the \"need\" for a centralized\n>>> BiocGenerics (or whatever) package that pops up from time to time).\n>>\n>> Not every generic is going to make it to BiocGenerics. Also a generic\n>> function is not just a name, there are also some expectations about what\n>> kind of operation its methods should do.\n\nI see ... not sure what exactly you mean by that, but perhaps I missed\na relevant thread discussing the expectations of a generics\noperations?\n\n-steve\n\n-- \nSteve Lianoglou\nGraduate Student: Computational Systems Biology\n?| Memorial Sloan-Kettering Cancer Center\n?| Weill Medical College of Cornell University\nContact Info: http://cbio.mskcc.org/~lianos/contact",
-      "body_snippet": "Hi Herve & Michael:\n\n2011/11/4 Michael Lawrence <lawrence.michael at gene.com>:\n>\n>\n> 2011/11/4 Herv? Pag?s <hpages at fhcrc.org>\n>>\n>> Hi Steve,\n>>\n>> On 11-11-04 02:02 PM, Steve Lianoglou wrote:\n>>>",
+      "body_plain": "Hi Herve & Michael:\n\n2011/11/4 Michael Lawrence <lawrence.michael at gene.com>:\n>\n>\n> 2011/11/4 Hervé Pagès <hpages at fhcrc.org>\n>>\n>> Hi Steve,\n>>\n>> On 11-11-04 02:02 PM, Steve Lianoglou wrote:\n>>>\n>>> Hi all,\n>>>\n>>> It looks like the `genome` generic function from rtracklayer has moved\n>>> to GenomicRanges in the 2.9 release train, and subsequently lost its\n>>> `...` param.\n>>\n>> I moved it, together with the `genome<-` generic, and dropped the `...`\n>> arg from `genome` because (1) I couldn't find any method in BioC\n>> that uses this arg, (2) `genome` (getter) and `genome<-` (setter)\n>> are aimed to be accessors and it's unusual to have `...` in an\n>> accessor, (3) it was a little bit ackward to have `...` in the getter\n>> but not in the setter.\n\nI guess we share different opinions of what \"awkward\" means :-)\n\nGoing backwards: is it possible to have `...` in a setter anyway? I\nmean, I guess I don't see where `...` would go in:\n\nsomething(object) <- 'something'\n\nthough I do see `...` in the def for `setReplaceMethod` ... hmm.\n\nanyway, with respect to (1) I'd argue that it's better err on the side\nof things that \"might be\" (even if they don't yet exist in the\nbioc-universe). Especially with functions as \"generic\" (excuse the\noverloaded term -- here I mean non-specificly named) as a function\nnamed \"genome\" (vs. \"exonsByOverlaps\") ... not that I'm arguing\nanything, it seems like you're open to adding it back in to devel\n(which is fine by me).\n\n>>> Would anybody mind if I add the `...` back to the genome function now\n>>> defined in GenomicRanges? I'll be careful to update the setMethods\n>>> where appropriate in GenomicRanges, but I guess other packages will\n>>> also need to update (rtracklayer) that I can't commit to.\n>>\n>> In devel? Sure. It's a perfect time to break things ;-) I'm not so sure\n>> about release though. What other people think?\n\nI'm fine w/ only adding it to devel if that's ok w/ everyone.\n\nAnd Michael:\n\n> Do we really need to modify every method? I think changing the generic is\n> all that is really necessary.\n\nI wasn't sure if packages would pass checks if the generic defines a\nfunction to take `...` but a setMethod() didn't include the `...` If\nit's not necessary, then I wouldn't suggest modifying every method, I\nwas just anticipating the worst.\n\n>>> I was `importFrom(rtracklayer, genome)`-ing the genome function in one\n>>> of my packages ... switching it to importFrom GenomicRanges isn't a\n>>> problem, but I use the `...`\n>>>\n>>> (here's another post that touches on the \"need\" for a centralized\n>>> BiocGenerics (or whatever) package that pops up from time to time).\n>>\n>> Not every generic is going to make it to BiocGenerics. Also a generic\n>> function is not just a name, there are also some expectations about what\n>> kind of operation its methods should do.\n\nI see ... not sure what exactly you mean by that, but perhaps I missed\na relevant thread discussing the expectations of a generics\noperations?\n\n-steve\n\n-- \nSteve Lianoglou\nGraduate Student: Computational Systems Biology\n | Memorial Sloan-Kettering Cancer Center\n | Weill Medical College of Cornell University\nContact Info: http://cbio.mskcc.org/~lianos/contact",
+      "body_snippet": "Hi Herve & Michael:\n\n2011/11/4 Michael Lawrence <lawrence.michael at gene.com>:\n>\n>\n> 2011/11/4 Hervé Pagès <hpages at fhcrc.org>\n>>\n>> Hi Steve,\n>>\n>> On 11-11-04 02:02 PM, Steve Lianoglou wrote:\n>>>",
       "thread_id": "thread-3a8e24395b78",
       "thread_depth": 3,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002961.html"
     },
     {
       "id": "msg-c9ed11d2b849",
@@ -598,11 +629,12 @@
         "<CAOQ5NydQCiQyL_JMC-0WOPrL4qdhPkGViKfghZvsDsaZM0DAKw@mail.gmail.com>",
         "<CAHA9McPRpPB2D7SuDUBcNnW6YozCyEgrb_aR+4MGcQviMjWFDw@mail.gmail.com>"
       ],
-      "body_plain": "Hi Steve,\n\nOn 11-11-06 08:34 PM, Steve Lianoglou wrote:\n> Hi Herve&  Michael:\n>\n> 2011/11/4 Michael Lawrence<lawrence.michael at gene.com>:\n>>\n>>\n>> 2011/11/4 Herv? Pag?s<hpages at fhcrc.org>\n>>>\n>>> Hi Steve,\n>>>\n>>> On 11-11-04 02:02 PM, Steve Lianoglou wrote:\n>>>>\n>>>> Hi all,\n>>>>\n>>>> It looks like the `genome` generic function from rtracklayer has moved\n>>>> to GenomicRanges in the 2.9 release train, and subsequently lost its\n>>>> `...` param.\n>>>\n>>> I moved it, together with the `genome<-` generic, and dropped the `...`\n>>> arg from `genome` because (1) I couldn't find any method in BioC\n>>> that uses this arg, (2) `genome` (getter) and `genome<-` (setter)\n>>> are aimed to be accessors and it's unusual to have `...` in an\n>>> accessor, (3) it was a little bit ackward to have `...` in the getter\n>>> but not in the setter.\n>\n> I guess we share different opinions of what \"awkward\" means :-)\n>\n> Going backwards: is it possible to have `...` in a setter anyway? I\n> mean, I guess I don't see where `...` would go in:\n>\n> something(object)<- 'something'\n\nsomething(object, ...)<- 'something'\n\n>\n> though I do see `...` in the def for `setReplaceMethod` ... hmm.\n>\n> anyway, with respect to (1) I'd argue that it's better err on the side\n> of things that \"might be\" (even if they don't yet exist in the\n> bioc-universe). Especially with functions as \"generic\" (excuse the\n> overloaded term -- here I mean non-specificly named) as a function\n> named \"genome\" (vs. \"exonsByOverlaps\") ... not that I'm arguing\n> anything, it seems like you're open to adding it back in to devel\n> (which is fine by me).\n>\n>>>> Would anybody mind if I add the `...` back to the genome function now\n>>>> defined in GenomicRanges? I'll be careful to update the setMethods\n>>>> where appropriate in GenomicRanges, but I guess other packages will\n>>>> also need to update (rtracklayer) that I can't commit to.\n>>>\n>>> In devel? Sure. It's a perfect time to break things ;-) I'm not so sure\n>>> about release though. What other people think?\n>\n> I'm fine w/ only adding it to devel if that's ok w/ everyone.\n>\n> And Michael:\n>\n>> Do we really need to modify every method? I think changing the generic is\n>> all that is really necessary.\n>\n> I wasn't sure if packages would pass checks if the generic defines a\n> function to take `...` but a setMethod() didn't include the `...` If\n> it's not necessary, then I wouldn't suggest modifying every method, I\n> was just anticipating the worst.\n\nPlease test this. If that's the case that adding `...` to the generic\nonly doesn't break the methods and doesn't generate 'R CMD check'\nwarnings then I guess it's OK to do the change to release too.\n\n>\n>>>> I was `importFrom(rtracklayer, genome)`-ing the genome function in one\n>>>> of my packages ... switching it to importFrom GenomicRanges isn't a\n>>>> problem, but I use the `...`\n>>>>\n>>>> (here's another post that touches on the \"need\" for a centralized\n>>>> BiocGenerics (or whatever) package that pops up from time to time).\n>>>\n>>> Not every generic is going to make it to BiocGenerics. Also a generic\n>>> function is not just a name, there are also some expectations about what\n>>> kind of operation its methods should do.\n>\n> I see ... not sure what exactly you mean by that, but perhaps I missed\n> a relevant thread discussing the expectations of a generics\n> operations?\n\nI'm just saying that it's probably not a good enough reason to re-use\na name in your code just because it's a pretty name. The method you\ndefine for an existing generic should also implement the kind of\noperation conceptually associated with the generic (and this concept\nshould be described in the man page of the generic). If it's going\nto do something different then it's better to use another name.\nI'm not saying you should give up the \"genome\" name, I don't know\nwhat it does.\n\nCheers,\nH.\n\n>\n> -steve\n>\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
-      "body_snippet": "Hi Steve,\n\nOn 11-11-06 08:34 PM, Steve Lianoglou wrote:\n> Hi Herve&  Michael:\n>\n> 2011/11/4 Michael Lawrence<lawrence.michael at gene.com>:\n>>\n>>\n>> 2011/11/4 Herv? Pag?s<hpages at fhcrc.org>\n>>>\n>>> ",
+      "body_plain": "Hi Steve,\n\nOn 11-11-06 08:34 PM, Steve Lianoglou wrote:\n> Hi Herve&  Michael:\n>\n> 2011/11/4 Michael Lawrence<lawrence.michael at gene.com>:\n>>\n>>\n>> 2011/11/4 Hervé Pagès<hpages at fhcrc.org>\n>>>\n>>> Hi Steve,\n>>>\n>>> On 11-11-04 02:02 PM, Steve Lianoglou wrote:\n>>>>\n>>>> Hi all,\n>>>>\n>>>> It looks like the `genome` generic function from rtracklayer has moved\n>>>> to GenomicRanges in the 2.9 release train, and subsequently lost its\n>>>> `...` param.\n>>>\n>>> I moved it, together with the `genome<-` generic, and dropped the `...`\n>>> arg from `genome` because (1) I couldn't find any method in BioC\n>>> that uses this arg, (2) `genome` (getter) and `genome<-` (setter)\n>>> are aimed to be accessors and it's unusual to have `...` in an\n>>> accessor, (3) it was a little bit ackward to have `...` in the getter\n>>> but not in the setter.\n>\n> I guess we share different opinions of what \"awkward\" means :-)\n>\n> Going backwards: is it possible to have `...` in a setter anyway? I\n> mean, I guess I don't see where `...` would go in:\n>\n> something(object)<- 'something'\n\nsomething(object, ...)<- 'something'\n\n>\n> though I do see `...` in the def for `setReplaceMethod` ... hmm.\n>\n> anyway, with respect to (1) I'd argue that it's better err on the side\n> of things that \"might be\" (even if they don't yet exist in the\n> bioc-universe). Especially with functions as \"generic\" (excuse the\n> overloaded term -- here I mean non-specificly named) as a function\n> named \"genome\" (vs. \"exonsByOverlaps\") ... not that I'm arguing\n> anything, it seems like you're open to adding it back in to devel\n> (which is fine by me).\n>\n>>>> Would anybody mind if I add the `...` back to the genome function now\n>>>> defined in GenomicRanges? I'll be careful to update the setMethods\n>>>> where appropriate in GenomicRanges, but I guess other packages will\n>>>> also need to update (rtracklayer) that I can't commit to.\n>>>\n>>> In devel? Sure. It's a perfect time to break things ;-) I'm not so sure\n>>> about release though. What other people think?\n>\n> I'm fine w/ only adding it to devel if that's ok w/ everyone.\n>\n> And Michael:\n>\n>> Do we really need to modify every method? I think changing the generic is\n>> all that is really necessary.\n>\n> I wasn't sure if packages would pass checks if the generic defines a\n> function to take `...` but a setMethod() didn't include the `...` If\n> it's not necessary, then I wouldn't suggest modifying every method, I\n> was just anticipating the worst.\n\nPlease test this. If that's the case that adding `...` to the generic\nonly doesn't break the methods and doesn't generate 'R CMD check'\nwarnings then I guess it's OK to do the change to release too.\n\n>\n>>>> I was `importFrom(rtracklayer, genome)`-ing the genome function in one\n>>>> of my packages ... switching it to importFrom GenomicRanges isn't a\n>>>> problem, but I use the `...`\n>>>>\n>>>> (here's another post that touches on the \"need\" for a centralized\n>>>> BiocGenerics (or whatever) package that pops up from time to time).\n>>>\n>>> Not every generic is going to make it to BiocGenerics. Also a generic\n>>> function is not just a name, there are also some expectations about what\n>>> kind of operation its methods should do.\n>\n> I see ... not sure what exactly you mean by that, but perhaps I missed\n> a relevant thread discussing the expectations of a generics\n> operations?\n\nI'm just saying that it's probably not a good enough reason to re-use\na name in your code just because it's a pretty name. The method you\ndefine for an existing generic should also implement the kind of\noperation conceptually associated with the generic (and this concept\nshould be described in the man page of the generic). If it's going\nto do something different then it's better to use another name.\nI'm not saying you should give up the \"genome\" name, I don't know\nwhat it does.\n\nCheers,\nH.\n\n>\n> -steve\n>\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_snippet": "Hi Steve,\n\nOn 11-11-06 08:34 PM, Steve Lianoglou wrote:\n> Hi Herve&  Michael:\n>\n> 2011/11/4 Michael Lawrence<lawrence.michael at gene.com>:\n>>\n>>\n>> 2011/11/4 Hervé Pagès<hpages at fhcrc.org>\n>>>\n>>> ",
       "thread_id": "thread-3a8e24395b78",
       "thread_depth": 4,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002962.html"
     },
     {
       "id": "msg-3c9458cdb769",
@@ -620,11 +652,12 @@
         "<4EB422D3.7050504@fhcrc.org>",
         "<CAOQ5NydJ+XSUhGzu4gqTG19oYuAwHjG+qJU40iF9ZGRpAzkVYw@mail.gmail.com>"
       ],
-      "body_plain": "On 11-11-04 08:28 PM, Michael Lawrence wrote:\n> Right, there are two things that need to be described: the annotation\n> track and the reference genome. The annotation track, if given a\n> provider, version and name, always (well at least in my experience)\n> implies a particular genome provider/version.\n>\n> So:\n>\n> TxDb.Hsapiens.myMart.64.ccds\n>\n> Might work?\n\nIt probably does.\n\nH.\n\n>\n> 2011/11/4 Herv? Pag?s <hpages at fhcrc.org <mailto:hpages at fhcrc.org>>\n>\n>     Hi Michael,\n>\n>\n>     On 11-11-03 06:36 PM, Michael Lawrence wrote:\n>\n>         We're actually using a patched version of\n>         makeTranscriptDbFromBiomart to\n>         get models out of an internal biomart.  Patch is on its way to Marc.\n>\n>         So it would be like: TxDb.Hsapiens.BioMart.hg19.__gneGenes?\n>\n>\n>     This suggests that you have a Mart called \"hg19\" (see below why).\n>\n>\n>\n>         Seems weird to mix the technical mode of data retrieval into the\n>         name.\n>\n>\n>     The naming scheme when 'Data source' is \"BioMart\" seems to be a little\n>     bit different. For example, if I use makeTranscriptDbFromBiomart() with\n>     biomart=\"ensembl\" and dataset=\"hsapiens_gene___ensembl\", then I get:\n>\n>      > GenomicFeatures:::.__makePackageName(txdb)\n>       [1] \"TxDb.Hsapiens.BioMart.__ensembl.GRCh37.p5\"\n>\n>     Token #4 (\"ensembl\") is the name of the Mart. I'm a little bit\n>     surprised with token #5 though. I would have expected it to be\n>     the ensembl version (eventually followed by the reference genome)\n>     because one can always infer the reference genome from the ensembl\n>     version but not the other way around. In other words, if Ensembl\n>     makes 2 or more releases based on the same reference genome, our\n>     current naming scheme won't differentiate the 2 TxDb packages.\n>     Wouldn't it be better if we had something like:\n>\n>       TxDb.Hsapiens.BioMart.ensembl.__63\n>       TxDb.Hsapiens.BioMart.ensembl.__64\n>\n>     Anyway, back to your problem. Yes in your case the technical mode\n>     doesn't really matter so it's really up to you. Maybe being explicit\n>     about the reference genome (with *.UCSC.hg19.*) is more important\n>     than the technical mode?\n>\n>     H.\n>\n>\n>         Michael\n>\n>         2011/11/3 Herv? Pag?s <hpages at fhcrc.org\n>         <mailto:hpages at fhcrc.org> <mailto:hpages at fhcrc.org\n>         <mailto:hpages at fhcrc.org>>>\n>\n>\n>             Hi Michael,\n>\n>\n>             On 11-11-02 08:58 PM, Michael Lawrence wrote:\n>\n>                 What are the precise meanings of the tokens in the TxDb\n>         package\n>                 names. In\n>                 particular, is \"UCSC\" the genome provider or the annotation\n>                 provider? In\n>                 the official packages, those are one in the same, but if\n>         someone\n>                 wanted to\n>                 make a package for custom annotations on a UCSC genome?\n>\n>\n>             The pkg name is generated automatically by internal helper\n>         function\n>             GenomicFeatures:::.____makePackageName(). This function\n>         extracts all the\n>\n>             tokens from the txdb's metadata table. It looks like the 3rd\n>         token\n>             in the pkg name is extracted from the 'Data source' field\n>         and can only\n>             be \"UCSC\" or \"BioMart\", typically indicating whether the\n>         txdb was made\n>             with makeTranscriptDbFromUCSC() or\n>         makeTranscriptDbFromBiomart().\n>             The first function downloads annotations from the UCSC genome\n>             browser using rtracklayer. The 2nd one downloads them with\n>         biomaRt\n>             from whatever mart/dataset was specified.\n>\n>             For your custom annotations, the final name of the pkg will\n>         depend on\n>             what GenomicFeatures:::.____makePackageName() finds in the\n>         metadata\n>\n>             table of your txdb, but, if 'Data source' is not \"UCSC\" or\n>         \"BioMart\",\n>             it seems that GenomicFeatures:::.____makePackageName() will\n>         fail (and not\n>\n>             in a very informative way I'm afraid). If I understand\n>         correctly, you\n>             are making your custom txdb object with a call to\n>         makeTranscriptDb()?\n>             If that's the case, make sure you provide enough information\n>             thru its 'metadata' argument. Maybe you could set 'Data\n>         source' to\n>         \"UCSC\" and use some kind of custom name for the table (which in your\n>             case is probably not a real UCSC \"table\"). This custom name\n>         will become\n>             the last token in the package name. So you would end up with\n>         something\n>             like:\n>\n>               TxDb.Hsapiens.UCSC.hg19.____GenentechGenes\n>\n>\n>             This solution would have the advantage of having\n>             GenomicFeatures:::.____makePackageName() work out-of-the-box.\n>\n>             But maybe it's confusing because it suggests that\n>             the txdb was made with makeTranscriptDbFromUCSC()? I hope\n>             it's not.\n>\n>             H.\n>\n>\n>                 Thanks,\n>                 Michael\n>\n>                         [[alternative HTML version deleted]]\n>\n>                 ___________________________________________________\n>         Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>\n>         <mailto:Bioc-devel at r-project.__org\n>         <mailto:Bioc-devel at r-project.org>>\n>                 mailing list\n>         https://stat.ethz.ch/mailman/____listinfo/bioc-devel\n>         <https://stat.ethz.ch/mailman/__listinfo/bioc-devel>\n>\n>         <https://stat.ethz.ch/mailman/__listinfo/bioc-devel\n>         <https://stat.ethz.ch/mailman/listinfo/bioc-devel>>\n>\n>\n>\n>             --\n>             Herv? Pag?s\n>\n>             Program in Computational Biology\n>             Division of Public Health Sciences\n>             Fred Hutchinson Cancer Research Center\n>             1100 Fairview Ave. N, M1-B514\n>             P.O. Box 19024\n>             Seattle, WA 98109-1024\n>\n>             E-mail: hpages at fhcrc.org <mailto:hpages at fhcrc.org>\n>         <mailto:hpages at fhcrc.org <mailto:hpages at fhcrc.org>>\n>             Phone: (206) 667-5791 <tel:%28206%29%20667-5791>\n>         <tel:%28206%29%20667-5791>\n>             Fax: (206) 667-1319 <tel:%28206%29%20667-1319>\n>         <tel:%28206%29%20667-1319>\n>\n>\n>\n>\n>     --\n>     Herv? Pag?s\n>\n>     Program in Computational Biology\n>     Division of Public Health Sciences\n>     Fred Hutchinson Cancer Research Center\n>     1100 Fairview Ave. N, M1-B514\n>     P.O. Box 19024\n>     Seattle, WA 98109-1024\n>\n>     E-mail: hpages at fhcrc.org <mailto:hpages at fhcrc.org>\n>     Phone: (206) 667-5791 <tel:%28206%29%20667-5791>\n>     Fax: (206) 667-1319 <tel:%28206%29%20667-1319>\n>\n>\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "On 11-11-04 08:28 PM, Michael Lawrence wrote:\n> Right, there are two things that need to be described: the annotation\n> track and the reference genome. The annotation track, if given a\n> provider, version and name, always (well at least in my experience)\n> implies a particular genome provider/version.\n>\n> So:\n>\n> TxDb.Hsapiens.myMart.64.ccds\n>\n> Might work?\n\nIt probably does.\n\nH.\n\n>\n> 2011/11/4 Hervé Pagès <hpages at fhcrc.org <mailto:hpages at fhcrc.org>>\n>\n>     Hi Michael,\n>\n>\n>     On 11-11-03 06:36 PM, Michael Lawrence wrote:\n>\n>         We're actually using a patched version of\n>         makeTranscriptDbFromBiomart to\n>         get models out of an internal biomart.  Patch is on its way to Marc.\n>\n>         So it would be like: TxDb.Hsapiens.BioMart.hg19.__gneGenes?\n>\n>\n>     This suggests that you have a Mart called \"hg19\" (see below why).\n>\n>\n>\n>         Seems weird to mix the technical mode of data retrieval into the\n>         name.\n>\n>\n>     The naming scheme when 'Data source' is \"BioMart\" seems to be a little\n>     bit different. For example, if I use makeTranscriptDbFromBiomart() with\n>     biomart=\"ensembl\" and dataset=\"hsapiens_gene___ensembl\", then I get:\n>\n>      > GenomicFeatures:::.__makePackageName(txdb)\n>       [1] \"TxDb.Hsapiens.BioMart.__ensembl.GRCh37.p5\"\n>\n>     Token #4 (\"ensembl\") is the name of the Mart. I'm a little bit\n>     surprised with token #5 though. I would have expected it to be\n>     the ensembl version (eventually followed by the reference genome)\n>     because one can always infer the reference genome from the ensembl\n>     version but not the other way around. In other words, if Ensembl\n>     makes 2 or more releases based on the same reference genome, our\n>     current naming scheme won't differentiate the 2 TxDb packages.\n>     Wouldn't it be better if we had something like:\n>\n>       TxDb.Hsapiens.BioMart.ensembl.__63\n>       TxDb.Hsapiens.BioMart.ensembl.__64\n>\n>     Anyway, back to your problem. Yes in your case the technical mode\n>     doesn't really matter so it's really up to you. Maybe being explicit\n>     about the reference genome (with *.UCSC.hg19.*) is more important\n>     than the technical mode?\n>\n>     H.\n>\n>\n>         Michael\n>\n>         2011/11/3 Hervé Pagès <hpages at fhcrc.org\n>         <mailto:hpages at fhcrc.org> <mailto:hpages at fhcrc.org\n>         <mailto:hpages at fhcrc.org>>>\n>\n>\n>             Hi Michael,\n>\n>\n>             On 11-11-02 08:58 PM, Michael Lawrence wrote:\n>\n>                 What are the precise meanings of the tokens in the TxDb\n>         package\n>                 names. In\n>                 particular, is \"UCSC\" the genome provider or the annotation\n>                 provider? In\n>                 the official packages, those are one in the same, but if\n>         someone\n>                 wanted to\n>                 make a package for custom annotations on a UCSC genome?\n>\n>\n>             The pkg name is generated automatically by internal helper\n>         function\n>             GenomicFeatures:::.____makePackageName(). This function\n>         extracts all the\n>\n>             tokens from the txdb's metadata table. It looks like the 3rd\n>         token\n>             in the pkg name is extracted from the 'Data source' field\n>         and can only\n>             be \"UCSC\" or \"BioMart\", typically indicating whether the\n>         txdb was made\n>             with makeTranscriptDbFromUCSC() or\n>         makeTranscriptDbFromBiomart().\n>             The first function downloads annotations from the UCSC genome\n>             browser using rtracklayer. The 2nd one downloads them with\n>         biomaRt\n>             from whatever mart/dataset was specified.\n>\n>             For your custom annotations, the final name of the pkg will\n>         depend on\n>             what GenomicFeatures:::.____makePackageName() finds in the\n>         metadata\n>\n>             table of your txdb, but, if 'Data source' is not \"UCSC\" or\n>         \"BioMart\",\n>             it seems that GenomicFeatures:::.____makePackageName() will\n>         fail (and not\n>\n>             in a very informative way I'm afraid). If I understand\n>         correctly, you\n>             are making your custom txdb object with a call to\n>         makeTranscriptDb()?\n>             If that's the case, make sure you provide enough information\n>             thru its 'metadata' argument. Maybe you could set 'Data\n>         source' to\n>         \"UCSC\" and use some kind of custom name for the table (which in your\n>             case is probably not a real UCSC \"table\"). This custom name\n>         will become\n>             the last token in the package name. So you would end up with\n>         something\n>             like:\n>\n>               TxDb.Hsapiens.UCSC.hg19.____GenentechGenes\n>\n>\n>             This solution would have the advantage of having\n>             GenomicFeatures:::.____makePackageName() work out-of-the-box.\n>\n>             But maybe it's confusing because it suggests that\n>             the txdb was made with makeTranscriptDbFromUCSC()? I hope\n>             it's not.\n>\n>             H.\n>\n>\n>                 Thanks,\n>                 Michael\n>\n>                         [[alternative HTML version deleted]]\n>\n>                 ___________________________________________________\n>         Bioc-devel at r-project.org <mailto:Bioc-devel at r-project.org>\n>         <mailto:Bioc-devel at r-project.__org\n>         <mailto:Bioc-devel at r-project.org>>\n>                 mailing list\n>         https://stat.ethz.ch/mailman/____listinfo/bioc-devel\n>         <https://stat.ethz.ch/mailman/__listinfo/bioc-devel>\n>\n>         <https://stat.ethz.ch/mailman/__listinfo/bioc-devel\n>         <https://stat.ethz.ch/mailman/listinfo/bioc-devel>>\n>\n>\n>\n>             --\n>             Hervé Pagès\n>\n>             Program in Computational Biology\n>             Division of Public Health Sciences\n>             Fred Hutchinson Cancer Research Center\n>             1100 Fairview Ave. N, M1-B514\n>             P.O. Box 19024\n>             Seattle, WA 98109-1024\n>\n>             E-mail: hpages at fhcrc.org <mailto:hpages at fhcrc.org>\n>         <mailto:hpages at fhcrc.org <mailto:hpages at fhcrc.org>>\n>             Phone: (206) 667-5791 <tel:%28206%29%20667-5791>\n>         <tel:%28206%29%20667-5791>\n>             Fax: (206) 667-1319 <tel:%28206%29%20667-1319>\n>         <tel:%28206%29%20667-1319>\n>\n>\n>\n>\n>     --\n>     Hervé Pagès\n>\n>     Program in Computational Biology\n>     Division of Public Health Sciences\n>     Fred Hutchinson Cancer Research Center\n>     1100 Fairview Ave. N, M1-B514\n>     P.O. Box 19024\n>     Seattle, WA 98109-1024\n>\n>     E-mail: hpages at fhcrc.org <mailto:hpages at fhcrc.org>\n>     Phone: (206) 667-5791 <tel:%28206%29%20667-5791>\n>     Fax: (206) 667-1319 <tel:%28206%29%20667-1319>\n>\n>\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "On 11-11-04 08:28 PM, Michael Lawrence wrote:\n> Right, there are two things that need to be described: the annotation\n> track and the reference genome. The annotation track, if given a\n> provider, ver",
       "thread_id": "thread-77279202415b",
       "thread_depth": 5,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002963.html"
     },
     {
       "id": "msg-3831053ced4e",
@@ -640,7 +673,8 @@
       "body_snippet": "Now 2.9 is done, what are the plans for the release schedule in light\nof R switching to 1 year intervals?  Do we keep 6 months or ?  And\nfeel free to ignore this question if there is a lot of internal",
       "thread_id": "thread-3831053ced4e",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002964.html"
     },
     {
       "id": "msg-fe188847bb4d",
@@ -658,7 +692,8 @@
       "body_snippet": "Hi,\n\nit would make sense to stick to the R release schedule, \nbecause R and BioC versions are tightly connected.\n\nOn the other hand, development in BioC is pretty fast,\nand a year-old package might be",
       "thread_id": "thread-3831053ced4e",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002965.html"
     },
     {
       "id": "msg-7d54e477e13b",
@@ -674,7 +709,8 @@
       "body_snippet": "dear core developers at BioC,\n\nas you might have seen in a message at BioC, the package GSVA (which i\ncollaborate maintaining it) requires GSL version >= 1.6, however current\nGSL version is 1.15 (see ",
       "thread_id": "thread-7d54e477e13b",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002966.html"
     },
     {
       "id": "msg-d245c344c241",
@@ -693,7 +729,8 @@
       "body_snippet": "On Nov 7, 2011, at 17:46 , Steffen Neumann wrote:\n\n> On the other hand, development in BioC is pretty fast,\n> and a year-old package might be \"ancient\".\n\nAnother big concern here is introduction of ne",
       "thread_id": "thread-d245c344c241",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002967.html"
     },
     {
       "id": "msg-9289652674b8",
@@ -713,7 +750,8 @@
       "body_snippet": "Hi Bioc Developers --\n\nOur plan is to continue a 6-month release cycle, tying Bioc to point \nreleases in R if possible. As a developer, it's very valuable to have a \n'playground' to introduce improvem",
       "thread_id": "thread-d245c344c241",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002968.html"
     },
     {
       "id": "msg-7f3edae7d6b6",
@@ -729,7 +767,8 @@
       "body_snippet": "Hi,\n\nover at the aroma.affymetrix mailing list, a user (cc:ed) reports that\naffxparser v1.26.1 core dumps when trying to read a CDF file.  I'm\nmoving it to BioC-devel, and asks if others can reproduce",
       "thread_id": "thread-7f3edae7d6b6",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002969.html"
     },
     {
       "id": "msg-348acfb89fd8",
@@ -747,7 +786,8 @@
       "body_snippet": "The file parses fine on my Snow Leopard installation.  However,\neverything (including R) is compiled from source.\n\nKasper\n\n> sessionInfo()\nR version 2.14.0 Patched (2011-11-07 r57600)\nPlatform: x86_64",
       "thread_id": "thread-7f3edae7d6b6",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002970.html"
     },
     {
       "id": "msg-daaadffda49b",
@@ -763,7 +803,8 @@
       "body_snippet": "Dear Bioconductors,\n\nwith the current BioC release, I observed the following error while running biocLite(groupName=\"all\") on MacOS X - Snow Leopard as well as on a Linux\nmachine (x86_64-unknown-linux",
       "thread_id": "thread-daaadffda49b",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002971.html"
     },
     {
       "id": "msg-ae01ad004399",
@@ -782,6 +823,7 @@
       "thread_id": "thread-daaadffda49b",
       "thread_depth": 1,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002972.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111108/cb1eae94/attachment.pl"
       ]
@@ -802,7 +844,8 @@
       "body_snippet": "On Tue, Nov 8, 2011 at 5:14 AM, Christian Kohler\n<christian.kohler at klinik.uni-regensburg.de> wrote:\n> Dear Bioconductors,\n>\n> with the current BioC release, I observed the following error while run",
       "thread_id": "thread-daaadffda49b",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002973.html"
     },
     {
       "id": "msg-dbcdc3cb5516",
@@ -822,6 +865,7 @@
       "thread_id": "thread-daaadffda49b",
       "thread_depth": 2,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002974.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111108/05ac8e2c/attachment.pl"
       ]
@@ -844,7 +888,8 @@
       "body_snippet": "On Tue, Nov 8, 2011 at 3:49 AM, Michael Lawrence\n<lawrence.michael at gene.com> wrote:\n> Would be great if Sean's script could make it into BiocInstaller. The\n> admins here hit the same issue, and I w",
       "thread_id": "thread-daaadffda49b",
       "thread_depth": 3,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002975.html"
     },
     {
       "id": "msg-c778c16f9af7",
@@ -864,7 +909,8 @@
       "body_snippet": "Hi all,\n\n\nOn Tue, Nov 8, 2011 at 3:49 AM, Michael Lawrence\n<lawrence.michael at gene.com> wrote:\n> Would be great if Sean's script could make it into BiocInstaller. The\n> admins here hit the same issu",
       "thread_id": "thread-daaadffda49b",
       "thread_depth": 3,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002976.html"
     },
     {
       "id": "msg-bcdb892484cc",
@@ -885,7 +931,8 @@
       "body_snippet": "On Tue, Nov 8, 2011 at 11:22 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n> On Tue, Nov 8, 2011 at 3:49 AM, Michael Lawrence\n> <lawrence.michael at gene.com> wrote:\n>> Would be great if Sean's scr",
       "thread_id": "thread-daaadffda49b",
       "thread_depth": 4,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002977.html"
     },
     {
       "id": "msg-3a65c2688939",
@@ -903,7 +950,8 @@
       "body_snippet": "Hi Henrik,\n\nOn Mon, Nov 7, 2011 at 2:41 PM, Henrik Bengtsson <hb at biostat.ucsf.edu> wrote:\n> Hi,\n>\n> over at the aroma.affymetrix mailing list, a user (cc:ed) reports that\n> affxparser v1.26.1 core ",
       "thread_id": "thread-3a65c2688939",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002978.html"
     },
     {
       "id": "msg-eff7aa88a71f",
@@ -922,7 +970,8 @@
       "body_snippet": "Reading Dan's error I realize I did something else: he points to the zip archive\n  pathname <- \"~/Downloads/250k_nsp_libraryfile_rev4.zip\"\nwhereas I unzip the archive, and point it directly to the cdf",
       "thread_id": "thread-3a65c2688939",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002979.html"
     },
     {
       "id": "msg-0431cd886eef",
@@ -942,7 +991,8 @@
       "body_snippet": "On Tue, Nov 8, 2011 at 12:21 PM, Kasper Daniel Hansen\n<kasperdanielhansen at gmail.com> wrote:\n> Reading Dan's error I realize I did something else: he points to the zip archive\n> ?pathname <- \"~/Down",
       "thread_id": "thread-3a65c2688939",
       "thread_depth": 2,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002980.html"
     },
     {
       "id": "msg-66f8be54b2f1",
@@ -964,7 +1014,8 @@
       "body_snippet": "On 11/08/2011 07:30 PM, Sean Davis wrote:\n> On Tue, Nov 8, 2011 at 11:22 AM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n>> On Tue, Nov 8, 2011 at 3:49 AM, Michael Lawrence\n>> <lawrence.michael at ge",
       "thread_id": "thread-daaadffda49b",
       "thread_depth": 5,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002981.html"
     },
     {
       "id": "msg-4721c3c38b37",
@@ -982,7 +1033,8 @@
       "body_snippet": "Hi Tim,\n\nOn 11/4/2011 9:04 AM, Tim Rayner wrote:\n> Hi,\n>\n> The latest release version of the affy package (v.1.32.0) seems to\n> have introduced a bug in the ReadAffy function which prevents it from\n> ",
       "thread_id": "thread-5973be8adac5",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002982.html"
     },
     {
       "id": "msg-e6f5c53ef951",
@@ -996,11 +1048,12 @@
       "references": [
         "<1320690620.3865.93.camel@llull.imim.es>"
       ],
-      "body_plain": "Hi Robert,\n\nOn 11-11-07 10:30 AM, Robert Castelo wrote:\n> dear core developers at BioC,\n>\n> as you might have seen in a message at BioC, the package GSVA (which i\n> collaborate maintaining it) requires GSL version>= 1.6, however current\n> GSL version is 1.15 (see http://www.gnu.org/s/gsl) and in fact the\n> original version of the package we submitted required version>= 1.12\n>\n> according to the svn log, the core development of BioC decided to\n> replace the configure.ac file by other one more appropriate for building\n> the package in windows and apple machines, so i guess that this 1.6\n> version requirement change might have been introduced at that point.\n\nYes \"the core development of BioC\" (and in that case it was me) fixed\nthe configure script a couple of days before the release because it was\nnot working properly on our Mac OS X build machine. I must confess I'm\nnot an expert with configure scripts either so what I did was copy\nthe configure.ac file from another package that links to the GSL, and\ndid very minor modifications to it (if you do diff GSVA/configure.ac\nflowClust/configure.ac you'll be surprised how little different those\nfiles are). I forgot to replace >= 1.6 by >= 1.12 though, sorry.\n\n>\n> i must confess i'm not an expert with configure scripts, so i'd like to\n> double check with you whether i could solve this issue by simple\n> replacing all the 1.6 values by 1.12 values.\n\nThat seems to work (I just tested this on my Linux laptop). Don't\nforget to rerun autoconf.\n\n> i currently cannot verify\n> whether that works because in fact the configure script seems to by pass\n> that requirement, but the message pops up when GSL is not available and\n> confuses the user about what GSL should be installed in the system.\n\nThe configure script will fail when GSL is not found on the system OR\nwhen it is found but has an inappropriate version. In the latter case,\nyou'll get something like:\n\nhpages at latitude:~/svn/Rpacks_2_9$ R-2.14 CMD INSTALL GSVA\n* installing to library ?/home/hpages/R-2.14.0/library?\n* installing *source* package ?GSVA? ...\nchecking for pkg-config... /usr/bin/pkg-config\nchecking pkg-config is at least version 0.9.0... yes\nchecking for GSL... no\nchecking for gcc... gcc -std=gnu99\nchecking whether the C compiler works... yes\nchecking for C compiler default output file name... a.out\nchecking for suffix of executables...\nchecking whether we are cross compiling... no\nchecking for suffix of object files... o\nchecking whether we are using the GNU C compiler... yes\nchecking whether gcc -std=gnu99 accepts -g... yes\nchecking for gcc -std=gnu99 option to accept ISO C89... none needed\nchecking for gsl-config... /usr/bin/gsl-config\nchecking for GSL - version >= 1.12...\n*** 'gsl-config --version' returned 1.9.0, but the minimum version\n*** of GSL required is 1.12.0. If gsl-config is correct, then it is\n*** best to upgrade to the required version.\n*** If gsl-config was wrong, set the environment variable GSL_CONFIG\n*** to point to the correct copy of gsl-config, and remove the file\n*** config.cache before re-running configure\nno\nconfigure: error: Cannot find the Gnu Scientific Library >= 1.12\nERROR: configuration failed for package ?GSVA?\n* removing ?/home/hpages/R-2.14.0/library/GSVA?\n* restoring previous ?/home/hpages/R-2.14.0/library/GSVA?\n\n>\n> additionally, our former configure script had the options\n>\n> --with-gsl-lib\n> --with-gsl-include\n>\n> in order to allow the user to have a non-system-wide installation of\n> GSL. i understand that this should be now handled differently to ensure\n> across-platform compatibility and it depends whether the gsl-config\n> script is on the PATH variable. would it be possible to add some option\n> to the configure script to tell where exactly the gsl-config script is??\n> (in case the user cannot or does not want to have a system-wide\n> installation of GSL).\n\nEven for a non system-wide installation of GSL, the user can always\n(and should) have the gsl-config script in his/her PATH. It's reasonable\nto assume that if s/he was able to install his/her own private GSL, s/he\nalso knows how to modify his/her PATH to point to it. Alternatively, as\ndisplayed by the error message above, s/he can set the environment\nvariable GSL_CONFIG to point to his/her private copy of\ngsl-config. Does that make sense?\n\nCheers,\nH.\n\n>\n>\n> thanks!!!!\n> robert.\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi Robert,\n\nOn 11-11-07 10:30 AM, Robert Castelo wrote:\n> dear core developers at BioC,\n>\n> as you might have seen in a message at BioC, the package GSVA (which i\n> collaborate maintaining it) requires GSL version>= 1.6, however current\n> GSL version is 1.15 (see http://www.gnu.org/s/gsl) and in fact the\n> original version of the package we submitted required version>= 1.12\n>\n> according to the svn log, the core development of BioC decided to\n> replace the configure.ac file by other one more appropriate for building\n> the package in windows and apple machines, so i guess that this 1.6\n> version requirement change might have been introduced at that point.\n\nYes \"the core development of BioC\" (and in that case it was me) fixed\nthe configure script a couple of days before the release because it was\nnot working properly on our Mac OS X build machine. I must confess I'm\nnot an expert with configure scripts either so what I did was copy\nthe configure.ac file from another package that links to the GSL, and\ndid very minor modifications to it (if you do diff GSVA/configure.ac\nflowClust/configure.ac you'll be surprised how little different those\nfiles are). I forgot to replace >= 1.6 by >= 1.12 though, sorry.\n\n>\n> i must confess i'm not an expert with configure scripts, so i'd like to\n> double check with you whether i could solve this issue by simple\n> replacing all the 1.6 values by 1.12 values.\n\nThat seems to work (I just tested this on my Linux laptop). Don't\nforget to rerun autoconf.\n\n> i currently cannot verify\n> whether that works because in fact the configure script seems to by pass\n> that requirement, but the message pops up when GSL is not available and\n> confuses the user about what GSL should be installed in the system.\n\nThe configure script will fail when GSL is not found on the system OR\nwhen it is found but has an inappropriate version. In the latter case,\nyou'll get something like:\n\nhpages at latitude:~/svn/Rpacks_2_9$ R-2.14 CMD INSTALL GSVA\n* installing to library ‘/home/hpages/R-2.14.0/library’\n* installing *source* package ‘GSVA’ ...\nchecking for pkg-config... /usr/bin/pkg-config\nchecking pkg-config is at least version 0.9.0... yes\nchecking for GSL... no\nchecking for gcc... gcc -std=gnu99\nchecking whether the C compiler works... yes\nchecking for C compiler default output file name... a.out\nchecking for suffix of executables...\nchecking whether we are cross compiling... no\nchecking for suffix of object files... o\nchecking whether we are using the GNU C compiler... yes\nchecking whether gcc -std=gnu99 accepts -g... yes\nchecking for gcc -std=gnu99 option to accept ISO C89... none needed\nchecking for gsl-config... /usr/bin/gsl-config\nchecking for GSL - version >= 1.12...\n*** 'gsl-config --version' returned 1.9.0, but the minimum version\n*** of GSL required is 1.12.0. If gsl-config is correct, then it is\n*** best to upgrade to the required version.\n*** If gsl-config was wrong, set the environment variable GSL_CONFIG\n*** to point to the correct copy of gsl-config, and remove the file\n*** config.cache before re-running configure\nno\nconfigure: error: Cannot find the Gnu Scientific Library >= 1.12\nERROR: configuration failed for package ‘GSVA’\n* removing ‘/home/hpages/R-2.14.0/library/GSVA’\n* restoring previous ‘/home/hpages/R-2.14.0/library/GSVA’\n\n>\n> additionally, our former configure script had the options\n>\n> --with-gsl-lib\n> --with-gsl-include\n>\n> in order to allow the user to have a non-system-wide installation of\n> GSL. i understand that this should be now handled differently to ensure\n> across-platform compatibility and it depends whether the gsl-config\n> script is on the PATH variable. would it be possible to add some option\n> to the configure script to tell where exactly the gsl-config script is??\n> (in case the user cannot or does not want to have a system-wide\n> installation of GSL).\n\nEven for a non system-wide installation of GSL, the user can always\n(and should) have the gsl-config script in his/her PATH. It's reasonable\nto assume that if s/he was able to install his/her own private GSL, s/he\nalso knows how to modify his/her PATH to point to it. Alternatively, as\ndisplayed by the error message above, s/he can set the environment\nvariable GSL_CONFIG to point to his/her private copy of\ngsl-config. Does that make sense?\n\nCheers,\nH.\n\n>\n>\n> thanks!!!!\n> robert.\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi Robert,\n\nOn 11-11-07 10:30 AM, Robert Castelo wrote:\n> dear core developers at BioC,\n>\n> as you might have seen in a message at BioC, the package GSVA (which i\n> collaborate maintaining it) require",
       "thread_id": "thread-7d54e477e13b",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002983.html"
     },
     {
       "id": "msg-826a7cae01d0",
@@ -1019,6 +1072,7 @@
       "thread_id": "thread-826a7cae01d0",
       "thread_depth": 0,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002984.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111109/f49c82a2/attachment.pl"
       ]
@@ -1041,6 +1095,7 @@
       "thread_id": "thread-5973be8adac5",
       "thread_depth": 2,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002985.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111110/39d7358f/attachment.pl"
       ]
@@ -1063,7 +1118,8 @@
       "body_snippet": "Sorry, I apparently hit 'reply' instead of 'reply all'. Forwarding\nback to the list:\n\n\n---------- Forwarded message ----------\nFrom: Tim Rayner <tfrayner at gmail.com>\nDate: 10 November 2011 10:08\nSub",
       "thread_id": "thread-5fc720fa0473",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002986.html"
     },
     {
       "id": "msg-94728b81bf10",
@@ -1084,7 +1140,8 @@
       "body_snippet": "Hi Tim,\n\nThere were two attempts to modify read.affybatch() to work with \nnon-square arrays, and neither involved the change you suggest. Anyway, \nyour change doesn't materially affect how read.affyba",
       "thread_id": "thread-5fc720fa0473",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002987.html"
     },
     {
       "id": "msg-1a3bcd27b0eb",
@@ -1100,7 +1157,8 @@
       "body_snippet": "Hi\n\nit appears that if one has multiple versions of the same package X in \ndifferent libraries, running biocLite(\"foo\") will in the end print the \nmessage\n\n   Old packages: X\n   Update all/some/none? ",
       "thread_id": "thread-1a3bcd27b0eb",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002988.html"
     },
     {
       "id": "msg-628bb8a76041",
@@ -1118,7 +1176,8 @@
       "body_snippet": "On 11/10/2011 11:49 AM, Wolfgang Huber wrote:\n> Hi\n>\n> it appears that if one has multiple versions of the same package X in\n> different libraries, running biocLite(\"foo\") will in the end print the\n> ",
       "thread_id": "thread-1a3bcd27b0eb",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002989.html"
     },
     {
       "id": "msg-937b3d0464fd",
@@ -1137,7 +1196,8 @@
       "body_snippet": "hi Herv?,\n\n> Yes \"the core development of BioC\" (and in that case it was me) fixed\n> the configure script a couple of days before the release because it was\n> not working properly on our Mac OS X buil",
       "thread_id": "thread-7d54e477e13b",
       "thread_depth": 2,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002990.html"
     },
     {
       "id": "msg-edc61a562bc8",
@@ -1153,7 +1213,8 @@
       "body_snippet": "Hi devs,\n\nHadley is in the midst of trying to get roxygen2 to better handle S4\nclass/methods.\n\nI thought there would be some folks here (hi bioc-core) who would be\nwell suited to give useful feedback ",
       "thread_id": "thread-edc61a562bc8",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002991.html"
     },
     {
       "id": "msg-6da0f221f7bf",
@@ -1172,6 +1233,7 @@
       "thread_id": "thread-edc61a562bc8",
       "thread_depth": 1,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002992.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111111/2c53fef8/attachment.pl"
       ]
@@ -1194,6 +1256,7 @@
       "thread_id": "thread-edc61a562bc8",
       "thread_depth": 2,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002993.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111111/9b9f0a93/attachment.pl"
       ]
@@ -1215,7 +1278,8 @@
       "body_snippet": "Hi Michael,\n\nI think I see where you are coming from.\n\nI think in (my) ideal world and constrained by the way R is currently\n(normally/\"properly\") documented, I'd love to be able to put the\nbanner/tit",
       "thread_id": "thread-edc61a562bc8",
       "thread_depth": 2,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002994.html"
     },
     {
       "id": "msg-44294f34f48b",
@@ -1235,7 +1299,8 @@
       "body_snippet": "I just replied to his message:\n\nhttp://lists.r-forge.r-project.org/pipermail/roxygen-devel/2011-November/000319.html\n\nI've spent a good amount of time working on a large C++ project that made extensiv",
       "thread_id": "thread-edc61a562bc8",
       "thread_depth": 3,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002995.html"
     },
     {
       "id": "msg-16e629750f62",
@@ -1256,6 +1321,7 @@
       "thread_id": "thread-edc61a562bc8",
       "thread_depth": 3,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002996.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111111/15c50968/attachment.pl"
       ]
@@ -1278,7 +1344,8 @@
       "body_snippet": "Hi all,\n\n\n2011/11/11 Robert Castelo <robert.castelo at upf.edu>:\n> hi Herv?,\n>\n>> Yes \"the core development of BioC\" (and in that case it was me) fixed\n>> the configure script a couple of days before ",
       "thread_id": "thread-7d54e477e13b",
       "thread_depth": 3,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002997.html"
     },
     {
       "id": "msg-7b9402031939",
@@ -1295,6 +1362,7 @@
       "thread_id": "thread-7b9402031939",
       "thread_depth": 0,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002998.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111114/01192e4a/attachment.pl"
       ]
@@ -1315,7 +1383,8 @@
       "body_snippet": "Hi,\n\nQuick note on this point:\n\nOn Mon, Nov 14, 2011 at 11:56 AM, Vincent Carey\n<stvjc at channing.harvard.edu> wrote:\n\n> another point --\n>\n> It seems unfortunate to me that the list elements are acc",
       "thread_id": "thread-7b9402031939",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/002999.html"
     },
     {
       "id": "msg-026d41ca8bce",
@@ -1335,6 +1404,7 @@
       "thread_id": "thread-7b9402031939",
       "thread_depth": 2,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003000.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111114/284c9b2b/attachment.pl"
       ]
@@ -1358,7 +1428,8 @@
       "body_snippet": "Hi Dan,\n\n> I can't say exactly where we got the GSL on our build machines. We\n> must have downloaded it at some point and I'm trying to find that\n> download, but so far without luck. I believe that we",
       "thread_id": "thread-7d54e477e13b",
       "thread_depth": 4,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003001.html"
     },
     {
       "id": "msg-d078b5a3f72c",
@@ -1374,7 +1445,8 @@
       "body_snippet": "Some problems with the CRAN binary for OS X has been reported on\nr-sig-mac.  Oliver (cc'ed) reported a problem with affxparser\nsegfaulting that we solved by\n(1) installing an updated R binary\n(2) reco",
       "thread_id": "thread-d078b5a3f72c",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003002.html"
     },
     {
       "id": "msg-65877235af19",
@@ -1392,7 +1464,8 @@
       "body_snippet": "On Mon, Nov 14, 2011 at 12:57 PM, Kasper Daniel Hansen\n<kasperdanielhansen at gmail.com> wrote:\n> Some problems with the CRAN binary for OS X has been reported on\n> r-sig-mac. ?Oliver (cc'ed) reported",
       "thread_id": "thread-65877235af19",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003003.html"
     },
     {
       "id": "msg-bb2c78983188",
@@ -1414,7 +1487,8 @@
       "body_snippet": "Hi Robert,\n\n2011/11/14 Robert Castelo <robert.castelo at upf.edu>:\n> Hi Dan,\n>\n>> I can't say exactly where we got the GSL on our build machines. We\n>> must have downloaded it at some point and I'm tr",
       "thread_id": "thread-bb2c78983188",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003004.html"
     },
     {
       "id": "msg-91aceac88359",
@@ -1430,7 +1504,8 @@
       "body_snippet": "Hello,\n\nI have a small recommendation. If the user hasn't explicitly loaded the IlluminaHumanMethylation450kmanifest package, then preprocessIllumina will give an error like :\n\nError in get(name) : \n ",
       "thread_id": "thread-91aceac88359",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003005.html"
     },
     {
       "id": "msg-88a7e8286b83",
@@ -1448,7 +1523,8 @@
       "body_snippet": "Hi Dario\n\nDoing something like\n  require(getManifest(RGset))\nis probably a reasonable idea even though it ends up loading a\npackage.  It certainly saves typing.  We did not like depending on a\nspecifi",
       "thread_id": "thread-91aceac88359",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003006.html"
     },
     {
       "id": "msg-2a8c03f54f30",
@@ -1464,7 +1540,8 @@
       "body_snippet": "Oh, I didn't think about them releasing more methylation arrays in the future. I thought the only reason they made this one was because people complained about the coverage of the previous one.",
       "thread_id": "thread-2a8c03f54f30",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003007.html"
     },
     {
       "id": "msg-d4391b3cdda5",
@@ -1483,7 +1560,8 @@
       "body_snippet": "Hi Kasper,\n\nOn Mon, Nov 14, 2011 at 1:24 PM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n> On Mon, Nov 14, 2011 at 12:57 PM, Kasper Daniel Hansen\n> <kasperdanielhansen at gmail.com> wrote:\n>> Some pr",
       "thread_id": "thread-65877235af19",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003008.html"
     },
     {
       "id": "msg-9ec0465512e2",
@@ -1503,7 +1581,8 @@
       "body_snippet": "Hi Dan\n\nI am on snow leopard.  We have not made any changes to the C code in\naffxparser in over a year I think, and it works on a wide variety of\nsystems.  Everyone who has reported this problem seems",
       "thread_id": "thread-65877235af19",
       "thread_depth": 2,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003009.html"
     },
     {
       "id": "msg-97c02a0f646f",
@@ -1524,7 +1603,8 @@
       "body_snippet": "Hi Kasper,\n\nOn Thu, Nov 17, 2011 at 1:47 PM, Kasper Daniel Hansen\n<kasperdanielhansen at gmail.com> wrote:\n> Hi Dan\n>\n> I am on snow leopard. ?We have not made any changes to the C code in\n> affxparse",
       "thread_id": "thread-65877235af19",
       "thread_depth": 3,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003010.html"
     },
     {
       "id": "msg-4bbad8fc5a59",
@@ -1546,7 +1626,8 @@
       "body_snippet": "On Thu, Nov 17, 2011 at 5:02 PM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n> Hi Kasper,\n>\n> On Thu, Nov 17, 2011 at 1:47 PM, Kasper Daniel Hansen\n> <kasperdanielhansen at gmail.com> wrote:\n>> Hi Da",
       "thread_id": "thread-65877235af19",
       "thread_depth": 4,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003011.html"
     },
     {
       "id": "msg-058edf5b94bf",
@@ -1569,7 +1650,8 @@
       "body_snippet": "On Thu, Nov 17, 2011 at 2:18 PM, Kasper Daniel Hansen\n<kasperdanielhansen at gmail.com> wrote:\n> On Thu, Nov 17, 2011 at 5:02 PM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n>> Hi Kasper,\n>>\n>> On Th",
       "thread_id": "thread-65877235af19",
       "thread_depth": 5,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003012.html"
     },
     {
       "id": "msg-aa5ff344eb2d",
@@ -1593,7 +1675,8 @@
       "body_snippet": "On Thu, Nov 17, 2011 at 5:27 PM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n> On Thu, Nov 17, 2011 at 2:18 PM, Kasper Daniel Hansen\n> <kasperdanielhansen at gmail.com> wrote:\n>> On Thu, Nov 17, 2011",
       "thread_id": "thread-65877235af19",
       "thread_depth": 6,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003013.html"
     },
     {
       "id": "msg-4533b82adc60",
@@ -1618,7 +1701,8 @@
       "body_snippet": "On Thu, Nov 17, 2011 at 3:53 PM, Kasper Daniel Hansen\n<kasperdanielhansen at gmail.com> wrote:\n> On Thu, Nov 17, 2011 at 5:27 PM, Dan Tenenbaum <dtenenba at fhcrc.org> wrote:\n>> On Thu, Nov 17, 2011 a",
       "thread_id": "thread-65877235af19",
       "thread_depth": 7,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003014.html"
     },
     {
       "id": "msg-fc22f42a71e6",
@@ -1635,6 +1719,7 @@
       "thread_id": "thread-fc22f42a71e6",
       "thread_depth": 0,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003015.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111118/6a467a3d/attachment.pl"
       ]
@@ -1656,6 +1741,7 @@
       "thread_id": "thread-fc22f42a71e6",
       "thread_depth": 1,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003016.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111118/dfe06e25/attachment.pl"
       ]
@@ -1674,7 +1760,8 @@
       "body_snippet": "Hello all,\n\nA small (but useful, and oft-requested) change has been made to the\nbioconductor.org web site:\n\nNow, when you go to the web page for a package, for example:\n\nhttp://bioconductor.org/packag",
       "thread_id": "thread-4beac15669db",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003017.html"
     },
     {
       "id": "msg-30efbe8d30f9",
@@ -1690,7 +1777,8 @@
       "body_snippet": "Hi,\n\nI am unsure why xcms fails to build (it seems it has never been built \nsuccessfully on R-2.15-devel at all), there is a segfault \nin mt.test() on all architectures. I can't reproduce this \nhere w",
       "thread_id": "thread-30efbe8d30f9",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003018.html"
     },
     {
       "id": "msg-5e91acdfaffd",
@@ -1708,7 +1796,8 @@
       "body_snippet": "Hi Steffen,\n\nOn Sat, Nov 19, 2011 at 11:20 AM, Steffen Neumann <sneumann at ipb-halle.de> wrote:\n> Hi,\n>\n> I am unsure why xcms fails to build (it seems it has never been built\n> successfully on R-2.1",
       "thread_id": "thread-5e91acdfaffd",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003019.html"
     },
     {
       "id": "msg-b9278821cefe",
@@ -1734,7 +1823,8 @@
       "body_snippet": "Dan\n\nOn Snow Leopard I installed the CRAN binary of R.  I made sure it\noverwrote whatever I had compiled from source and I uninstalled all\npackages from my self-compiled installation, leaving me with ",
       "thread_id": "thread-65877235af19",
       "thread_depth": 8,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003020.html"
     },
     {
       "id": "msg-e78b2a72340c",
@@ -1751,6 +1841,7 @@
       "thread_id": "thread-e78b2a72340c",
       "thread_depth": 0,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003021.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111123/7bdeaff0/attachment.pl"
       ]
@@ -1769,7 +1860,8 @@
       "body_snippet": "In my experience, GRanges are very convenient and amazingly fast.\n\nI have recently started to work on an organism with a more unfinished\ngenome.  Instead of the situation for model organisms with high",
       "thread_id": "thread-cf17720bd90f",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003022.html"
     },
     {
       "id": "msg-36973825db6e",
@@ -1788,6 +1880,7 @@
       "thread_id": "thread-cf17720bd90f",
       "thread_depth": 1,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003023.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111126/cd60b384/attachment.pl"
       ]
@@ -1809,7 +1902,8 @@
       "body_snippet": "On Sat, Nov 26, 2011 at 6:58 PM, Michael Lawrence\n<lawrence.michael at gene.com> wrote:\n> As an ultimate goal, it make sense to vectorize things over many seqnames.\n> The IntervalTree could also be ma",
       "thread_id": "thread-cf17720bd90f",
       "thread_depth": 2,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003024.html"
     },
     {
       "id": "msg-521a286a04f1",
@@ -1825,7 +1919,8 @@
       "body_snippet": "Hi,\n\nI'm a new developer and am trying to install geoquery on R version\n2.13.1 on Mac OS X 10.6.8. I got the binary GEOquery_1.7.2.tgz but am\nunable to install it\n\n1. I have tried R CMD INSTALL /Users",
       "thread_id": "thread-521a286a04f1",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003025.html"
     },
     {
       "id": "msg-1123a71c4445",
@@ -1843,7 +1938,8 @@
       "body_snippet": "Hi,\n\nAs shown here:\nhttp://www.bioconductor.org/install/\n\nThe easiest way to install bioconductor packages is via `biocLite`. Just:\n\nR> source(\"http://bioconductor.org/biocLite.R\")\nR> biocLite('GEOque",
       "thread_id": "thread-521a286a04f1",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003026.html"
     },
     {
       "id": "msg-d6cb16acb2eb",
@@ -1862,7 +1958,8 @@
       "body_snippet": "Hi Steve,\n\nThanks for your reply. I'm trying to follow your instructions. First I\nwas getting the error that it cannot find RCurl. I downloaded the\nbinary for Rcurl and installed using--\n\n\nI installed",
       "thread_id": "thread-521a286a04f1",
       "thread_depth": 2,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003027.html"
     },
     {
       "id": "msg-305bc74c80c2",
@@ -1883,6 +1980,7 @@
       "thread_id": "thread-521a286a04f1",
       "thread_depth": 3,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003028.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111128/c430d96c/attachment.pl"
       ]
@@ -1906,7 +2004,8 @@
       "body_snippet": "Hi,\n\nThanks for your reply.\n\nI'm still having the same problem. I removed the 2 installed packages\nusing remove.packages('GEOquery') and remove.packages('RCurl'), and\nthen started R again to try and i",
       "thread_id": "thread-521a286a04f1",
       "thread_depth": 4,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003029.html"
     },
     {
       "id": "msg-c90d9b0fcbf1",
@@ -1928,7 +2027,8 @@
       "body_snippet": "Hi,\n\nYour `@rpath` problem looks like you are running into the problem\nspoken about in this R-sig-mac thread, here:\n\nhttps://stat.ethz.ch/pipermail/r-sig-mac/2011-November/008757.html\n\nI guess you are",
       "thread_id": "thread-521a286a04f1",
       "thread_depth": 5,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003030.html"
     },
     {
       "id": "msg-4c90cda4c9d6",
@@ -1951,7 +2051,8 @@
       "body_snippet": "Hi Steve, Sean,\n\nI think updating it did the trick. It finally lets me load the Geoquery library.\n\nThanks a lot!\nRadhika\n\nOn Tue, Nov 29, 2011 at 1:44 AM, Steve Lianoglou\n<mailinglist.honeypot at gmai",
       "thread_id": "thread-521a286a04f1",
       "thread_depth": 6,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003031.html"
     },
     {
       "id": "msg-2c617b4f0b17",
@@ -1973,7 +2074,8 @@
       "body_snippet": "On 11/28/2011 10:33 PM, Radhika Malik wrote:\n> Hi,\n>\n> Thanks for your reply.\n>\n> I'm still having the same problem. I removed the 2 installed packages\n> using remove.packages('GEOquery') and remove.p",
       "thread_id": "thread-521a286a04f1",
       "thread_depth": 5,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003032.html"
     },
     {
       "id": "msg-e3da77e92ad2",
@@ -1987,11 +2089,12 @@
       "references": [
         "<CAOQ5NyeB717FfjwhBt7-+J6KXxjq_PvOrO00h-yt2OCzKQ54QA@mail.gmail.com>"
       ],
-      "body_plain": "Hi Michael,\n\nOn 11-11-23 02:15 PM, Michael Lawrence wrote:\n> Hi guys,\n>\n> So it looks like Herve? added some nice new coercions from list to various\n> AtomicList types. These delegate to the constructors. I noticed that the\n> constructors perform the coercion, but they also preserve names (on each\n> element). This is different from the base R coercions, which drop the\n> names.\n\nThe base R coercions do different things:\n\n > x <- c(a=1, b=2)\n\n > as.integer(x)\n[1] 1 2\n\n > as(x, \"integer\")\na b\n1 2\n\n > as.list(x)\n$a\n[1] 1\n\n$b\n[1] 2\n\n > as(x, \"list\")\n[[1]]\n[1] 1\n\n[[2]]\n[1] 2\n\n\n> Probably being too picky. Also, these are not pure coercions, but in\n> some ways a \"promotion\" to list from List. So that's fine with me. I think\n> we could probably add a coercion from \"list\" to the base list (not\n> compressed or simple). For example,  CharacterList would be an alias for\n> the CompressedCharacterList coercion.\n\nYes, we could do that. That means we make CompressedList the preferred\nway to represent List (vs SimpleList), which is fine I guess because\nthis is what the constructors (e.g. IntegerList()) already do by having\n'compress=TRUE' by default.\n\n>\n> A related question though: what about coercions from a generic AtomicList\n> to each of the specific types. We do not have those, but they would be\n> useful. Would those need to drop their names? Consistency is not the only\n> concern: it would be faster not to preserve them.\n\nLooks like you already added them:\n\n > as(IntegerList(a=1:3, b=2:-1), \"CharacterList\")\nCompressedCharacterList of length 2\n[[\"a\"]] 1 2 3\n[[\"b\"]] 2 1 0 -1\n\n > as(IntegerList(a=1:3, b=2:-1), \"NumericList\")\nCompressedNumericList of length 2\n[[\"a\"]] 1 2 3\n[[\"b\"]] 2 1 0 -1\n\n > as(IntegerList(a=1:3, b=2:-1, compress=FALSE), \"NumericList\")\nCompressedNumericList of length 2\n[[\"a\"]] 1 2 3\n[[\"b\"]] 2 1 0 -1\n\n > as(IntegerList(a=letters[1:2], b=\"33\"), \"NumericList\")\nCompressedNumericList of length 2\n[[\"a\"]] <NA> <NA>\n[[\"b\"]] 33\nWarning message:\nIn structure(as.integer(x), names = names(x)) : NAs introduced by coercion\n\nWe don't have coercions for switching between CompressedList\nand SimpleList though:\n\n > as(IntegerList(a=1:3, b=2:-1), \"SimpleList\")\nError in as(IntegerList(a = 1:3, b = 2:-1), \"SimpleList\") :\n   no method or default for coercing \"CompressedIntegerList\" to \"SimpleList\"\n\nWould they be useful too?\n\n>\n> As an aside, it is currently very slow to construct a long e.g.\n> CharacterList, because of the lapply() performing the coercion. There are\n> obviously faster ways, especially if we do not care about the names.\n\nFeel free to implement those faster ways. I think we should keep the\nnames by default though e.g. by adding a use.names arg to the\nCharacterList() constructor (and to the other constructors), that is\nTRUE by default.\n\nThanks,\nH.\n\n>\n> Michael\n>\n> \t[[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHerv? Pag?s\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
+      "body_plain": "Hi Michael,\n\nOn 11-11-23 02:15 PM, Michael Lawrence wrote:\n> Hi guys,\n>\n> So it looks like Herve? added some nice new coercions from list to various\n> AtomicList types. These delegate to the constructors. I noticed that the\n> constructors perform the coercion, but they also preserve names (on each\n> element). This is different from the base R coercions, which drop the\n> names.\n\nThe base R coercions do different things:\n\n > x <- c(a=1, b=2)\n\n > as.integer(x)\n[1] 1 2\n\n > as(x, \"integer\")\na b\n1 2\n\n > as.list(x)\n$a\n[1] 1\n\n$b\n[1] 2\n\n > as(x, \"list\")\n[[1]]\n[1] 1\n\n[[2]]\n[1] 2\n\n\n> Probably being too picky. Also, these are not pure coercions, but in\n> some ways a \"promotion\" to list from List. So that's fine with me. I think\n> we could probably add a coercion from \"list\" to the base list (not\n> compressed or simple). For example,  CharacterList would be an alias for\n> the CompressedCharacterList coercion.\n\nYes, we could do that. That means we make CompressedList the preferred\nway to represent List (vs SimpleList), which is fine I guess because\nthis is what the constructors (e.g. IntegerList()) already do by having\n'compress=TRUE' by default.\n\n>\n> A related question though: what about coercions from a generic AtomicList\n> to each of the specific types. We do not have those, but they would be\n> useful. Would those need to drop their names? Consistency is not the only\n> concern: it would be faster not to preserve them.\n\nLooks like you already added them:\n\n > as(IntegerList(a=1:3, b=2:-1), \"CharacterList\")\nCompressedCharacterList of length 2\n[[\"a\"]] 1 2 3\n[[\"b\"]] 2 1 0 -1\n\n > as(IntegerList(a=1:3, b=2:-1), \"NumericList\")\nCompressedNumericList of length 2\n[[\"a\"]] 1 2 3\n[[\"b\"]] 2 1 0 -1\n\n > as(IntegerList(a=1:3, b=2:-1, compress=FALSE), \"NumericList\")\nCompressedNumericList of length 2\n[[\"a\"]] 1 2 3\n[[\"b\"]] 2 1 0 -1\n\n > as(IntegerList(a=letters[1:2], b=\"33\"), \"NumericList\")\nCompressedNumericList of length 2\n[[\"a\"]] <NA> <NA>\n[[\"b\"]] 33\nWarning message:\nIn structure(as.integer(x), names = names(x)) : NAs introduced by coercion\n\nWe don't have coercions for switching between CompressedList\nand SimpleList though:\n\n > as(IntegerList(a=1:3, b=2:-1), \"SimpleList\")\nError in as(IntegerList(a = 1:3, b = 2:-1), \"SimpleList\") :\n   no method or default for coercing \"CompressedIntegerList\" to \"SimpleList\"\n\nWould they be useful too?\n\n>\n> As an aside, it is currently very slow to construct a long e.g.\n> CharacterList, because of the lapply() performing the coercion. There are\n> obviously faster ways, especially if we do not care about the names.\n\nFeel free to implement those faster ways. I think we should keep the\nnames by default though e.g. by adding a use.names arg to the\nCharacterList() constructor (and to the other constructors), that is\nTRUE by default.\n\nThanks,\nH.\n\n>\n> Michael\n>\n> \t[[alternative HTML version deleted]]\n>\n> _______________________________________________\n> Bioc-devel at r-project.org mailing list\n> https://stat.ethz.ch/mailman/listinfo/bioc-devel\n\n\n-- \nHervé Pagès\n\nProgram in Computational Biology\nDivision of Public Health Sciences\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N, M1-B514\nP.O. Box 19024\nSeattle, WA 98109-1024\n\nE-mail: hpages at fhcrc.org\nPhone:  (206) 667-5791\nFax:    (206) 667-1319",
       "body_snippet": "Hi Michael,\n\nOn 11-11-23 02:15 PM, Michael Lawrence wrote:\n> Hi guys,\n>\n> So it looks like Herve? added some nice new coercions from list to various\n> AtomicList types. These delegate to the construct",
       "thread_id": "thread-e78b2a72340c",
       "thread_depth": 1,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003033.html"
     },
     {
       "id": "msg-3ace25140d79",
@@ -2011,6 +2114,7 @@
       "thread_id": "thread-e78b2a72340c",
       "thread_depth": 2,
       "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-November/003034.html",
       "restored_from": [
         "https://stat.ethz.ch/pipermail/bioc-devel/attachments/20111129/a8b4956d/attachment.pl"
       ]
@@ -2025,11 +2129,12 @@
       "subject_clean": "[Bioc-devel] Bioconductor Employment: Statistical Research Associate",
       "in_reply_to": null,
       "references": [],
-      "body_plain": "Bioconductors! -- please see the job description below for a Statistical \nResearch Associate opening with the Bioconductor group. See\n\n   http://fhcrc.org/about/jobs/index.html\n\nchoose 'Search Jobs' at the Fred Hutchinson Cancer Research Center, and \nlook for job ID 24198 for a complete job description. Please contact me \ndirectly with any questions.\n\nBest,\n\nMartin\n\n----\n\nThe Bioconductor project (http://bioconductor.org) seeks a creative and \nmotivated individual to join our bioinformatics team. Bioconductor \ndevelops and distributes open-source, open-development software for \nanalysis and comprehension of high-throughput genomic data from \nsequencing and other sources. Bioconductor is based on the R language \nfor statistical analysis, with more than 500 software packages developed \ninternally and by our vibrant user community.\n\nSCOPE OF RESPONSIBILITIES:\n\nThis unique opportunity links scientific research with software \ndevelopment. The applicant will work under immediate technical direction \nto analyze and comprehend high-throughput sequence data, translating \ntheir research insights into appropriate Bioconductor work flows.\n\nMAJOR DUTIES:\n\nThis position involves bioinformatic analysis of high-throughput \nsequence data  using R / Bioconductor tools. The applicant will, in \nconsultation with other team members, identify appropriate analytic \napproaches and work flows. The applicant will implement the analysis, \nand arrive at scientifically sound conclusions. The applicant will \nidentify common work flows, communicating these to other team members. \nSecondary duties involve participation in ongoing Bioconductor tasks, \nincluding maintenance of contributed packages, technical previews of new \ncontributed packages, and tasks related to twice-yearly releases. There \nare opportunities for  user support through our mailing list, regular \ncourse offerings, and an annual conference.\n\nMINIMUM QUALIFICATIONS:\n\n1) Master?s degree or comparable experience in biological science, \nbioinformatics, or related disciplines.\n\n2) Familiarity with programming languages, for example C, Matlab, and \nespecially R.\n\n3) Familiarity with statistical concepts and methods.\n\nRecommended qualifications include:\n\n1) A strong biological background.\n\n2) Experience with managing high-volume genetic data, such as from \nnext-generation sequence pipelines, and with relevant public annotation \nresources.\n\n3) Familiarity with bioinformatic work flows, especially analysis of \nsequence data from RNA, ChIP, and DNAseq experiments.\n\n4) Experience with software development best practices appropriate for \nsmall teams, for instance use of version control, unit tests, agile \nproject management, and creation of end-user documentation.\n-- \nComputational Biology\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109\n\nLocation: M1-B861\nTelephone: 206 667-2793",
+      "body_plain": "Bioconductors! -- please see the job description below for a Statistical \nResearch Associate opening with the Bioconductor group. See\n\n   http://fhcrc.org/about/jobs/index.html\n\nchoose 'Search Jobs' at the Fred Hutchinson Cancer Research Center, and \nlook for job ID 24198 for a complete job description. Please contact me \ndirectly with any questions.\n\nBest,\n\nMartin\n\n----\n\nThe Bioconductor project (http://bioconductor.org) seeks a creative and \nmotivated individual to join our bioinformatics team. Bioconductor \ndevelops and distributes open-source, open-development software for \nanalysis and comprehension of high-throughput genomic data from \nsequencing and other sources. Bioconductor is based on the R language \nfor statistical analysis, with more than 500 software packages developed \ninternally and by our vibrant user community.\n\nSCOPE OF RESPONSIBILITIES:\n\nThis unique opportunity links scientific research with software \ndevelopment. The applicant will work under immediate technical direction \nto analyze and comprehend high-throughput sequence data, translating \ntheir research insights into appropriate Bioconductor work flows.\n\nMAJOR DUTIES:\n\nThis position involves bioinformatic analysis of high-throughput \nsequence data  using R / Bioconductor tools. The applicant will, in \nconsultation with other team members, identify appropriate analytic \napproaches and work flows. The applicant will implement the analysis, \nand arrive at scientifically sound conclusions. The applicant will \nidentify common work flows, communicating these to other team members. \nSecondary duties involve participation in ongoing Bioconductor tasks, \nincluding maintenance of contributed packages, technical previews of new \ncontributed packages, and tasks related to twice-yearly releases. There \nare opportunities for  user support through our mailing list, regular \ncourse offerings, and an annual conference.\n\nMINIMUM QUALIFICATIONS:\n\n1) Master’s degree or comparable experience in biological science, \nbioinformatics, or related disciplines.\n\n2) Familiarity with programming languages, for example C, Matlab, and \nespecially R.\n\n3) Familiarity with statistical concepts and methods.\n\nRecommended qualifications include:\n\n1) A strong biological background.\n\n2) Experience with managing high-volume genetic data, such as from \nnext-generation sequence pipelines, and with relevant public annotation \nresources.\n\n3) Familiarity with bioinformatic work flows, especially analysis of \nsequence data from RNA, ChIP, and DNAseq experiments.\n\n4) Experience with software development best practices appropriate for \nsmall teams, for instance use of version control, unit tests, agile \nproject management, and creation of end-user documentation.\n-- \nComputational Biology\nFred Hutchinson Cancer Research Center\n1100 Fairview Ave. N. PO Box 19024 Seattle, WA 98109\n\nLocation: M1-B861\nTelephone: 206 667-2793",
       "body_snippet": "Bioconductors! -- please see the job description below for a Statistical \nResearch Associate opening with the Bioconductor group. See\n\n   http://fhcrc.org/about/jobs/index.html\n\nchoose 'Search Jobs' a",
       "thread_id": "thread-c167a9efdaba",
       "thread_depth": 0,
-      "month": "2011-11"
+      "month": "2011-11",
+      "source_url": "https://stat.ethz.ch/pipermail/bioc-devel/2011-December/003035.html"
     }
   ],
   "threads": [
