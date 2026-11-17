@@ -1762,3 +1762,541 @@ Sending email to Karolinska Institutet (KI) will result in KI processing your pe
 	[[alternative HTML version deleted]]
 
 
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Mon Nov 16 12:29:50 2026
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Mon, 16 Nov 2026 11:29:50 +0000
+Subject: [Bioc-devel] org.Hs.eg.db and KEGG pathways
+In-Reply-To: <CAN+W6_v2j0CGO1OGkJ6sAk+44ipk4v7-uz6b_evOkC305yAgSw@mail.gmail.com>
+References: <CAN+W6_uaG8A4HN0_c0rEXKkmnJ+Fqf6-K17NaNU-Hqmq9gn5JQ@mail.gmail.com>
+ <CAJLyBTUuVy9rLuVUWdpX9-5yVBAcnrWX8mmPpERXfHezgPWXJQ@mail.gmail.com>
+ <BN7PR12MB272309E39E962D441CA1DCFFF97F2@BN7PR12MB2723.namprd12.prod.outlook.com>
+ <CANeAVBn-dzz4s9wJTHcvAoP7J3c7EPD0iUx-ZsHtKstNth+n4Q@mail.gmail.com>
+ <CAN+W6_v2j0CGO1OGkJ6sAk+44ipk4v7-uz6b_evOkC305yAgSw@mail.gmail.com>
+Message-ID: <FT1PR12MB222952FBDF31C2AA12AE4555E9F97C2@FT1PR12MB222952.namprd12.prod.outlook.com>
+
+Correction. The orgs are not going to be deprecated but certain features or parts of data will be deprecated next cycle and a revamped more modernized version might be developed in the future
+
+Get Outlook for iOS<https://aka.ms/o0ukef>
+________________________________
+From: Llu?s Revilla <lluis.revilla at gmail.com>
+Sent: Saturday, 14 November 2026 10:49:05
+To: Sean Davis <seandavi at gmail.com>
+Cc: Kern, Lori <Lori.Shepherd at RoswellPark.org>; Robert M. Flight <rflight79 at gmail.com>; bioc-devel <bioc-devel at r-project.org>
+Subject: Re: [Bioc-devel] org.Hs.eg.db and KEGG pathways
+
+Hi,
+
+Thanks Lori for announcing that orgs will be deprecated.
+As I only use the data as an illustrative example I'll remove the dependency to it.
+
+Sean, I might copy the licensed subset of data which I used instead of using the latest data with a more restrictive license.
+But this might help Robert or myself if I find it is better to have more data than just a few genes I used as an example.
+Your scripts and advice will surely come handy. Thanks!
+
+Thanks Vincent for sharing off-list the short-term plan to restore the data.
+
+Llu?s
+
+Missatge de Sean Davis <seandavi at gmail.com<mailto:seandavi at gmail.com>> del dia dv., 13 de nov. 2026 a les 18:42:
+Hi Llu?s, Robert,
+
+I can't speak for whether org.Hs.eg.db will get its PATH map back, but the
+NA values come from KEGG's restrictions on redistribution, so I wouldn't
+count on it. If what you need is a gene-to-pathway map for examples or
+tests, an openly licensed one is easy to get, and I can offer one route.
+
+I've been building bioc-on-ice, which republishes public annotation (NCBI
+Gene, GO, Ensembl, HGNC, WikiPathways, and others) as Parquet files plus a
+small DuckDB file of views. There's no account and nothing to install
+beyond the duckdb R package. Each release sits in a dated folder, so a
+vignette can pin one and get the same answer every time. Details and
+release notes are here:
+https://bioconice.cancerdatasci.org/releases?utm_source=bioc-devel&utm_medium=email&utm_campaign=org-hs-eg-db-kegg<https://secure-web.cisco.com/1qQcwY6pHQbHmdPg-kk8Mk6N67lBBgh-_4cT5aRIJreALovYPj_mm-LXI_xJFIZJOtJNFzHyPSgbAZ-wXy_AsMxFccpZ90mT9OOaJPlfMu56qSiDjKg9fu5XEIgQRD9HQemluwtbpmoLV6fBwnuzSCJqZClDMeFVL40DmmX89OOVmW4fgwfzxJO28UGBujDGqRTv3Ti_0hyBQpfLiQ0SsP4qeTgLnBDZfZfCAzGN3h5ZzjTS104bFzUhM_TVagaeicpWyZVpazPdH-AY1kildoFaJI92BDYHliUkXfXEzr7iElYUrRU6qdW1mHDGrUeAT/https%3A%2F%2Fbioconice.cancerdatasci.org%2Freleases%3Futm_source%3Dbioc-devel%26utm_medium%3Demail%26utm_campaign%3Dorg-hs-eg-db-kegg>
+
+KEGG is not in it, for the same licensing reason. WikiPathways is (CC0,
+refreshed monthly): 991 human pathways covering 9,031 Entrez genes in the
+current release. Reactome (also CC0) is next on the list.
+
+1. A drop-in for as.list(org.Hs.egPATH)
+---------------------------------------
+
+library(DBI)
+con <- dbConnect(duckdb::duckdb())
+dbExecute(con, "INSTALL httpfs; LOAD httpfs;")
+dbExecute(con, "ATTACH 'https://data.bioconice.cancerdatasci.org/v2026-11-08/bioconice.duckdb<https://secure-web.cisco.com/1miPRZKQg2F5ys22xMm2YHkV2-kD7uz2_RqRhcs-EZ7mel4wlF7CgsiZ4DBJicRxbzVOg7ZYY09dB4CZ3SOD_VD_hZ7HjOtLFIMOC_kgqNBJfIFClIAn3tm4G6193vOS5PjWdi5FYoHS7cJakIXWLupTmddA4xMOYPcNQb35Oy56Zi3Gu54pYviFqjU-uLBUGZSlcgHV6Z2zJe80FHJou4HpMTz2_0_GuWmlauX_kcCwhl0BiFseOQixHu7CrF1OwncjE1Qs0QBGLbeTI9LJ6zEs5YAggjEbsxrmmn9kP-jcboY-JYJbywcYgGa-0larI/https%3A%2F%2Fdata.bioconice.cancerdatasci.org%2Fv2026-11-08%2Fbioconice.duckdb>'
+                AS bioc (READ_ONLY)")
+
+gp <- dbGetQuery(con, "
+  SELECT gp.gene_id, gp.pathway_id, p.name<http://secure-web.cisco.com/1HW6GA4YST_9SQrCu15QlrZK_n47a9JwYMxa028tqJqfD5oIF0zl7xAzl8a2vSI76o0FkTGdJ6-zZuwRds3QNB1N6LO53cKLzSccP8EDu_hKPxJ326_gF03CizxaiIPE5y1KSEvrhW0w0dCfECTKkhdN4OaPWVlivznwkx2wpTOpqWasixlidHD44n16AVqVz2Q1ic6DKSYHfjUSmeYjC95WmIX3bfR3wCoofAqT1gud7QH4HJWVHVP8Bg6CoDKCj2Opxiap5vc7AHwsD4Bkl6gCN6u4YpjiJ9Qwaa342DdS1MFd4kNlnDHQrOIA4uq1e/http%3A%2F%2Fp.name>
+  FROM bioc.annotation.wikipathways__gene_pathway gp
+  JOIN bioc.annotation.wikipathways__pathway p USING (pathway_id)
+  WHERE gp.taxon_id = 9606")
+dbDisconnect(con, shutdown = TRUE)
+
+# Same shape as as.list(org.Hs.egPATH): Entrez gene ID -> pathway IDs
+egPATH <- split(gp$pathway_id, gp$gene_id)
+egPATH[["7157"]]                      # TP53: WP710, WP4754, WP615, ...
+
+# Pathway ID -> name
+pathway_names <- unique(gp[, c("pathway_id", "name")])
+
+# Gene sets the way most enrichment tools take them
+term2gene <- gp[, c("pathway_id", "gene_id")]       # clusterProfiler::enricher(TERM2GENE = )
+pathways  <- split(gp$gene_id, gp$pathway_id)       # fgsea(pathways = )
+
+A named list covers what code usually does with org.Hs.egPATH:
+egPATH[keys] replaces mget(keys, org.Hs.egPATH), and lengths(egPATH)
+counts pathways per gene. If something really needs an
+environment, list2env(egPATH) gives you one.
+
+One caveat: these are different pathways from KEGG's, with different gene
+sets. Any enrichment results shown in a vignette will change, not just the
+IDs.
+
+The "v2026-11-08" in the URL is the pin. Use "latest" instead to track the
+newest release. That host keeps weekly releases for about a month. For
+something that has to build for years, like a vignette, use the monthly
+archive on Hugging Face instead: each month's release is tagged YYYY-MM
+there, and tags are never deleted. The two WikiPathways files are about
+360 KB together, so download them rather than querying in place
+(anonymous Hugging Face requests are rate-limited):
+
+base <- "https://huggingface.co/datasets/seandavis/bioconice/resolve/2026-11/annotation/"
+for (f in c("wikipathways__gene_pathway.parquet", "wikipathways__pathway.parquet"))
+  download.file(paste0(base, f), f, mode = "wb")
+
+con <- dbConnect(duckdb::duckdb())
+gp <- dbGetQuery(con, "
+  SELECT gp.gene_id, gp.pathway_id, p.name<http://secure-web.cisco.com/1HW6GA4YST_9SQrCu15QlrZK_n47a9JwYMxa028tqJqfD5oIF0zl7xAzl8a2vSI76o0FkTGdJ6-zZuwRds3QNB1N6LO53cKLzSccP8EDu_hKPxJ326_gF03CizxaiIPE5y1KSEvrhW0w0dCfECTKkhdN4OaPWVlivznwkx2wpTOpqWasixlidHD44n16AVqVz2Q1ic6DKSYHfjUSmeYjC95WmIX3bfR3wCoofAqT1gud7QH4HJWVHVP8Bg6CoDKCj2Opxiap5vc7AHwsD4Bkl6gCN6u4YpjiJ9Qwaa342DdS1MFd4kNlnDHQrOIA4uq1e/http%3A%2F%2Fp.name>
+  FROM 'wikipathways__gene_pathway.parquet' gp
+  JOIN 'wikipathways__pathway.parquet' p USING (pathway_id)
+  WHERE gp.taxon_id = 9606")
+dbDisconnect(con, shutdown = TRUE)
+egPATH <- split(gp$pathway_id, gp$gene_id)
+
+The 2026-11 tag is release 2026-11-01. Its manifest.json lists every
+source version that went into it, if you want to cite exactly what you
+used. The whole release is browsable at
+https://huggingface.co/datasets/seandavis/bioconice?utm_source=bioc-devel&utm_medium=email&utm_campaign=org-hs-eg-db-kegg
+
+2. Rolling your own OrgDb with a pathway column
+-----------------------------------------------
+
+If you'd rather keep the select()/mapIds() interface, AnnotationForge can
+build an org package straight from the same tables. This builds and
+installs (I tested it today); the GOALL tables come from your installed
+GO.db.
+
+library(DBI)
+con <- dbConnect(duckdb::duckdb())
+dbExecute(con, "INSTALL httpfs; LOAD httpfs;")
+dbExecute(con, "ATTACH 'https://data.bioconice.cancerdatasci.org/v2026-11-08/bioconice.duckdb<https://secure-web.cisco.com/1miPRZKQg2F5ys22xMm2YHkV2-kD7uz2_RqRhcs-EZ7mel4wlF7CgsiZ4DBJicRxbzVOg7ZYY09dB4CZ3SOD_VD_hZ7HjOtLFIMOC_kgqNBJfIFClIAn3tm4G6193vOS5PjWdi5FYoHS7cJakIXWLupTmddA4xMOYPcNQb35Oy56Zi3Gu54pYviFqjU-uLBUGZSlcgHV6Z2zJe80FHJou4HpMTz2_0_GuWmlauX_kcCwhl0BiFseOQixHu7CrF1OwncjE1Qs0QBGLbeTI9LJ6zEs5YAggjEbsxrmmn9kP-jcboY-JYJbywcYgGa-0larI/https%3A%2F%2Fdata.bioconice.cancerdatasci.org%2Fv2026-11-08%2Fbioconice.duckdb>'
+                AS bioc (READ_ONLY)")
+q <- function(sql) dbGetQuery(con, sql)
+
+# makeOrgPackage rules: each table's first column is GID, and the other
+# column names become select() columns, so they must be unique.
+gene_info <- q("SELECT DISTINCT gene_id AS GID, symbol AS SYMBOL, description AS GENENAME
+                FROM bioc.annotation.ncbi__gene WHERE taxon_id = 9606")
+chromosome <- q("SELECT DISTINCT gene_id AS GID, chromosome AS CHR
+                 FROM bioc.annotation.ncbi__gene
+                 WHERE taxon_id = 9606 AND chromosome IS NOT NULL")
+go <- q("SELECT DISTINCT gene_id AS GID, go_id AS GO, evidence AS EVIDENCE
+         FROM bioc.annotation.ncbi__gene_go WHERE taxon_id = 9606")
+wikipathways <- q("SELECT DISTINCT gene_id AS GID, pathway_id AS WIKIPATHWAYS
+                   FROM bioc.annotation.wikipathways__gene_pathway WHERE taxon_id = 9606")
+xref <- function(ns) q(sprintf(
+  "SELECT DISTINCT source_id AS GID, target_id AS %s
+   FROM bioc.annotation.identifier_mapping
+   WHERE taxon_id = 9606 AND source_namespace = 'ENTREZ' AND target_namespace = '%s'",
+  ns, ns))
+alias <- xref("ALIAS"); ensembl <- xref("ENSEMBL")
+uniprot <- xref("UNIPROT"); omim <- xref("OMIM")
+dbDisconnect(con, shutdown = TRUE)   # run every query before this line
+
+AnnotationForge::makeOrgPackage(
+  gene_info = gene_info, chromosome = chromosome, go = go,
+  alias = alias, ensembl = ensembl, uniprot = uniprot, omim = omim,
+  wikipathways = wikipathways,
+  version = "0.0.1", maintainer = "You <you at example.org<mailto:you at example.org>>", author = "You",
+  outputDir = ".", tax_id = "9606", genus = "Homo", species = "sapiens",
+  goTable = "go")
+
+install.packages("org.Hsapiens.eg.db", repos = NULL, type = "source")
+library(org.Hsapiens.eg.db)
+select(org.Hsapiens.eg.db, keys = "TP53", keytype = "SYMBOL",
+       columns = c("GID", "WIKIPATHWAYS"))
+
+# The org.Hs.egPATH-style list, from the OrgDb
+egPATH <- mapIds(org.Hsapiens.eg.db, keys(org.Hsapiens.eg.db, "GID"),
+                 column = "WIKIPATHWAYS", keytype = "GID", multiVals = "list")
+egPATH <- egPATH[!vapply(egPATH, function(v) all(is.na<http://secure-web.cisco.com/1xB8TVK1g4cEV6DZYmhdz3K_4REVYDkREsszp3pdJxGMicW1vt4YmjjqmqaNCdzq93JSHBqtLXi3mBxScmbXT3nr4YnFbyWQnNE3Ex7OCp8PYAUw2f4DS5Gl1hQKtQ1Ohf-PnwQ5gPRD9M6kLZrrtqnvCuzQsUFW3v8vY9gUF6GqMYN1s2uZTDpRkU0713-Qignyyfei_3oFHpt3nYCS29jAVyGeN-PNm6Zq6Rx9pLrVZQ1A68zcmvrwiJZRk536VomBHIMSf_khWG8W2vimaK9xY_Id3D9jAvKAcs0q7TnM_hXq3fNM4Sv-M_YZ3AXE-/http%3A%2F%2Fis.na>(v)), TRUE)]
+
+Things that tripped me up:
+
+- The key column is GID, not ENTREZID. That's how makeOrgPackage names it,
+  so code that hardcodes keytype = "ENTREZID" needs a change.
+- Packages built this way have the OrgDb object only, no org.Xx.egPATH
+  style bimaps. Those come only with the official org packages. mapIds()
+  as above gives you the same list.
+- The installed package is about 750 MB, almost all of it the GOALL
+  tables. Drop go/goTable if you only need pathways.
+- GOALL is computed from your local GO.db. If that GO release differs from
+  the one NCBI's gene2go used, some terms can drop out of the ancestor
+  closure.
+
+If you need KEGG itself and you're fine with KEGG's terms, KEGGREST will
+fetch it at run time. For a vignette that has to build on the build
+machines, I'd avoid the network dependency.
+
+Happy to help if either of you tries this and hits a snag.
+
+Sean
+
+On Fri, Nov 13, 2026 at 12:49?PM Kern, Lori via Bioc-devel <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>> wrote:
+We are aiming to deprecate this functionality.  We realized it was too close to release to implement this change on developers, and it should be reverted in the new orgs that were uploaded this morning.  It should be remedied on the next build report.
+
+Developers should prepare as we will likely replace orgs in devel early this coming cycle that will exclude this information.  We will announce more details about any additional features that will be deprecated at that time.
+
+
+Lori Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org<mailto:bioc-devel-bounces at r-project.org>> on behalf of Robert M. Flight <rflight79 at gmail.com<mailto:rflight79 at gmail.com>>
+Sent: Thursday, November 12, 2026 7:10 PM
+To: Llu?s Revilla <lluis.revilla at gmail.com<mailto:lluis.revilla at gmail.com>>
+Cc: bioc-devel <bioc-devel at r-project.org<mailto:bioc-devel at r-project.org>>
+Subject: Re: [Bioc-devel] org.Hs.eg.db and KEGG pathways
+
+Hi Lluis,
+
+I am also affected by this, as I was using some of the KEGG pathway data
+available from the org packages for some example analyses in my package
+vignette. I hadn't had a chance to look into it yet, but I'm sure what you
+describe is exactly what is behind the error I'm currently seeing in the
+3.24 build report.
+
+Cheers,
+-Robert
+
+On Thu, Nov 12, 2026 at 4:55?PM Llu?s Revilla <lluis.revilla at gmail.com<mailto:lluis.revilla at gmail.com>>
+wrote:
+
+> Hi list,
+>
+> Recently, I received a notification that my package was failing the build
+> on devel.
+> The error comes from the object at org.Hs.eg.db::org.Hs.egPATH having a
+> long list of NA:
+>
+> packageVersion("org.Hs.eg.db")
+> ## [1] '3.24.4'
+> all(vapply(org.Hs.eg.db::org.Hs.egPATH, is.na<http://secure-web.cisco.com/1xB8TVK1g4cEV6DZYmhdz3K_4REVYDkREsszp3pdJxGMicW1vt4YmjjqmqaNCdzq93JSHBqtLXi3mBxScmbXT3nr4YnFbyWQnNE3Ex7OCp8PYAUw2f4DS5Gl1hQKtQ1Ohf-PnwQ5gPRD9M6kLZrrtqnvCuzQsUFW3v8vY9gUF6GqMYN1s2uZTDpRkU0713-Qignyyfei_3oFHpt3nYCS29jAVyGeN-PNm6Zq6Rx9pLrVZQ1A68zcmvrwiJZRk536VomBHIMSf_khWG8W2vimaK9xY_Id3D9jAvKAcs0q7TnM_hXq3fNM4Sv-M_YZ3AXE-/http%3A%2F%2Fis.na>, TRUE))
+> ## [1] TRUE
+>
+> The object contained some data related to KEGG which restricted access to
+> its database.
+>
+> It is a suggested package and I can work around the issue but I thought I
+> would check before I go down this route if this will be fixed on the
+> org.Hs.eg.db package or not.
+>
+> Many thanks to Bioconductor for maintaining it,
+> Cheers,
+>
+> Llu?s
+>
+> PS: I'm not sure if some other packages are affected by this update.
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org<mailto:Bioc-devel at r-project.org> mailing list
+> https://secure-web.cisco.com/1Fr9LrhBnIBzC19gzU7IdbyooJnTL9WwnDRjd95lu9Ms7jJBJ7uFCHRdfchzrQ3AIu2jH6Enu70a7VInBs93PjRhMosnDwjUku7-gcKFBpUFz8oNGgp_8K6Sb51pFpldGPXbhQYwwCmQAjTmLANY0x9Bw7w4srmo0QTyk3XubQMNPSAFzLrx6_912FbcVz6wKgUGcmeBf_CIdQk2sseuFb-gz1ojledyG3E8pP4cDUDShmEAR6-GTHppr_7GTY8sdtki35gg9gxEX0-9XbCQSNCFqm79oWX-rBNz5QBmpfLL2VcZYu5gaz0JjmxM3-_Hs/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+>
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org<mailto:Bioc-devel at r-project.org> mailing list
+https://secure-web.cisco.com/1Fr9LrhBnIBzC19gzU7IdbyooJnTL9WwnDRjd95lu9Ms7jJBJ7uFCHRdfchzrQ3AIu2jH6Enu70a7VInBs93PjRhMosnDwjUku7-gcKFBpUFz8oNGgp_8K6Sb51pFpldGPXbhQYwwCmQAjTmLANY0x9Bw7w4srmo0QTyk3XubQMNPSAFzLrx6_912FbcVz6wKgUGcmeBf_CIdQk2sseuFb-gz1ojledyG3E8pP4cDUDShmEAR6-GTHppr_7GTY8sdtki35gg9gxEX0-9XbCQSNCFqm79oWX-rBNz5QBmpfLL2VcZYu5gaz0JjmxM3-_Hs/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org<mailto:Bioc-devel at r-project.org> mailing list
+https://stat.ethz.ch/mailman/listinfo/bioc-devel<https://secure-web.cisco.com/1d29vgeGc0AKAWcTSXuyqGEigpOqUd4ht-6vFjiYe28v4KV_GVXjaHYL_txGv77ZvfKjDGoVEQqcbTuE_BgHugDx-6cAcQgbeVpkjRUFMNbVkQKO4Fuzh9a9PkaU8nPS8fNv7AE9x3_oDKnPPIqONadZhVWP8ex9gJJYX-W7GbZoOpNsPD7_iXuAsxV9Qe-7p6S_i8J4GdIXg3ygmhPnDCBgt0o046Y_x0OrxqGRyjlUkG1YvkgUpR86kBHoRAAunae_XR1Qi6IVd_D8tLJ701zyNczckvBh69SWNLe6w717O7iJ7l_zn_Qn_33PfmPbV/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel>
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Mon Nov 16 13:39:45 2026
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Mon, 16 Nov 2026 12:39:45 +0000
+Subject: [Bioc-devel] 
+ BreastSubtypeR: guidance on updating Bioconductor 3.24
+ release candidate
+In-Reply-To: <GV3P280MB29462313266B851FB37EBA1F76F77D2@GV3P280MB294623.SWEP280.PROD.OUTLOOK.COM>
+References: <GV3P280MB29462313266B851FB37EBA1F76F77D2@GV3P280MB294623.SWEP280.PROD.OUTLOOK.COM>
+Message-ID: <FT1PR12MB222952AEAFF4FB81BE2B85886CF97C2@FT1PR12MB222952.namprd12.prod.outlook.com>
+
+The two main concerns with pushing this close to release and we ask for no major changes is:
+
+
+  1.
+Enough  time to correct any errors or warnings that occur on our version of the builders
+  2.
+How changes impact reverse dependencies and would those dependencies have time to adapt to changes
+
+>From the look of the package landing page there are no hard reverse dependencies on your package. In this case I would say if you would like to push the changes to Bioconductor you are fairly safe to do so.  Please pay attention to the Bioconductor build reports and be aware that if there are any ERROR or warnings that occur, if they are still active once we branch you would have to then correct both active Bioconductor branches.
+
+Cheers,
+
+
+Lori Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Emmanouil Sifakis via Bioc-devel <bioc-devel at r-project.org>
+Sent: Sunday, November 15, 2026 12:40 PM
+To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: [Bioc-devel] BreastSubtypeR: guidance on updating Bioconductor 3.24 release candidate
+
+Dear Bioconductor team,
+
+I maintain BreastSubtypeR and would appreciate your guidance on updating the package during the Bioconductor 3.24 release-candidate period.
+
+Our current Bioconductor devel branch is at version 1.5.12. Since its last synchronization, we have accumulated 64 commits on GitHub, including important bug fixes, regression tests, updated example data, and an opt-in Mapping capability.
+
+The current GitHub main passes R CMD check and BiocCheck on R 4.6/Bioconductor 3.24. We have also prepared and validated version 1.5.13 and its NEWS entries in draft PR #265<https://secure-web.cisco.com/1TsEzI-189jXvOtR6PQZrPkWH81hK_A2PIlwI2pDB9WbO6hvpzfs2cYqkwI60WnONdxuyOYXiztmxPbXGufdTup2ACu1qH5ZfLSmdywuansQRDtBY2cDAFEwiBvlpYT3uu__C0W7KiSHyFzD14XfOXmq2Lr7Om62XIxeXBfrCMzd3LgMnBOUwZFdjfZovE2IqUsiEhLDRp3MFsJ8LqnNdGGiqS2VZ_51LPBodPtardYvWYPkJ3AqGXiElQy1h8oySO_7KU02uARtJt8JFKbRVH4BYGec5NM6wdot6yei-butaqnzp2yp1UoJKT9cMnHFG/https%3A%2F%2Fgithub.com%2FJohanHartmanGroupBioteam%2FBreastSubtypeR%2Fpull%2F265>.
+
+Given the November 11 release-candidate restrictions, would you recommend synchronizing the full set of changes at this stage, or deferring the broader additions and preparing a more limited correction-only update?
+
+We have not pushed these changes to Bioconductor yet.
+
+Thank you for your guidance.
+
+Best regards,
+Emmanouil G. Sifakis
+Karolinska Institutet
+
+
+
+
+
+N?r du skickar e-post till Karolinska Institutet (KI) inneb?r detta att KI kommer att behandla dina personuppgifter. H?r finns information om hur KI behandlar personuppgifter<https://secure-web.cisco.com/19eDrnnvMQi_8Xw7I9sykPnPPR7ODTCmYljkESEJ7-hN86Up-ORDBVMterwX6O4-J0d4EA7o9IYAwN2wIxBjCQPo3W8icuap1t3NKGCvx0D8y1TMKso2YhEChD5ic7ZUfb7B8HLExLrzT3epNI8cjPRumWJu2MA21wfeGJhR_791ZmByC9mPgFEgNjRKWow-8QFFc99tzgJlTOdPhPwP4WnvaF9riovt2tqeaGOtJJDP1zaZswHE3kVfjPiJvqmK2TtvajmPcebd7Ft8yTVD3QpSyeZVHodtcCtsbW8JzqULW1J1OgaETlezL-Tv3IG0g/https%3A%2F%2Fki.se%2Fom-ki%2Fintegritetsskyddspolicy>.
+
+
+Sending email to Karolinska Institutet (KI) will result in KI processing your personal data. You can read more about KI's processing of personal data here<https://secure-web.cisco.com/13NPlpDI4gQ7ol2hJP4NMXkEWq_slOfFE6Ngw-JFlpOrCRK0dohC6ZTtb-BkuXJlLEKSLRm1HtR_xgDKFbPXuxc-VzJgvI1Ojc88rxLkmx1ftCDtJMrV-BcytDTaKMM7C648x7d9ywwYWDtdv38EJwK1Mc7UAO7EK0yv-H0JSYuEph5EhUqinx54Gh9ysaJsnvE3PqeyNEDZctlRnn85RA7UFuxf1mNI-xQ95kmOIY8k5GXAm1QXMdwUVsVQF2WWVzTaA6HB_TZyMOgqtmsPYN36_Sa0qIVjlszh6WW5dsQb7xAiqZSiM72tj15vsC8t7/https%3A%2F%2Fstaff.ki.se%2Fdata-protection-policy>.
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://secure-web.cisco.com/1IVIUQ9mD7vpA3A5IZWCqUcYzalf46w_2Fny9lXsGAVuTSYJUTvKPhe9dGqYNsfiNgCxrzRJwKbf4sHiRVsB8oqKtTsFl4tlpH50jxWwR7TD3ag-xREZGESgPzXGiyHnzMIkFcDzyae0jgr_3H4ODvA7lx_nHCkkmketOwHScjrIdPeHco1rNRxD7v1rSU9VZZ9vi3q3iyrdmVuzN8aC9vdlGTc8PB4na1pu61Ragpb2ywS2qoJL-GglpuhYZsmOIrgMz9AH1r56vORU4du6QWhh2NMyEzqs7-DVHUpq7f1KDm2CZxoJ1j-ja0AgR3TYB/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Mon Nov 16 16:51:08 2026
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Mon, 16 Nov 2026 15:51:08 +0000
+Subject: [Bioc-devel] Important Bioconductor Release 3.24
+Message-ID: <FT1PR12MB222952FE4313A66C60F4D21ED1F97C2@FT1PR12MB222952.namprd12.prod.outlook.com>
+
+The deadline for fixing packages in preparation for the release is this Friday November 20th. All packages should be installing, building, and checking without ERROR in the Bioconductor devel build report and Bioconductor devel R-Universe (https://bioc.r-universe.dev/builds ).  While you can continue to push changes past this date, this ensures all changes are reflected in at least one build report before the code freeze for release.  Packages that continue to show ERRORs in the build report after the release will be consideration for deprecation. We are on schedule to release Wednesday November 25th.
+
+Please also remember to update your NEWS files for any information about changes to your packages during this last development cycle.  Bioconductor collates all package news files as part of the release announcement. If your NEWS file is not formatted correctly and not updated by this weekend, it will not be included in the release announcement.
+
+For clarification:
+The release 3.24 branch has not yet been created.  Please continue to update the devel branch.
+The core team will automatically create the RELEASE_3_24 branch on git.bioconductor.org but until that time the only branch accessible is devel.  Do NOT try to create a RELEASE_3_24 branch on your own; the core team will do this for you next week Monday.  Bioconductor will also handle bumping the y of a package version x.y.z  on release day.
+
+Cheers,
+
+
+
+Lori Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From y@ng@||@o @end|ng |rom mon@@h@edu  Mon Nov 16 23:02:33 2026
+From: y@ng@||@o @end|ng |rom mon@@h@edu (Yang Liao)
+Date: Tue, 17 Nov 2026 09:02:33 +1100
+Subject: [Bioc-devel] Package size excemption for Rsubread
+Message-ID: <CANyHg6FUumgxEyY6e4mAaO7_NGhNsHf9O9K+FtizHV365Zz_gw@mail.gmail.com>
+
+Hi,
+
+Rsubread has been reporting a check error during the* r-universe build
+<https://bioc.r-universe.dev/Rsubread> *due to exceeding the package size
+limit (the package is approximately 13 MB, above the 10 MB limit).
+
+>From its very early versions, Rsubread has included several genome
+annotation files (hg19, hg38, mm10 and mm39) to make these resources
+readily available to users. However, including these files increases the
+overall package size.
+
+Would it be possible to grant Rsubread* an exemption from the package size
+limit*, given that these files are included to facilitate its use?
+
+All the best,
+
+Yang Liao
+
+-- 
+Yang Liao, PhD
+
+Mobile: +61-433-362-595
+Office: +61-3-990-50621
+The Monash Biomedicine Discovery Institute
+https://www.monash.edu/discovery-institute
+
+	[[alternative HTML version deleted]]
+
+
+From b|@u|er @end|ng |rom gm@||@com  Tue Nov 17 02:07:52 2026
+From: b|@u|er @end|ng |rom gm@||@com (Ben Laufer)
+Date: Mon, 16 Nov 2026 17:07:52 -0800
+Subject: [Bioc-devel] Question on bundling a Claude Code plugin in a new
+ package's repository
+Message-ID: <CAO+ZYnaEy6Z_crqsMNz6QKGfDHpoinJbeY8p2pUHtOzSx4d1+Q@mail.gmail.com>
+
+Hello,
+
+I am preparing to submit a new package and alongside the package code, the
+repository contains a small Claude Code plugin that helps users generate
+analysis reports with the package:
+
+- `skills`: the skill instructions (Markdown files) and a test script
+- `.claude-plugin/marketplace.json`: the plugin manifest
+- `CLAUDE.md`: package development notes for Claude Code, in the repository
+root (separate from the skill folder)
+
+All three are listed in `.Rbuildignore`, so none of them are in the built
+tarball. The submission guidelines say the default branch must contain only
+package code, with files for other applications in a separate branch. I
+have noticed that many accepted packages keep `.github/workflows` on their
+default branch, so I would like to know whether these files would be
+treated the same way. Would reviewers accept them on the default branch, or
+should I move them to a separate branch or a separate repository before
+submitting? If a separate branch is the preferred route, is there a
+convention for naming it?
+
+In line with the AI policy, I would mention that AI agents were used to
+create the skill and to adversarially review and patch the package code,
+under my supervision.
+
+Thanks,
+
+Ben
+
+	[[alternative HTML version deleted]]
+
+
+From |r@nck@r|ch@rd @end|ng |rom w|n@t@r@@net  Tue Nov 17 09:12:29 2026
+From: |r@nck@r|ch@rd @end|ng |rom w|n@t@r@@net (Franck RICHARD)
+Date: Tue, 17 Nov 2026 09:12:29 +0100
+Subject: [Bioc-devel] Important Bioconductor Release 3.24
+In-Reply-To: <FT1PR12MB222952FE4313A66C60F4D21ED1F97C2@FT1PR12MB222952.namprd12.prod.outlook.com>
+References: <FT1PR12MB222952FE4313A66C60F4D21ED1F97C2@FT1PR12MB222952.namprd12.prod.outlook.com>
+Message-ID: <e2681663-8356-4efb-814d-e377673adbe6@winstars.net>
+
+Hello, everyone!
+
+When I go to https://bioc.r-universe.dev/builds, I see that the 
+RbowtieCuda package is labeled "update failure for v1.5.6".
+
+However, when I go to
+
+https://bioconductor.org/checkResults/3.23/bioc-gpu-LATEST/RbowtieCuda/
+
+and https://bioconductor.org/checkResults/3.24/bioc-gpu-LATEST/RbowtieCuda/
+
+I can see that the compilation succeeds, except for amarone, which 
+doesn?t seem to have enough memory. In fact, compiling with CUDA 
+requires a lot of memory, especially for this package (> 16 GB).
+
+What should I do?
+
+Have a great day, everyone!
+
+Franck
+
+
+
+Le 16/11/2026 ? 16:51, Kern, Lori via Bioc-devel a ?crit?:
+> The deadline for fixing packages in preparation for the release is this Friday November 20th. All packages should be installing, building, and checking without ERROR in the Bioconductor devel build report and Bioconductor devel R-Universe (https://bioc.r-universe.dev/builds ).  While you can continue to push changes past this date, this ensures all changes are reflected in at least one build report before the code freeze for release.  Packages that continue to show ERRORs in the build report after the release will be consideration for deprecation. We are on schedule to release Wednesday November 25th.
+>
+> Please also remember to update your NEWS files for any information about changes to your packages during this last development cycle.  Bioconductor collates all package news files as part of the release announcement. If your NEWS file is not formatted correctly and not updated by this weekend, it will not be included in the release announcement.
+>
+> For clarification:
+> The release 3.24 branch has not yet been created.  Please continue to update the devel branch.
+> The core team will automatically create the RELEASE_3_24 branch on git.bioconductor.org but until that time the only branch accessible is devel.  Do NOT try to create a RELEASE_3_24 branch on your own; the core team will do this for you next week Monday.  Bioconductor will also handle bumping the y of a package version x.y.z  on release day.
+>
+> Cheers,
+>
+>
+>
+> Lori Kern
+>
+> Bioconductor Core Team
+>
+> Roswell Park Comprehensive Cancer Center
+>
+> Department of Biostatistics & Bioinformatics
+>
+> Elm & Carlton Streets
+>
+> Buffalo, New York 14263
+>
+>
+> This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+> 	[[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+	[[alternative HTML version deleted]]
+
+
