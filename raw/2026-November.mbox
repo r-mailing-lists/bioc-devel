@@ -2679,3 +2679,913 @@ On 11/18/26 10:46, Gordon Smyth wrote:
 > https://stat.ethz.ch/mailman/listinfo/bioc-devel
 
 
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Wed Nov 18 12:12:52 2026
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Wed, 18 Nov 2026 11:12:52 +0000
+Subject: [Bioc-devel] Retrospective bio
+In-Reply-To: <9a122883-c266-421e-b1a4-73569932d03d@gmail.com>
+References: <FT1PR12MB222952FE4313A66C60F4D21ED1F97C2@FT1PR12MB222952.namprd12.prod.outlook.com>
+ <BL3PR11MB5729714AF6FEDE9BC75EB91EAB7B2@BL3PR11MB5729.namprd11.prod.outlook.com>
+ <9a122883-c266-421e-b1a4-73569932d03d@gmail.com>
+Message-ID: <FT1PR12MB2229525955C875AE369F8F6419F97A2@FT1PR12MB222952.namprd12.prod.outlook.com>
+
+I'm sorry I didn't explain this in my email out to people for this release but we are NOT requiring BiocCheck at this point.
+
+As I mentioned in this post:
+https://stat.ethz.ch/pipermail/bioc-devel/2026-November/021608.html
+
+
+Until R-universe, we only ran BiocCheck on incoming packages,
+now that we have the ability to run these checks on all packages we have begun doing so and are reporting the results.
+We will evaluate the checks and slowly implement enforcement or modify or remove accordingly now that we have
+Data on it. We could not refine something that we could not run in bulk.
+
+Many were introduced as you said to help new developers (things like coding style) where at the time and still do occasionally receive packages that had no consistent syntax and made it impossible to review.  Suggesting good practices as a NOTE that can be ignored.  Perhaps this could be revisited but many others have found it helpful.
+
+We can evaluate the right threshold for examples. Bioconductor has always insisted on runnable code in the vignette, runnable examples, and tests.  I too personally feel this check should be better and take into account all of these. But that is also what makes Bioconductor standards; ensuring the package functions actually run (at least somewhere, at least once). Again now that we have better data we can refine and better it.
+
+We will be removing the support site shortly as we will be transitioning to a new system.  (Not yet announced and we will provide details when appropriate to the community about this switch). And as you can also understand signing people up for mailing lists they didn't do themselves could also cause major controversy and seem intrusive.
+
+As far as two landing pages that is unavoidable but needed.
+R-universe has its own mechanisms for distributing packages and we will be making a larger blog post, and mailing list and social media post around R-universe in the near future.
+But Bioconductor still requires additional checks for propagation that R-universe does not.  The Bioconductor landing pages are the versions and packages that are endorsed and officially distributed by Bioconductor.  The R-Universe landing page is for evaluating the build results.  We eventually will be releasing tools and ability to view package build results in different ways (and in bulk for maintainers of multiple packages), in addition to the R-universe page.
+
+It is not our intention to alienate or discourage our long term contributors and hopefully this helps easy the concern. There will be large announcements and details forth coming about the transitions that should clarify.
+
+
+
+Lori Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Aaron Lun <infinite.monkeys.with.keyboards at gmail.com>
+Sent: Wednesday, November 18, 2026 12:31 AM
+To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: Re: [Bioc-devel] Retrospective bio
+
+I agree with Gordon's sentiments.
+
+Several packages I maintain have BiocCheck ERRORs because some help
+pages don't have runnable examples. But why do they all need runnable
+examples? Some help pages document abstract concepts that are referenced
+by other pages, e.g., descriptions of virtual classes; or deprecated,
+defunct, or re-exported functions, for which examples are inappropriate;
+or low-level utilities that end-users shouldn't be calling but are
+exported for use in other packages of the same suite, e.g., alabaster.
+It seems silly to raise an ERROR because we don't meet some arbitrary
+threshold for runnable examples.
+
+Off the top of my head, the only (somewhat) useful "ERROR" that
+BiocCheck emits is whether the maintainer is watching the relevant tags
+on the support site. Many of my packages don't pass this check - at some
+point, the support site limited the number of watchable tags, so I had
+to delete some in order to make space for new tags. But in any case,
+this is a poor mechanism to enforce compliance. You already have the
+maintainer email for each package, you already know how to match it to
+the maintainer's support site account, and you have admin access to the
+support site. Why not just have a scheduled job that automatically adds
+all appropriate tags to the maintainer's support site account? Then
+there's no need for this check at all, which is one less thing for
+maintainers to worry about.
+
+As for coding style: I just ignore most of BiocCheck's NOTEs. I don't
+need to be told how to format my own code, and frankly, I don't see why
+it's Bioconductor's business. I'm not asking the core team to maintain
+my packages, so if I'm the only one who interacts with the source, I
+should be able to write it as I wish. (Occasional commits by Herve to
+update function calls don't count as "maintenance", at least not to the
+extent that I have to restyle my code to be more "readable" to whoever
+set these rules.)
+
+I appreciate BiocCheck's role in guiding new developers who don't know
+any better. But that's all it should do.
+
+-A
+
+
+On 11/18/26 10:46, Gordon Smyth wrote:
+> Dear Lori,
+>
+> With the greatest of respect, I don't it is wise or reasonable to introduce a retrospective requirement with just 3 days notice that all historical Bioconductor packages suddenly have to pass BiocCheck on R-Universe. As far as I know, this requirement has not been discussed before for existing packages.
+>
+> Bioconductor packages have always been required to pass R CMD check, which does indeed check code correctness, and that is good and fine. I have always found that helpful. BiocCheck however consists mainly of stylistic requirements that are subjective and which programmers other than the BiocCheck authors might not agree with. I personally find some of the requirements to be arbitrary and simplistic.
+>
+> A great many of the most highly cited Bioconductor packages are now stamped with an "ERROR" in red capital letters on their R-universe landing page. That includes limma, edgeR, DESeq2 and many, many others, including packages such as IRanges that are maintained by the Biocore team and even Biobase itself.
+>
+> IMO, it is a very bad look. It gives the impression that the community now has no confidence in the most highly cited and important Bioconductor packages
+> that have made Bioconductor famous around the world over the past 25 years. How would a potential Bioconductor user interpret that, or indeed an assessor evaluating a Bioconductor grant application?
+>
+> The limma package comes with a 151 page User's Guide and a 264 page reference manual built from 177 help files that include 87 runnable examples. Some might consider that good but, no, it is ERROR from BiocCheck because there are not enough runnable examples. limma might have more runnable examples than any other Bioconductor package but still not enough!  Meanwhile, a toy package with a half page reference manual and one runnable example, no matter how trivial, would be considered perfect. limma includes many Rd files for which a runnable example would be inappropriate, impossible or wasteful. Ironically, I could make limma pass BioCheck by deleting half the help files, but I am not willing to do that.
+>
+> BTW, I am a bit confused by the fact that each Bioconductor package now has two landing pages, one on bioconductor.org and one on R-universe. What is the role of the two pages going forward? R-universe has a strong github social programming orientation, which is not a direction that I necessarily want to go in, especially in this new AI era.
+>
+> I see you have advised Yang Liao that the R-Universe BiocCheck requirement will not be strictly enforced this Friday, but will still be enforced "gradually". That makes it sound as if we are tolerated "for now", but may get reevaluated at any time. Personally, I want to maintain my software in a way that seems to me to be best for users and best for my team, rather than fitting in with arbitrary rules that don't improve the code performance.
+>
+> Best wishes
+> Gordon
+>
+> -----------------------------------------------
+> Professor Gordon K Smyth
+> Lab Head, Technology Sciences Division, WEHI
+> https://secure-web.cisco.com/1vw2g-fig6HpkVOwHtJfO0zn-_zsNx4prZamsXw6UnWvdn86QbXjdk4FevlWfMP-YxEtkORPa6LzV4OrcD-SKkzIlvqO-4ZLLTM6XcUYHO5glDwjHGIKmfJ2tdiQQtheNVddLnAJ9TzR9bggWnhhWwis4UWq2M8ytdBkVtOkPsZeEI_eQ2vH_DPAJX9-5sNTaMxsN8659qbsfO5oJUle1j7ny460IQjZUUjAihcYJlXDFyvv6Zvw7IQHUtdIJ3JaHZmPJOVsOKoI00rqBjf_q5v6ATL7vH9pUn41ku0Zj2VUzKGxYPemOH1C7zbQSuB8n/https%3A%2F%2Fgksmyth.github.io%2F
+>
+>> -----Original Message-----
+>> From: Bioc-devel <bioc-devel-bounces at r-project.org> On Behalf Of Kern, Lori via
+>> Bioc-devel
+>> Sent: Tuesday, 17 November 2026 2:51
+>> To: bioc-devel <bioc-devel at r-project.org>
+>> Subject: [Bioc-devel] Important Bioconductor Release 3.24
+>>
+>> The deadline for fixing packages in preparation for the release is this Friday
+>> November 20th. All packages should be installing, building, and checking without
+>> ERROR in the Bioconductor devel build report and Bioconductor devel R-Universe
+>> (https://secure-web.cisco.com/1uwWFxUnrcjzAgyTrV0RmHxfpW_8GglRQgDESkv0d3afYViUtvgR9eEZ-3QnXbcJz1pg-Y-HVFHu3e8zHVudpNReinCjksHj4YxI8CkRnfODnsRA-RJ_O17dCJXlbXp3CwhIphPDeARj67Qvt7WAdDAoljNwIeELyaumJfyah5pbRpT6TcT9NXAGAXkSFRyLJ4lRReIzKxn1wqIkNyFWBLDqM_jQatbMNAlK16BI8bLQOrJzk7yaAI7_UAExbFIy4F5P-6tZzdedGQ_jyIn2C0uU5CT99g-hehRadzqvZVuqAX5QJmGZr9s86_NsUSmx4/https%3A%2F%2Fbioc.r-%2F
+>> universe.dev%2Fbuilds&data=05%7C02%7C%7Cc232d45a4c36493c689f08df43f9
+>> 8569%7C84df9e7fe9f640afb435aaaaaaaaaaaa%7C1%7C0%7C63930441114583
+>> 0951%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAu
+>> MDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C
+>> %7C&sdata=fns2iZCEWIfxnRmi%2FATJfcwwRfTyM3Q2Z3%2BZpsttFVY%3D&reser
+>> ved=0 ).  While you can continue to push changes past this date, this ensures all
+>> changes are reflected in at least one build report before the code freeze for
+>> release.  Packages that continue to show ERRORs in the build report after the
+>> release will be consideration for deprecation. We are on schedule to release
+>> Wednesday November 25th.
+>>
+>> Please also remember to update your NEWS files for any information about
+>> changes to your packages during this last development cycle.  Bioconductor
+>> collates all package news files as part of the release announcement. If your
+>> NEWS file is not formatted correctly and not updated by this weekend, it will not
+>> be included in the release announcement.
+>>
+>> For clarification:
+>> The release 3.24 branch has not yet been created.  Please continue to update the
+>> devel branch.
+>> The core team will automatically create the RELEASE_3_24 branch on
+>> git.bioconductor.org but until that time the only branch accessible is devel.  Do
+>> NOT try to create a RELEASE_3_24 branch on your own; the core team will do this
+>> for you next week Monday.  Bioconductor will also handle bumping the y of a
+>> package version x.y.z  on release day.
+>>
+>> Cheers,
+>>
+>>
+>>
+>> Lori Kern
+>>
+>> Bioconductor Core Team
+>>
+>> Roswell Park Comprehensive Cancer Center
+>>
+>> Department of Biostatistics & Bioinformatics
+>>
+>> Elm & Carlton Streets
+>>
+>> Buffalo, New York 14263
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://secure-web.cisco.com/1PuJz_q1bRAamCYKyYNX0mjZz_n25OoO4r-YbUiIkBF_3VBh6U6ALNZyV7xtc1HQpKp5feUhS9EJgcCFQKg7qVJAAwJVEBzCKjxLjj9GSaxfZI5I00wp3XZXx6m2oLxYmYaChyjqlGJH5HBwut6T6yuc3C1fvHxeZVPvhqsn9G60ChqwmwCdBAW9w6QRH4X5UaGDM1F4y8HwMpL57fNDiDj6j4_5H5hLAvHOvk7qzl4YMdUzcFH-3dteNi0s3HckoxgOT4kLr2rEvoXLI8HIkIC8c4SZBwH7SJGjwFibR-J3YoxSqQ4tCD6CpG7w8tABu/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://secure-web.cisco.com/1PuJz_q1bRAamCYKyYNX0mjZz_n25OoO4r-YbUiIkBF_3VBh6U6ALNZyV7xtc1HQpKp5feUhS9EJgcCFQKg7qVJAAwJVEBzCKjxLjj9GSaxfZI5I00wp3XZXx6m2oLxYmYaChyjqlGJH5HBwut6T6yuc3C1fvHxeZVPvhqsn9G60ChqwmwCdBAW9w6QRH4X5UaGDM1F4y8HwMpL57fNDiDj6j4_5H5hLAvHOvk7qzl4YMdUzcFH-3dteNi0s3HckoxgOT4kLr2rEvoXLI8HIkIC8c4SZBwH7SJGjwFibR-J3YoxSqQ4tCD6CpG7w8tABu/https%3A%2F%2Fstat.ethz.ch%2Fmailman%2Flistinfo%2Fbioc-devel
+
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org  Wed Nov 18 12:33:36 2026
+From: Lor|@Shepherd @end|ng |rom Ro@we||P@rk@org (Kern, Lori)
+Date: Wed, 18 Nov 2026 11:33:36 +0000
+Subject: [Bioc-devel] Important Bioconductor Release 3.24
+In-Reply-To: <FT1PR12MB222952FE4313A66C60F4D21ED1F97C2@FT1PR12MB222952.namprd12.prod.outlook.com>
+References: <FT1PR12MB222952FE4313A66C60F4D21ED1F97C2@FT1PR12MB222952.namprd12.prod.outlook.com>
+Message-ID: <FT1PR12MB22295292842A7B6EFC1FE7FB76F97A2@FT1PR12MB222952.namprd12.prod.outlook.com>
+
+Also for clarification:
+
+While we want all BiocChecks to be clean,
+we currently do not take the results of BiocCheck into account for propagation/inclusion.
+
+Until R-universe, we only ran BiocCheck on incoming packages,  now that we have the ability to run these checks on all packages we have begun doing so and are reporting the results. We will evaluate the checks and slowly implement enforcement or modify or remove accordingly now that we have data on it. We could not refine something that we could not run in bulk.
+
+We appreciate your continued contributions to Bioconductor and sorry if this caused any frustration or concern.
+
+Please fix any ERROR that are occurring from the build, vignette build, or R CMD check of the packages.
+
+Thank you
+
+
+Lori Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Kern, Lori <Lori.Shepherd at RoswellPark.org>
+Sent: Monday, November 16, 2026 10:51 AM
+To: bioc-devel <bioc-devel at r-project.org>
+Subject: Important Bioconductor Release 3.24
+
+The deadline for fixing packages in preparation for the release is this Friday November 20th. All packages should be installing, building, and checking without ERROR in the Bioconductor devel build report and Bioconductor devel R-Universe (https://bioc.r-universe.dev/builds ).  While you can continue to push changes past this date, this ensures all changes are reflected in at least one build report before the code freeze for release.  Packages that continue to show ERRORs in the build report after the release will be consideration for deprecation. We are on schedule to release Wednesday November 25th.
+
+Please also remember to update your NEWS files for any information about changes to your packages during this last development cycle.  Bioconductor collates all package news files as part of the release announcement. If your NEWS file is not formatted correctly and not updated by this weekend, it will not be included in the release announcement.
+
+For clarification:
+The release 3.24 branch has not yet been created.  Please continue to update the devel branch.
+The core team will automatically create the RELEASE_3_24 branch on git.bioconductor.org but until that time the only branch accessible is devel.  Do NOT try to create a RELEASE_3_24 branch on your own; the core team will do this for you next week Monday.  Bioconductor will also handle bumping the y of a package version x.y.z  on release day.
+
+Cheers,
+
+
+
+Lori Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+	[[alternative HTML version deleted]]
+
+
+From Andre@@Wok@ty @end|ng |rom @ph@cuny@edu  Wed Nov 18 15:58:24 2026
+From: Andre@@Wok@ty @end|ng |rom @ph@cuny@edu (Andres Wokaty)
+Date: Wed, 18 Nov 2026 14:58:24 +0000
+Subject: [Bioc-devel] Important Bioconductor Release 3.24
+In-Reply-To: <FT1PR12MB22295292842A7B6EFC1FE7FB76F97A2@FT1PR12MB222952.namprd12.prod.outlook.com>
+References: <FT1PR12MB222952FE4313A66C60F4D21ED1F97C2@FT1PR12MB222952.namprd12.prod.outlook.com>
+ <FT1PR12MB22295292842A7B6EFC1FE7FB76F97A2@FT1PR12MB222952.namprd12.prod.outlook.com>
+Message-ID: <SA1PR14MB958095FA110D29EE7F8C1D53B8DA7A2@SA1PR14MB958095.namprd14.prod.outlook.com>
+
+Hi Franck,
+
+I'll take a look at the issue on amarone for RbowtieCuda.
+
+Andres Wokaty (they/them)
+
+Waldron Lab at CUNY SPH
+Bioconductor Core Team
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Kern, Lori via Bioc-devel <bioc-devel at r-project.org>
+Sent: Wednesday, November 18, 2026 6:33 AM
+To: bioc-devel <bioc-devel at r-project.org>
+Subject: Re: [Bioc-devel] Important Bioconductor Release 3.24
+
+* External Sender - Proceed Cautiously with Links and Attachments. *
+
+Also for clarification:
+
+While we want all BiocChecks to be clean,
+we currently do not take the results of BiocCheck into account for propagation/inclusion.
+
+Until R-universe, we only ran BiocCheck on incoming packages,  now that we have the ability to run these checks on all packages we have begun doing so and are reporting the results. We will evaluate the checks and slowly implement enforcement or modify or remove accordingly now that we have data on it. We could not refine something that we could not run in bulk.
+
+We appreciate your continued contributions to Bioconductor and sorry if this caused any frustration or concern.
+
+Please fix any ERROR that are occurring from the build, vignette build, or R CMD check of the packages.
+
+Thank you
+
+
+Lori Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+________________________________
+From: Kern, Lori <Lori.Shepherd at RoswellPark.org>
+Sent: Monday, November 16, 2026 10:51 AM
+To: bioc-devel <bioc-devel at r-project.org>
+Subject: Important Bioconductor Release 3.24
+
+The deadline for fixing packages in preparation for the release is this Friday November 20th. All packages should be installing, building, and checking without ERROR in the Bioconductor devel build report and Bioconductor devel R-Universe (https://urldefense.com/v3/__https://bioc.r-universe.dev/builds__;!!LRXxDv2l!RiuQO3Sz_umGFcz4xzqMU9IvvOyETNaGIdIps7B1yeLvs66vjxU7X-apgKl7oKrQBV0KiFYfkjmFnQzxungPe8xiuZYP3g2B_w$  ).  While you can continue to push changes past this date, this ensures all changes are reflected in at least one build report before the code freeze for release.  Packages that continue to show ERRORs in the build report after the release will be consideration for deprecation. We are on schedule to release Wednesday November 25th.
+
+Please also remember to update your NEWS files for any information about changes to your packages during this last development cycle.  Bioconductor collates all package news files as part of the release announcement. If your NEWS file is not formatted correctly and not updated by this weekend, it will not be included in the release announcement.
+
+For clarification:
+The release 3.24 branch has not yet been created.  Please continue to update the devel branch.
+The core team will automatically create the RELEASE_3_24 branch on git.bioconductor.org but until that time the only branch accessible is devel.  Do NOT try to create a RELEASE_3_24 branch on your own; the core team will do this for you next week Monday.  Bioconductor will also handle bumping the y of a package version x.y.z  on release day.
+
+Cheers,
+
+
+
+Lori Kern
+
+Bioconductor Core Team
+
+Roswell Park Comprehensive Cancer Center
+
+Department of Biostatistics & Bioinformatics
+
+Elm & Carlton Streets
+
+Buffalo, New York 14263
+
+
+This email message may contain legally privileged and/or confidential information.  If you are not the intended recipient(s), or the employee or agent responsible for the delivery of this message to the intended recipient(s), you are hereby notified that any disclosure, copying, distribution, or use of this email message is prohibited.  If you have received this message in error, please notify the sender immediately by e-mail and delete this email message from your computer. Thank you.
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://urldefense.com/v3/__https://stat.ethz.ch/mailman/listinfo/bioc-devel__;!!LRXxDv2l!RiuQO3Sz_umGFcz4xzqMU9IvvOyETNaGIdIps7B1yeLvs66vjxU7X-apgKl7oKrQBV0KiFYfkjmFnQzxungPe8xiuZYwr9SIuw$
+
+	[[alternative HTML version deleted]]
+
+
+From p@n79 @end|ng |rom p|tt@edu  Wed Nov 18 19:50:36 2026
+From: p@n79 @end|ng |rom p|tt@edu (Pariksheet Nanda)
+Date: Wed, 18 Nov 2026 13:50:36 -0500
+Subject: [Bioc-devel] Question on bundling a Claude Code plugin in a new
+ package's repository
+In-Reply-To: <CAO+ZYnaEy6Z_crqsMNz6QKGfDHpoinJbeY8p2pUHtOzSx4d1+Q@mail.gmail.com>
+References: <CAO+ZYnaEy6Z_crqsMNz6QKGfDHpoinJbeY8p2pUHtOzSx4d1+Q@mail.gmail.com>
+Message-ID: <c2fe679d-bc11-4bf4-b0f9-3497532bd7e3@pitt.edu>
+
+Hi Ben,
+
+Just to clarify the scope of my comments: this applies to users who are 
+using an installed copy of your package to create a report and have a 
+subscription to Claude Code, not to anyone working inside your package 
+source directory.
+
+As far as I'm aware, those 3 files that you want to distribute with the 
+Bioconductor package are typically expected to be located in the R 
+project root for Claude Code to find them.  If, say, those files were 
+put somewhere into inst/ and installed to the final package location on 
+a non-developer user installation of your package, I'd expect that 
+wouldn't have the same effect; I don't have a subscription to Claude 
+Code to verify that.
+
+Either way, what you may consider doing is write a function that 
+symlinks those files into the user's current R project directory without 
+overwriting existing files, similar to how the usethis package 
+manipulates local files, and demonstrate it in your vignette as 
+non-evaluated code.  Then it doesn't really matter where your files are 
+located in your package directory (though I would suggest you consider 
+maybe inst/scripts/ per 
+contributions.bioconductor.org/docs.html?#doc-inst-scripts).  As a 
+package reviewer, I would find that acceptable, although I don't have 
+control over what packages are assigned to me and cannot speak for any 
+of the other package reviewers.
+
+Pariksheet
+
+Pariksheet Nanda, PhD
+Postdoctoral Associate
+Shoemaker Laboratory
+Department of Chemical Engineering
+University of Pittsburgh
+
+
+On 11/16/26 20:07, Ben Laufer wrote:
+> [You don't often get email from blaufer at gmail.com. Learn why this is important at https://aka.ms/LearnAboutSenderIdentification ]
+> 
+> Hello,
+> 
+> I am preparing to submit a new package and alongside the package code, the
+> repository contains a small Claude Code plugin that helps users generate
+> analysis reports with the package:
+> 
+> - `skills`: the skill instructions (Markdown files) and a test script
+> - `.claude-plugin/marketplace.json`: the plugin manifest
+> - `CLAUDE.md`: package development notes for Claude Code, in the repository
+> root (separate from the skill folder)
+> 
+> All three are listed in `.Rbuildignore`, so none of them are in the built
+> tarball. The submission guidelines say the default branch must contain only
+> package code, with files for other applications in a separate branch. I
+> have noticed that many accepted packages keep `.github/workflows` on their
+> default branch, so I would like to know whether these files would be
+> treated the same way. Would reviewers accept them on the default branch, or
+> should I move them to a separate branch or a separate repository before
+> submitting? If a separate branch is the preferred route, is there a
+> convention for naming it?
+> 
+> In line with the AI policy, I would mention that AI agents were used to
+> create the skill and to adversarially review and patch the package code,
+> under my supervision.
+> 
+> Thanks,
+> 
+> Ben
+> 
+>          [[alternative HTML version deleted]]
+> 
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+
+From @e@nd@v| @end|ng |rom gm@||@com  Wed Nov 18 21:02:30 2026
+From: @e@nd@v| @end|ng |rom gm@||@com (Sean Davis)
+Date: Wed, 18 Nov 2026 20:02:30 +0000
+Subject: [Bioc-devel] Question on bundling a Claude Code plugin in a new
+ package's repository
+In-Reply-To: <CAO+ZYnaEy6Z_crqsMNz6QKGfDHpoinJbeY8p2pUHtOzSx4d1+Q@mail.gmail.com>
+References: <CAO+ZYnaEy6Z_crqsMNz6QKGfDHpoinJbeY8p2pUHtOzSx4d1+Q@mail.gmail.com>
+Message-ID: <CH6PR15MB621328FAFBDECCB4891890FDA0F97A2@CH6PR15MB621328.namprd15.prod.outlook.com>
+
+Hi, Ben.
+
+I?d follow the instructions here:
+
+https://code.claude.com/docs/en/plugins/publish#publish-through-your-own-marketplace
+
+It looks like you are doing that already. Consider adding a vignette section (or a dedicated vignette) on installing and using the plugin and skills.
+
+It is fine to have the files in your repo by including them in .Rbuildignore. I would not put them in a separate branch or repo.
+
+If your plugin is mostly skills, you might consider just plain skills which can be largely agent-agnostic. A convenient way to share skills is via the Vercel ?skills? approach. See here:
+
+https://github.com/vercel-labs/skills/blob/main/docs/creating-skills.md
+
+Either plugin or skills (or both) seem reasonable to me.
+
+Sean
+
+
+________________________________
+From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Ben Laufer <blaufer at gmail.com>
+Date: Tuesday, November 17, 2026 at 01:08
+To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+Subject: [Bioc-devel] Question on bundling a Claude Code plugin in a new package's repository
+
+Hello,
+
+I am preparing to submit a new package and alongside the package code, the
+repository contains a small Claude Code plugin that helps users generate
+analysis reports with the package:
+
+- `skills`: the skill instructions (Markdown files) and a test script
+- `.claude-plugin/marketplace.json`: the plugin manifest
+- `CLAUDE.md`: package development notes for Claude Code, in the repository
+root (separate from the skill folder)
+
+All three are listed in `.Rbuildignore`, so none of them are in the built
+tarball. The submission guidelines say the default branch must contain only
+package code, with files for other applications in a separate branch. I
+have noticed that many accepted packages keep `.github/workflows` on their
+default branch, so I would like to know whether these files would be
+treated the same way. Would reviewers accept them on the default branch, or
+should I move them to a separate branch or a separate repository before
+submitting? If a separate branch is the preferred route, is there a
+convention for naming it?
+
+In line with the AI policy, I would mention that AI agents were used to
+create the skill and to adversarially review and patch the package code,
+under my supervision.
+
+Thanks,
+
+Ben
+
+        [[alternative HTML version deleted]]
+
+_______________________________________________
+Bioc-devel at r-project.org mailing list
+https://stat.ethz.ch/mailman/listinfo/bioc-devel
+
+	[[alternative HTML version deleted]]
+
+
+From b|@u|er @end|ng |rom gm@||@com  Wed Nov 18 21:54:56 2026
+From: b|@u|er @end|ng |rom gm@||@com (Ben Laufer)
+Date: Wed, 18 Nov 2026 12:54:56 -0800
+Subject: [Bioc-devel] Question on bundling a Claude Code plugin in a new
+ package's repository
+In-Reply-To: <CH6PR15MB621328FAFBDECCB4891890FDA0F97A2@CH6PR15MB621328.namprd15.prod.outlook.com>
+References: <CAO+ZYnaEy6Z_crqsMNz6QKGfDHpoinJbeY8p2pUHtOzSx4d1+Q@mail.gmail.com>
+ <CH6PR15MB621328FAFBDECCB4891890FDA0F97A2@CH6PR15MB621328.namprd15.prod.outlook.com>
+Message-ID: <CAO+ZYnb87EdKVcucW7r82EHgct4AzYgknsLUiXEGj+q6hVG+rQ@mail.gmail.com>
+
+Hi Pariksheet and Sean,
+
+I've taken the first approach Sean mentioned: the plugin is published
+through its own marketplace in the package's GitHub repository. Claude Code
+doesn't read the plugin from the installed R package. It installs plugins
+itself, from a GitHub repository added as a plugin marketplace, so the
+files only need to be in the repository. They are listed in
+`.Rbuildignore`, so they are not part of the built package and never reach
+a user's R library. That also means nothing needs to be copied or linked
+into a user's project.
+
+Using the plugin is opt in. A section of the vignette will show the install
+commands as code that is not run, for the user to enter in a Claude Code
+session:
+
+/plugin marketplace add genentech/basicBulk
+/plugin install basicbulk at basicbulk
+
+The GitHub repository is not public yet, so these commands won't work until
+it is published.
+
+I'm glad to hear this plan seems reasonable, and thank you for taking the
+time to look at it.
+
+Best,
+
+Ben
+
+On Wed, Nov 18, 2026 at 12:02?PM Sean Davis <seandavi at gmail.com> wrote:
+
+> Hi, Ben.
+>
+> I?d follow the instructions here:
+>
+>
+> https://code.claude.com/docs/en/plugins/publish#publish-through-your-own-marketplace
+>
+> It looks like you are doing that already. Consider adding a vignette
+> section (or a dedicated vignette) on installing and using the plugin and
+> skills.
+>
+> It is fine to have the files in your repo by including them in
+> .Rbuildignore. I would not put them in a separate branch or repo.
+>
+> If your plugin is mostly skills, you might consider just plain skills
+> which can be largely agent-agnostic. A convenient way to share skills is
+> via the Vercel ?skills? approach. See here:
+>
+> https://github.com/vercel-labs/skills/blob/main/docs/creating-skills.md
+>
+> Either plugin or skills (or both) seem reasonable to me.
+>
+> Sean
+>
+>
+> ------------------------------
+> *From: *Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Ben
+> Laufer <blaufer at gmail.com>
+> *Date: *Tuesday, November 17, 2026 at 01:08
+> *To: *bioc-devel at r-project.org <bioc-devel at r-project.org>
+> *Subject: *[Bioc-devel] Question on bundling a Claude Code plugin in a
+> new package's repository
+>
+> Hello,
+>
+> I am preparing to submit a new package and alongside the package code, the
+> repository contains a small Claude Code plugin that helps users generate
+> analysis reports with the package:
+>
+> - `skills`: the skill instructions (Markdown files) and a test script
+> - `.claude-plugin/marketplace.json`: the plugin manifest
+> - `CLAUDE.md`: package development notes for Claude Code, in the repository
+> root (separate from the skill folder)
+>
+> All three are listed in `.Rbuildignore`, so none of them are in the built
+> tarball. The submission guidelines say the default branch must contain only
+> package code, with files for other applications in a separate branch. I
+> have noticed that many accepted packages keep `.github/workflows` on their
+> default branch, so I would like to know whether these files would be
+> treated the same way. Would reviewers accept them on the default branch, or
+> should I move them to a separate branch or a separate repository before
+> submitting? If a separate branch is the preferred route, is there a
+> convention for naming it?
+>
+> In line with the AI policy, I would mention that AI agents were used to
+> create the skill and to adversarially review and patch the package code,
+> under my supervision.
+>
+> Thanks,
+>
+> Ben
+>
+>         [[alternative HTML version deleted]]
+>
+> _______________________________________________
+> Bioc-devel at r-project.org mailing list
+> https://stat.ethz.ch/mailman/listinfo/bioc-devel
+>
+
+	[[alternative HTML version deleted]]
+
+
+From gk@myth @end|ng |rom out|ook@com  Wed Nov 18 23:00:05 2026
+From: gk@myth @end|ng |rom out|ook@com (Gordon Smyth)
+Date: Wed, 18 Nov 2026 22:00:05 +0000
+Subject: [Bioc-devel] Retrospective bio
+In-Reply-To: <FT1PR12MB2229525955C875AE369F8F6419F97A2@FT1PR12MB222952.namprd12.prod.outlook.com>
+References: <FT1PR12MB222952FE4313A66C60F4D21ED1F97C2@FT1PR12MB222952.namprd12.prod.outlook.com>
+ <BL3PR11MB5729714AF6FEDE9BC75EB91EAB7B2@BL3PR11MB5729.namprd11.prod.outlook.com>
+ <9a122883-c266-421e-b1a4-73569932d03d@gmail.com>
+ <FT1PR12MB2229525955C875AE369F8F6419F97A2@FT1PR12MB222952.namprd12.prod.outlook.com>
+Message-ID: <BL3PR11MB5729AF1F816D4066E68A31D8AB7A2@BL3PR11MB5729.namprd11.prod.outlook.com>
+
+Bioconductor has always had the ability to run checks on all packages at regular intervals:
+<https://bioconductor.org/checkResults/devel/bioc-LATEST/>
+and BiocCheck style checks could have been included at any time had they been considered appropriate (which until now they weren't).
+
+You don't say in your email, but am I right to guess that there is a plan to abandon Bioconductor's checkResults and instead depend entirely on R-universe?
+
+R CMD checks on on R-universe are actually lighter than those on Bioconductor (--no-manual, --no-vignettes) and cannot be viewed on the site. They can only be downloaded as a zip, separately for each platform. I don't think they will be ever be viewed by authors who submit low quality packages to Bioconductor with no consistent syntax.
+
+Bioc checking has always been focused on small packages that do easy things over large packages that do difficult things on large datasets, which to me is what Bioconductor should aspire to be about. Yesterday, an international visitor came up to me at a conference to say how important the limma User's Guide has been to him over the years. Yet the User's Guide is fundamentally incompatible with Bioconductor's rules for runnable code in vignettes.
+
+Gordon
+
+> -----Original Message-----
+> From: Bioc-devel <bioc-devel-bounces at r-project.org> On Behalf Of Kern, Lori via
+> Bioc-devel
+> Sent: Wednesday, 18 November 2026 22:13
+> To: Aaron Lun <infinite.monkeys.with.keyboards at gmail.com>; bioc-devel at r-
+> project.org
+> Subject: Re: [Bioc-devel] Retrospective bio
+>
+> I'm sorry I didn't explain this in my email out to people for this release but we are
+> NOT requiring BiocCheck at this point.
+>
+> As I mentioned in this post:
+> https://stat.ethz.ch/
+> %2Fpipermail%2Fbioc-devel%2F2026-
+> November%2F021608.html&data=05%7C02%7C%7C505dec337f9645cecb2f08df
+> 456519d5%7C84df9e7fe9f640afb435aaaaaaaaaaaa%7C1%7C0%7C6393059726
+> 81511312%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiI
+> wLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7
+> C%7C%7C&sdata=kuOR%2BnBCA%2BzD8N3TqASYl9xdBCYB3JbdMcIZ4zK4gD4%3
+> D&reserved=0
+>
+>
+> Until R-universe, we only ran BiocCheck on incoming packages,
+> now that we have the ability to run these checks on all packages we have begun
+> doing so and are reporting the results.
+> We will evaluate the checks and slowly implement enforcement or modify or
+> remove accordingly now that we have
+> Data on it. We could not refine something that we could not run in bulk.
+>
+> Many were introduced as you said to help new developers (things like coding
+> style) where at the time and still do occasionally receive packages that had no
+> consistent syntax and made it impossible to review.  Suggesting good practices as
+> a NOTE that can be ignored.  Perhaps this could be revisited but many others have
+> found it helpful.
+>
+> We can evaluate the right threshold for examples. Bioconductor has always
+> insisted on runnable code in the vignette, runnable examples, and tests.  I too
+> personally feel this check should be better and take into account all of these. But
+> that is also what makes Bioconductor standards; ensuring the package functions
+> actually run (at least somewhere, at least once). Again now that we have better
+> data we can refine and better it.
+>
+> We will be removing the support site shortly as we will be transitioning to a new
+> system.  (Not yet announced and we will provide details when appropriate to the
+> community about this switch). And as you can also understand signing people up
+> for mailing lists they didn't do themselves could also cause major controversy and
+> seem intrusive.
+>
+> As far as two landing pages that is unavoidable but needed.
+> R-universe has its own mechanisms for distributing packages and we will be
+> making a larger blog post, and mailing list and social media post around R-
+> universe in the near future.
+> But Bioconductor still requires additional checks for propagation that R-universe
+> does not.  The Bioconductor landing pages are the versions and packages that are
+> endorsed and officially distributed by Bioconductor.  The R-Universe landing page
+> is for evaluating the build results.  We eventually will be releasing tools and ability
+> to view package build results in different ways (and in bulk for maintainers of
+> multiple packages), in addition to the R-universe page.
+>
+> It is not our intention to alienate or discourage our long term contributors and
+> hopefully this helps easy the concern. There will be large announcements and
+> details forth coming about the transitions that should clarify.
+>
+>
+>
+> Lori Kern
+>
+> Bioconductor Core Team
+>
+> Roswell Park Comprehensive Cancer Center
+>
+> Department of Biostatistics & Bioinformatics
+>
+> Elm & Carlton Streets
+>
+> Buffalo, New York 14263
+>
+> ________________________________
+> From: Bioc-devel <bioc-devel-bounces at r-project.org> on behalf of Aaron Lun
+> <infinite.monkeys.with.keyboards at gmail.com>
+> Sent: Wednesday, November 18, 2026 12:31 AM
+> To: bioc-devel at r-project.org <bioc-devel at r-project.org>
+> Subject: Re: [Bioc-devel] Retrospective bio
+>
+> I agree with Gordon's sentiments.
+>
+> Several packages I maintain have BiocCheck ERRORs because some help
+> pages don't have runnable examples. But why do they all need runnable
+> examples? Some help pages document abstract concepts that are referenced
+> by other pages, e.g., descriptions of virtual classes; or deprecated,
+> defunct, or re-exported functions, for which examples are inappropriate;
+> or low-level utilities that end-users shouldn't be calling but are
+> exported for use in other packages of the same suite, e.g., alabaster.
+> It seems silly to raise an ERROR because we don't meet some arbitrary
+> threshold for runnable examples.
+>
+> Off the top of my head, the only (somewhat) useful "ERROR" that
+> BiocCheck emits is whether the maintainer is watching the relevant tags
+> on the support site. Many of my packages don't pass this check - at some
+> point, the support site limited the number of watchable tags, so I had
+> to delete some in order to make space for new tags. But in any case,
+> this is a poor mechanism to enforce compliance. You already have the
+> maintainer email for each package, you already know how to match it to
+> the maintainer's support site account, and you have admin access to the
+> support site. Why not just have a scheduled job that automatically adds
+> all appropriate tags to the maintainer's support site account? Then
+> there's no need for this check at all, which is one less thing for
+> maintainers to worry about.
+>
+> As for coding style: I just ignore most of BiocCheck's NOTEs. I don't
+> need to be told how to format my own code, and frankly, I don't see why
+> it's Bioconductor's business. I'm not asking the core team to maintain
+> my packages, so if I'm the only one who interacts with the source, I
+> should be able to write it as I wish. (Occasional commits by Herve to
+> update function calls don't count as "maintenance", at least not to the
+> extent that I have to restyle my code to be more "readable" to whoever
+> set these rules.)
+>
+> I appreciate BiocCheck's role in guiding new developers who don't know
+> any better. But that's all it should do.
+>
+> -A
+>
+>
+> On 11/18/26 10:46, Gordon Smyth wrote:
+> > Dear Lori,
+> >
+> > With the greatest of respect, I don't it is wise or reasonable to introduce a
+> retrospective requirement with just 3 days notice that all historical Bioconductor
+> packages suddenly have to pass BiocCheck on R-Universe. As far as I know, this
+> requirement has not been discussed before for existing packages.
+> >
+> > Bioconductor packages have always been required to pass R CMD check, which
+> does indeed check code correctness, and that is good and fine. I have always
+> found that helpful. BiocCheck however consists mainly of stylistic requirements
+> that are subjective and which programmers other than the BiocCheck authors
+> might not agree with. I personally find some of the requirements to be arbitrary
+> and simplistic.
+> >
+> > A great many of the most highly cited Bioconductor packages are now stamped
+> with an "ERROR" in red capital letters on their R-universe landing page. That
+> includes limma, edgeR, DESeq2 and many, many others, including packages such
+> as IRanges that are maintained by the Biocore team and even Biobase itself.
+> >
+> > IMO, it is a very bad look. It gives the impression that the community now has
+> no confidence in the most highly cited and important Bioconductor packages
+> > that have made Bioconductor famous around the world over the past 25 years.
+> How would a potential Bioconductor user interpret that, or indeed an assessor
+> evaluating a Bioconductor grant application?
+> >
+> > The limma package comes with a 151 page User's Guide and a 264 page
+> reference manual built from 177 help files that include 87 runnable examples.
+> Some might consider that good but, no, it is ERROR from BiocCheck because there
+> are not enough runnable examples. limma might have more runnable examples
+> than any other Bioconductor package but still not enough!  Meanwhile, a toy
+> package with a half page reference manual and one runnable example, no matter
+> how trivial, would be considered perfect. limma includes many Rd files for which
+> a runnable example would be inappropriate, impossible or wasteful. Ironically, I
+> could make limma pass BioCheck by deleting half the help files, but I am not
+> willing to do that.
+> >
+> > BTW, I am a bit confused by the fact that each Bioconductor package now has
+> two landing pages, one on bioconductor.org and one on R-universe. What is the
+> role of the two pages going forward? R-universe has a strong github social
+> programming orientation, which is not a direction that I necessarily want to go in,
+> especially in this new AI era.
+> >
+> > I see you have advised Yang Liao that the R-Universe BiocCheck requirement
+> will not be strictly enforced this Friday, but will still be enforced "gradually". That
+> makes it sound as if we are tolerated "for now", but may get reevaluated at any
+> time. Personally, I want to maintain my software in a way that seems to me to be
+> best for users and best for my team, rather than fitting in with arbitrary rules that
+> don't improve the code performance.
+> >
+> > Best wishes
+> > Gordon
+> >
+> > -----------------------------------------------
+> > Professor Gordon K Smyth
+> > Lab Head, Technology Sciences Division, WEHI
+> > https://secure-/
+> web.cisco.com%2F1vw2g-fig6HpkVOwHtJfO0zn-
+> _zsNx4prZamsXw6UnWvdn86QbXjdk4FevlWfMP-YxEtkORPa6LzV4OrcD-
+> SKkzIlvqO-
+> 4ZLLTM6XcUYHO5glDwjHGIKmfJ2tdiQQtheNVddLnAJ9TzR9bggWnhhWwis4UWq
+> 2M8ytdBkVtOkPsZeEI_eQ2vH_DPAJX9-
+> 5sNTaMxsN8659qbsfO5oJUle1j7ny460IQjZUUjAihcYJlXDFyvv6Zvw7IQHUtdIJ3JaH
+> ZmPJOVsOKoI00rqBjf_q5v6ATL7vH9pUn41ku0Zj2VUzKGxYPemOH1C7zbQSuB8n%
+> 2Fhttps%253A%252F%252Fgksmyth.github.io%252F&data=05%7C02%7C%7C505
+> dec337f9645cecb2f08df456519d5%7C84df9e7fe9f640afb435aaaaaaaaaaaa%7C
+> 1%7C0%7C639305972681540337%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1
+> hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIj
+> oyfQ%3D%3D%7C0%7C%7C%7C&sdata=f7WrW0E3LvgSohGa6u1U%2BdnQiIrIx4
+> QADMOzk%2FVMDJE%3D&reserved=0
+> >
+> >> -----Original Message-----
+> >> From: Bioc-devel <bioc-devel-bounces at r-project.org> On Behalf Of Kern, Lori
+> via
+> >> Bioc-devel
+> >> Sent: Tuesday, 17 November 2026 2:51
+> >> To: bioc-devel <bioc-devel at r-project.org>
+> >> Subject: [Bioc-devel] Important Bioconductor Release 3.24
+> >>
+> >> The deadline for fixing packages in preparation for the release is this Friday
+> >> November 20th. All packages should be installing, building, and checking
+> without
+> >> ERROR in the Bioconductor devel build report and Bioconductor devel R-
+> Universe
+> >> (https://secure-/
+> web.cisco.com%2F1uwWFxUnrcjzAgyTrV0RmHxfpW_8GglRQgDESkv0d3afYViUtv
+> gR9eEZ-3QnXbcJz1pg-Y-HVFHu3e8zHVudpNReinCjksHj4YxI8CkRnfODnsRA-
+> RJ_O17dCJXlbXp3CwhIphPDeARj67Qvt7WAdDAoljNwIeELyaumJfyah5pbRpT6TcT
+> 9NXAGAXkSFRyLJ4lRReIzKxn1wqIkNyFWBLDqM_jQatbMNAlK16BI8bLQOrJzk7yaA
+> I7_UAExbFIy4F5P-6tZzdedGQ_jyIn2C0uU5CT99g-
+> hehRadzqvZVuqAX5QJmGZr9s86_NsUSmx4%2Fhttps%253A%252F%252Fbioc.r-
+> %252F&data=05%7C02%7C%7C505dec337f9645cecb2f08df456519d5%7C84df9e
+> 7fe9f640afb435aaaaaaaaaaaa%7C1%7C0%7C639305972681560993%7CUnkno
+> wn%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAi
+> OiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=b
+> WaI7t8AEcQpyxrS6TZBTQOTiQq0OnAvjzkhR8p%2BdAo%3D&reserved=0
+> >>
+> universe.dev%2Fbuilds&data=05%7C02%7C%7Cc232d45a4c36493c689f08df43f9
+> >>
+> 8569%7C84df9e7fe9f640afb435aaaaaaaaaaaa%7C1%7C0%7C63930441114583
+> >>
+> 0951%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAu
+> >>
+> MDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C
+> >>
+> %7C&sdata=fns2iZCEWIfxnRmi%2FATJfcwwRfTyM3Q2Z3%2BZpsttFVY%3D&reser
+> >> ved=0 ).  While you can continue to push changes past this date, this ensures
+> all
+> >> changes are reflected in at least one build report before the code freeze for
+> >> release.  Packages that continue to show ERRORs in the build report after the
+> >> release will be consideration for deprecation. We are on schedule to release
+> >> Wednesday November 25th.
+> >>
+> >> Please also remember to update your NEWS files for any information about
+> >> changes to your packages during this last development cycle.  Bioconductor
+> >> collates all package news files as part of the release announcement. If your
+> >> NEWS file is not formatted correctly and not updated by this weekend, it will
+> not
+> >> be included in the release announcement.
+> >>
+> >> For clarification:
+> >> The release 3.24 branch has not yet been created.  Please continue to update
+> the
+> >> devel branch.
+> >> The core team will automatically create the RELEASE_3_24 branch on
+> >> git.bioconductor.org but until that time the only branch accessible is devel.  Do
+> >> NOT try to create a RELEASE_3_24 branch on your own; the core team will do
+> this
+> >> for you next week Monday.  Bioconductor will also handle bumping the y of a
+> >> package version x.y.z  on release day.
+> >>
+> >> Cheers,
+> >>
+> >>
+> >>
+> >> Lori Kern
+> >>
+> >> Bioconductor Core Team
+> >>
+> >> Roswell Park Comprehensive Cancer Center
+> >>
+> >> Department of Biostatistics & Bioinformatics
+> >>
+> >> Elm & Carlton Streets
+> >>
+> >> Buffalo, New York 14263
+
+
